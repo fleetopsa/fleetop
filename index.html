@@ -1748,7 +1748,7 @@ async function saveCompleteTrip(e) {
                                 <td class="p-3.5 text-slate-600">${tr.model || '---'}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${tr.status}</span></td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
-<button onclick="editTruck('${tr.truck_plate}', '${tr.model || ''}', '${tr.status}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
+<button onclick="editTruck('${tr.truck_plate || tr.plate}', '${tr.model || ''}', '${tr.status}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
     <i class="fa-solid fa-pen-to-square"></i>
 </button>
 <button onclick="deleteTruck(${tr.trip_no})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
@@ -1814,15 +1814,17 @@ if (truckIdentifier) {
             }
         }
 
-    function editTruck(plate, model, status) {
-    // 1. تعبئة الحقول في نموذج اليمين بالبيانات الحالية للشاحنة المحددة
-    const plateInput = document.getElementById('truckPlate'); // تأكد من مطابقة الـ ID لحقل رقم اللوحة في نموذج اليمين
-    const modelInput = document.getElementById('truckModel'); // تأكد من مطابقة الـ ID لحقل الموديل
-    const statusInput = document.getElementById('truckStatus'); // تأكد من مطابقة الـ ID لحقل الحالة
+   function editTruck(plate, model, status) {
+    console.log("تم استدعاء تعديل الشاحنة للوحة:", plate);
+    
+    // تعبئة حقول النموذج
+    const plateInput = document.getElementById('truckPlate'); // تأكد من مطابقة الـ ID لحقل رقم اللوحة في النموذج
+    const modelInput = document.getElementById('truckModel');
+    const statusInput = document.getElementById('truckStatus');
 
     if (plateInput) {
         plateInput.value = plate;
-        plateInput.readOnly = true; // قفل حقل اللوحة حتى لا يتم تغييره بالخطأ أثناء التعديل
+        plateInput.readOnly = true; // منع تعديل اللوحة حتى لا تضاف شاحنة جديدة بالخطأ
     }
     if (modelInput) {
         modelInput.value = model !== 'null' ? model : '';
@@ -1831,9 +1833,7 @@ if (truckIdentifier) {
         statusInput.value = status;
     }
 
-    // 2. تحويل زر الحفظ أو النموذج ليعمل بنظام التحديث (Update) بدلاً من الإضافة
-    // يمكنك هنا تغيير عنوان النموذج إلى "تعديل الشاحنة" إذا أردت
-    console.log("تم تحميل بيانات الشاحنة للتعديل:", plate);
+    // يمكنك هنا تغيير وظيفة زر الحفظ أو توجيهه لتنفيذ دالة التحديث مباشرة
 }
         function resetTruckForm() {
             document.getElementById('truckId').value = '';
