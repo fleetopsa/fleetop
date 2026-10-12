@@ -214,7 +214,7 @@
                     </div>
                 </div>
             </main>
-           <!-- قسم الرحلات -->
+          <!-- قسم الرحلات -->
 <main id="tripsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
         
@@ -230,7 +230,7 @@
             </div>
         </div>
 
-        <!-- شريط الفلترة والتصفية (أصبح الآن داخل شاشة إدارة الرحلات وتحت العنوان مباشرة) -->
+        <!-- شريط الفلترة والتصفية -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">فلترة حسب حالة الرحلة:</label>
@@ -262,6 +262,27 @@
             </div>
         </div>
 
+        <!-- جدول عرض الرحلات (هذا الجزء هو الذي كان مفقوداً وتم إضافته هنا) -->
+        <div class="overflow-x-auto flex-grow">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-700 text-xs">
+                        <th class="p-3">رقم الرحلة</th>
+                        <th class="p-3">العميل والمسار</th>
+                        <th class="p-3">الشاحنة والسائق</th>
+                        <th class="p-3">المبالغ والعمولة</th>
+                        <th class="p-3">الحالة والسداد</th>
+                        <th class="p-3 text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="tripsTable">
+                    <!-- ستظهر البيانات هنا تلقائياً -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</main>
         <!-- جدول الرحلات -->
         <div class="overflow-x-auto flex-grow">
             <!-- باقي جدول الرحلات هنا -->
