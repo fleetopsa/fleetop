@@ -915,7 +915,44 @@ async function loadAllData() {
         alert('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
     }
 }
-      async function loadAllData() {
+     async function handleFormSubmit(event) {
+    if (event) event.preventDefault();
+
+    const plateVal = document.getElementById('truckPlate').value;
+    const newStatus = document.getElementById('truckStatus').value;
+    const newModel = document.getElementById('truckModel').value;
+
+    // التحقق هل العملية تعديل لشاحنة موجودة أم إضافة شاحنة جديدة
+    const isEditing = document.getElementById('truckPlate').readOnly; 
+
+    if (isEditing) {
+        // --- تحديث شاحنة موجودة ---
+        const { error } = await client
+            .from('trucks')
+            .update({ status: newStatus, model: newModel })
+            .eq('truck_plate', plateVal.trim());
+
+        if (error) {
+            alert('خطأ في التحديث: ' + error.message);
+        } else {
+            alert('تم تحديث حالة الشاحنة بنجاح!');
+            location.reload(); // إعادة تحميل الصفحة لتحديث البيانات
+        }
+    } else {
+        // --- إضافة شاحنة جديدة ---
+        const { error } = await client
+            .from('trucks')
+            .insert([{ truck_plate: plateVal, model: newModel, status: newStatus }]);
+
+        if (error) {
+            alert('خطأ في الإضافة: ' + error.message);
+        } else {
+            alert('تم إضافة الشاحنة بنجاح!');
+            location.reload();
+        }
+    }
+}
+        async function loadAllData() {
     console.log("جاري تحديث كافة البيانات...");
     try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
     try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
@@ -2039,6 +2076,72 @@ async function loadUsers() {
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
         }
+  // ربط زر الحفظ بالدالة تلقائياً دون الحاجة لتعديل الـ HTML
+document.addEventListener('DOMContentLoaded', () => {
+    const saveBtn = document.getElementById('saveTruckBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', handleFormSubmit);
+    }
+});
+
+// دالة المعالجة (تحديث أو إضافة)
+async function handleFormSubmit(event) {
+    if (event) event.preventDefault(); // منع إعادة تحميل الصفحة الافتراضي
+
+    const plateInput = document.getElementById('truckPlate'); // تأكد أن هذا هو الـ ID لحقل رقم اللوحة في النموذج
+    const modelInput = document.getElementById('truckModel');
+    const statusInput = document.getElementById('truckStatus');
+
+    const plateVal = plateInput ? plateInput.value.trim() : '';
+    const newModel = modelInput ? modelInput.value.trim() : '';
+    const newStatus = statusInput ? statusInput.value : '';
+
+    if (!plateVal) {
+        alert('الرجاء إدخال أو اختيار رقم لوحة الشاحنة.');
+        return;
+    }
+
+    // التحقق هل هو وضع تعديل (لأننا فتحناه بالقحلم وحقل اللوحة readOnly) أم إضافة جديدة
+    const isEditing = plateInput && plateInput.readOnly;
+
+    if (isEditing) {
+        // --- تحديث الشاحنة الحالية ---
+        console.log("جاري تحديث الشاحنة:", plateVal);
+        const { error } = await client
+            .from('trucks')
+            .update({ 
+                model: newModel, 
+                status: newStatus 
+            })
+            .eq('truck_plate', plateVal);
+
+        if (error) {
+            console.error("خطأ في التحديث:", error);
+            alert('حدث خطأ أثناء التحديث: ' + error.message);
+        } else {
+            alert('تم تحديث حالة الشاحنة بنجاح!');
+            location.reload();
+        }
+    } else {
+        // --- إضافة شاحنة جديدة ---
+        console.log("جاري إضافة شاحنة جديدة:", plateVal);
+        const { error } = await client
+            .from('trucks')
+            .insert([{ 
+                truck_plate: plateVal, 
+                model: newModel, 
+                status: newStatus 
+            }]);
+
+        if (error) {
+            console.error("خطأ في الإضافة:", error);
+            alert('حدث خطأ أثناء الإضافة: ' + error.message);
+        } else {
+            alert('تم إضافة الشاحنة بنجاح!');
+            location.reload();
+        }
+    }
+}
     </script>
 </body>
 </html>
