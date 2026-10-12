@@ -837,16 +837,15 @@ async function loadAllData() {
         const paymentMethodVal = document.getElementById('modalPaymentMethod').value;
         const collectionDateVal = document.getElementById('modalCollectionDate').value;
 
-        let updateData = {
+       let updateData = {
             paid_amount: newPaidAmount,
             remaining_amount: newRemainingAmount,
             payment_status: paymentStatus,
-            status: 'منتهية',
+            status: 'مكتملة', // <--- تم تغييرها من 'منتهية' إلى 'مكتملة' لتوحيد التسمية مع الفلتر والجدول
             driver_commission: driverCommission,
             payment_method: paymentMethodVal ? paymentMethodVal.trim() : null,
             collection_date: collectionDateVal ? collectionDateVal.trim() : null
         };
-
         // تنظيف القيم الفارغة لمنع أخطاء التاريخ
         Object.keys(updateData).forEach(key => {
             if (updateData[key] === "" || updateData[key] === "mm / dd / yyyy" || updateData[key] === undefined) {
