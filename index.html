@@ -1743,9 +1743,9 @@ async function cancelTrip(tripNo) {
 
     // تحرير الشاحنة
     const truckIdentifier = tripData.truck_plate || tripData.truck;
-    if (truckIdentifier) {
-        await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
-    }
+if (truckIdentifier) {
+    await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('truck_plate', String(truckIdentifier).trim());
+}
 
     // تحرير السائق
     const driverIdentifier = tripData.driver_name || tripData.driver;
