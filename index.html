@@ -766,7 +766,21 @@ function closeCompleteModal() {
     const completeModal = document.getElementById('completeTripModal');
     if (completeModal) completeModal.classList.add('hidden');
 }
-
+// دالة جلب كافة بيانات النظام دفعة واحدة عند الدخول
+async function loadAllData() {
+    try {
+        await loadTripsData();   // جلب الرحلات وتفعيل الفلتر
+        
+        // جلب باقي الأقسام إن كانت موجودة لديك
+        if (typeof loadTrucksData === 'function') await loadTrucksData();
+        if (typeof loadDriversData === 'function') await loadDriversData();
+        if (typeof loadUsersData === 'function') await loadUsersData();
+        if (typeof loadDashboardData === 'function') await loadDashboardData();
+        
+    } catch (err) {
+        console.error("خطأ أثناء تحميل بيانات النظام الشاملة:", err);
+    }
+}
 // 3. تسوية وإنهاء الرحلة (مع جعل حقول الدفع اختيارية إذا كان المبلغ صفر)
 
       async function confirmCompleteTrip(e) {
