@@ -1372,16 +1372,10 @@ function filterAndRenderTrips() {
     const statusFilter = document.getElementById('filterTripStatus')?.value || 'all';
     const paymentFilter = document.getElementById('filterPaymentStatus')?.value || 'all';
 
-    console.log("قيمة فلتر الحالة:", statusFilter);
-    console.log("قيمة فلتر السداد:", paymentFilter);
-    console.log("إجمالي الكاش المحفوظ:", allTripsCache.length);
-
     let filtered = allTripsCache.filter(tr => {
-        // 1. فلترة حالة الرحلة (مع التأكد من مطابقة الحروف أو التعامل مع القيم الفارغة)
         const trStatus = (tr.status || '').trim();
         const matchStatus = (statusFilter === 'all') || (trStatus === statusFilter.trim());
 
-        // 2. حساب حالة السداد
         const paid = parseFloat(tr.paid_amount || 0);
         const total = parseFloat(tr.total_amount || 0);
         const remaining = parseFloat(tr.remaining_amount || 0);
@@ -1395,17 +1389,16 @@ function filterAndRenderTrips() {
         return matchStatus && matchPayment;
     });
 
-    console.log("النتائج بعد الفلترة:", filtered.length);
-
-    // تحديث عداد النتائج على الشاشة إن وجد
-    const countBadge = document.getElementById('tripCountBadge') || document.querySelector('.result-count');
-    // أو التحديث عبر العنصر الذي يظهر الرقم لديك
-    const resultsCounter = document.getElementById('resultsCount'); 
-    if (resultsCounter) resultsCounter.innerText = filtered.length;
+    // --- تحديث عداد النتائج بالشكل الصحيح ---
+    const countBadge = document.getElementById('filterResultCount');
+    if (countBadge) {
+        countBadge.innerText = `النتائج: ${filtered.length}`;
+    }
+    // -------------------------------------
 
     renderTripsTable(filtered);
 }
-// 3. دالة رسم جدول الرحلات بناءً على النتائج المفلترة
+        // 3. دالة رسم جدول الرحلات بناءً على النتائج المفلترة
 function renderTripsTable(trips) {
     const table = document.getElementById('tripsTable');
     if (!table) return;
