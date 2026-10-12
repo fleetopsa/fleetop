@@ -1330,17 +1330,22 @@ let allTripsCache = [];
 async function loadTripsData() {
     try {
         const { data: trips, error } = await client.from('trips').select('*').order('id', { ascending: false });
+        
+        // --- سطر الفحص الجديد ---
+        console.log("البيانات الراجعة من جدول الرحلات:", trips);
+        console.log("الخطأ إن وجد:", error);
+        // -----------------------
+
         if (error) throw error;
         
         allTripsCache = trips || [];
         filterAndRenderTrips(); // استدعاء الفلترة والعرض مباشرة
     } catch (err) {
-        console.error(err);
+        console.error("خطأ استعلام الرحلات:", err);
         const table = document.getElementById('tripsTable');
         if (table) table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">حدث خطأ أثناء تحميل الرحلات.</td></tr>`;
     }
 }
-
 // 2. دالة الفلترة حسب حالة الرحلة وحالة السداد
 function filterAndRenderTrips() {
     const statusFilter = document.getElementById('filterTripStatus')?.value || 'all';
