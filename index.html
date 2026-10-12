@@ -768,20 +768,15 @@ function closeCompleteModal() {
 }
 // دالة جلب كافة بيانات النظام دفعة واحدة عند الدخول
 async function loadAllData() {
-    try {
-        await loadTripsData();   // جلب الرحلات وتفعيل الفلتر
-        
-        // جلب باقي الأقسام إن كانت موجودة لديك
-        if (typeof loadTrucksData === 'function') await loadTrucksData();
-        if (typeof loadDriversData === 'function') await loadDriversData();
-        if (typeof loadUsersData === 'function') await loadUsersData();
-        if (typeof loadDashboardData === 'function') await loadDashboardData();
-        
-    } catch (err) {
-        console.error("خطأ أثناء تحميل بيانات النظام الشاملة:", err);
-    }
+    console.log("جاري تحديث كافة بيانات النظام...");
+    try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
+    try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
+    try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
+    try { if (typeof loadDrivers === 'function') await loadDrivers(); } catch (e) { console.error(e); }
+    try { if (typeof loadUsers === 'function') await loadUsers(); } catch (e) { console.error(e); }
+    console.log("تم تحميل البيانات بنجاح.");
 }
-// 3. تسوية وإنهاء الرحلة (مع جعل حقول الدفع اختيارية إذا كان المبلغ صفر)
+        // 3. تسوية وإنهاء الرحلة (مع جعل حقول الدفع اختيارية إذا كان المبلغ صفر)
 
       async function confirmCompleteTrip(e) {
     if (e) e.preventDefault();
@@ -1063,11 +1058,16 @@ async function loadUsers() {
                 document.getElementById('tabDashboardBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
                 document.getElementById('pageTitle').innerText = 'لوحة التحكم';
                 loadDashboardData();
-            } else if (tab === 'trips') {
-                document.getElementById('tripsSection').classList.remove('hidden');
-                document.getElementById('tabTripsBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'إدارة وتتبع الرحلات';
-                loadDropdowns();
+          } else if (tab === 'trips') {
+        document.getElementById('tripsSection').classList.remove('hidden');
+        document.getElementById('tabTripsBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
+        document.getElementById('pageTitle').innerText = 'إدارة وتتبع الرحلات';
+        if (typeof loadDropdowns === 'function') loadDropdowns();
+        if (typeof loadTripsData === 'function') {
+            loadTripsData(); // جلب البيانات وتحديث الفلتر والجدول فوراً
+        } else if (typeof filterAndRenderTrips === 'function') {
+            filterAndRenderTrips();
+        }
             } else if (tab === 'trucks') {
                 document.getElementById('trucksSection').classList.remove('hidden');
                 document.getElementById('tabTrucksBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
