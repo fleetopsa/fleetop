@@ -871,15 +871,17 @@ function closeCompleteModal() {
         alert('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
     }
 }
-        function loadAllData() {
-    loadDashboardData();
-    loadTripsData();
-    loadTrucks();
-    loadDrivers();
-    loadUsers();
-    loadDropdowns();
-    renderAdminControls();
-    generateReport();
+        async function loadAllData() {
+    console.log("جاري تحديث كافة البيانات...");
+    try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
+    try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
+    try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
+    try { if (typeof loadDrivers === 'function') await loadDrivers(); } catch (e) { console.error(e); }
+    try { if (typeof loadUsers === 'function') await loadUsers(); } catch (e) { console.error(e); }
+    try { if (typeof loadDropdowns === 'function') loadDropdowns(); } catch (e) { console.error(e); }
+    try { if (typeof renderAdminControls === 'function') renderAdminControls(); } catch (e) { console.error(e); }
+    try { if (typeof generateReport === 'function') generateReport(); } catch (e) { console.error(e); }
+    console.log("تم التحديث بنجاح.");
 }
         async function loadDashboardData() {
             try {
