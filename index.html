@@ -1351,11 +1351,16 @@ function filterAndRenderTrips() {
     const statusFilter = document.getElementById('filterTripStatus')?.value || 'all';
     const paymentFilter = document.getElementById('filterPaymentStatus')?.value || 'all';
 
-    let filtered = allTripsCache.filter(tr => {
-        // فلترة حالة الرحلة
-        const matchStatus = (statusFilter === 'all') || (tr.status === statusFilter);
+    console.log("قيمة فلتر الحالة:", statusFilter);
+    console.log("قيمة فلتر السداد:", paymentFilter);
+    console.log("إجمالي الكاش المحفوظ:", allTripsCache.length);
 
-        // حساب حالة السداد بنفس منطقك الأصلي
+    let filtered = allTripsCache.filter(tr => {
+        // 1. فلترة حالة الرحلة (مع التأكد من مطابقة الحروف أو التعامل مع القيم الفارغة)
+        const trStatus = (tr.status || '').trim();
+        const matchStatus = (statusFilter === 'all') || (trStatus === statusFilter.trim());
+
+        // 2. حساب حالة السداد
         const paid = parseFloat(tr.paid_amount || 0);
         const total = parseFloat(tr.total_amount || 0);
         const remaining = parseFloat(tr.remaining_amount || 0);
@@ -1364,15 +1369,21 @@ function filterAndRenderTrips() {
         if (remaining <= 0 || paid >= total) pStatus = "مسدد";
         else if (paid > 0) pStatus = "سداد جزئي";
 
-        // فلترة حالة السداد
-        const matchPayment = (paymentFilter === 'all') || (pStatus === paymentFilter);
+        const matchPayment = (paymentFilter === 'all') || (pStatus === paymentFilter.trim());
 
         return matchStatus && matchPayment;
     });
 
+    console.log("النتائج بعد الفلترة:", filtered.length);
+
+    // تحديث عداد النتائج على الشاشة إن وجد
+    const countBadge = document.getElementById('tripCountBadge') || document.querySelector('.result-count');
+    // أو التحديث عبر العنصر الذي يظهر الرقم لديك
+    const resultsCounter = document.getElementById('resultsCount'); 
+    if (resultsCounter) resultsCounter.innerText = filtered.length;
+
     renderTripsTable(filtered);
 }
-
 // 3. دالة رسم جدول الرحلات بناءً على النتائج المفلترة
 function renderTripsTable(trips) {
     const table = document.getElementById('tripsTable');
