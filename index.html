@@ -1587,6 +1587,40 @@ async function confirmCompleteTrip(e) {
         alert('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
     }
 }   
+        async function updateTruck(event) {
+    if (event) event.preventDefault();
+
+    // جلب القيم من حقول نموذج تعديل الشاحنة (تأكد من مطابقة الـ IDs مع الـ HTML لديك)
+    const plateVal = document.getElementById('editTruckPlate')?.value;
+    const newStatus = document.getElementById('editTruckStatus')?.value;
+    const newModel = document.getElementById('editTruckModel')?.value;
+
+    if (!plateVal) {
+        alert('رقم لوحة الشاحنة مطلوب للتحديث.');
+        return;
+    }
+
+    // تنفيذ التحديث في Supabase باستخدام truck_plate بدلاً من id
+    const { data, error } = await client
+        .from('trucks')
+        .update({ 
+            status: newStatus,
+            model: newModel 
+        })
+        .eq('truck_plate', plateVal.trim())
+        .select();
+
+    if (error) {
+        console.error("Error updating truck:", error);
+        alert('حدث خطأ أثناء تحديث الشاحنة: ' + error.message);
+    } else {
+        alert('تم تحديث الشاحنة بنجاح!');
+        // إعادة تحميل جدول الشاحنات لتحديث الواجهة
+        if (typeof loadTrucks === 'function') {
+            loadTrucks();
+        }
+    }
+}
         async function saveTrip(e) {
     if (e) e.preventDefault();
     const trip_no = await generateTripNo();
