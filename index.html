@@ -1742,8 +1742,8 @@ async function saveCompleteTrip(e) {
                                 <td class="p-3.5 text-slate-600">${tr.model || '---'}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${tr.status}</span></td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
-                                    <button onclick="editTruck(${tr.trip_no}, '${tr.plate}', '${tr.model || ''}', '${tr.status}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="deleteTruck(${tr.trip_no})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+<button onclick="editTruck('${tr.truck_plate || tr.plate}', '${tr.model || ''}', '${tr.status}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>       
+<button onclick="deleteTruck(${tr.trip_no})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         `;
@@ -1806,15 +1806,16 @@ if (truckIdentifier) {
             }
         }
 
-        function editTruck(id, plate, model, status) {
-            document.getElementById('truckId').value = id;
-            document.getElementById('truckPlate').value = plate;
-            document.getElementById('truckModel').value = model;
-            document.getElementById('truckStatus').value = status;
-            document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> تعديل شاحنة`;
-            document.getElementById('saveTruckBtn').innerText = 'تحديث';
-            document.getElementById('cancelTruckBtn').classList.remove('hidden');
-        }
+       function editTruck(plate, model, status) {
+    // تعبئة حقول النموذج بالبيانات الصحيحة
+    const plateInput = document.getElementById('editTruckPlate'); // تأكد من مطابقة الـ ID لحقل اللوحة لديك
+    const modelInput = document.getElementById('editTruckModel');
+    const statusInput = document.getElementById('editTruckStatus');
+
+    if (plateInput) plateInput.value = plate;
+    if (modelInput) modelInput.value = model;
+    if (statusInput) statusInput.value = status;
+}
 
         function resetTruckForm() {
             document.getElementById('truckId').value = '';
