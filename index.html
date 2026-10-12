@@ -2115,14 +2115,24 @@ async function handleFormSubmit(event) {
             })
             .eq('plate', plateVal); // الاسم الصحيح في جدول trucks
 
-        if (error) {
+     if (error) {
             console.error("خطأ في التحديث:", error);
             alert('حدث خطأ أثناء التحديث: ' + error.message);
         } else {
             alert('تم تحديث حالة الشاحنة بنجاح!');
-            location.reload();
-        }
-    } else {
+            
+            // بدلاً من location.reload() التي تخرجك من النظام، 
+            // سنقوم بإعادة تعيين النموذج وإلغاء القفل لكي تستطيع تحديث شاحنة أخرى مباشرة
+            plateInput.value = '';
+            modelInput.value = '';
+            statusInput.selectedIndex = 0;
+            plateInput.readOnly = false; // إعادة حقل اللوحة للوضع الطبيعي للإضافة
+            
+            // إذا كانت لديك دالة لجلب وترتيب الجدول مرة أخرى مثل loadTrucks() استدعها هنا:
+            if (typeof loadTrucks === 'function') {
+                loadTrucks();
+            }
+        }    } else {
         // --- إضافة شاحنة جديدة ---
         console.log("جاري إضافة شاحنة جديدة:", plateVal);
         const { error } = await client
