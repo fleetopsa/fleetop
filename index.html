@@ -2076,7 +2076,7 @@ async function loadUsers() {
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
         }
-  // ربط زر الحفظ بالدالة تلقائياً دون الحاجة لتعديل الـ HTML
+// ربط زر الحفظ بالدالة تلقائياً
 document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('saveTruckBtn');
     if (saveBtn) {
@@ -2086,9 +2086,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // دالة المعالجة (تحديث أو إضافة)
 async function handleFormSubmit(event) {
-    if (event) event.preventDefault(); // منع إعادة تحميل الصفحة الافتراضي
+    if (event) event.preventDefault();
 
-    const plateInput = document.getElementById('truckPlate'); // تأكد أن هذا هو الـ ID لحقل رقم اللوحة في النموذج
+    const plateInput = document.getElementById('truckPlate'); 
     const modelInput = document.getElementById('truckModel');
     const statusInput = document.getElementById('truckStatus');
 
@@ -2101,7 +2101,7 @@ async function handleFormSubmit(event) {
         return;
     }
 
-    // التحقق هل هو وضع تعديل (لأننا فتحناه بالقحلم وحقل اللوحة readOnly) أم إضافة جديدة
+    // التحقق هل هو وضع تعديل (لأن حقل اللوحة readOnly) أم إضافة جديدة
     const isEditing = plateInput && plateInput.readOnly;
 
     if (isEditing) {
@@ -2113,7 +2113,7 @@ async function handleFormSubmit(event) {
                 model: newModel, 
                 status: newStatus 
             })
-            .eq('truck_plate', plateVal);
+            .eq('plate', plateVal); // الاسم الصحيح في جدول trucks
 
         if (error) {
             console.error("خطأ في التحديث:", error);
@@ -2128,7 +2128,7 @@ async function handleFormSubmit(event) {
         const { error } = await client
             .from('trucks')
             .insert([{ 
-                truck_plate: plateVal, 
+                plate: plateVal, // الاسم الصحيح في جدول trucks
                 model: newModel, 
                 status: newStatus 
             }]);
