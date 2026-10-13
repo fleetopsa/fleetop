@@ -312,32 +312,19 @@
                     </div>
                 </div>
 
-                <div id="printableReport" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex-grow flex flex-col">
-                    <div class="text-center border-b border-slate-200 pb-6 mb-6">
-                        <h2 class="text-lg font-black text-slate-900">شركة الاختيار العالمي للنقليات</h2>
-                        <p class="text-xs text-amber-600 font-bold mt-1">تقرير أداء الأسطول الشامل (الشاحنات، السائقين، والعمولات)</p>
-                        <p id="reportPeriodLabel" class="text-[11px] text-slate-500 mt-1">الفترة: جميع الرحلات المسجلة</p>
-                    </div>
+               <div id="printableReport" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex-grow flex flex-col">
+        <div class="text-center border-b border-slate-200 pb-6 mb-6">
+            <h2 class="text-lg font-black text-slate-900">شركة الاختيار العالمي للنقليات</h2>
+            <p class="text-xs text-amber-600 font-bold mt-1">تقرير أداء الأسطول التشغيلي (الشاحنات والسائقين)</p>
+            <p id="reportPeriodLabel" class="text-[11px] text-slate-500 mt-1">الفترة: جميع الرحلات المسجلة</p>
+        </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                            <span class="block text-[11px] text-slate-500 font-bold">إجمالي عدد الرحلات</span>
-                            <span id="repTotalTrips" class="text-base font-black text-slate-900 font-mono">0</span>
-                        </div>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                            <span class="block text-[11px] text-slate-500 font-bold">إجمالي الإيرادات</span>
-                            <span id="repTotalAmount" class="text-base font-black text-slate-900 font-mono">0 SR</span>
-                        </div>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                            <span class="block text-[11px] text-slate-500 font-bold">المبالغ المدفوعة</span>
-                            <span id="repPaidAmount" class="text-base font-black text-emerald-600 font-mono">0 SR</span>
-                        </div>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                            <span class="block text-[11px] text-slate-500 font-bold">المبالغ المتبقية</span>
-                            <span id="repRemainingAmount" class="text-base font-black text-rose-600 font-mono">0 SR</span>
-                        </div>
-                    </div>
-
+        <div class="flex justify-center mb-8">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center w-full md:w-1/3">
+                <span class="block text-[11px] text-slate-500 font-bold">إجمالي عدد الرحلات</span>
+                <span id="repTotalTrips" class="text-base font-black text-slate-900 font-mono">0</span>
+            </div>
+        </div>
                     <div class="mb-8">
                         <h4 class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-truck text-amber-500 ml-2"></i> تقرير الشاحنات والإيرادات</h4>
                         <div class="overflow-x-auto">
