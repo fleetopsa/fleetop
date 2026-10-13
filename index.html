@@ -1330,37 +1330,53 @@ async function initReportFilters() {
 
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
 function switchTab(tabId) {
-    // 1. إخفاء جميع الأقسام التي تحمل class أو عنصر main أو section
+    // 1. إخفاء جميع الأقسام الرئيسية في الصفحة
     const sections = document.querySelectorAll('main, section');
     sections.forEach(sec => {
-        // نتأكد ألا نخفي الشريط الجانبي أو النافبار
         if (sec.id && sec.id !== 'sidebar' && sec.id !== 'navbar') {
             sec.classList.add('hidden');
         }
     });
 
-    // 2. محاولة إظهار القسم المطلوب إذا كان موجوداً
-    const target = document.getElementById(tabId);
+    // 2. ربط الأسماء القادمة من الأزرار بالـ IDs الفعلية المحتملة في الـ HTML
+    let possibleIds = [
+        tabId, 
+        tabId + 'Section', 
+        tabId.replace('Section', ''),
+        'tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1)
+    ];
+
+    // خريطة خاصة إذا كانت الأسماء مختلفة تماماً في مشروعك
+    if (tabId === 'dashboard') possibleIds.push('dashboardSection', 'homeSection', 'overview');
+    if (tabId === 'trips') possibleIds.push('tripsSection', 'manageTrips');
+    if (tabId === 'trucks') possibleIds.push('trucksSection', 'fleetSection');
+    if (tabId === 'drivers') possibleIds.push('driversSection', 'driversList');
+    if (tabId === 'reports') possibleIds.push('reportsSection');
+
+    // 3. البحث عن أول ID مطابق وموجود في الصفحة لإظهاره
+    let target = null;
+    for (let id of possibleIds) {
+        target = document.getElementById(id);
+        if (target) break;
+    }
+
     if (target) {
         target.classList.remove('hidden');
         
-        // إذا كان القسم المستهدف هو أحد التقارير المالية، قم بتحديث بياناته
-        if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
+        // إذا كان القسم المختار هو التقارير المالية، قم بتحديث بياناته
+        if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection' || tabId === 'reports') {
             if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
         }
     } else {
-        // حماية النظام: إذا لم يُوجد الid، نظهر القسم الرئيسي (مثل لوحة التحكم) بدلاً من أن تصبح الشاشة بيضاء تماماً
-        console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
-        
-        // حاول البحث عن أول قسم رئيسي أو لوحة التحكم لإظهاره
-        const defaultSection = document.getElementById('dashboardSection') || sections[0];
-        if (defaultSection) {
-            defaultSection.classList.remove('hidden');
+        console.warn("تعذر العثور على القسم المطابق لـ:", tabId);
+        // إظهار أول قسم افتراضي كحماية لمنع الشاشة البيضاء
+        if (sections.length > 0) {
+            sections[0].classList.remove('hidden');
         }
     }
-}     async function generateReport() {
+}        async function generateReport() {
     // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
