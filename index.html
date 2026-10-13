@@ -1304,32 +1304,36 @@ async function initReportFilters() {
         }
 
         function switchTab(tabId) {
-    // إخفاء جميع الأقسام الرئيسية (تأكد من أن كودك يغطي هذه الأقسام)
-    const sections = document.querySelectorAll('main, section'); // أو حسب فئة الأقسام لديك
-    // بدلاً من ذلك، يمكنك إظهار القسم المختار مباشرة هكذا:
-
-    // 1. إخفاء الأقسام المعروفة
+    // 1. تحديد كافة الأقسام الرئيسية والمالية في النظام لتنظيفها وإخفائها
     const allSections = [
         'reportsSection', 
         'financialOverviewSection', 
         'financialDetailsSection',
-        // أضف أي أقسام أخرى لديك هنا
+        // أضف أي معرفات (IDs) أخرى لشاشاتك الرئيسية هنا إذا وجدت (مثل لوحة التحكم، الشحنات، السائقين... إلخ)
     ];
 
+    // إخفاء جميع الأقسام
     allSections.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+        if (el) {
+            el.classList.add('hidden');
+        }
     });
 
-    // 2. إظهار القسم المطلوب فقط
-    const targetSection = document.getElementById(tabId);
-    if (targetSection) {
-        targetSection.classList.remove('hidden');
+    // 2. إظهار القسم المستهدف فقط
+    const targetElement = document.getElementById(tabId);
+    if (targetElement) {
+        targetElement.classList.remove('hidden');
         
-        // إذا كان القسم المختار هو أحد التقارير المالية، قم بتشغيل دالة الجلب تلقائياً!
+        // إذا كان القسم المستهدف هو أحد التقارير المالية، نقوم بتحديث وتوليد البيانات فوراً
         if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
-            generateFinancialReport();
+            if (typeof generateFinancialReport === 'function') {
+                generateFinancialReport();
+            }
         }
+    } else {
+        // احتياطي: إذا كان النظام يستعمل دالة أخرى أو تبويبات عامة، تأكد من التعامل معها
+        console.warn("Target section not found by ID:", tabId);
     }
 }
      async function generateReport() {
