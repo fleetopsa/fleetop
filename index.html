@@ -1213,8 +1213,6 @@ async function initReportFilters() {
         if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
         if (selectedDriver) query = query.eq('driver_name', selectedDriver);
 
-        const { data: trips, error } = await query;
-        if (error) throw error;
 
         const { data: trucks } = await client.from('trucks').select('*');
         const { data: drivers } = await client.from('drivers').select('*');
