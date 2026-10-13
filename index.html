@@ -84,24 +84,19 @@
                     </button>
                     <button onclick="switchTab('reports')" id="tabReportsBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
                         <i class="fa-solid fa-chart-line text-base"></i> التقارير والطباعة
-                    <!-- قسم التقارير والتقارير المالية في القائمة الجانبية -->
-<div>
-    <!-- زر التقارير الرئيسي -->
-    <button onclick="switchTab('reports')" id="tabReportsBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-        <i class="fa-solid fa-chart-line text-base"></i> التقارير والطباعة
-    </button>
-    
-    <!-- القائمة الفرعية المالية (تظهر للأدمن والمحاسب فقط) -->
-    <div id="financialSubMenu" class="mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
-        <div class="text-[10px] font-bold text-amber-500 px-2 py-0.5">التقارير المالية</div>
+                    
+
+    <!-- القائمة الفرعية المالية (تظهر حصرياً للأدمن والمحاسب تحت التقارير) -->
+    <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
+        <div class="text-[10px] font-bold text-amber-600 px-2 py-0.5">التقارير المالية (خاص)</div>
         <button onclick="switchTab('financialOverviewSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-            <i class="fa-solid fa-wallet ml-1.5 text-emerald-400"></i> الملخص المالي العام
+            <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> الملخص المالي العام
         </button>
         <button onclick="switchTab('financialDetailsSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-            <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-400"></i> تقرير العمولات والإيرادات
+            <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات والإيرادات
         </button>
     </div>
-</div>
+    </div>
                     <button onclick="switchTab('users')" id="tabUsersBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
                         <i class="fa-solid fa-user-shield text-base"></i> المستخدمين
                     </button>
