@@ -1171,64 +1171,65 @@ async function loadUsers() {
 
         // 1. تقرير أداء الشاحنات التشغيلي (بدون إيرادات مالية)
         const truckTable = document.getElementById('truckReportTable');
-        if (truckTable) {
-            if (trucks && trucks.length > 0) {
-                truckTable.innerHTML = trucks.map(tr => {
-                    const truckTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
-                    return `
-                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                            <td class="p-3 font-bold text-slate-900 font-mono">${tr.plate}</td>
-                            <td class="p-3 text-slate-600">${tr.model || '---'}</td>
-                            <td class="p-3 text-center font-bold text-amber-600 font-mono">${truckTrips.length}</td>
-                        </tr>
-                    `;
-                }).join('');
-            } else {
-                truckTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>`;
-            }
-        }
-
+if (truckTable) {
+    if (trucks && trucks.length > 0) {
+        truckTable.innerHTML = trucks.map(tr => {
+            const truckTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
+            return `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                    <td class="p-3.5 font-bold text-slate-900 font-mono">${tr.plate}</td>
+                    <td class="p-3.5 text-slate-600">${tr.model || '---'}</td>
+                    <td class="p-3.5 text-center font-bold text-amber-600 font-mono bg-amber-50/30">${truckTrips.length}</td>
+                </tr>
+            `;
+        }).join('');
+    } else {
+        truckTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>`;
+    }
+}
         // 2. تقرير أداء السائقين التشغيلي (بدون عمولات مالية)
-        const driverTable = document.getElementById('driverReportTable');
-        if (driverTable) {
-            if (drivers && drivers.length > 0) {
-                driverTable.innerHTML = drivers.map(dr => {
-                    const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
-                    let tripsDetailsHtml = drTrips.length > 0 ? `
-                        <table class="w-full text-right text-[11px] border-collapse">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                    <th class="p-1.5 font-bold">رقم الرحلة</th>
-                                    <th class="p-1.5 font-bold">رقم اللوحة</th>
-                                    <th class="p-1.5 font-bold">العميل وخط السير</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 font-mono">
-                                ${drTrips.map(dt => `
-                                    <tr class="hover:bg-slate-50/80">
-                                        <td class="p-1.5 font-bold text-amber-600">${dt.trip_no || '---'}</td>
-                                        <td class="p-1.5 font-bold text-slate-800">${dt.truck_plate || '---'}</td>
-                                        <td class="p-1.5 text-slate-700 font-sans"<td class="p-1.5 text-slate-700 font-sans">${dt.client_name || ''} (${dt.from_city || ''} إلى ${dt.to_city || ''})</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    ` : '<span class="text-slate-400">لا توجد رحلات</span>';
-                    return `
-                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
-                            <td class="p-3 align-top border-l border-slate-200">
-                                <div class="font-bold text-slate-900">${dr.name}</div>
-                                <div class="text-[11px] text-slate-500 font-mono">${dr.phone || ''}</div>
-                            </td>
-                            <td class="p-3 text-center align-top font-bold text-amber-600 font-mono border-l border-slate-200">${drTrips.length}</td>
-                            <td class="p-2 align-top bg-slate-50/40">${tripsDetailsHtml}</td>
-                        </tr>
-                    `;
-                }).join('');
-            } else {           
-                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
-            }
-        }
+       const driverTable = document.getElementById('driverReportTable');
+if (driverTable) {
+    if (drivers && drivers.length > 0) {
+        driverTable.innerHTML = drivers.map(dr => {
+            const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
+            
+            let tripsDetailsHtml = drTrips.length > 0 ? `
+                <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
+                    <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+    <tr>
+        <th class="p-3">اسم السائق ورقم الجوال</th>
+        <th class="p-3 text-center">عدد الرحلات</th>
+        <th class="p-3">تفاصيل الرحلات (رقمها، العميل، خط السير)</th>
+    </tr>
+</thead>
+                    <tbody class="divide-y divide-slate-100 font-mono">
+                        ${drTrips.map(dt => `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-2 font-bold text-amber-600">${dt.trip_no || '---'}</td>
+                                <td class="p-2 font-bold text-slate-800">${dt.truck_plate || '---'}</td>
+                                <td class="p-2 text-slate-700 font-sans">${dt.client_name || ''} (${dt.from_city \vert{}\vert{} ''} إلى ${dt.to_city || ''})</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<span class="text-slate-400 text-xs">لا توجد رحلات مسجلة في هذه الفترة</span>';
+
+            return `
+                <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
+                    <td class="p-4 align-top border-l border-slate-200 bg-slate-50/30">
+                        <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
+                        <div class="text-xs text-slate-500 font-mono mt-0.5">${dr.phone || ''}</div>
+                    </td>
+                    <td class="p-4 text-center align-top font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
+                    <td class="p-3 align-top bg-white">${tripsDetailsHtml}</td>
+                </tr>
+            `;
+        }).join('');
+    } else {
+        driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
+    }
+}
     } catch (err) {
         console.error("Error generating report:", err);
     }
