@@ -168,7 +168,24 @@
                         </div>
                     </div>
                 </div>
-
+<!-- حاوية البطاقات المالية في لوحة التحكم (مخفية افتراضياً) -->
+<div id="financialCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 hidden">
+    <!-- بطاقة إجمالي الإيرادات -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500">إجمالي الإيرادات</p>
+        <h3 id="finTotalRevenue" class="text-xl font-bold text-slate-900 mt-1">0 ر.س</h3>
+    </div>
+    <!-- بطاقة المبالغ المحصلة -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500">المبالغ المحصلة</p>
+        <h3 id="finCollectedAmount" class="text-xl font-bold text-emerald-600 mt-1">0 ر.س</h3>
+    </div>
+    <!-- بطاقة المبالغ غير المحصلة -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-500">المبالغ غير المحصلة</p>
+        <h3 id="finPendingAmount" class="text-xl font-bold text-amber-600 mt-1">0 ر.س</h3>
+    </div>
+</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
@@ -849,7 +866,16 @@
                 financialSubMenu.classList.add('hidden');
             }
         }
-
+// 3. البطاقات المالية في لوحة التحكم (للأدمن والمحاسب فقط)
+        const financialCardsContainer = document.getElementById('financialCardsContainer');
+        if (financialCardsContainer) {
+            if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
+                financialCardsContainer.classList.remove('hidden'); // تظهر للأدمن والمحاسب
+            } else {
+                financialCardsContainer.classList.add('hidden');    // تختفي عن المستخدم العادي
+            }
+        }
+        
         // 2. زر شاشة المستخدمين (للأدمن فقط حصرياً)
         const tabUsersBtn = document.getElementById('tabUsersBtn');
         if (tabUsersBtn) {
