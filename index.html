@@ -1305,31 +1305,37 @@ async function initReportFilters() {
 
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
 function switchTab(tabId) {
-    // 1. إخفاء جميع عناصر main أو الأقسام التي تحمل class أو id تخص المحتوى
+    // 1. إخفاء جميع الأقسام التي تحمل class أو عنصر main أو section
     const sections = document.querySelectorAll('main, section');
     sections.forEach(sec => {
-        // نتحقق إذا كان العنصر هو أحد الأقسام الرئيسية لنقوم بإخفائه
+        // نتأكد ألا نخفي الشريط الجانبي أو النافبار
         if (sec.id && sec.id !== 'sidebar' && sec.id !== 'navbar') {
             sec.classList.add('hidden');
         }
     });
 
-    // 2. إظهار القسم المستهدف فقط بناءً على الـ ID المرسل
+    // 2. محاولة إظهار القسم المطلوب إذا كان موجوداً
     const target = document.getElementById(tabId);
     if (target) {
         target.classList.remove('hidden');
         
-        // إذا كان القسم المختار هو قسم مالي، نقوم بتشغيل دالة التقارير المالية فوراً
+        // إذا كان القسم المستهدف هو أحد التقارير المالية، قم بتحديث بياناته
         if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
             if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
         }
     } else {
-        console.error("القسم غير موجود في الصفحة:", tabId);
+        // حماية النظام: إذا لم يُوجد الid، نظهر القسم الرئيسي (مثل لوحة التحكم) بدلاً من أن تصبح الشاشة بيضاء تماماً
+        console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
+        
+        // حاول البحث عن أول قسم رئيسي أو لوحة التحكم لإظهاره
+        const defaultSection = document.getElementById('dashboardSection') || sections[0];
+        if (defaultSection) {
+            defaultSection.classList.remove('hidden');
+        }
     }
-}
-     async function generateReport() {
+}     async function generateReport() {
     // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
