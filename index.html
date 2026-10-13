@@ -1175,24 +1175,34 @@ async function initReportFilters() {
         }
 
      async function generateReport() {
+    // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
+    const selectedTruck = document.getElementById('reportTruckFilter').value;
+    const selectedDriver = document.getElementById('reportDriverFilter').value;
     
+    // تحديث عنوان الفترة المعروض أعلى التقرير
     const periodLabel = document.getElementById('reportPeriodLabel');
-    if (startDate && endDate) {
-        periodLabel.innerText = `الفترة من: ${startDate} إلى: ${endDate}`;
-    } else if (startDate) {
-        periodLabel.innerText = `الفترة ابتداءً من: ${startDate}`;
-    } else if (endDate) {
-        periodLabel.innerText = `الفترة حتى تاريخ: ${endDate}`;
-    } else {
-        periodLabel.innerText = `الفترة: جميع الرحلات المسجلة`;
-    }
+    let periodText = [];
+    if (startDate && endDate) periodText.push(`الفترة من: ${startDate} إلى: ${endDate}`);
+    else if (startDate) periodText.push(`الفترة ابتداءً من: ${startDate}`);
+    else if (endDate) periodText.push(`الفترة حتى تاريخ: ${endDate}`);
+    else periodText.push(`الفترة: جميع الرحلات المسجلة`);
+
+    if (selectedTruck) periodText.push(`الشاحنة: ${selectedTruck}`);
+    if (selectedDriver) periodText.push(`السائق: ${selectedDriver}`);
+    if (periodLabel) periodLabel.innerText = periodText.join(' | ');
 
     try {
+        // 2. بناء استعلام Supabase مع تطبيق الفلاتر
         let query = client.from('trips').select('*');
+        
         if (startDate) query = query.gte('departure_date', startDate);
         if (endDate) query = query.lte('departure_date', endDate);
+        
+        // 🔹 الفلاتر الجديدة التي تم ربطها بالقوائم المنسدلة:
+        if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
+        if (selectedDriver) query = query.eq('driver_name', selectedDriver);
 
         const { data: trips, error } = await query;
         if (error) throw error;
@@ -1206,11 +1216,15 @@ async function initReportFilters() {
         const totalTripsEl = document.getElementById('repTotalTrips');
         if (totalTripsEl) totalTripsEl.innerText = totalTrips;
 
-        // 1. تقرير أداء الشاحنات التشغيلي
+        // تصفية العناصر المعروضة في الجداول بناءً على الاختيار
+        const filteredTrucks = selectedTruck ? trucks.filter(tr => tr.plate === selectedTruck) : trucks;
+        const filteredDrivers = selectedDriver ? drivers.filter(dr => dr.name === selectedDriver) : drivers;
+
+        // 3. تحديث جدول الشاحنات
         const truckTable = document.getElementById('truckReportTable');
         if (truckTable) {
-            if (trucks && trucks.length > 0) {
-                truckTable.innerHTML = trucks.map(tr => {
+            if (filteredTrucks && filteredTrucks.length > 0) {
+                truckTable.innerHTML = filteredTrucks.map(tr => {
                     const truckTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
                     return `
                         <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
@@ -1221,15 +1235,15 @@ async function initReportFilters() {
                     `;
                 }).join('');
             } else {
-                truckTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>`;
+                truckTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
             }
         }
 
-        // 2. تقرير أداء السائقين التشغيلي (بتصميم آمن ومنظم)
+        // 4. تحديث جدول السائقين
         const driverTable = document.getElementById('driverReportTable');
         if (driverTable) {
-            if (drivers && drivers.length > 0) {
-                driverTable.innerHTML = drivers.map(dr => {
+            if (filteredDrivers && filteredDrivers.length > 0) {
+                driverTable.innerHTML = filteredDrivers.map(dr => {
                     const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
                     
                     let tripsRows = '';
@@ -1270,11 +1284,11 @@ async function initReportFilters() {
                     `;
                 }).join('');
             } else {
-                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
+                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
             }
         }
     } catch (err) {
-        console.error("Error generating report:", err);
+        console.error("Error generating report with filters:", err);
     }
 }
         function calculateRemaining() {
