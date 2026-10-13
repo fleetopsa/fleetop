@@ -1194,11 +1194,20 @@ async function initReportFilters() {
     if (periodLabel) periodLabel.innerText = periodText.join(' | ');
 
     try {
-        // 2. بناء استعلام Supabase مع تطبيق الفلاتر
+        // 2. بناء استعلام Supabase مع تطبيق الفلاتر والترتيب التنازلي (الأحدث أولاً)
         let query = client.from('trips').select('*');
         
         if (startDate) query = query.gte('departure_date', startDate);
         if (endDate) query = query.lte('departure_date', endDate);
+        
+        if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
+        if (selectedDriver) query = query.eq('driver_name', selectedDriver);
+
+        // الترتيب تنازلياً حسب رقم الرحلة
+        query = query.order('trip_no', { ascending: false });
+
+        const { data: trips, error } = await query;
+        if (error) throw error;
         
         // 🔹 الفلاتر الجديدة التي تم ربطها بالقوائم المنسدلة:
         if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
