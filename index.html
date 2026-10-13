@@ -1303,37 +1303,30 @@ async function initReportFilters() {
             }
         }
 
-        function switchTab(tabId) {
-    // 1. تحديد كافة الأقسام الرئيسية والمالية في النظام لتنظيفها وإخفائها
-    const allSections = [
-        'reportsSection', 
-        'financialOverviewSection', 
-        'financialDetailsSection',
-        // أضف أي معرفات (IDs) أخرى لشاشاتك الرئيسية هنا إذا وجدت (مثل لوحة التحكم، الشحنات، السائقين... إلخ)
-    ];
-
-    // إخفاء جميع الأقسام
-    allSections.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.classList.add('hidden');
+       // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
+function switchTab(tabId) {
+    // 1. إخفاء جميع عناصر main أو الأقسام التي تحمل class أو id تخص المحتوى
+    const sections = document.querySelectorAll('main, section');
+    sections.forEach(sec => {
+        // نتحقق إذا كان العنصر هو أحد الأقسام الرئيسية لنقوم بإخفائه
+        if (sec.id && sec.id !== 'sidebar' && sec.id !== 'navbar') {
+            sec.classList.add('hidden');
         }
     });
 
-    // 2. إظهار القسم المستهدف فقط
-    const targetElement = document.getElementById(tabId);
-    if (targetElement) {
-        targetElement.classList.remove('hidden');
+    // 2. إظهار القسم المستهدف فقط بناءً على الـ ID المرسل
+    const target = document.getElementById(tabId);
+    if (target) {
+        target.classList.remove('hidden');
         
-        // إذا كان القسم المستهدف هو أحد التقارير المالية، نقوم بتحديث وتوليد البيانات فوراً
+        // إذا كان القسم المختار هو قسم مالي، نقوم بتشغيل دالة التقارير المالية فوراً
         if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
             if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
         }
     } else {
-        // احتياطي: إذا كان النظام يستعمل دالة أخرى أو تبويبات عامة، تأكد من التعامل معها
-        console.warn("Target section not found by ID:", tabId);
+        console.error("القسم غير موجود في الصفحة:", tabId);
     }
 }
      async function generateReport() {
