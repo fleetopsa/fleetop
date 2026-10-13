@@ -985,17 +985,21 @@ async function loadDrivers() {
 }
 async function initReportFilters() {
     try {
+        // 1. جلب الشاحنات والسائقين من قاعدة البيانات Supabase
         const { data: trucks } = await client.from('trucks').select('plate');
         const { data: drivers } = await client.from('drivers').select('name');
 
+        // 2. ربط القوائم بعناصرها في الصفحة
         const truckSelect = document.getElementById('reportTruckFilter');
         const driverSelect = document.getElementById('reportDriverFilter');
 
+        // 3. تعبئة قائمة الشاحنات
         if (truckSelect && trucks) {
             truckSelect.innerHTML = '<option value="">جميع الشاحنات</option>' + 
                 trucks.map(tr => `<option value="${tr.plate}">${tr.plate}</option>`).join('');
         }
 
+        // 4. تعبئة قائمة السائقين
         if (driverSelect && drivers) {
             driverSelect.innerHTML = '<option value="">جميع السائقين</option>' + 
                 drivers.map(dr => `<option value="${dr.name}">${dr.name}</option>`).join('');
@@ -1004,7 +1008,7 @@ async function initReportFilters() {
         console.error("Error loading filter options:", err);
     }
 }
-async function loadUsers() {
+        async function loadUsers() {
     try {
         const { data, error } = await client.from('app_users').select('*');
         if (error) throw error;
@@ -2159,6 +2163,13 @@ async function handleFormSubmit(event) {
         }
     }
 }
+        document.addEventListener("DOMContentLoaded", () => {
+    initReportFilters();
+});
+        // تشغيل دالة جلب الشاحنات والسائقين تلقائياً بمجرد فتح النظام
+document.addEventListener("DOMContentLoaded", () => {
+    initReportFilters();
+});
     </script>
 </body>
 </html>
