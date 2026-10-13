@@ -1204,7 +1204,7 @@ async function loadUsers() {
                                     <th class="p-1.5 font-bold">العميل وخط السير</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100 font-mono">
+                          <tbody class="divide-y divide-slate-100 font-mono">
                                 ${drTrips.map(dt => `
                                     <tr class="hover:bg-slate-50/80">
                                         <td class="p-1.5 font-bold text-amber-600">${dt.trip_no || '---'}</td>
@@ -1215,7 +1215,6 @@ async function loadUsers() {
                             </tbody>
                         </table>
                     ` : '<span class="text-slate-400">لا توجد رحلات</span>';
-
                     return `
                         <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
                             <td class="p-3 align-top border-l border-slate-200">
