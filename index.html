@@ -86,7 +86,7 @@
                         <i class="fa-solid fa-chart-line text-base"></i> التقارير والطباعة
                     </button>
                     <!-- القائمة الفرعية المالية (تظهر حصرياً للأدمن والمحاسب) -->
-    <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
+    <div id="financialSubMenu" class=" mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
         <div class="text-[10px] font-bold text-amber-600 px-2 py-0.5">التقارير المالية (خاص)</div>
         <button onclick="switchTab('financialOverviewSection')" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
             <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> الملخص المالي العام
@@ -1309,54 +1309,35 @@ async function initReportFilters() {
             }
         }
 
-        function switchTab(tab) {
-            ['dashboardSection', 'tripsSection', 'trucksSection', 'driversSection', 'reportsSection', 'usersSection'].forEach(s => {
-                const el = document.getElementById(s);
-                if (el) el.classList.add('hidden');
-            });
-            ['tabDashboardBtn', 'tabTripsBtn', 'tabTrucksBtn', 'tabDriversBtn', 'tabReportsBtn', 'tabUsersBtn'].forEach(b => {
-                const el = document.getElementById(b);
-                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white';
-            });
+        function switchTab(tabId) {
+    // إخفاء جميع الأقسام الرئيسية (تأكد من أن كودك يغطي هذه الأقسام)
+    const sections = document.querySelectorAll('main, section'); // أو حسب فئة الأقسام لديك
+    // بدلاً من ذلك، يمكنك إظهار القسم المختار مباشرة هكذا:
 
-            if (tab === 'dashboard') {
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                document.getElementById('tabDashboardBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'لوحة التحكم';
-                loadDashboardData();
-          } else if (tab === 'trips') {
-        document.getElementById('tripsSection').classList.remove('hidden');
-        document.getElementById('tabTripsBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-        document.getElementById('pageTitle').innerText = 'إدارة وتتبع الرحلات';
-        if (typeof loadDropdowns === 'function') loadDropdowns();
-        if (typeof loadTripsData === 'function') {
-            loadTripsData(); // جلب البيانات وتحديث الفلتر والجدول فوراً
-        } else if (typeof filterAndRenderTrips === 'function') {
-            filterAndRenderTrips();
-        }
-            } else if (tab === 'trucks') {
-                document.getElementById('trucksSection').classList.remove('hidden');
-                document.getElementById('tabTrucksBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'إدارة أسطول الشاحنات';
-                loadTrucks();
-            } else if (tab === 'drivers') {
-                document.getElementById('driversSection').classList.remove('hidden');
-                document.getElementById('tabDriversBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'إدارة أسطول السائقين';
-                loadDrivers();
-            } else if (tab === 'reports') {
-                document.getElementById('reportsSection').classList.remove('hidden');
-                document.getElementById('tabReportsBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'تقارير الأسطول والطباعة';
-                generateReport();
-            } else if (tab === 'users') {
-                document.getElementById('usersSection').classList.remove('hidden');
-                document.getElementById('tabUsersBtn').className = 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm';
-                document.getElementById('pageTitle').innerText = 'إدارة مستخدمي النظام';
-                loadUsers();
-            }
-        }
+    // 1. إخفاء الأقسام المعروفة
+    const allSections = [
+        'reportsSection', 
+        'financialOverviewSection', 
+        'financialDetailsSection',
+        // أضف أي أقسام أخرى لديك هنا
+    ];
 
+    allSections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
+    // 2. إظهار القسم المطلوب فقط
+    const targetSection = document.getElementById(tabId);
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+        
+        // إذا كان القسم المختار هو أحد التقارير المالية، قم بتشغيل دالة الجلب تلقائياً!
+        if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
+            generateFinancialReport();
+        }
+    }
+}
      async function generateReport() {
     // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
