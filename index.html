@@ -790,13 +790,15 @@
 
         let currentLoggedInUser = { username: 'admin', employee_name: 'محمد القحطاني', role: 'admin' };
 
-       async function handleLogin(e) {
+      async function handleLogin(e) {
     e.preventDefault();
     const u = document.getElementById('usernameInput').value.trim();
     const p = document.getElementById('passwordInput').value.trim();
 
     try {
         const { data, error } = await client.from('app_users').select('*').eq('username', u).eq('password', p).maybeSingle();
+
+        let currentLoggedInUser = null;
 
         if (data) {
             if (data.status === 'موقوف') {
@@ -832,20 +834,20 @@
         
         document.getElementById('currentUserBadge').innerText = (currentLoggedInUser.employee_name || u) + ' (' + roleName + ')';
         
-        // ==========================================
         // التحكم في إظهار/إخفاء القائمة الفرعية المالية حسب الصلاحية
-        // ==========================================
         const financialSubMenu = document.getElementById('financialSubMenu');
         if (financialSubMenu) {
             if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
-                financialSubMenu.classList.remove('hidden'); // تظهر للأدمن والمحاسب فقط
+                financialSubMenu.classList.remove('hidden');
             } else {
-                financialSubMenu.classList.add('hidden');    // تختفي تماماً عن البقية
+                financialSubMenu.classList.add('hidden');
             }
         }
         
-        // استدعاء دالة جلب كافة البيانات لتظهر فوراً في الداش بورد والرحلات
-        loadAllData();
+        // استدعاء دالة جلب كافة البيانات
+        if (typeof loadAllData === 'function') {
+            loadAllData();
+        }
     } catch (err) {
         console.error("Login error:", err);
         document.getElementById('loginError').innerText = 'حدث خطأ في الاتصال، حاول مرة أخرى.';
