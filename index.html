@@ -1195,7 +1195,7 @@ async function loadUsers() {
                 driverTable.innerHTML = drivers.map(dr => {
                     const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
                     
-                    let tripsDetailsHtml = drTrips.length > 0 ? `
+                   let tripsDetailsHtml = drTrips.length > 0 ? `
                         <table class="w-full text-right text-[11px] border-collapse">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
@@ -1204,7 +1204,7 @@ async function loadUsers() {
                                     <th class="p-1.5 font-bold">العميل وخط السير</th>
                                 </tr>
                             </thead>
-                          <tbody class="divide-y divide-slate-100 font-mono">
+                            <tbody class="divide-y divide-slate-100 font-mono">
                                 ${drTrips.map(dt => `
                                     <tr class="hover:bg-slate-50/80">
                                         <td class="p-1.5 font-bold text-amber-600">${dt.trip_no || '---'}</td>
@@ -1226,8 +1226,7 @@ async function loadUsers() {
                         </tr>
                     `;
                 }).join('');
-            } else {
-                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
+            } else {                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
             }
         }
     } catch (err) {
