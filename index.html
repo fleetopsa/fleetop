@@ -889,7 +889,7 @@ function closeCompleteModal() {
     const completeModal = document.getElementById('completeTripModal');
     if (completeModal) completeModal.classList.add('hidden');
 }
-        async function generateFinancialReport() {
+       async function generateFinancialReport() {
     try {
         // 1. جلب البيانات من جداول Supabase
         const { data: trips, error: tripsError } = await client.from('trips').select('*');
@@ -901,10 +901,9 @@ function closeCompleteModal() {
         const { data: drivers, error: driversError } = await client.from('drivers').select('*');
         if (driversError) throw driversError;
 
-        // تصفية الرحلات لاستبعاد الملغاة منها
         let activeTrips = trips ? trips.filter(t => t.status !== 'ملغاة') : [];
 
-        // 2. حساب الملخص المالي العام
+        // 2. حساب الملخص المالي العام (الإيرادات، المحصلة، المعلقة)
         let totalRev = 0;
         let collectedRev = 0;
         let pendingRev = 0;
@@ -912,7 +911,6 @@ function closeCompleteModal() {
         activeTrips.forEach(t => {
             let rev = Number(t.revenue || t.trip_revenue || 0);
             totalRev += rev;
-            // التحقق من حالة التحصيل (يمكنك مطابقة اسم الحقل مع جدولك مثل payment_status أو is_collected)
             if (t.payment_status === 'محصل' || t.is_collected === true) {
                 collectedRev += rev;
             } else {
@@ -920,7 +918,7 @@ function closeCompleteModal() {
             }
         });
 
-        // تحديث بطاقات الملخص المالي في واجهة المستخدم
+        // تحديث بطاقات الملخص المالي في الـ HTML
         const totalEl = document.getElementById('finTotalRevenue');
         const collectedEl = document.getElementById('finCollectedAmount');
         const pendingEl = document.getElementById('finPendingAmount');
@@ -929,7 +927,7 @@ function closeCompleteModal() {
         if (collectedEl) collectedEl.innerText = collectedRev.toLocaleString() + ' ر.س';
         if (pendingEl) pendingEl.innerText = pendingRev.toLocaleString() + ' ر.س';
 
-        // 3. تعبئة جدول إيرادات الشاحنات
+        // 3. تحديث جدول إيرادات الشاحنات (في قسم التقارير المالية)
         const truckFinancialTable = document.getElementById('truckFinancialTable');
         if (truckFinancialTable && trucks) {
             truckFinancialTable.innerHTML = trucks.map(tr => {
@@ -937,26 +935,53 @@ function closeCompleteModal() {
                 let trRevenue = trTrips.reduce((sum, t) => sum + Number(t.revenue || t.trip_revenue || 0), 0);
                 return `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-3 font-bold text-slate-900">${tr.plate}</td>
+                        <td class="p-3 font-bold text-slate-900 font-mono">${tr.plate}</td>
                         <td class="p-3 text-slate-600">${tr.model || '---'}</td>
-                        <td class="p-3 text-center text-amber-600 font-bold">${trTrips.length}</td>
-                        <td class="p-3 font-bold text-emerald-600">${trRevenue.toLocaleString()} ر.س</td>
+                        <td class="p-3 text-center text-amber-600 font-bold font-mono">${trTrips.length}</td>
+                        <td class="p-3 font-bold text-emerald-600 font-mono">${trRevenue.toLocaleString()} ر.س</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // 4. تعبئة جدول عمولات السائقين
+        // 4. تحديث جدول عمولات السائقين التفصيلي
         const driverFinancialTable = document.getElementById('driverFinancialTable');
         if (driverFinancialTable && drivers) {
             driverFinancialTable.innerHTML = drivers.map(dr => {
                 let drTrips = activeTrips.filter(t => t.driver_name === dr.name);
                 let drCommission = drTrips.reduce((sum, t) => sum + Number(t.commission || t.driver_commission || 0), 0);
+                
+                let tripsRows = drTrips.map(dt => `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-2 font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
+                        <td class="p-2 font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+                        <td class="p-2 text-slate-700">${dt.client_name || ''} (${dt.from_city || ''} إلى ${dt.to_city || ''})</td>
+                    </tr>
+                `).join('');
+
+                let tripsDetailsHtml = drTrips.length > 0 ? `
+                    <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                <th class="p-2 font-bold">رقم الرحلة</th>
+                                <th class="p-2 font-bold">رقم اللوحة</th>
+                                <th class="p-2 font-bold">العميل وخط السير</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-mono">
+                            ${tripsRows}
+                        </tbody>
+                    </table>
+                ` : '<span class="text-slate-400 text-xs">لا توجد رحلات مسجلة</span>';
+
                 return `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-3 font-bold text-slate-900">${dr.name}</td>
-                        <td class="p-3 text-center text-amber-600 font-bold">${drTrips.length}</td>
-                        <td class="p-3 font-bold text-indigo-600">${drCommission.toLocaleString()} ر.س</td>
+                    <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
+                        <td class="p-4 align-top border-l border-slate-200 bg-slate-50/30">
+                            <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
+                            <div class="text-xs text-slate-500 font-mono mt-0.5">إجمالي العمولات: <span class="text-indigo-600 font-bold">${drCommission.toLocaleString()} ر.س</span></div>
+                        </td>
+                        <td class="p-4 text-center align-top font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
+                        <td class="p-3 align-top bg-white">${tripsDetailsHtml}</td>
                     </tr>
                 `;
             }).join('');
