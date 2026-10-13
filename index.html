@@ -89,16 +89,20 @@
         <i class="fa-solid fa-chart-line text-base"></i> التقارير والطباعة
     </button>
 
-    <!-- 2. القائمة الفرعية المالية (مستقلة تماماً تحته) -->
-    <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
-        <div class="text-[10px] font-bold text-amber-600 px-2 py-0.5">التقارير المالية (خاص)</div>
-        <button onclick="switchTab('financialOverviewSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-            <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> الملخص المالي العام
-        </button>
-        <button onclick="switchTab('financialDetailsSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-            <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات والإيرادات
-        </button>
-    </div>
+    <!-- القائمة الفرعية المالية تحت زر التقارير -->
+<div id="financialSubMenu" class="mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
+    <div class="text-[10px] font-bold text-amber-600 px-2 py-0.5">التقارير المالية (خاص)</div>
+    
+    <!-- زر الملخص المالي العام -->
+    <button onclick="switchTab('financialOverviewSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
+        <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> الملخص المالي العام
+    </button>
+    
+    <!-- زر تفاصيل الإيرادات والعمولات -->
+    <button onclick="switchTab('financialDetailsSection'); generateFinancialReport();" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
+        <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات والإيرادات
+    </button>
+</div>
 </div>
                     <button onclick="switchTab('users')" id="tabUsersBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
                         <i class="fa-solid fa-user-shield text-base"></i> المستخدمين
@@ -1363,12 +1367,15 @@ function switchTab(tabId) {
     if (target) {
         target.classList.remove('hidden');
         
-        // إذا كان القسم المختار هو التقارير المالية، قم بتحديث بياناته
-        if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection' || tabId === 'reports') {
-            if (typeof generateFinancialReport === 'function') {
-                generateFinancialReport();
-            }
-        }
+       // أضف هذه الأسطر داخل دالة switchTab عندما يتم اختيار القسم المالي:
+if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
+    const finTarget = document.getElementById(tabId);
+    if (finTarget) {
+        finTarget.classList.remove('hidden');
+        generateFinancialReport(); // جلب وتحديث البيانات المالية فوراً
+        return; // الخروج لمنع تداخل الشاشات الأخرى
+    }
+}
     } else {
         console.warn("تعذر العثور على القسم المطابق لـ:", tabId);
         // إظهار أول قسم افتراضي كحماية لمنع الشاشة البيضاء
