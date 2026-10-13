@@ -1135,124 +1135,106 @@ async function loadUsers() {
             }
         }
 
-        async function generateReport() {
-            const startDate = document.getElementById('reportStartDate').value;
-            const endDate = document.getElementById('reportEndDate').value;
-            
-            const periodLabel = document.getElementById('reportPeriodLabel');
-            if (startDate && endDate) {
-                periodLabel.innerText = `الفترة من: ${startDate} إلى: ${endDate}`;
-            } else if (startDate) {
-                periodLabel.innerText = `الفترة ابتداءً من: ${startDate}`;
-            } else if (endDate) {
-                periodLabel.innerText = `الفترة حتى تاريخ: ${endDate}`;
+       async function generateReport() {
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+    
+    const periodLabel = document.getElementById('reportPeriodLabel');
+    if (startDate && endDate) {
+        periodLabel.innerText = `الفترة من: ${startDate} إلى: ${endDate}`;
+    } else if (startDate) {
+        periodLabel.innerText = `الفترة ابتداءً من: ${startDate}`;
+    } else if (endDate) {
+        periodLabel.innerText = `الفترة حتى تاريخ: ${endDate}`;
+    } else {
+        periodLabel.innerText = `الفترة: جميع الرحلات المسجلة`;
+    }
+
+    try {
+        let query = client.from('trips').select('*');
+        if (startDate) query = query.gte('departure_date', startDate);
+        if (endDate) query = query.lte('departure_date', endDate);
+
+        const { data: trips, error } = await query;
+        if (error) throw error;
+
+        const { data: trucks } = await client.from('trucks').select('*');
+        const { data: drivers } = await client.from('drivers').select('*');
+
+        // حساب عدد الرحلات النشطة فقط
+        let activeTrips = trips ? trips.filter(t => t.status !== 'ملغاة') : [];
+        let totalTrips = activeTrips.length;
+
+        // تحديث إجمالي عدد الرحلات في الواجهة
+        const totalTripsEl = document.getElementById('repTotalTrips');
+        if (totalTripsEl) totalTripsEl.innerText = totalTrips;
+
+        // 1. تقرير أداء الشاحنات التشغيلي (بدون إيرادات مالية)
+        const truckTable = document.getElementById('truckReportTable');
+        if (truckTable) {
+            if (trucks && trucks.length > 0) {
+                truckTable.innerHTML = trucks.map(tr => {
+                    const truckTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
+                    return `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                            <td class="p-3 font-bold text-slate-900 font-mono">${tr.plate}</td>
+                            <td class="p-3 text-slate-600">${tr.model || '---'}</td>
+                            <td class="p-3 text-center font-bold text-amber-600 font-mono">${truckTrips.length}</td>
+                        </tr>
+                    `;
+                }).join('');
             } else {
-                periodLabel.innerText = `الفترة: جميع الرحلات المسجلة`;
-            }
-
-            try {
-                let query = client.from('trips').select('*');
-                if (startDate) query = query.gte('departure_date', startDate);
-                if (endDate) query = query.lte('departure_date', endDate);
-
-                const { data: trips, error } = await query;
-                if (error) throw error;
-
-                const { data: trucks } = await client.from('trucks').select('*');
-                const { data: drivers } = await client.from('drivers').select('*');
-
-                let totalTrips = trips ? trips.length : 0;
-                let totalAmount = 0;
-                let paidAmount = 0;
-                let remainingAmount = 0;
-
-                if (trips) {
-                    trips.forEach(t => {
-                        if (t.status !== 'ملغاة') {
-                            const tTotal = parseFloat(t.total_amount || 0);
-                            let tPaid = parseFloat(t.paid_amount || 0);
-                            if (tPaid > tTotal) tPaid = tTotal;
-                            const tRem = Math.max(0, tTotal - tPaid);
-
-                            totalAmount += tTotal;
-                            paidAmount += tPaid;
-                            remainingAmount += tRem;
-                        }
-                    });
-                }
-
-                document.getElementById('repTotalTrips').innerText = totalTrips;
-                document.getElementById('repTotalAmount').innerText = totalAmount.toLocaleString() + ' SR';
-                document.getElementById('repPaidAmount').innerText = paidAmount.toLocaleString() + ' SR';
-                document.getElementById('repRemainingAmount').innerText = remainingAmount.toLocaleString() + ' SR';
-
-                const truckTable = document.getElementById('truckReportTable');
-                if (trucks && trucks.length > 0) {
-                    truckTable.innerHTML = trucks.map(tr => {
-                        const truckTrips = trips ? trips.filter(t => t.truck_plate === tr.plate && t.status !== 'ملغاة') : [];
-                        const truckSum = truckTrips.reduce((acc, curr) => acc + parseFloat(curr.total_amount || 0), 0);
-                        return `
-                            <tr>
-                                <td class="p-3 font-bold text-slate-900 font-mono">${tr.plate}</td>
-                                <td class="p-3 text-slate-600">${tr.model || '---'}</td>
-                                <td class="p-3 text-center font-bold text-amber-600 font-mono">${truckTrips.length}</td>
-                                <td class="p-3 font-mono font-bold text-slate-900">${truckSum.toLocaleString()} SR</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    truckTable.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>`;
-                }
-
-                const driverTable = document.getElementById('driverReportTable');
-                if (drivers && drivers.length > 0) {
-                    driverTable.innerHTML = drivers.map(dr => {
-                        const drTrips = trips ? trips.filter(t => t.driver_name === dr.name && t.status !== 'ملغاة') : [];
-                        const totalCommission = drTrips.reduce((acc, curr) => acc + parseFloat(curr.driver_commission || 0), 0);
-                        
-                        let tripsDetailsHtml = drTrips.length > 0 ? `
-                            <table class="w-full text-right text-[11px] border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                        <th class="p-1.5 font-bold">رقم الرحلة</th>
-                                        <th class="p-1.5 font-bold">رقم اللوحة</th>
-                                        <th class="p-1.5 font-bold">العميل وخط السير</th>
-                                        <th class="p-1.5 font-bold text-left">العمولة</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 font-mono">
-                                    ${drTrips.map(dt => `
-                                        <tr class="hover:bg-slate-50/80">
-                                            <td class="p-1.5 font-bold text-amber-600">${dt.trip_no || '---'}</td>
-                                            <td class="p-1.5 font-bold text-slate-800">${dt.truck_plate || '---'}</td>
-                                            <td class="p-1.5 text-slate-700 font-sans">${dt.client_name} (${dt.from_city} إلى ${dt.to_city})</td>
-                                            <td class="p-1.5 text-left font-bold text-emerald-600">${dt.driver_commission || 0} SR</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        ` : '<span class="text-slate-400">لا توجد رحلات</span>';
-
-                        return `
-                            <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
-                                <td class="p-3 align-top border-l border-slate-200">
-                                    <div class="font-bold text-slate-900">${dr.name}</div>
-                                    <div class="text-[11px] text-slate-500 font-mono">${dr.phone}</div>
-                                </td>
-                                <td class="p-3 text-center align-top font-bold text-amber-600 font-mono border-l border-slate-200">${drTrips.length}</td>
-                                <td class="p-2 align-top border-l border-slate-200 bg-slate-50/40">${tripsDetailsHtml}</td>
-                                <td class="p-3 align-top font-mono font-bold text-slate-900 text-emerald-700">${totalCommission.toLocaleString()} SR</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    driverTable.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
-                }
-            } catch (err) {
-                console.error("Error generating report:", err);
+                truckTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>`;
             }
         }
 
+        // 2. تقرير أداء السائقين التشغيلي (بدون عمولات مالية)
+        const driverTable = document.getElementById('driverReportTable');
+        if (driverTable) {
+            if (drivers && drivers.length > 0) {
+                driverTable.innerHTML = drivers.map(dr => {
+                    const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
+                    
+                    let tripsDetailsHtml = drTrips.length > 0 ? `
+                        <table class="w-full text-right text-[11px] border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                    <th class="p-1.5 font-bold">رقم الرحلة</th>
+                                    <th class="p-1.5 font-bold">رقم اللوحة</th>
+                                    <th class="p-1.5 font-bold">العميل وخط السير</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-mono">
+                                ${drTrips.map(dt => `
+                                    <tr class="hover:bg-slate-50/80">
+                                        <td class="p-1.5 font-bold text-amber-600">${dt.trip_no || '---'}</td>
+                                        <td class="p-1.5 font-bold text-slate-800">${dt.truck_plate || '---'}</td>
+                                        <td class="p-1.5 text-slate-700 font-sans">${dt.client_name || ''} (${dt.from_city \vert{}\vert{} ''} إلى ${dt.to_city || ''})</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : '<span class="text-slate-400">لا توجد رحلات</span>';
+
+                    return `
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition">
+                            <td class="p-3 align-top border-l border-slate-200">
+                                <div class="font-bold text-slate-900">${dr.name}</div>
+                                <div class="text-[11px] text-slate-500 font-mono">${dr.phone || ''}</div>
+                            </td>
+                            <td class="p-3 text-center align-top font-bold text-amber-600 font-mono border-l border-slate-200">${drTrips.length}</td>
+                            <td class="p-2 align-top bg-slate-50/40">${tripsDetailsHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>`;
+            }
+        }
+    } catch (err) {
+        console.error("Error generating report:", err);
+    }
+}
         function calculateRemaining() {
             const total = parseFloat(document.getElementById('totalAmount').value) || 0;
             const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
