@@ -109,7 +109,9 @@
                     </button>
                 </nav>
             </div>
-
+<button onclick="switchTab('users')" id="tabUsersBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white hidden">
+    <i class="fa-solid fa-user-shield text-base"></i> المستخدمين
+</button>
             <div class="pt-6 border-t border-slate-800">
                 <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white font-bold rounded-xl text-xs transition border border-rose-500/20">
                     <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
@@ -834,13 +836,27 @@
         
         document.getElementById('currentUserBadge').innerText = (currentLoggedInUser.employee_name || u) + ' (' + roleName + ')';
         
-        // التحكم في إظهار/إخفاء القائمة الفرعية المالية حسب الصلاحية
+        // ----------------------------------------------------
+        // الصلاحيات الأمنية للشرائط الجانبية
+        // ----------------------------------------------------
+        
+        // 1. القائمة المالية (للأدمن والمحاسب فقط)
         const financialSubMenu = document.getElementById('financialSubMenu');
         if (financialSubMenu) {
             if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
                 financialSubMenu.classList.remove('hidden');
             } else {
                 financialSubMenu.classList.add('hidden');
+            }
+        }
+
+        // 2. زر شاشة المستخدمين (للأدمن فقط حصرياً)
+        const tabUsersBtn = document.getElementById('tabUsersBtn');
+        if (tabUsersBtn) {
+            if (currentLoggedInUser.role === 'admin') {
+                tabUsersBtn.classList.remove('hidden');
+            } else {
+                tabUsersBtn.classList.add('hidden');
             }
         }
         
