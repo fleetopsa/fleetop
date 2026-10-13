@@ -90,7 +90,7 @@
     </button>
 
     <!-- القائمة الفرعية المالية تحت زر التقارير -->
-<div id="financialSubMenu" class="mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
+<div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
     <div class="text-[10px] font-bold text-amber-600 px-2 py-0.5">التقارير المالية (خاص)</div>
     
     <!-- زر الملخص المالي العام -->
@@ -832,6 +832,18 @@
         
         document.getElementById('currentUserBadge').innerText = (currentLoggedInUser.employee_name || u) + ' (' + roleName + ')';
         
+        // ==========================================
+        // التحكم في إظهار/إخفاء القائمة الفرعية المالية حسب الصلاحية
+        // ==========================================
+        const financialSubMenu = document.getElementById('financialSubMenu');
+        if (financialSubMenu) {
+            if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
+                financialSubMenu.classList.remove('hidden'); // تظهر للأدمن والمحاسب فقط
+            } else {
+                financialSubMenu.classList.add('hidden');    // تختفي تماماً عن البقية
+            }
+        }
+        
         // استدعاء دالة جلب كافة البيانات لتظهر فوراً في الداش بورد والرحلات
         loadAllData();
     } catch (err) {
@@ -1334,56 +1346,37 @@ async function initReportFilters() {
 
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
 function switchTab(tabId) {
-    // 1. إخفاء جميع الأقسام الرئيسية في الصفحة
-    const sections = document.querySelectorAll('main, section');
-    sections.forEach(sec => {
+    // 1. إخفاء جميع الأقسام الرئيسية والمالية
+    const allSections = document.querySelectorAll('main, section');
+    allSections.forEach(sec => {
         if (sec.id && sec.id !== 'sidebar' && sec.id !== 'navbar') {
             sec.classList.add('hidden');
         }
     });
 
-    // 2. ربط الأسماء القادمة من الأزرار بالـ IDs الفعلية المحتملة في الـ HTML
-    let possibleIds = [
-        tabId, 
-        tabId + 'Section', 
-        tabId.replace('Section', ''),
-        'tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1)
-    ];
-
-    // خريطة خاصة إذا كانت الأسماء مختلفة تماماً في مشروعك
-    if (tabId === 'dashboard') possibleIds.push('dashboardSection', 'homeSection', 'overview');
-    if (tabId === 'trips') possibleIds.push('tripsSection', 'manageTrips');
-    if (tabId === 'trucks') possibleIds.push('trucksSection', 'fleetSection');
-    if (tabId === 'drivers') possibleIds.push('driversSection', 'driversList');
-    if (tabId === 'reports') possibleIds.push('reportsSection');
-
-    // 3. البحث عن أول ID مطابق وموجود في الصفحة لإظهاره
-    let target = null;
-    for (let id of possibleIds) {
-        target = document.getElementById(id);
-        if (target) break;
-    }
-
-    if (target) {
-        target.classList.remove('hidden');
-        
-       // أضف هذه الأسطر داخل دالة switchTab عندما يتم اختيار القسم المالي:
-if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
-    const finTarget = document.getElementById(tabId);
-    if (finTarget) {
-        finTarget.classList.remove('hidden');
-        generateFinancialReport(); // جلب وتحديث البيانات المالية فوراً
-        return; // الخروج لمنع تداخل الشاشات الأخرى
-    }
-}
-    } else {
-        console.warn("تعذر العثور على القسم المطابق لـ:", tabId);
-        // إظهار أول قسم افتراضي كحماية لمنع الشاشة البيضاء
-        if (sections.length > 0) {
-            sections[0].classList.remove('hidden');
+    // 2. معالجة خاصة للتبويبات المالية لضمان ظهورها وتشغيل بياناتها
+    if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection') {
+        const targetFinSection = document.getElementById(tabId);
+        if (targetFinSection) {
+            targetFinSection.classList.remove('hidden');
+            if (typeof generateFinancialReport === 'function') {
+                generateFinancialReport(); // جلب وتحديث البيانات فوراً
+            }
+            return; // الخروج لمنع تداخل الشاشات الأخرى
         }
     }
-}        async function generateReport() {
+
+    // 3. الشاشات العادية الأخرى
+    const target = document.getElementById(tabId) || document.getElementById(tabId + 'Section');
+    if (target) {
+        target.classList.remove('hidden');
+    } else {
+        console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
+        const defaultSec = document.getElementById('dashboardSection') || allSections[0];
+        if (defaultSec) defaultSec.classList.remove('hidden');
+    }
+}
+        }        async function generateReport() {
     // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
