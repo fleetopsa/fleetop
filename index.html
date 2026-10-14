@@ -1490,15 +1490,16 @@ function switchTab(tabId) {
                     const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
                     
                     let tripsRows = '';
-                    for (let dt of drTrips) {
-                        tripsRows += `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-2 font-bold text-amber-600">${dt.trip_no || '---'}</td>
-                                <td class="p-2 font-bold text-slate-800">${dt.truck_plate || '---'}</td>
-                                <td class="p-2 text-slate-700 font-sans">${dt.client_name || ''} (${dt.from_city || ''} إلى ${dt.to_city || ''})</td>
-                            </tr>
-                        `;
-                    }
+for (let dt of drTrips) {
+    tripsRows += `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="p-2 text-center font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
+            <td class="p-2 text-center font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+            <td class="p-2 text-center font-bold text-slate-900">${dt.client_name || '---'}</td>
+            <td class="p-2 text-center text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+        </tr>
+    `;
+}
                     
                     let tripsDetailsHtml = drTrips.length > 0 ? `
                         <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
