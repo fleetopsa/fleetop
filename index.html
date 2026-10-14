@@ -480,7 +480,7 @@
         <tr>
             <th class="p-3">اسم السائق ورقم الجوال</th>
             <th class="p-3 text-center">عدد الرحلات</th>
-            <th class="p-3">تفاصيل الرحلات (رقمها، العميل، خط السير)</th>
+            <th class="p-3text-center">تفاصيل الرحلات</th>
         </tr>
     </thead>
     <tbody id="driverReportTable">
@@ -997,11 +997,11 @@ function closeCompleteModal() {
                 let drCommission = drTrips.reduce((sum, t) => sum + Number(t.commission || t.driver_commission || 0), 0);
                 
                 let tripsRows = drTrips.map(dt => `
-                    <tr class="hover:bg-slate-50 transition">
+                 <tr class="hover:bg-slate-50 transition border-b border-slate-100">
     <td class="p-2 font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
     <td class="p-2 font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
     <td class="p-2 font-bold text-slate-900">${dt.client_name || '---'}</td>
-    <td class="p-2 text-slate-600 font-sans pr-4">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+    <td class="p-2 text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
 </tr>
                 `).join('');
 
