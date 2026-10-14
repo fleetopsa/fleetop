@@ -241,7 +241,7 @@
                     </div>
                 </div>
             </main>
-          <!-- قسم الرحلات -->
+       <!-- قسم الرحلات -->
 <main id="tripsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
         
@@ -251,12 +251,14 @@
                 <i class="fa-solid fa-list-check text-amber-500 ml-2"></i> سجل الرحلات الجارية والسابقة
             </h3>
             <div class="flex items-center gap-3">
+                <!-- زر تصفير عداد الرحلات (يظهر لصلاحيات المدير فقط) -->
+                <div id="resetCounterContainerTrips"></div>
+
                 <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus"></i> إضافة رحلة جديدة
                 </button>
             </div>
         </div>
-
         <!-- شريط الفلترة والتصفية -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div>
@@ -1348,36 +1350,37 @@ async function initReportFilters() {
             }
         }
 
-        function renderAdminControls() {
-            const container = document.getElementById('resetCounterContainer');
-            if (!container) return;
+        // دالة عرض زر التصفير للمدير فقط
+function renderAdminControls() {
+    const container = document.getElementById('resetCounterContainerTrips');
+    if (!container) return;
 
-            if (currentLoggedInUser && currentLoggedInUser.role === 'admin') {
-                container.innerHTML = `
-                    <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5" title="تصفير عداد الرحلات والبدء من جديد">
-                        <i class="fa-solid fa-rotate-right"></i> تصفير عداد الرحلات
-                    </button>
-                `;
-            } else {
-                container.innerHTML = '';
-            }
+    if (currentLoggedInUser && currentLoggedInUser.role === 'admin') {
+        container.innerHTML = `
+            <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5" title="تصفير عداد الرحلات والبدء من جديد">
+                <i class="fa-solid fa-rotate-right"></i> تصفير العداد
+            </button>
+        `;
+    } else {
+        container.innerHTML = '';
+    }
+}
+
+// دالة تنفيذ التصفير وحذف السجلات وإعادة العداد من جديد
+async function resetTripCounter() {
+    if (confirm('تحذير: هل أنت متأكد من رغبتك في تصفير عداد الرحلات وحذف سجل الرحلات بالكامل للبدء من جديد برقم TRIP-1001؟')) {
+        const { error } = await client.from('trips').delete().neq('id', 0);
+        if (!error) {
+            await client.from('trucks').update({ status: 'جاهزة للعمل' });
+            await client.from('drivers').update({ status: 'متوفر' });
+            
+            alert('تم تصفير عداد الرحلات بنجاح، ويمكنك البدء من جديد!');
+            if (typeof loadAllData === 'function') loadAllData();
+        } else {
+            alert('حدث خطأ أثناء تصفير العداد: ' + error.message);
         }
-
-        async function resetTripCounter() {
-            if (confirm('تحذير: هل أنت متأكد من رغبتك في تصفير عداد الرحلات وحذف سجل الرحلات بالكامل للبدء من جديد؟')) {
-                const { error } = await client.from('trips').delete().neq('id', 0);
-                if (!error) {
-                    await client.from('trucks').update({ status: 'جاهزة للعمل' });
-                    await client.from('drivers').update({ status: 'متوفر' });
-                    
-                    alert('تم تصفير عداد الرحلات بنجاح، ويمكنك البدء من جديد برقم TRIP-1001!');
-                    loadAllData();
-                } else {
-                    alert('حدث خطأ أثناء تصفير العداد.');
-                }
-            }
-        }
-
+    }
+}
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
 function switchTab(tabId) {
     // 1. إخفاء جميع الأقسام الرئيسية والمالية
