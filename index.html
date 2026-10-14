@@ -802,7 +802,7 @@
 
         let currentLoggedInUser = { username: 'admin', employee_name: 'محمد القحطاني', role: 'admin' };
 
-     async function handleLogin(e) {
+      async function handleLogin(e) {
     e.preventDefault();
     const u = document.getElementById('usernameInput').value.trim();
     const p = document.getElementById('passwordInput').value.trim();
@@ -810,8 +810,7 @@
     try {
         const { data, error } = await client.from('app_users').select('*').eq('username', u).eq('password', p).maybeSingle();
 
-        // استخدام المتغير العام (بدون كلمة let) لكي تتعرف عليه باقي الدوال
-        currentLoggedInUser = null; 
+        let currentLoggedInUser = null;
 
         if (data) {
             if (data.status === 'موقوف') {
@@ -830,23 +829,6 @@
             }
         }
 
-        // إخفاء شاشة الدخول وإظهار لوحة التحكم الرئيسية
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('mainDashboard').classList.remove('hidden');
-        
-        // تحديث معلومات المستخدم في الواجهة وصلاحيات الأزرار (مثل زر تصفير العداد)
-        if (typeof renderAdminControls === 'function') {
-            renderAdminControls();
-        }
-        
-        if (typeof loadAllData === 'function') {
-            loadAllData();
-        }
-
-    } catch (err) {
-        console.error("خطأ في تسجيل الدخول:", err);
-    }
-}
         // تخزين الدور واسم الموظف في المتصفح
         localStorage.setItem('userRole', currentLoggedInUser.role);
         localStorage.setItem('userName', currentLoggedInUser.employee_name);
@@ -1369,22 +1351,21 @@ async function initReportFilters() {
         }
 
         // دالة عرض زر التصفير للمدير فقط
-// دالة إظهار/إخفاء زر التصفير بناءً على صلاحية الأدمن فقط
 function renderAdminControls() {
     const container = document.getElementById('resetCounterContainerTrips');
     if (!container) return;
 
-    // التحقق الفضفاض والدقيق من أن المستخدم الحالي مسجل وصلاحيته مدير (admin)
-    if (currentLoggedInUser && (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'مدير')) {
+    if (currentLoggedInUser && currentLoggedInUser.role === 'admin') {
         container.innerHTML = `
-            <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5" title="تصفير عداد الرحلات وحذف السجلات">
+            <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5" title="تصفير عداد الرحلات والبدء من جديد">
                 <i class="fa-solid fa-rotate-right"></i> تصفير العداد
             </button>
         `;
     } else {
-        container.innerHTML = ''; // إخفاء الزر نهائياً عن غير الأدمن
+        container.innerHTML = '';
     }
 }
+
 // دالة تنفيذ التصفير وحذف السجلات وإعادة العداد من جديد
 async function resetTripCounter() {
     if (confirm('تحذير: هل أنت متأكد من رغبتك في تصفير عداد الرحلات وحذف سجل الرحلات بالكامل للبدء من جديد برقم TRIP-1001؟')) {
