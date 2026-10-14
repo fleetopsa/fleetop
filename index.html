@@ -563,4 +563,374 @@
                             <tr>
                                 <td class="p-3">${tr.plate}</td>
                                 <td class="p-3">${trTrips.length}</td>
-                                <td class="
+                                <td class="p-3">${trRevenue.toLocaleString()} ر.س</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Error generating financial report:", err);
+            }
+        }
+
+        async function loadAllData() {
+            console.log("جاري تحديث كافة بيانات النظام...");
+            try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
+            try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
+            try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
+            try { if (typeof loadDrivers === 'function') await loadDrivers(); } catch (e) { console.error(e); }
+            try { if (typeof loadUsers === 'function') await loadUsers(); } catch (e) { console.error(e); }
+            try { if (typeof loadDropdowns === 'function') loadDropdowns(); } catch (e) { console.error(e); }
+            try { if (typeof renderAdminControls === 'function') renderAdminControls(); } catch (e) { console.error(e); }
+            try { if (typeof generateReport === 'function') generateReport(); } catch (e) { console.error(e); }
+            console.log("تم التحديث بنجاح.");
+        }
+
+        async function loadTrucks() {
+            const table = document.getElementById('trucksTable');
+            if (!table) return;
+            try {
+                const { data: trucks, error } = await client.from('trucks').select('*').order('id', { ascending: false });
+                if (error) throw error;
+
+                if (trucks && trucks.length > 0) {
+                    table.innerHTML = trucks.map(tr => {
+                        let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                        if (tr.status === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
+                        if (tr.status === 'في الصيانة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        if (tr.status === 'عطلانة') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+
+                        return `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-3.5 font-black text-slate-900 font-mono">${tr.plate}</td>
+                                <td class="p-3.5 text-slate-600">${tr.model || '---'}</td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${tr.status}</span></td>
+                                <td class="p-3.5 text-center space-x-1 space-x-reverse">
+                                    <button onclick="editTruck('${tr.plate}', '${tr.model || ''}', '${tr.status}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="deleteTruck(${tr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    table.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-slate-400">لا توجد شاحنات مسجلة حالياً</td></tr>`;
+                }
+            } catch (err) {
+                console.error(err);
+                table.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-rose-600">حدث خطأ أثناء تحميل الشاحنات.</td></tr>`;
+            }
+        }
+
+        async function loadDrivers() {
+            try {
+                const { data, error } = await client.from('drivers').select('*');
+                if (error) throw error;
+            } catch (e) { console.log("Drivers note:", e); }
+        }
+
+        async function initReportFilters() {
+            try {
+                const { data: trucks } = await client.from('trucks').select('plate');
+                const { data: drivers } = await client.from('drivers').select('name');
+
+                const truckSelect = document.getElementById('reportTruckFilter');
+                const driverSelect = document.getElementById('reportDriverFilter');
+
+                if (truckSelect && trucks) {
+                    truckSelect.innerHTML = '<option value="">جميع الشاحنات</option>' + 
+                        trucks.map(tr => `<option value="${tr.plate}">${tr.plate}</option>`).join('');
+                }
+
+                if (driverSelect && drivers) {
+                    driverSelect.innerHTML = '<option value="">جميع السائقين</option>' + 
+                        drivers.map(dr => `<option value="${dr.name}">${dr.name}</option>`).join('');
+                }
+            } catch (err) {
+                console.error("Error loading filter options:", err);
+            }
+        }
+
+        async function loadUsers() {
+            const table = document.getElementById('usersTable');
+            if (!table) return;
+            try {
+                const { data: users, error } = await client.from('app_users').select('*').order('id', { ascending: false });
+                if (error) throw error;
+
+                if (users && users.length > 0) {
+                    table.innerHTML = users.map(usr => {
+                        let statusBadge = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                        if (usr.status === 'موقوف') statusBadge = 'bg-rose-50 text-rose-700 border border-rose-200';
+
+                        let roleBadge = 'bg-slate-100 text-slate-700';
+                        let roleText = 'مستخدم';
+                        if (usr.role === 'admin') {
+                            roleBadge = 'bg-amber-50 text-amber-700 border border-amber-200';
+                            roleText = 'مدير';
+                        } else if (usr.role === 'accountant') {
+                            roleBadge = 'bg-blue-50 text-blue-700 border border-blue-200';
+                            roleText = 'محاسب';
+                        }
+
+                        return `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-3.5 font-black text-slate-900">${usr.username}</td>
+                                <td class="p-3.5 text-slate-700">${usr.employee_name}</td>
+                                <td class="p-3.5"><span class="${roleBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${roleText}</span></td>
+                                <td class="p-3.5"><span class="${statusBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${usr.status || 'نشط'}</span></td>
+                                <td class="p-3.5 text-center space-x-1 space-x-reverse">
+                                    <button onclick="editUser(${usr.id}, '${usr.username}', '${usr.employee_name}', '${usr.password}', '${usr.role || 'user'}', '${usr.status || 'نشط'}')" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="deleteUser(${usr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف الحساب"><i class="fa-solid fa-trash-can"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد مستخدمين مسجلين حالياً</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Error loading users:", err);
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const { data: trips } = await client.from('trips').select('*');
+                const { data: trucks } = await client.from('trucks').select('*');
+                const { data: drivers } = await client.from('drivers').select('*');
+
+                let totalRev = 0;
+                let collected = 0;
+                let remaining = 0;
+
+                const activeTable = document.getElementById('dashActiveTripsTable');
+                let activeTripsList = [];
+
+                if (trips) {
+                    trips.forEach(t => {
+                        if (t.status !== 'ملغاة') {
+                            const tTotal = parseFloat(t.total_amount || 0);
+                            let tPaid = parseFloat(t.paid_amount || 0);
+                            if (tPaid > tTotal) tPaid = tTotal;
+                            const tRem = Math.max(0, tTotal - tPaid);
+
+                            totalRev += tTotal;
+                            collected += tPaid;
+                            remaining += tRem;
+                        }
+                        if (t.status === 'جارية') {
+                            activeTripsList.push(t);
+                        }
+                    });
+                }
+
+                document.getElementById('dashTotalRevenue').innerText = totalRev.toLocaleString() + ' SR';
+                document.getElementById('dashCollectedAmount').innerText = collected.toLocaleString() + ' SR';
+                document.getElementById('dashRemainingAmount').innerText = remaining.toLocaleString() + ' SR';
+                document.getElementById('dashTotalTrips').innerText = trips ? trips.length : 0;
+
+                const totalTrucks = trucks ? trucks.length : 0;
+                const readyTrucks = trucks ? trucks.filter(t => t.status === 'جاهزة للعمل').length : 0;
+                const busyTrucks = trucks ? trucks.filter(t => t.status === 'في رحلة').length : 0;
+                const maintTrucks = trucks ? trucks.filter(t => t.status === 'في الصيانة' || t.status === 'عطلانة').length : 0;
+
+                document.getElementById('dashTotalTrucksBadge').innerText = `إجمالي: ${totalTrucks}`;
+                document.getElementById('dashReadyTrucks').innerText = readyTrucks;
+                document.getElementById('dashBusyTrucks').innerText = busyTrucks;
+                document.getElementById('dashMaintTrucks').innerText = maintTrucks;
+
+                const totalDrivers = drivers ? drivers.length : 0;
+                const readyDrivers = drivers ? drivers.filter(d => d.status === 'متوفر').length : 0;
+                const busyDrivers = drivers ? drivers.filter(d => d.status === 'في رحلة').length : 0;
+                const offDrivers = drivers ? drivers.filter(d => d.status === 'في إجازة' || d.status === 'موقوف').length : 0;
+
+                document.getElementById('dashTotalDriversBadge').innerText = `إجمالي: ${totalDrivers}`;
+                document.getElementById('dashReadyDrivers').innerText = readyDrivers;
+                document.getElementById('dashBusyDrivers').innerText = busyDrivers;
+                document.getElementById('dashOffDrivers').innerText = offDrivers;
+
+                if (activeTripsList.length > 0) {
+                    activeTable.innerHTML = activeTripsList.map(tr => `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 font-black text-amber-600 font-mono">${tr.trip_no || 'TRIP-1000'}</td>
+                            <td class="p-3">
+                                <div class="font-black text-slate-900">${tr.client_name}</div>
+                                <div class="text-[11px] text-slate-500">من ${tr.from_city} إلى ${tr.to_city}</div>
+                            </td>
+                            <td class="p-3">
+                                <div class="font-bold text-slate-800">لوحة: ${tr.truck_plate}</div>
+                                <div class="text-[11px] text-slate-600">السائق: ${tr.driver_name}</div>
+                            </td>
+                            <td class="p-3 font-mono font-bold text-slate-900">${tr.total_amount} SR</td>
+                            <td class="p-3"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">جارية</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    activeTable.innerHTML = `<tr><td colspan="5" class="text-center p-6 text-slate-400">لا توجد رحلات جارية حالياً في الميدان</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Error loading dashboard data:", err);
+            }
+        }
+
+        async function confirmCompleteTrip(e) {
+            if (e) e.preventDefault();
+            try {
+                const tripId = document.getElementById('modalTripId').value;
+                const additionalPayment = parseFloat(document.getElementById('modalPaymentInput').value) || 0;
+                const driverCommission = parseFloat(document.getElementById('modalDriverCommission').value) || 0;
+                
+                if (!tripId) {
+                    alert('رقم الرحلة غير موجود.');
+                    return;
+                }
+
+                const { data: currentTrip, error: fetchError } = await client.from('trips').select('*').eq('trip_no', tripId).single();
+                if (fetchError || !currentTrip) {
+                    alert('حدث خطأ أثناء جلب بيانات الرحلة.');
+                    return;
+                }
+
+                const currentPaid = currentTrip.paid_amount || 0;
+                const totalAmount = currentTrip.total_amount || 0;
+                const newPaidAmount = currentPaid + additionalPayment;
+                
+                if (newPaidAmount > totalAmount) {
+                    alert('المبلغ المدفوع لا يمكن أن يتجاوز إجمالي المبلغ.');
+                    return;
+                }
+
+                const newRemainingAmount = totalAmount - newPaidAmount;
+                const paymentStatus = newRemainingAmount === 0 ? 'مسدد بالكامل' : 'سداد جزئي';
+
+                const { error: updateError } = await client.from('trips').update({
+                    paid_amount: newPaidAmount,
+                    remaining_amount: newRemainingAmount,
+                    payment_status: paymentStatus,
+                    status: 'مكتملة',
+                    driver_commission: driverCommission
+                }).eq('trip_no', tripId);
+
+                if (updateError) {
+                    alert('خطأ في قاعدة البيانات: ' + updateError.message);
+                    return;
+                }
+
+                if (currentTrip.truck_plate) {
+                    await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', currentTrip.truck_plate);
+                }
+                if (currentTrip.driver_name) {
+                    await client.from('drivers').update({ status: 'متوفر' }).eq('name', currentTrip.driver_name);
+                }
+
+                closeCompleteModal();
+                alert('تمت التسوية وإنهاء الرحلة بنجاح!');
+                loadAllData();
+            } catch (err) {
+                console.error("Error in confirmCompleteTrip:", err);
+            }
+        }
+
+        async function handleFormSubmit(event) {
+            if (event) event.preventDefault();
+
+            const plateInput = document.getElementById('truckPlate'); 
+            const modelInput = document.getElementById('truckModel');
+            const statusInput = document.getElementById('truckStatus');
+
+            const plateVal = plateInput ? plateInput.value.trim() : '';
+            const newModel = modelInput ? modelInput.value.trim() : '';
+            const newStatus = statusInput ? statusInput.value : '';
+
+            if (!plateVal) {
+                alert('الرجاء إدخال رقم لوحة الشاحنة.');
+                return;
+            }
+
+            const isEditing = plateInput && plateInput.readOnly;
+
+            if (isEditing) {
+                const { error } = await client.from('trucks').update({ model: newModel, status: newStatus }).eq('plate', plateVal);
+                if (error) {
+                    alert('حدث خطأ أثناء التحديث: ' + error.message);
+                } else {
+                    alert('تم تحديث الشاحنة بنجاح!');
+                    resetTruckForm();
+                    loadTrucks();
+                }
+            } else {
+                const { error } = await client.from('trucks').insert([{ plate: plateVal, model: newModel, status: newStatus }]);
+                if (error) {
+                    alert('حدث خطأ أثناء الإضافة: ' + error.message);
+                } else {
+                    alert('تم إضافة الشاحنة بنجاح!');
+                    resetTruckForm();
+                    loadTrucks();
+                }
+            }
+        }
+
+        function editTruck(plate, model, status) {
+            const plateInput = document.getElementById('truckPlate');
+            const modelInput = document.getElementById('truckModel');
+            const statusInput = document.getElementById('truckStatus');
+
+            if (plateInput) {
+                plateInput.value = plate;
+                plateInput.readOnly = true;
+            }
+            if (modelInput) modelInput.value = model !== 'null' ? model : '';
+            if (statusInput) statusInput.value = status;
+            
+            document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> تعديل بيانات الشاحنة`;
+            document.getElementById('saveTruckBtn').innerText = 'تحديث';
+            document.getElementById('cancelTruckBtn').classList.remove('hidden');
+        }
+
+        function resetTruckForm() {
+            const plateInput = document.getElementById('truckPlate');
+            if (plateInput) plateInput.readOnly = false;
+            const form = document.querySelector('#trucksSection form');
+            if (form) form.reset();
+            document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة شاحنة جديدة`;
+            document.getElementById('saveTruckBtn').innerText = 'حفظ';
+            document.getElementById('cancelTruckBtn').classList.add('hidden');
+        }
+
+        async function deleteTruck(id) {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
+                const { error } = await client.from('trucks').delete().eq('id', id);
+                if (!error) loadAllData();
+            }
+        }
+
+        function switchTab(tabId) {
+            const allSections = document.querySelectorAll('main, section');
+            allSections.forEach(sec => {
+                if (sec.id && sec.id !== 'sidebar' && sec.id !== 'navbar') {
+                    sec.classList.add('hidden');
+                }
+            });
+
+            const target = document.getElementById(tabId) || document.getElementById(tabId + 'Section');
+            if (target) {
+                target.classList.remove('hidden');
+            } else {
+                const defaultSec = document.getElementById('dashboardSection');
+                if (defaultSec) defaultSec.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('passwordInput').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initReportFilters === 'function') initReportFilters();
+        });
+    </script>
+</body>
+</html>
