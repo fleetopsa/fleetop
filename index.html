@@ -796,63 +796,72 @@
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
     <h3 class="text-lg font-bold text-slate-800 mb-4">تقرير العمولات</h3>
     
-    <!-- الفلاتر -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">من تاريخ</label>
-            <input type="date" id="filterFromDate" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+   <!-- بداية صفحة تقرير العمولات المستقلة -->
+<div id="commissions-report-page" class="page-section hidden p-4">
+
+    <!-- الفلاتر وبطاقات المجاميع -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">تقرير العمولات</h3>
+        
+        <!-- الفلاتر -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">من تاريخ</label>
+                <input type="date" id="filterFromDate" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">إلى تاريخ</label>
+                <input type="date" id="filterToDate" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">السائق</label>
+                <select id="filterDriver" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                    <option value="">جميع السائقين</option>
+                    <!-- يتم تعبئتها ديناميكياً -->
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">الشاحنة</label>
+                <select id="filterTruck" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                    <option value="">جميع الشاحنات</option>
+                    <!-- يتم تعبئتها ديناميكياً -->
+                </select>
+            </div>
         </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">إلى تاريخ</label>
-            <input type="date" id="filterToDate" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">السائق</label>
-            <select id="filterDriver" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
-                <option value="">جميع السائقين</option>
-                <!-- يتم تعبئتها ديناميكياً -->
-            </select>
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">الشاحنة</label>
-            <select id="filterTruck" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
-                <option value="">جميع الشاحنات</option>
-                <!-- يتم تعبئتها ديناميكياً -->
-            </select>
+
+        <!-- بطاقات المجاميع (إجمالي العمولة وإجمالي عدد الرحلات) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                <span class="text-sm text-slate-600 font-bold">إجمالي عدد الرحلات</span>
+                <span id="totalTripsCount" class="text-lg font-bold text-amber-600 font-mono">0</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                <span class="text-sm text-slate-600 font-bold">إجمالي العمولة</span>
+                <span id="totalCommissionsAmount" class="text-lg font-bold text-emerald-600 font-mono">0 ر.س</span>
+            </div>
         </div>
     </div>
 
-    <!-- بطاقات المجاميع (إجمالي العمولة وإجمالي عدد الرحلات) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
-            <span class="text-sm text-slate-600 font-bold">إجمالي عدد الرحلات</span>
-            <span id="totalTripsCount" class="text-lg font-bold text-amber-600 font-mono">0</span>
-        </div>
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
-            <span class="text-sm text-slate-600 font-bold">إجمالي العمولة</span>
-            <span id="totalCommissionsAmount" class="text-lg font-bold text-emerald-600 font-mono">0 ر.س</span>
-        </div>
+    <!-- جدول تقرير العمولات -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-right border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                    <th class="p-3 text-right">رقم الرحلة</th>
+                    <th class="p-3 text-right">تاريخ مغادرة الرحلة</th>
+                    <th class="p-3 text-right">السائق</th>
+                    <th class="p-3 text-right">الشاحنة</th>
+                    <th class="p-3 text-right">مبلغ العمولة</th>
+                </tr>
+            </thead>
+            <tbody id="commissionsTableBody" class="divide-y divide-slate-100">
+                <!-- صفوف البيانات -->
+            </tbody>
+        </table>
     </div>
-</div>
 
-<!-- جدول تقرير العمولات -->
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <table class="w-full text-right border-collapse text-sm">
-        <thead>
-            <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                <th class="p-3 text-right">رقم الرحلة</th>
-                <th class="p-3 text-right">تاريخ مغادرة الرحلة</th>
-                <th class="p-3 text-right">السائق</th>
-                <th class="p-3 text-right">الشاحنة</th>
-                <th class="p-3 text-right">مبلغ العمولة</th>
-            </tr>
-        </thead>
-        <tbody id="commissionsTableBody" class="divide-y divide-slate-100">
-            <!-- صفوف البيانات -->
-        </tbody>
-    </table>
 </div>
-    <script>
+<!-- نهاية صفحة تقرير العمولات المستقلة --> <script>
         const SUPABASE_URL = 'https://hmttwtlaeczvfjozsama.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtdHR3dGxhZWN6dmZqb3pzYW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNTU5NjIsImV4cCI6MjEwNTczMTk2Mn0.0-M1LVkNnbVSbUeYX_RueqUUcHNRbCtipCn5nGSuVNc';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
