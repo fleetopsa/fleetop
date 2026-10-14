@@ -1489,14 +1489,14 @@ function switchTab(tabId) {
                 driverTable.innerHTML = filteredDrivers.map(dr => {
                     const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
                     
-                    let tripsRows = '';
+                 let tripsRows = '';
 for (let dt of drTrips) {
     tripsRows += `
         <tr class="hover:bg-slate-50 transition">
-            <td class="p-2 text-center font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
-            <td class="p-2 text-center font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
-            <td class="p-2 text-center font-bold text-slate-900">${dt.client_name || '---'}</td>
-            <td class="p-2 text-center text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+            <td class="p-2 text-right font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
+            <td class="p-2 text-right font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+            <td class="p-2 text-right font-bold text-slate-900">${dt.client_name || '---'}</td>
+            <td class="p-2 text-right text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
         </tr>
     `;
 }
