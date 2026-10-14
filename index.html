@@ -998,20 +998,23 @@ function closeCompleteModal() {
                 
                 let tripsRows = drTrips.map(dt => `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-2 font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
-                        <td class="p-2 font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
-                        <td class="p-2 text-slate-700">${dt.client_name || ''} (${dt.from_city || ''} إلى ${dt.to_city || ''})</td>
-                    </tr>
+    <td class="p-2 font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
+    <td class="p-2 font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+    <td class="p-2 font-bold text-slate-900">${dt.client_name || '---'}</td>
+    <td class="p-2 text-slate-600 font-sans pr-4">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+</tr>
                 `).join('');
 
                 let tripsDetailsHtml = drTrips.length > 0 ? `
                     <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
                         <thead>
-                            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                <th class="p-2 font-bold">رقم الرحلة</th>
-                                <th class="p-2 font-bold">رقم اللوحة</th>
-                                <th class="p-2 font-bold">العميل وخط السير</th>
-                            </tr>
+                           <!-- رأس الجدول بعد التقسيم -->
+<div class="grid grid-cols-4 gap-4 bg-slate-100 p-3 rounded-xl font-bold text-xs text-slate-700">
+    <div>رقم الرحلة</div>
+    <div>رقم اللوحة</div>
+    <div>اسم العميل</div>
+    <div>خط السير</div> <!-- تم فصل خط السير في عمود مستقل -->
+</div>
                         </thead>
                         <tbody class="divide-y divide-slate-100 font-mono">
                             ${tripsRows}
@@ -1501,7 +1504,8 @@ function switchTab(tabId) {
                                 <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
                                     <th class="p-2 font-bold">رقم الرحلة</th>
                                     <th class="p-2 font-bold">رقم اللوحة</th>
-                                    <th class="p-2 font-bold">العميل وخط السير</th>
+                                    <th class="p-1.5 font-bold">اسم العميل</th>
+                                    <th class="p-1.5 font-bold">خط السير</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 font-mono">
