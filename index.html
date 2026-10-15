@@ -1026,12 +1026,12 @@ async function openCommissionReportTab() {
     }
 }
     // دالة حساب وعرض تقرير العمولات وإيرادات الأسطول
+// دالة تشغيل وتحديث تقرير العمولات والإيرادات للأسطول
 async function openCommissionAndRevenueReport() {
     try {
-        console.log("جاري توليد تقرير العمولات والإيرادات - أبو سعيد...");
+        console.log("جاري جلب وتحديث تقرير العمولات - أبو سعيد...");
         
-        // 1. جلب الرحلات من جدول Supabase (أو المصفوفة المحلية لديك)
-        // إذا كنت تستخدم Supabase مباشرة، تأكد من صحة اسم الجدول (مثال: trips)
+        // جلب البيانات من جدول الرحلات في قاعدة البيانات
         let { data: trips, error } = await supabase.from('trips').select('*');
         
         if (error) {
@@ -1047,13 +1047,10 @@ async function openCommissionAndRevenueReport() {
         let totalRevenue = 0;
         let collectedRevenue = 0;
         let pendingRevenue = 0;
-        
         let driverStats = {};
         let truckStats = {};
 
-        // 2. تجميع البيانات وحساب الإيرادات والعمولات لكل سائق وشاحنة
         trips.forEach(trip => {
-            // تجاهل الرحلات الملغاة إذا رغبت
             if (trip.status === 'ملغاة') return;
 
             let amount = parseFloat(trip.total_amount || trip.amount || 0);
@@ -1069,14 +1066,14 @@ async function openCommissionAndRevenueReport() {
                 pendingRevenue += amount;
             }
 
-            // إحصائيات السائقين وعمولاتهم
+            // تجميع عمولات السائقين
             if (!driverStats[driver]) {
                 driverStats[driver] = { tripsCount: 0, totalCommission: 0, phone: trip.driver_phone || '-' };
             }
             driverStats[driver].tripsCount += 1;
             driverStats[driver].totalCommission += commission;
 
-            // إحصائيات الشاحنات وإيراداتها
+            // تجميع إيرادات الشاحنات
             if (!truckStats[truck]) {
                 truckStats[truck] = { tripsCount: 0, totalRevenue: 0, model: trip.truck_model || '-' };
             }
@@ -1084,27 +1081,26 @@ async function openCommissionAndRevenueReport() {
             truckStats[truck].totalRevenue += amount;
         });
 
-        // 3. تحديث واجهة العرض للملخصات المالية العامة
+        // تحديث واجهة العرض للملخصات
         if (document.getElementById('totalRevenueDisplay')) 
-            document.getElementById('totalRevenueDisplay').innerText = totalRevenue.toLocaleString() + ' ر.س';
+            document.getElementById('totalRevenueDisplay ലേഖن').innerText = totalRevenue.toLocaleString() + ' ر.س';
         if (document.getElementById('collectedRevenueDisplay')) 
             document.getElementById('collectedRevenueDisplay').innerText = collectedRevenue.toLocaleString() + ' ر.س';
         if (document.getElementById('pendingRevenueDisplay')) 
             document.getElementById('pendingRevenueDisplay').innerText = pendingRevenue.toLocaleString() + ' ر.س';
 
-        // 4. تعبئة جدول تفاصيل عمولات السائقين (driverReportTable)
+        // تعبئة جدول عمولات السائقين
         let driverTableHTML = '';
         for (let [driverName, stats] of Object.entries(driverStats)) {
             driverTableHTML += `
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-3 font-bold text-slate-800">${driverName} <span class="block text-[10px] text-slate-400 font-normal">${stats.phone}</span></td>
-                    <td class="p-3 text-center font-mono font-bold text-blue-600">${stats.tripsCount}</td>
-                    <td class="p-3 font-mono font-bold text-amber-600">${stats.totalCommission.toLocaleString()} ر.س</td>
+                <tr class="border-b border-slate-100 hover:bg-slate-50 font-mono text-xs">
+                    <td class="p-3 font-bold text-slate-800 font-sans">${driverName} <span class="block text-[10px] text-slate-400 font-normal">${stats.phone}</span></td>
+                    <td class="p-3 text-center font-bold text-blue-600">${stats.tripsCount}</td>
+                    <td class="p-3 font-bold text-amber-600">${stats.totalCommission.toLocaleString()} ر.س</td>
                 </tr>
             `;
         }
         
-        // تعبئة الجدولين المرتبطين بالعمولات إذا كانا موجودين في الصفحة
         if (document.getElementById('driverReportTable')) {
             document.getElementById('driverReportTable').innerHTML = driverTableHTML || '<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات عمولات متاحة</td></tr>';
         }
@@ -1112,30 +1108,29 @@ async function openCommissionAndRevenueReport() {
             document.getElementById('driverFinancialTable').innerHTML = driverTableHTML || '<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات عمولات متاحة</td></tr>';
         }
 
-        // 5. تعبئة جدول إيرادات الشاحنات (truckFinancialTable و truckReportTable)
+        // تعبئة جدول إيرادات الشاحنات
         let truckTableHTML = '';
         for (let [truckPlate, stats] of Object.entries(truckStats)) {
             truckTableHTML += `
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-3 font-bold text-slate-800">${truckPlate}</td>
-                    <td class="p-3 text-slate-600">${stats.model}</td>
-                    <td class="p-3 text-center font-mono font-bold text-blue-600">${stats.tripsCount}</td>
-                    <td class="p-3 font-mono font-bold text-emerald-600">${stats.totalRevenue.toLocaleString()} ر.س</td>
+                <tr class="border-b border-slate-100 hover:bg-slate-50 font-mono text-xs">
+                    <td class="p-3 font-bold text-slate-800 font-sans">${truckPlate}</td>
+                    <td class="p-3 text-slate-600 font-sans">${stats.model}</td>
+                    <td class="p-3 text-center font-bold text-blue-600">${stats.tripsCount}</td>
+                    <td class="p-3 font-bold text-emerald-600">${stats.totalRevenue.toLocaleString()} ر.س</td>
                 </tr>
             `;
         }
 
         if (document.getElementById('truckFinancialTable')) {
-            document.getElementById('truckFinancialTable').innerHTML = truckTableHTML || '<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة في الرحلات</td></tr>';
+            document.getElementById('truckFinancialTable').innerHTML = truckTableHTML || '<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>';
         }
         if (document.getElementById('truckReportTable')) {
-            document.getElementById('truckReportTable').innerHTML = truckTableHTML || '<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة في الرحلات</td></tr>';
+            document.getElementById('truckReportTable').innerHTML = truckTableHTML || '<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>';
         }
 
         console.log("تم تحديث تقرير العمولات بنجاح.");
-
     } catch (err) {
-        console.error("حدث خطأ أثناء توليد تقرير العمولات:", err);
+        console.error("حدث خطأ في تقرير العمولات:", err);
     }
 }
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
