@@ -315,31 +315,27 @@
         <!-- جدول الرحلات -->
         <div class="overflow-x-auto flex-grow">
             <!-- باقي جدول الرحلات هنا -->
-           <!-- قسم التقارير والطباعة -->
+<!-- ================= قسم التقارير والطباعة الرئيسي ================= -->
 <main id="reportsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 no-print">
         <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
             <i class="fa-solid fa-filter text-amber-500 ml-2"></i> تحديد فترة التقرير والفلترة
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <!-- من تاريخ -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
                 <input type="date" id="reportStartDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
             </div>
-            <!-- إلى تاريخ -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى تاريخ</label>
                 <input type="date" id="reportEndDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
             </div>
-            <!-- فلتر الشاحنة -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
                 <select id="reportTruckFilter" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
                     <option value="">جميع الشاحنات</option>
                 </select>
             </div>
-            <!-- فلتر السائق -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
                 <select id="reportDriverFilter" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
@@ -347,8 +343,10 @@
                 </select>
             </div>
         </div>
+    </div>
+</main>
 
-        <!-- ================= قسم الملخص المالي العام ================= -->
+<!-- ================= قسم الملخص المالي العام (مستقل تماماً) ================= -->
 <main id="financialOverviewSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-between items-center">
         <div>
@@ -360,7 +358,6 @@
         </button>
     </div>
 
-    <!-- بطاقات الملخص المالي -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-xs text-slate-500 font-bold mb-1">إجمالي الإيرادات</div>
@@ -377,8 +374,7 @@
     </div>
 </main>
 
-
-<!-- ================= قسم تقرير العمولات والإيرادات (الشاحنات والسائقين) ================= -->
+<!-- ================= قسم تقرير العمولات والإيرادات (مستقل تماماً) ================= -->
 <main id="financialDetailsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-between items-center">
         <div>
@@ -406,7 +402,6 @@
                     </tr>
                 </thead>
                 <tbody id="truckFinancialTable" class="divide-y divide-slate-100 font-mono">
-                    <!-- سيتم تعبئتها برمجياً -->
                 </tbody>
             </table>
         </div>
@@ -427,7 +422,6 @@
                     </tr>
                 </thead>
                 <tbody id="driverFinancialTable" class="divide-y divide-slate-100 font-mono">
-                    <!-- سيتم تعبئتها برمجياً -->
                 </tbody>
             </table>
         </div>
