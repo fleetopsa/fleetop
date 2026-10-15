@@ -969,23 +969,40 @@
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 async function openCommissionReportTab() {
+    // 1. التحقق من الصلاحية
     if (!currentLoggedInUser || (currentLoggedInUser.role !== 'admin' && currentLoggedInUser.role !== 'accountant' && currentLoggedInUser.role !== 'مدير' && currentLoggedInUser.role !== 'محاسب')) {
         alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
         return;
     }
 
-    switchTab('financialDetailsSection');
+    // 2. إخفاء كافة الأقسام الرئيسية أولاً بضمان تام
+    const sections = document.querySelectorAll('main, section.page-section, #mainDashboard > div');
+    sections.forEach(sec => {
+        if (sec.id && sec.id !== 'sidebar' && sec.id !== 'topNav') {
+            sec.classList.add('hidden');
+        }
+    });
 
-    // تعبئة قائمة السائقين للفلترة
-    const { data: drivers } = await client.from('drivers').select('name');
+    // 3. إظهار قسم تقرير العمولات حصرياً
+    const targetSection = document.getElementById('financialDetailsSection');
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+        targetSection.style.display = 'flex'; // لضمان ظهوره بشكل مرن
+    } else {
+        alert('خطأ: عنصر واجهة التقرير (financialDetailsSection) غير موجود في الصفحة!');
+        return;
+    }
+
+    // 4. تعبئة قائمة السائقين للفلترة
+    const { data: drivers, err } = await client.from('drivers').select('name');
     const driverSelect = document.getElementById('commDriverFilter');
     if (driverSelect && drivers) {
         driverSelect.innerHTML = '<option value="">جميع السائقين</option>' + drivers.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
     }
 
-    generateCommissionReport();
+    // 5. توليد البيانات وجلبها من الجدول
+    await generateCommissionReport();
 }
-
 // دالة توليد وحساب تقرير العمولات باستخدام حقل driver_commission
 async function generateCommissionReport() {
     const driverFilter = document.getElementById('commDriverFilter').value;
