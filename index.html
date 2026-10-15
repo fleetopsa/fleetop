@@ -99,7 +99,7 @@
     </button>
     
     <!-- زر تفاصيل الإيرادات والعمولات -->
-   <button onclick="openCommissionReportTab()" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
+   <button onclick="openCommissionAndRevenueReport()" class="...">
     <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات
 </button>
 </div>
@@ -1038,6 +1038,26 @@ async function openCommissionReportTab() {
     } catch (err) {
         console.error("خطأ في جلب العمولات:", err);
     }
+}
+       async function openCommissionAndRevenueReport() {
+    // 1. إخفاء جميع الأقسام الرئيسية في الصفحة
+    const allSections = document.querySelectorAll('main, section.page-section');
+    allSections.forEach(sec => {
+        if (sec.id !== 'sidebar' && sec.id !== 'topNav') {
+            sec.classList.add('hidden');
+            sec.style.display = 'none';
+        }
+    });
+
+    // 2. إظهار قسم التقارير المالية حصرياً
+    const targetSection = document.getElementById('financialDetailsSection');
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+        targetSection.style.display = 'flex'; // أو block حسب تصميم صفحتك
+    }
+
+    // 3. تشغيل دالة توليد التقرير لجلب البيانات وتعبئة الجدول
+    await generateFinancialReport();
 }
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
 function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmount, remainingAmount, driverCommission) {
