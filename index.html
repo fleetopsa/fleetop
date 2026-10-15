@@ -99,7 +99,7 @@
     </button>
     
     <!-- زر تفاصيل الإيرادات والعمولات -->
-   <button onclick="openCommissionAndRevenueReport()" class="...">
+   <button onclick="openCommissionReportTab()" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
     <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات
 </button>
 </div>
@@ -1037,33 +1037,6 @@ async function openCommissionReportTab() {
 
     } catch (err) {
         console.error("خطأ في جلب العمولات:", err);
-    }
-}
-     async function openCommissionAndRevenueReport() {
-    try {
-        // 1. إخفاء كافة الأقسام التي تحمل اللاسات الرئيسية للتبويبات بأمان تام
-        // (نستهدف فقط أقسام المحتوى دون المساس بالقائمة الجانبية أو الهيدر)
-        const sections = document.querySelectorAll('main.page-section, main#financialDetailsSection, main[id$="Section"], main[id$="Page"]');
-        sections.forEach(sec => {
-            sec.classList.add('hidden');
-            sec.style.display = 'none';
-        });
-
-        // 2. إظهار قسم تقرير العمولات حصرياً
-        const targetSection = document.getElementById('financialDetailsSection');
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-            targetSection.style.display = 'flex'; // أو block حسب تصميم نظامك
-        } else {
-            console.error("عنصر financialDetailsSection غير موجود في الصفحة!");
-            return;
-        }
-
-        // 3. جلب البيانات وتعبئة الجداول بأمان
-        await generateFinancialReport();
-
-    } catch (err) {
-        console.error("خطأ أثناء فتح تقرير العمولات:", err);
     }
 }
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
