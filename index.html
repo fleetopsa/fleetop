@@ -967,14 +967,13 @@
     }
 }
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
+// دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 async function openCommissionReportTab() {
-    // التحقق من الصلاحية (أدمن أو محاسب فقط)
     if (!currentLoggedInUser || (currentLoggedInUser.role !== 'admin' && currentLoggedInUser.role !== 'accountant' && currentLoggedInUser.role !== 'مدير' && currentLoggedInUser.role !== 'محاسب')) {
         alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
         return;
     }
 
-    // الانتقال للقسم
     switchTab('financialDetailsSection');
 
     // تعبئة قائمة السائقين للفلترة
@@ -987,7 +986,7 @@ async function openCommissionReportTab() {
     generateCommissionReport();
 }
 
-// دالة توليد وحساب تقرير العمولات مع الفلاتر والإجماليات
+// دالة توليد وحساب تقرير العمولات باستخدام حقل driver_commission
 async function generateCommissionReport() {
     const driverFilter = document.getElementById('commDriverFilter').value;
     const startDate = document.getElementById('commStartDate').value;
@@ -1013,15 +1012,16 @@ async function generateCommissionReport() {
     let totalTripsCount = trips.length;
 
     tbody.innerHTML = trips.map(tr => {
+        // الاعتماد على حقل driver_commission الفعلي لديك
         const commission = parseFloat(tr.driver_commission || 0);
         totalCommission += commission;
 
         return `
             <tr class="hover:bg-slate-50 transition">
-                <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || '---'}</td>
+                <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
                 <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
                 <td class="p-3.5 font-bold text-slate-900">${tr.driver_name || 'غير محدد'}</td>
-                <td class="p-3.5 text-slate-700 font-mono">${tr.truck_plate || '---'}</td>
+                <td class="p-3.5 text-slate-700 font-mono">${tr.truck_plate || tr.truck || '---'}</td>
                 <td class="p-3.5 font-black text-emerald-600 font-mono">${commission.toLocaleString()} SR</td>
             </tr>
         `;
@@ -1031,7 +1031,7 @@ async function generateCommissionReport() {
     document.getElementById('commTotalAmountDisplay').innerText = totalCommission.toLocaleString() + ' SR';
     document.getElementById('commTotalTripsDisplay').innerText = totalTripsCount.toLocaleString();
 }
-// 1. دالة فتح النافذة (تستدعى من زر الجدول)
+        // 1. دالة فتح النافذة (تستدعى من زر الجدول)
 function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmount, remainingAmount, driverCommission) {
     const modalTripId = document.getElementById('modalTripId');
     if (modalTripId) modalTripId.value = tripNo;
