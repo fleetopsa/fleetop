@@ -1188,14 +1188,23 @@ function closeCompleteModal() {
 }
        async function generateFinancialReport() {
     try {
+        console.log("جاري حساب وتحديث التقارير المالية - أبو سعيد...");
+        
+        // استخدام client أو supabase أيهما متاح لتجنب خطأ الاتصال
+        let db = typeof client !== 'undefined' ? client : (typeof supabase !== 'undefined' ? supabase : null);
+        if (!db) {
+            console.error("لم يتم العثور على اتصال قاعدة البيانات (client أو supabase).");
+            return;
+        }
+
         // 1. جلب البيانات من جداول Supabase
-        const { data: trips, error: tripsError } = await client.from('trips').select('*');
+        const { data: trips, error: tripsError } = await db.from('trips').select('*');
         if (tripsError) throw tripsError;
 
-        const { data: trucks, error: trucksError } = await client.from('trucks').select('*');
+        const { data: trucks, error: trucksError } = await db.from('trucks').select('*');
         if (trucksError) throw trucksError;
 
-        const { data: drivers, error: driversError } = await client.from('drivers').select('*');
+        const { data: drivers, error: driversError } = await db.from('drivers').select('*');
         if (driversError) throw driversError;
 
         let activeTrips = trips ? trips.filter(t => t.status !== 'ملغاة') : [];
@@ -1206,42 +1215,45 @@ function closeCompleteModal() {
         let pendingRev = 0;
 
         activeTrips.forEach(t => {
-            let rev = Number(t.revenue || t.trip_revenue || 0);
+            let rev = Number(t.total_amount || t.revenue || t.trip_revenue || 0);
             totalRev += rev;
-            if (t.payment_status === 'محصل' || t.is_collected === true) {
+            
+            let payStatus = t.payment_status || '';
+            if (payStatus === 'مسدد' || payStatus === 'مُسدد' || payStatus === 'محصل' || t.is_collected === true) {
                 collectedRev += rev;
             } else {
                 pendingRev += rev;
             }
         });
 
-        // تحديث العناصر إذا كانت موجودة في الصفحة
-        const totalEl = document.getElementById('totalRevenueDisplay');
-        const collectedEl = document.getElementById('collectedRevenueDisplay');
-        const pendingEl = document.getElementById('pendingRevenueDisplay');
+        // تحديث عناصر الملخص المالي العام (تدعم جميع أسماء المعرفات المhtملة)
+        const totalEls = [document.getElementById('totalRevenueDisplay'), document.getElementById('finTotalRevenue'), document.getElementById('dashTotalRevenue')];
+        totalEls.forEach(el => { if (el) el.innerText = totalRev.toLocaleString() + ' ر.س'; });
 
-        if (totalEl) totalEl.innerText = totalRev.toLocaleString() + ' ر.س';
-        if (collectedEl) collectedEl.innerText = collectedRev.toLocaleString() + ' ر.س';
-        if (pendingEl) pendingEl.innerText = pendingRev.toLocaleString() + ' ر.س';
+        const collectedEls = [document.getElementById('collectedRevenueDisplay'), document.getElementById('finCollectedAmount'), document.getElementById('dashCollectedAmount')];
+        collectedEls.forEach(el => { if (el) el.innerText = collectedRev.toLocaleString() + ' ر.س'; });
+
+        const pendingEls = [document.getElementById('pendingRevenueDisplay'), document.getElementById('finPendingAmount'), document.getElementById('dashRemainingAmount')];
+        pendingEls.forEach(el => { if (el) el.innerText = pendingRev.toLocaleString() + ' ر.س'; });
 
         // 3. تحديث جدول إيرادات الشاحنات
         const truckFinancialTable = document.getElementById('truckFinancialTable');
         if (truckFinancialTable && trucks) {
             truckFinancialTable.innerHTML = trucks.map(tr => {
                 let trTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
-                let trRevenue = trTrips.reduce((sum, t) => sum + Number(t.revenue || t.trip_revenue || 0), 0);
+                let trRevenue = trTrips.reduce((sum, t) => sum + Number(t.total_amount || t.revenue || t.trip_revenue || 0), 0);
                 return `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-3 font-bold text-slate-900 font-mono">${tr.plate}</td>
-                        <td class="p-3 text-slate-600">${tr.model || '---'}</td>
-                        <td class="p-3 text-center text-amber-600 font-bold font-mono">${trTrips.length}</td>
-                        <td class="p-3 font-bold text-emerald-600 font-mono">${trRevenue.toLocaleString()} ر.س</td>
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 font-mono">
+                        <td class="p-3 font-bold text-slate-900 font-sans">${tr.plate}</td>
+                        <td class="p-3 text-slate-600 font-sans">${tr.model || '---'}</td>
+                        <td class="p-3 text-center text-amber-600 font-bold">${trTrips.length}</td>
+                        <td class="p-3 font-bold text-emerald-600">${trRevenue.toLocaleString()} ر.س</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد شاحنات مسجلة</td></tr>';
         }
 
-        // 4. تحديث جدول ملخص العمولات القديم إن وجد
+        // 4. تحديث جدول عمولات السائقين
         const driverFinancialTable = document.getElementById('driverFinancialTable');
         if (driverFinancialTable && drivers) {
             driverFinancialTable.innerHTML = drivers.map(dr => {
@@ -1250,8 +1262,8 @@ function closeCompleteModal() {
                 
                 let tripsRows = drTrips.map(dt => `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-2 text-center font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
-                        <td class="p-2 text-center font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+                        <td class="p-2 text-center font-bold text-amber-600">${dt.trip_no || '---'}</td>
+                        <td class="p-2 text-center font-bold text-slate-800">${dt.truck_plate || '---'}</td>
                         <td class="p-2 text-center font-bold text-slate-900">${dt.client_name || '---'}</td>
                         <td class="p-2 text-center text-slate-600">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
                     </tr>
@@ -1276,29 +1288,21 @@ function closeCompleteModal() {
                 return `
                     <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
                         <td class="p-4 align-top border-l border-slate-200 bg-slate-50/30">
-                            <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
+                            <div class="font-bold text-slate-900 text-sm font-sans">${dr.name}</div>
                             <div class="text-xs text-slate-500 font-mono mt-0.5">إجمالي العمولات: <span class="text-indigo-600 font-bold">${drCommission.toLocaleString()} ر.س</span></div>
                         </td>
                         <td class="p-4 text-center align-top font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
                         <td class="p-3 align-top bg-white">${tripsDetailsHtml}</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد سائقين مسجلين</td></tr>';
         }
+
+        console.log("تم تحديث التقارير المالية بنجاح.");
 
     } catch (err) {
         console.error("Error generating financial report:", err);
     }
-}
-// دالة جلب كافة بيانات النظام دفعة واحدة عند الدخول
-async function loadAllData() {
-    console.log("جاري تحديث كافة بيانات النظام...");
-    try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
-    try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
-    try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
-    try { if (typeof loadDrivers === 'function') await loadDrivers(); } catch (e) { console.error(e); }
-    try { if (typeof loadUsers === 'function') await loadUsers(); } catch (e) { console.error(e); }
-    console.log("تم تحميل البيانات بنجاح.");
 }
         // 3. تسوية وإنهاء الرحلة (مع جعل حقول الدفع اختيارية إذا كان المبلغ صفر)
 
