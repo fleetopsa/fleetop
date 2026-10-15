@@ -968,85 +968,62 @@
 }
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
+// دالة فتح تقرير العمولات البسيطة والمباشرة
 async function openCommissionReportTab() {
-    // 1. التحقق من الصلاحية
+    // 1. التحقق من الصلاحية (أدمن أو محاسب فقط)
     if (!currentLoggedInUser || (currentLoggedInUser.role !== 'admin' && currentLoggedInUser.role !== 'accountant' && currentLoggedInUser.role !== 'مدير' && currentLoggedInUser.role !== 'محاسب')) {
         alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
         return;
     }
 
-    // 2. إخفاء كافة الأقسام الرئيسية أولاً بضمان تام
-    const sections = document.querySelectorAll('main, section.page-section, #mainDashboard > div');
-    sections.forEach(sec => {
-        if (sec.id && sec.id !== 'sidebar' && sec.id !== 'topNav') {
+    // 2. إخفاء جميع الأقسام وإظهار قسم العمولات
+    document.querySelectorAll('.page-section, main').forEach(sec => {
+        if (sec.id !== 'sidebar' && sec.id !== 'topNav') {
             sec.classList.add('hidden');
         }
     });
 
-    // 3. إظهار قسم تقرير العمولات حصرياً
-    const targetSection = document.getElementById('financialDetailsSection');
-    if (targetSection) {
-        targetSection.classList.remove('hidden');
-        targetSection.style.display = 'flex'; // لضمان ظهوره بشكل مرن
-    } else {
-        alert('خطأ: عنصر واجهة التقرير (financialDetailsSection) غير موجود في الصفحة!');
-        return;
+    const reportSection = document.getElementById('financialDetailsSection');
+    if (reportSection) {
+        reportSection.classList.remove('hidden');
     }
 
-    // 4. تعبئة قائمة السائقين للفلترة
-    const { data: drivers, err } = await client.from('drivers').select('name');
-    const driverSelect = document.getElementById('commDriverFilter');
-    if (driverSelect && drivers) {
-        driverSelect.innerHTML = '<option value="">جميع السائقين</option>' + drivers.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+    // 3. جلب البيانات مباشرة وعرضها
+    try {
+        const { data: trips, error } = await client.from('trips').select('*').order('id', { ascending: false });
+        const tbody = document.getElementById('commissionReportTable');
+        
+        if (error || !trips || trips.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد رحلات مسجلة حالياً</td></tr>`;
+            document.getElementById('commTotalAmountDisplay').innerText = '0.00 SR';
+            document.getElementById('commTotalTripsDisplay').innerText = '0';
+            return;
+        }
+
+        let totalCommission = 0;
+        let totalTripsCount = trips.length;
+
+        tbody.innerHTML = trips.map(tr => {
+            const commission = parseFloat(tr.driver_commission || 0);
+            totalCommission += commission;
+
+            return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
+                    <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${tr.driver_name || 'غير محدد'}</td>
+                    <td class="p-3.5 text-slate-700 font-mono">${tr.truck_plate || tr.truck || '---'}</td>
+                    <td class="p-3.5 font-black text-emerald-600 font-mono">${commission.toLocaleString()} SR</td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('commTotalAmountDisplay').innerText = totalCommission.toLocaleString() + ' SR';
+        document.getElementById('commTotalTripsDisplay').innerText = totalTripsCount.toLocaleString();
+
+    } catch (err) {
+        console.error("خطأ في جلب العمولات:", err);
     }
-
-    // 5. توليد البيانات وجلبها من الجدول
-    await generateCommissionReport();
-}
-// دالة توليد وحساب تقرير العمولات باستخدام حقل driver_commission
-async function generateCommissionReport() {
-    const driverFilter = document.getElementById('commDriverFilter').value;
-    const startDate = document.getElementById('commStartDate').value;
-    const endDate = document.getElementById('commEndDate').value;
-
-    let query = client.from('trips').select('*').neq('status', 'ملغاة');
-
-    if (driverFilter) query = query.eq('driver_name', driverFilter);
-    if (startDate) query = query.gte('departure_date', startDate);
-    if (endDate) query = query.lte('departure_date', endDate);
-
-    const { data: trips, error } = await query.order('id', { ascending: false });
-    const tbody = document.getElementById('commissionReportTable');
-    
-    if (error || !trips || trips.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد رحلات أو عمولات مسجلة للفترة المحددة</td></tr>`;
-        document.getElementById('commTotalAmountDisplay').innerText = '0.00 SR';
-        document.getElementById('commTotalTripsDisplay').innerText = '0';
-        return;
-    }
-
-    let totalCommission = 0;
-    let totalTripsCount = trips.length;
-
-    tbody.innerHTML = trips.map(tr => {
-        // الاعتماد على حقل driver_commission الفعلي لديك
-        const commission = parseFloat(tr.driver_commission || 0);
-        totalCommission += commission;
-
-        return `
-            <tr class="hover:bg-slate-50 transition">
-                <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
-                <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
-                <td class="p-3.5 font-bold text-slate-900">${tr.driver_name || 'غير محدد'}</td>
-                <td class="p-3.5 text-slate-700 font-mono">${tr.truck_plate || tr.truck || '---'}</td>
-                <td class="p-3.5 font-black text-emerald-600 font-mono">${commission.toLocaleString()} SR</td>
-            </tr>
-        `;
-    }).join('');
-
-    // تحديث البطاقات العلوية بالإجماليات
-    document.getElementById('commTotalAmountDisplay').innerText = totalCommission.toLocaleString() + ' SR';
-    document.getElementById('commTotalTripsDisplay').innerText = totalTripsCount.toLocaleString();
 }
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
 function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmount, remainingAmount, driverCommission) {
