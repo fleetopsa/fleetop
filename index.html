@@ -1039,25 +1039,32 @@ async function openCommissionReportTab() {
         console.error("خطأ في جلب العمولات:", err);
     }
 }
-       async function openCommissionAndRevenueReport() {
-    // 1. إخفاء جميع الأقسام الرئيسية في الصفحة
-    const allSections = document.querySelectorAll('main, section.page-section');
-    allSections.forEach(sec => {
-        if (sec.id !== 'sidebar' && sec.id !== 'topNav') {
+     async function openCommissionAndRevenueReport() {
+    try {
+        // 1. إخفاء كافة الأقسام التي تحمل اللاسات الرئيسية للتبويبات بأمان تام
+        // (نستهدف فقط أقسام المحتوى دون المساس بالقائمة الجانبية أو الهيدر)
+        const sections = document.querySelectorAll('main.page-section, main#financialDetailsSection, main[id$="Section"], main[id$="Page"]');
+        sections.forEach(sec => {
             sec.classList.add('hidden');
             sec.style.display = 'none';
+        });
+
+        // 2. إظهار قسم تقرير العمولات حصرياً
+        const targetSection = document.getElementById('financialDetailsSection');
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+            targetSection.style.display = 'flex'; // أو block حسب تصميم نظامك
+        } else {
+            console.error("عنصر financialDetailsSection غير موجود في الصفحة!");
+            return;
         }
-    });
 
-    // 2. إظهار قسم التقارير المالية حصرياً
-    const targetSection = document.getElementById('financialDetailsSection');
-    if (targetSection) {
-        targetSection.classList.remove('hidden');
-        targetSection.style.display = 'flex'; // أو block حسب تصميم صفحتك
+        // 3. جلب البيانات وتعبئة الجداول بأمان
+        await generateFinancialReport();
+
+    } catch (err) {
+        console.error("خطأ أثناء فتح تقرير العمولات:", err);
     }
-
-    // 3. تشغيل دالة توليد التقرير لجلب البيانات وتعبئة الجدول
-    await generateFinancialReport();
 }
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
 function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmount, remainingAmount, driverCommission) {
