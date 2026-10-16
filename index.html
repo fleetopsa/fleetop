@@ -1076,22 +1076,17 @@ function isAdminUser(user = currentLoggedInUser) {
 
         currentLoggedInUser = null;
 
-        if (data) {
-            if (data.status === 'موقوف') {
-                document.getElementById('loginError').innerText = 'عذراً، هذا الحساب موقوف حالياً.';
-                document.getElementById('loginError').classList.remove('hidden');
-                return;
-            }
-            currentLoggedInUser = data;
-        } else {
-            if ((u === 'admin' && p === 'admin123') || (u === 'mohammad' && p === '123456')) {
-                currentLoggedInUser = { username: u, employee_name: 'محمد القحطاني', role: 'admin' };
-            } else {
-                document.getElementById('loginError').innerText = 'خطأ في اسم المستخدم أو كلمة المرور.';
-                document.getElementById('loginError').classList.remove('hidden');
-                return;
-            }
+        if (error || !data) {
+            document.getElementById('loginError').innerText = 'خطأ في اسم المستخدم أو كلمة المرور.';
+            document.getElementById('loginError').classList.remove('hidden');
+            return;
         }
+        if (data.status === 'موقوف') {
+            document.getElementById('loginError').innerText = 'عذراً، هذا الحساب موقوف حالياً.';
+            document.getElementById('loginError').classList.remove('hidden');
+            return;
+        }
+        currentLoggedInUser = data;
 
         // تخزين الدور واسم الموظف في المتصفح
         localStorage.setItem('userRole', currentLoggedInUser.role);
