@@ -42,12 +42,125 @@
         @media (min-width: 1280px) {
             .truck-cards-many { grid-template-columns: repeat(6, minmax(0, 1fr)); }
         }
-        @media print {
-            body * { visibility: hidden; }
-            #printableReport, #printableReport * { visibility: visible; }
-            #printableReport { position: absolute; left: 0; top: 0; width: 100%; }
-            #truckReportCards { max-height: none !important; overflow: visible !important; }
-            .no-print { display: none !important; }
+        .print-only { display: none !important; }
+        @page { size: A4; margin: 14mm 18mm 16mm 18mm; }
+        body.is-printing {
+            background: #fff !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+        body.is-printing > .absolute,
+        body.is-printing #loginSection,
+        body.is-printing #changePasswordModal,
+        body.is-printing #resetPasswordModal,
+        body.is-printing aside,
+        body.is-printing #mainDashboard header,
+        body.is-printing .no-print,
+        body.is-printing button { display: none !important; }
+        body.is-printing #mainDashboard {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #fff !important;
+            padding: 0 12mm !important;
+            box-sizing: border-box !important;
+        }
+        body.is-printing #mainDashboard > .flex-grow {
+            display: block !important;
+            order: 1;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            background: #fff !important;
+        }
+        body.is-printing main { display: none !important; }
+        body.is-printing main.print-target {
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+        body.is-printing main.print-target .overflow-y-auto,
+        body.is-printing main.print-target .overflow-x-auto,
+        body.is-printing main.print-target .overflow-hidden,
+        body.is-printing #truckReportCards {
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
+        }
+        body.is-printing main.print-target .rounded-2xl,
+        body.is-printing main.print-target .rounded-xl,
+        body.is-printing main.print-target .shadow-sm,
+        body.is-printing main.print-target .shadow-2xl {
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        body.is-printing main.print-target thead,
+        body.is-printing main.print-target thead th {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+        }
+        body.is-printing #printLetterhead {
+            display: block !important;
+            order: 0;
+            position: static !important;
+            margin: 0 0 8mm !important;
+            padding: 0 0 4mm !important;
+            border-bottom: 2px solid #d97706;
+        }
+        body.is-printing .print-letterhead-grid {
+            direction: ltr;
+            display: grid;
+            grid-template-columns: 1fr 22mm 1fr;
+            align-items: center;
+            gap: 6mm;
+        }
+        body.is-printing .print-letterhead-grid img {
+            width: 20mm;
+            height: 20mm;
+            object-fit: contain;
+            justify-self: center;
+        }
+        body.is-printing .print-brand-en { text-align: left; }
+        body.is-printing .print-brand-ar { text-align: right; direction: rtl; }
+        body.is-printing .print-brand-en strong,
+        body.is-printing .print-brand-ar strong {
+            display: block;
+            font-size: 15px;
+            color: #0f172a;
+            line-height: 1.35;
+        }
+        body.is-printing .print-brand-en span,
+        body.is-printing .print-brand-ar span {
+            display: block;
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 1mm;
+        }
+        body.is-printing #printFooter {
+            display: flex !important;
+            order: 2;
+            position: static !important;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8mm;
+            margin-top: 10mm;
+            padding-top: 3mm;
+            border-top: 1px solid #cbd5e1;
+            font-size: 11px;
+            color: #334155;
         }
     </style>
 </head>
@@ -87,6 +200,23 @@
     </div>
     <!-- لوحة التحكم الاحترافية -->
     <div id="mainDashboard" class="hidden relative z-10 w-full h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col md:flex-row">
+        <div id="printLetterhead" class="print-only" aria-hidden="true">
+            <div class="print-letterhead-grid">
+                <div class="print-brand-en">
+                    <strong>Global Selection Transport Co.</strong>
+                    <span>Fleet &amp; Trips Management</span>
+                </div>
+                <img src="GSTCO1.png" alt="شعار الشركة">
+                <div class="print-brand-ar">
+                    <strong>شركة الاختيار العالمي للنقليات</strong>
+                    <span>إدارة الأسطول والرحلات</span>
+                </div>
+            </div>
+        </div>
+        <div id="printFooter" class="print-only" aria-hidden="true">
+            <span id="printUserName"></span>
+            <span id="printTimestamp"></span>
+        </div>
         
         <!-- الشريط الجانبي الأيمن -->
         <aside class="w-full md:w-64 bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
@@ -363,7 +493,7 @@
                 <h2 class="text-lg font-bold text-slate-900">تقرير أداء الأسطول</h2>
                 <p class="text-xs text-slate-500">الشاحنات والسائقين والرحلات التشغيلية</p>
             </div>
-            <button onclick="window.print()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
+            <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
                 <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
             </button>
         </div>
@@ -410,7 +540,7 @@
         </div>
 
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 flex-grow flex flex-col">
-            <div class="mb-8">
+            <div class="mb-8 no-print">
                 <h4 class="font-bold text-slate-900 text-sm mb-4 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-truck text-amber-500"></i>
                     الشاحنات
@@ -449,7 +579,7 @@
             <h2 class="text-lg font-bold text-slate-900">التقرير المالي والإيرادات</h2>
             <p class="text-xs text-slate-500">إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات</p>
         </div>
-        <button onclick="window.print()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
+        <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
     </div>
@@ -548,7 +678,7 @@
             <h2 class="text-lg font-bold text-slate-900">تقرير العمولات وإيرادات الأسطول</h2>
             <p class="text-xs text-slate-500">تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة</p>
         </div>
-        <button onclick="window.print()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800">
+        <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
     </div>
@@ -718,13 +848,13 @@
                     <p class="text-xs text-slate-500 mt-0.5">عرض وتصفية عمولات السائقين التفصيلية</p>
                 </div>
                 <!-- صلاحيات الاطلاع (أدمن ومحاسب فقط) -->
-                <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print">
+                <button onclick="printCurrentReport()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print">
                     <i class="fa-solid fa-print"></i> طباعة التقرير
                 </button>
             </div>
 
             <!-- الفلاتر -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 no-print">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
                     <input type="date" id="commStartDate" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -746,7 +876,7 @@
                     </select>
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2">
+            <div class="flex justify-end gap-2 pt-2 no-print">
                 <button type="button" onclick="generateCommissionReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition">
                     <i class="fa-solid fa-filter ml-1"></i> تشغيل الفلتر
                 </button>
@@ -2699,6 +2829,38 @@ async function loadUsers() {
                 console.error('Password reset error:', err);
                 showPasswordError('resetPasswordError', 'تعذر حفظ كلمة المرور الجديدة.');
             }
+        }
+
+        function printCurrentReport() {
+            const section = document.querySelector('#mainDashboard main:not(.hidden)');
+            if (!section) return;
+            document.querySelectorAll('main.print-target').forEach(node => node.classList.remove('print-target'));
+            section.classList.add('print-target');
+
+            const user = currentLoggedInUser || {};
+            const userName = user.employee_name || user.username || '';
+            const userLabel = document.getElementById('printUserName');
+            const timeLabel = document.getElementById('printTimestamp');
+            if (userLabel) userLabel.textContent = userName ? 'طُبع بواسطة: ' + userName : '';
+            if (timeLabel) {
+                const stamp = new Date().toLocaleString('ar-SA', {
+                    numberingSystem: 'latn',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                timeLabel.textContent = 'تاريخ الطباعة: ' + stamp;
+            }
+
+            document.body.classList.add('is-printing');
+            const cleanup = () => {
+                document.body.classList.remove('is-printing');
+                section.classList.remove('print-target');
+            };
+            window.addEventListener('afterprint', cleanup, { once: true });
+            setTimeout(() => window.print(), 60);
         }
 
         function handleLogout() {
