@@ -162,6 +162,59 @@
             font-size: 11px;
             color: #334155;
         }
+        #appContent, #appContent > main { min-height: 0; }
+        #appContent { min-width: 0; }
+        #menuToggleBtn, #sidebarBackdrop { display: none; }
+        @media (max-width: 1279px) {
+            body.dashboard-active {
+                padding: 0;
+                align-items: stretch;
+                height: 100dvh;
+                max-height: 100dvh;
+                overflow: hidden;
+            }
+            body.dashboard-active #mainDashboard {
+                height: 100dvh;
+                max-height: 100dvh;
+                border-radius: 0;
+                border-width: 0;
+                box-shadow: none;
+            }
+            #menuToggleBtn { display: inline-flex; }
+            #appSidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                width: min(18rem, 88vw);
+                z-index: 50;
+                transform: translateX(110%);
+                transition: transform 0.2s ease;
+                overflow-y: auto;
+            }
+            #appSidebar.is-open { transform: translateX(0); }
+            #sidebarBackdrop.is-open {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 40;
+                background: rgba(2, 6, 23, 0.55);
+            }
+        }
+        @media (min-width: 1280px) {
+            #mainDashboard { flex-direction: row; }
+            #appSidebar {
+                position: relative;
+                width: 16rem;
+                flex-shrink: 0;
+                align-self: stretch;
+                min-height: 0;
+                overflow-y: auto;
+                transform: none;
+            }
+        }
+        body.is-printing #sidebarBackdrop,
+        body.is-printing #menuToggleBtn { display: none !important; }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
@@ -199,7 +252,7 @@
         </form>
     </div>
     <!-- لوحة التحكم الاحترافية -->
-    <div id="mainDashboard" class="hidden relative z-10 w-full h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col md:flex-row">
+    <div id="mainDashboard" class="hidden relative z-10 w-full h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
         <div id="printLetterhead" class="print-only" aria-hidden="true">
             <div class="print-letterhead-grid">
                 <div class="print-brand-en">
@@ -218,8 +271,9 @@
             <span id="printTimestamp"></span>
         </div>
         
+        <div id="sidebarBackdrop" onclick="closeMobileNav()"></div>
         <!-- الشريط الجانبي الأيمن -->
-        <aside class="w-full md:w-64 bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
+        <aside id="appSidebar" class="bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
             <div>
                 <div class="flex items-center space-x-3 space-x-reverse mb-6">
                     <div class="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-slate-900 font-black">
@@ -282,12 +336,17 @@
         </aside>
 
         <!-- المحتوى الرئيسي الواسع -->
-        <div class="flex-grow flex flex-col bg-slate-50 overflow-hidden">
-            <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center text-slate-900 shadow-sm">
-                <h2 id="pageTitle" class="text-sm font-black text-slate-800"> </h2>
-                <button type="button" id="refreshDataBtn" onclick="loadAllData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 disabled:opacity-60">
+        <div id="appContent" class="flex-grow flex flex-col bg-slate-50 overflow-hidden">
+            <header class="bg-white border-b border-slate-200 px-4 xl:px-8 py-3 xl:py-4 flex justify-between items-center gap-3 text-slate-900 shadow-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                    <button type="button" id="menuToggleBtn" onclick="toggleMobileNav()" class="w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-400" aria-label="فتح القائمة">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h2 id="pageTitle" class="text-sm font-black text-slate-800 truncate"> </h2>
+                </div>
+                <button type="button" id="refreshDataBtn" onclick="loadAllData()" class="px-3 xl:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 disabled:opacity-60 shrink-0">
                     <i id="refreshDataIcon" class="fa-solid fa-rotate"></i>
-                    <span id="refreshDataLabel">تحديث البيانات</span>
+                    <span id="refreshDataLabel" class="hidden sm:inline">تحديث البيانات</span>
                 </button>
             </header>
 
@@ -540,22 +599,25 @@
         </div>
 
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 flex-grow flex flex-col">
-            <div class="mb-8 no-print">
-                <h4 class="font-bold text-slate-900 text-sm mb-4 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-truck text-amber-500"></i>
-                    الشاحنات
-                    <span id="truckReportCount" class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-0.5 rounded-full">0</span>
-                </h4>
-                <div id="truckReportCards" class="truck-cards-few"></div>
+            <div id="reportDriverCard" class="hidden mb-4">
+                <div class="inline-flex items-center gap-2 h-11 bg-slate-50 border border-slate-200 rounded-xl px-4">
+                    <i class="fa-solid fa-user text-amber-500 text-xs"></i>
+                    <span class="text-[10px] font-bold text-slate-400">السائق</span>
+                    <span id="reportDriverCardName" class="font-black text-slate-900 text-sm"></span>
+                    <span id="reportDriverCardPhone" class="text-xs text-slate-500 font-mono"></span>
+                </div>
+            </div>
+            <div id="truckReportStrip" class="hidden no-print mb-4">
+                <div id="truckReportCards" class="flex flex-wrap gap-2"></div>
             </div>
 
                     <div class="mb-4">
-                        <h4 class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> تقرير السائقين التفصيلي والعمولات المستحقة</h4>
+                        <h4 id="driverReportHeading" class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> تقرير السائقين التفصيلي والعمولات المستحقة</h4>
                         <div class="overflow-x-auto">
                            <table class="w-full text-right text-xs">
     <thead class="bg-slate-800 text-slate-200 uppercase">
         <tr>
-            <th class="p-3">اسم السائق ورقم الجوال</th>
+            <th class="p-3" id="driverReportIdentityHead">اسم السائق ورقم الجوال</th>
             <th class="p-3 text-center">عدد الرحلات</th>
             <th colspan="5" class="p-3 text-center font-bold text-sm">
         تفاصيل الرحلات 
@@ -1224,6 +1286,7 @@ function isAdminUser(user = currentLoggedInUser) {
 
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('mainDashboard').classList.remove('hidden');
+        document.body.classList.add('dashboard-active');
         if (typeof switchTab === 'function') {
             switchTab('dashboard');
         }
@@ -1328,6 +1391,7 @@ async function openCommissionReportTab() {
     await populateCommissionFilters();
     await generateCommissionReport();
     setActiveNav('commissionReportSection');
+    focusActivePage();
 }
 
 async function populateCommissionFilters() {
@@ -1367,11 +1431,11 @@ async function generateCommissionReport() {
         }
 
         let totalCommission = 0;
-        tbody.innerHTML = activeTrips.map(tr => {
+        const commissionRow = (tr) => {
             const commission = parseFloat(tr.driver_commission || tr.commission || 0);
             totalCommission += commission;
             return `
-                <tr class="hover:bg-slate-50 transition">
+                <tr class="hover:bg-slate-50 transition border-r-4 border-amber-400">
                     <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
                     <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
                     <td class="p-3.5 font-bold text-slate-900">${tr.driver_name || 'غير محدد'}</td>
@@ -1379,7 +1443,45 @@ async function generateCommissionReport() {
                     <td class="p-3.5 font-black text-emerald-600 font-mono">${formatSAR(commission)}</td>
                 </tr>
             `;
-        }).join('');
+        };
+        const groupCommission = (trips, keyFn, label) => {
+            const order = [];
+            const groups = new Map();
+            trips.forEach(tr => {
+                const key = keyFn(tr) || 'غير محدد';
+                if (!groups.has(key)) {
+                    groups.set(key, []);
+                    order.push(key);
+                }
+                groups.get(key).push(tr);
+            });
+            order.sort((a, b) => groups.get(b).length - groups.get(a).length);
+            return order.map(key => {
+                const list = groups.get(key);
+                const subtotal = list.reduce((sum, tr) => sum + parseFloat(tr.driver_commission || tr.commission || 0), 0);
+                return `
+                    <tr class="bg-slate-900 text-white">
+                        <td colspan="5" class="px-3.5 py-2.5">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span class="text-[10px] font-bold text-amber-300">${label}</span>
+                                <span class="font-black">${key}</span>
+                                <span class="font-mono text-slate-300">${list.length} رحلة</span>
+                                <span class="font-black font-mono text-emerald-300">${formatSAR(subtotal)}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    ${list.map(commissionRow).join('')}
+                `;
+            }).join('');
+        };
+
+        if (selectedDriver && !selectedTruck) {
+            tbody.innerHTML = groupCommission(activeTrips, tr => tr.truck_plate || tr.truck, 'الشاحنة');
+        } else if (selectedTruck && !selectedDriver) {
+            tbody.innerHTML = groupCommission(activeTrips, tr => tr.driver_name, 'السائق');
+        } else {
+            tbody.innerHTML = activeTrips.map(commissionRow).join('');
+        }
 
         document.getElementById('commTotalAmountDisplay').innerText = formatSAR(totalCommission);
         document.getElementById('commTotalTripsDisplay').innerText = activeTrips.length.toLocaleString('en-US');
@@ -1947,6 +2049,25 @@ async function resetTripCounter() {
     }
 }
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
+function toggleMobileNav(forceOpen) {
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (!sidebar) return;
+    const open = typeof forceOpen === 'boolean' ? forceOpen : !sidebar.classList.contains('is-open');
+    sidebar.classList.toggle('is-open', open);
+    if (backdrop) backdrop.classList.toggle('is-open', open);
+}
+
+function closeMobileNav() {
+    toggleMobileNav(false);
+}
+
+function focusActivePage() {
+    closeMobileNav();
+    const visible = document.querySelector('#appContent main:not(.hidden)');
+    if (visible) visible.scrollTop = 0;
+}
+
 function setActiveNav(tabId) {
     const activeClasses = ['bg-amber-500', 'text-slate-900', 'shadow-sm'];
     const idleClasses = ['text-slate-300', 'hover:bg-slate-800', 'hover:text-white'];
@@ -1959,6 +2080,7 @@ function setActiveNav(tabId) {
 
 function switchTab(tabId) {
     setActiveNav(tabId);
+    closeMobileNav();
     // 1. إخفاء جميع الأقسام الرئيسية والمالية
     const allSections = document.querySelectorAll('main, section');
     allSections.forEach(sec => {
@@ -1972,6 +2094,7 @@ function switchTab(tabId) {
         const targetFinSection = document.getElementById(tabId);
         if (targetFinSection) {
             targetFinSection.classList.remove('hidden');
+            targetFinSection.scrollTop = 0;
             if (tabId === 'commissionReportSection' && typeof generateCommissionReport === 'function') {
                 populateCommissionFilters().then(() => generateCommissionReport());
             } else if (typeof generateFinancialReport === 'function') {
@@ -1985,6 +2108,7 @@ function switchTab(tabId) {
     const target = document.getElementById(tabId) || document.getElementById(tabId + 'Section');
     if (target) {
         target.classList.remove('hidden');
+        target.scrollTop = 0;
         if ((tabId === 'trips' || tabId === 'tripsSection') && typeof renderAdminControls === 'function') {
             renderAdminControls();
         }
@@ -2026,87 +2150,129 @@ function switchTab(tabId) {
         const totalTripsEl = document.getElementById('repTotalTrips');
         if (totalTripsEl) totalTripsEl.innerText = totalTrips;
 
-        // تصفية العناصر المعروضة في الجداول بناءً على الاختيار
-        const filteredTrucks = selectedTruck ? trucks.filter(tr => tr.plate === selectedTruck) : trucks;
-        const filteredDrivers = selectedDriver ? drivers.filter(dr => dr.name === selectedDriver) : drivers;
-
+        const filteredDrivers = selectedDriver ? (drivers || []).filter(dr => dr.name === selectedDriver) : (drivers || []);
+        const showTruckStrip = Boolean(selectedTruck || selectedDriver);
+        const truckStrip = document.getElementById('truckReportStrip');
         const truckCards = document.getElementById('truckReportCards');
-        const truckCountEl = document.getElementById('truckReportCount');
-        const truckCount = filteredTrucks ? filteredTrucks.length : 0;
-        if (truckCountEl) truckCountEl.textContent = truckCount;
+        if (truckStrip) truckStrip.classList.toggle('hidden', !showTruckStrip);
         if (truckCards) {
-            const manyTrucks = truckCount > 6;
-            truckCards.className = manyTrucks ? 'truck-cards-many' : 'truck-cards-few';
-            if (truckCount > 0) {
-                const cardWidth = manyTrucks ? 'w-full' : 'truck-card-fixed';
-                truckCards.innerHTML = filteredTrucks.map(tr => {
-                    const truckTrips = activeTrips.filter(t => t.truck_plate === tr.plate);
+            truckCards.className = 'flex flex-wrap gap-2';
+            if (showTruckStrip) {
+                const plates = selectedTruck
+                    ? [selectedTruck]
+                    : [...new Set(activeTrips.map(t => t.truck_plate).filter(Boolean))];
+                truckCards.innerHTML = plates.length ? plates.map(plate => {
+                    const count = activeTrips.filter(t => t.truck_plate === plate).length;
+                    const model = (trucks || []).find(tr => tr.plate === plate)?.model || '';
                     return `
-                        <div class="${cardWidth} bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
-                            <div class="w-8 h-8 mx-auto mb-2 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-amber-500 text-sm">
-                                <i class="fa-solid fa-truck"></i>
-                            </div>
-                            <div class="font-bold text-slate-900 font-mono text-xs">${tr.plate}</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5 truncate">${tr.model || '---'}</div>
-                            <div class="mt-1.5 text-amber-600 font-bold font-mono text-xs">${truckTrips.length} رحلة</div>
+                        <div class="inline-flex items-center gap-2 h-11 bg-slate-50 border border-slate-200 rounded-xl px-3">
+                            <i class="fa-solid fa-truck text-amber-500 text-xs"></i>
+                            <span class="font-bold font-mono text-xs text-slate-900">${plate}</span>
+                            ${model ? `<span class="text-[10px] text-slate-400 max-w-[7rem] truncate">${model}</span>` : ''}
+                            <span class="font-black font-mono text-base text-amber-600 leading-none">${count}</span>
+                            <span class="text-[10px] font-bold text-slate-500">رحلة</span>
                         </div>
                     `;
-                }).join('');
+                }).join('') : `<span class="text-xs text-slate-400 py-2">لا توجد شاحنات مطابقة للفلتر المحدد</span>`;
             } else {
-                truckCards.innerHTML = `<p class="text-center text-slate-400 text-xs py-4 w-full">لا توجد شاحنات مطابقة للفلتر المحدد</p>`;
+                truckCards.innerHTML = '';
             }
         }
+
+        const tripDetailsTable = (list) => {
+            if (!list.length) return '<span class="text-slate-400 text-xs">لا توجد رحلات مسجلة في هذه الفترة</span>';
+            const rows = list.map(dt => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-2 text-right font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
+                    <td class="p-2 text-right font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
+                    <td class="p-2 text-right font-bold text-slate-900">${dt.client_name || '---'}</td>
+                    <td class="p-2 text-right text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+                    <td class="p-2 text-right font-bold text-emerald-700 font-mono">${formatSAR(dt.driver_commission || dt.commission || 0)}</td>
+                </tr>
+            `).join('');
+            return `
+                <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                            <th class="p-2 font-bold">رقم الرحلة</th>
+                            <th class="p-2 font-bold">رقم اللوحة</th>
+                            <th class="p-1.5 font-bold">اسم العميل</th>
+                            <th class="p-1.5 font-bold">خط السير</th>
+                            <th class="p-1.5 font-bold">مبلغ العمولة</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-mono">${rows}</tbody>
+                </table>
+            `;
+        };
+
+        const identityHead = document.getElementById('driverReportIdentityHead');
+        const reportHeading = document.getElementById('driverReportHeading');
+        const driverCard = document.getElementById('reportDriverCard');
+        const groupByTruck = Boolean(selectedDriver && !selectedTruck);
+        if (identityHead) identityHead.textContent = groupByTruck ? 'الشاحنة' : 'اسم السائق ورقم الجوال';
+        if (reportHeading) {
+            reportHeading.innerHTML = groupByTruck
+                ? '<i class="fa-solid fa-truck text-amber-500 ml-2"></i> رحلات السائق حسب الشاحنة'
+                : '<i class="fa-solid fa-users text-amber-500 ml-2"></i> تقرير السائقين التفصيلي والعمولات المستحقة';
+        }
+        if (driverCard && !groupByTruck) driverCard.classList.add('hidden');
 
         // 4. تحديث جدول السائقين
         const driverTable = document.getElementById('driverReportTable');
         if (driverTable) {
-            if (filteredDrivers && filteredDrivers.length > 0) {
-                driverTable.innerHTML = filteredDrivers.map(dr => {
-                    const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
-                    
-                 let tripsRows = '';
-for (let dt of drTrips) {
-    tripsRows += `
-        <tr class="hover:bg-slate-50 transition">
-            <td class="p-2 text-right font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
-            <td class="p-2 text-right font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
-            <td class="p-2 text-right font-bold text-slate-900">${dt.client_name || '---'}</td>
-            <td class="p-2 text-right text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
-            <td class="p-2 text-right font-bold text-emerald-700 font-mono">${formatSAR(dt.driver_commission || dt.commission || 0)}</td>
-        </tr>
-    `;
-}
-                    
-                    let tripsDetailsHtml = drTrips.length > 0 ? `
-                        <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                    <th class="p-2 font-bold">رقم الرحلة</th>
-                                    <th class="p-2 font-bold">رقم اللوحة</th>
-                                    <th class="p-1.5 font-bold">اسم العميل</th>
-                                    <th class="p-1.5 font-bold">خط السير</th>
-                                    <th class="p-1.5 font-bold">مبلغ العمولة</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 font-mono">
-                                ${tripsRows}
-                            </tbody>
-                        </table>
-                    ` : '<span class="text-slate-400 text-xs">لا توجد رحلات مسجلة في هذه الفترة</span>';
-
-                    return `
-                        <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
-                            <td class="driver-identity-cell p-4 border-l border-slate-200 bg-slate-50/30">
-                                <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
-                                <div class="text-xs text-slate-500 font-mono mt-0.5">${dr.phone || ''}</div>
+            if (groupByTruck) {
+                const dr = filteredDrivers[0] || { name: selectedDriver, phone: '' };
+                const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
+                if (driverCard) {
+                    driverCard.classList.remove('hidden');
+                    const nameEl = document.getElementById('reportDriverCardName');
+                    const phoneEl = document.getElementById('reportDriverCardPhone');
+                    if (nameEl) nameEl.textContent = dr.name || '';
+                    if (phoneEl) phoneEl.textContent = dr.phone || '';
+                }
+                const groups = new Map();
+                drTrips.forEach(trip => {
+                    const plate = trip.truck_plate || 'غير محددة';
+                    if (!groups.has(plate)) groups.set(plate, []);
+                    groups.get(plate).push(trip);
+                });
+                const plates = [...groups.keys()].sort((a, b) => groups.get(b).length - groups.get(a).length);
+                if (!plates.length) {
+                    driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+                } else {
+                    driverTable.innerHTML = plates.map((plate, index) => `
+                        <tr class="border-b-4 border-slate-200 ${index % 2 ? 'bg-amber-50/60' : 'bg-white'}">
+                            <td class="driver-identity-cell p-4 border-l border-slate-200">
+                                <div class="text-[10px] font-bold text-slate-400">الشاحنة</div>
+                                <div class="font-black text-slate-900 font-mono text-sm mt-0.5">${plate}</div>
                             </td>
-                            <td class="driver-identity-cell p-4 font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
-                            <td class="p-3 align-top bg-white">${tripsDetailsHtml}</td>
+                            <td class="driver-identity-cell p-4 font-black text-amber-600 font-mono text-lg border-l border-slate-200">${groups.get(plate).length}</td>
+                            <td class="p-3 align-top">${tripDetailsTable(groups.get(plate))}</td>
                         </tr>
-                    `;
-                }).join('');
+                    `).join('');
+                }
             } else {
-                driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+                const driversToShow = selectedTruck
+                    ? filteredDrivers.filter(dr => activeTrips.some(t => t.driver_name === dr.name))
+                    : filteredDrivers;
+                if (driversToShow.length > 0) {
+                    driverTable.innerHTML = driversToShow.map(dr => {
+                        const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
+                        return `
+                            <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
+                                <td class="driver-identity-cell p-4 border-l border-slate-200 bg-slate-50/30">
+                                    <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
+                                    <div class="text-xs text-slate-500 font-mono mt-0.5">${dr.phone || ''}</div>
+                                </td>
+                                <td class="driver-identity-cell p-4 font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
+                                <td class="p-3 align-top bg-white">${tripDetailsTable(drTrips)}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+                }
             }
         }
     } catch (err) {
@@ -2870,12 +3036,17 @@ async function loadUsers() {
             closeOwnPasswordModal();
             closeResetPasswordModal();
             document.getElementById('mainDashboard').classList.add('hidden');
+            document.body.classList.remove('dashboard-active');
+            closeMobileNav();
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
         }
         document.addEventListener("DOMContentLoaded", () => {
             initReportFilters();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeMobileNav();
         });
     </script>
 </body>
