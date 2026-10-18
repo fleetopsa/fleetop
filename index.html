@@ -215,6 +215,30 @@
         }
         body.is-printing #sidebarBackdrop,
         body.is-printing #menuToggleBtn { display: none !important; }
+        .suggest-list {
+            position: fixed;
+            z-index: 80;
+            max-height: 11rem;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+            padding: 0.25rem;
+        }
+        .suggest-option {
+            display: block;
+            width: 100%;
+            text-align: right;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.55rem;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            background: transparent;
+        }
+        .suggest-option.is-active,
+        .suggest-option:hover { background: #fffbeb; color: #92400e; }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
@@ -1072,16 +1096,16 @@
             <form onsubmit="saveTrip(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم العميل</label>
-                    <input type="text" id="clientName" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="أدخل اسم العميل">
+                    <input type="text" id="clientName" data-suggest="client" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="أدخل اسم العميل">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">من (المدينة)</label>
-                        <input type="text" id="fromCity" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم المدينة">
+                        <input type="text" id="fromCity" data-suggest="city" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم المدينة">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى (المدينة)</label>
-                        <input type="text" id="toCity" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم المدينة">
+                        <input type="text" id="toCity" data-suggest="city" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم المدينة">
                     </div>
                 </div>
                 <div>
@@ -1422,7 +1446,7 @@ async function generateCommissionReport() {
         const { data: trips, error } = await query;
         if (error) throw error;
 
-        const activeTrips = (trips || []).filter(t => t.status !== 'ملغاة');
+        const activeTrips = (trips || []).filter(t => !isCancelledTrip(t));
         if (!activeTrips.length) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
             document.getElementById('commTotalAmountDisplay').innerText = formatSAR(0);
@@ -1528,7 +1552,7 @@ async function openCommissionAndRevenueReport() {
         let truckStats = {};
 
         trips.forEach(trip => {
-            if (trip.status === 'ملغاة') return;
+            if (isCancelledTrip(trip)) return;
 
             let amount = parseFloat(trip.total_amount || trip.amount || 0);
             let commission = parseFloat(trip.driver_commission || trip.commission || 0);
@@ -1704,7 +1728,7 @@ async function generateFinancialReport() {
         const { data: trips, error } = await query;
         if (error) throw error;
 
-        const activeTrips = (trips || []).filter(t => t.status !== 'ملغاة');
+        const activeTrips = (trips || []).filter(t => !isCancelledTrip(t));
         let totalRev = 0;
         let collectedRev = 0;
         let pendingRev = 0;
@@ -1759,6 +1783,39 @@ async function resetFinancialFilters() {
     if (methodFilter) methodFilter.value = '';
     await generateFinancialReport();
 }
+function sameFleetValue(a, b) {
+    return String(a || '').trim() === String(b || '').trim();
+}
+
+function isCancelledTrip(trip) {
+    return String(trip?.status || '').trim() === 'ملغاة';
+}
+
+async function fetchActiveTrips() {
+    const { data, error } = await client.from('trips').select('trip_no, truck_plate, driver_name, status').eq('status', 'جارية');
+    if (error) throw error;
+    return data || [];
+}
+
+async function releaseFleetIfIdle(trip, exceptTripNo) {
+    const activeTrips = await fetchActiveTrips();
+    const others = activeTrips.filter(t => String(t.trip_no) !== String(exceptTripNo));
+    const truckIdentifier = trip.truck_plate || trip.truck;
+    const driverIdentifier = trip.driver_name || trip.driver;
+    const truckBusy = truckIdentifier && others.some(t => sameFleetValue(t.truck_plate, truckIdentifier));
+    const driverBusy = driverIdentifier && others.some(t => sameFleetValue(t.driver_name, driverIdentifier));
+
+    if (truckIdentifier && !truckBusy) {
+        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
+        if (error) console.error('خطأ في تحرير الشاحنة:', error);
+    }
+    if (driverIdentifier && !driverBusy) {
+        const { error } = await client.from('drivers').update({ status: 'متوفر' }).eq('name', String(driverIdentifier).trim());
+        if (error) console.error('خطأ في تحرير السائق:', error);
+    }
+    return { truckBusy, driverBusy };
+}
+
         // 3. تسوية وإنهاء الرحلة (مع جعل حقول الدفع اختيارية إذا كان المبلغ صفر)
 
       async function confirmCompleteTrip(e) {
@@ -1799,15 +1856,16 @@ async function resetFinancialFilters() {
         const paymentMethodVal = document.getElementById('modalPaymentMethod').value;
         const collectionDateVal = document.getElementById('modalCollectionDate').value;
 
+        const endingActiveTrip = String(currentTrip.status || '').trim() === 'جارية';
        let updateData = {
             paid_amount: newPaidAmount,
             remaining_amount: newRemainingAmount,
             payment_status: paymentStatus,
-            status: 'مكتملة', // <--- تم تغييرها من 'منتهية' إلى 'مكتملة' لتوحيد التسمية مع الفلتر والجدول
             driver_commission: driverCommission,
             payment_method: paymentMethodVal ? paymentMethodVal.trim() : null,
             collection_date: collectionDateVal ? collectionDateVal.trim() : null
         };
+        if (endingActiveTrip) updateData.status = 'مكتملة';
         // تنظيف القيم الفارغة لمنع أخطاء التاريخ
         Object.keys(updateData).forEach(key => {
             if (updateData[key] === "" || updateData[key] === "mm / dd / yyyy" || updateData[key] === undefined) {
@@ -1824,47 +1882,20 @@ async function resetFinancialFilters() {
             return;
         }
 
-        // 4. تحرير الشاحنة المرتبطة (تغيير حالتها إلى 'جاهزة للعمل')
-        // نتحقق من اسم الحقل في جدول الرحلات (قد يكون truck_plate أو truck)
-        const truckIdentifier = currentTrip.truck_plate || currentTrip.truck;
-        if (truckIdentifier) {
-            const plateVal = String(truckIdentifier).trim();
-            console.log("جاري تحديث حالة الشاحنة إلى جاهزة للعمل للوحة:", plateVal);
-            
-            const { data: truckRes, error: truckError } = await client
-                .from('trucks')
-                .update({ status: 'جاهزة للعمل' })
-                .eq('plate', plateVal)
-                .select();
-            
-            if (truckError) {
-                console.error("خطأ في تحديث جدول الشاحنات:", truckError);
+        if (endingActiveTrip) {
+            const { truckBusy, driverBusy } = await releaseFleetIfIdle(currentTrip, tripId);
+            closeCompleteModal();
+            if (truckBusy || driverBusy) {
+                alert('تم إنهاء الرحلة. الشاحنة أو السائق ما زالا في رحلة جارية أخرى، لذلك لم يتم تحريرهما.');
+            } else if (additionalPayment > 0) {
+                alert('تم إنهاء الرحلة وتسجيل السداد وتحرير الشاحنة والسائق.');
             } else {
-                console.log("تم تحديث الشاحنة بنجاح:", truckRes);
+                alert('تم إنهاء الرحلة بدون سداد، وتم تحرير الشاحنة والسائق.');
             }
+        } else {
+            closeCompleteModal();
+            alert('تم تسجيل السداد على الرحلة المنتهية. لم تُرجَع إلى الرحلات النشطة، ولم تتغير حالة الشاحنة أو السائق.');
         }
-
-        // 5. تحرير السائق المرتبط (تغيير حالته إلى 'متوفر')
-        const driverIdentifier = currentTrip.driver_name || currentTrip.driver;
-        if (driverIdentifier) {
-            const driverVal = String(driverIdentifier).trim();
-            console.log("جاري تحديث حالة السائق إلى متوفر للاسم:", driverVal);
-            
-            const { data: driverRes, error: driverError } = await client
-                .from('drivers')
-                .update({ status: 'متوفر' })
-                .eq('name', driverVal)
-                .select();
-            
-            if (driverError) {
-                console.error("خطأ في تحديث جدول السائقين:", driverError);
-            } else {
-                console.log("تم تحديث السائق بنجاح:", driverRes);
-            }
-        }
-
-        closeCompleteModal();
-        alert('تمت التسوية وإنهاء الرحلة بنجاح، وتحرير الشاحنة والسائق!');
         
         if (typeof loadAllData === 'function') {
             loadAllData();
@@ -1945,7 +1976,7 @@ async function initReportFilters() {
 
                 if (trips) {
                     trips.forEach(t => {
-                        if (t.status !== 'ملغاة') {
+                        if (!isCancelledTrip(t)) {
                             const tTotal = parseFloat(t.total_amount || 0);
                             let tPaid = parseFloat(t.paid_amount || 0);
                             if (tPaid > tTotal) tPaid = tTotal;
@@ -1964,7 +1995,7 @@ async function initReportFilters() {
                 document.getElementById('dashTotalRevenue').innerText = formatSAR(totalRev);
                 document.getElementById('dashCollectedAmount').innerText = formatSAR(collected);
                 document.getElementById('dashRemainingAmount').innerText = formatSAR(remaining);
-                document.getElementById('dashTotalTrips').innerText = trips ? trips.length : 0;
+                document.getElementById('dashTotalTrips').innerText = trips ? trips.filter(t => !isCancelledTrip(t)).length : 0;
 
                 const totalTrucks = trucks ? trucks.length : 0;
                 const readyTrucks = trucks ? trucks.filter(t => t.status === 'جاهزة للعمل').length : 0;
@@ -2144,7 +2175,7 @@ function switchTab(tabId) {
         const { data: trucks } = await client.from('trucks').select('*');
         const { data: drivers } = await client.from('drivers').select('*');
 
-        let activeTrips = trips ? trips.filter(t => t.status !== 'ملغاة') : [];
+        let activeTrips = trips ? trips.filter(t => !isCancelledTrip(t)) : [];
         let totalTrips = activeTrips.length;
 
         const totalTripsEl = document.getElementById('repTotalTrips');
@@ -2289,12 +2320,16 @@ function switchTab(tabId) {
         async function loadDropdowns() {
             const { data: trucks } = await client.from('trucks').select('*');
             const { data: drivers } = await client.from('drivers').select('*');
+            let activeTrips = [];
+            try { activeTrips = await fetchActiveTrips(); } catch (err) { console.error(err); }
+            const busyPlates = new Set(activeTrips.map(t => String(t.truck_plate || '').trim()));
+            const busyDrivers = new Set(activeTrips.map(t => String(t.driver_name || '').trim()));
             
             const truckSelect = document.getElementById('tripTruck');
             const driverSelect = document.getElementById('tripDriver');
 
-            const readyTrucks = trucks ? trucks.filter(t => t.status === 'جاهزة للعمل') : [];
-            const availableDrivers = drivers ? drivers.filter(d => d.status === 'متوفر') : [];
+            const readyTrucks = trucks ? trucks.filter(t => t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
+            const availableDrivers = drivers ? drivers.filter(d => d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
 
             truckSelect.innerHTML = `<option value="">اختر الشاحنة (الجاهزة للعمل فقط)...</option>` + 
                 readyTrucks.map(t => `<option value="${t.plate}">لوحة: ${t.plate} (${t.model || 'بدون موديل'})</option>`).join('');
@@ -2350,6 +2385,8 @@ function filterAndRenderTrips() {
         const total = parseFloat(tr.total_amount || 0);
         const remaining = parseFloat(tr.remaining_amount || 0);
 
+        if (isCancelledTrip(tr)) return matchStatus && paymentFilter === 'all';
+
         let pStatus = "غير مسدد";
         if (remaining <= 0 || paid >= total) pStatus = "مسدد";
         else if (paid > 0) pStatus = "سداد جزئي";
@@ -2381,7 +2418,9 @@ function renderTripsTable(trips) {
             const total = parseFloat(tr.total_amount || 0);
             const remaining = parseFloat(tr.remaining_amount || 0);
 
-            if (remaining <= 0 || paid >= total) {
+            if (isCancelledTrip(tr)) {
+                paymentBadge = '<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">ساقط من الحساب</span>';
+            } else if (remaining <= 0 || paid >= total) {
                 paymentBadge = '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">مسدد</span>';
             } else if (paid > 0) {
                 paymentBadge = '<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">سداد جزئي</span>';
@@ -2436,10 +2475,15 @@ function renderTripsTable(trips) {
                         <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> السائق: ${tr.driver_name}</div>
                     </td>
                     <td class="p-3.5 font-mono text-[11px]">
+                        ${isCancelledTrip(tr) ? `
+                        <div class="font-bold text-rose-600">المبلغ: ساقط</div>
+                        <div class="font-bold text-rose-600 mt-0.5">العمولة: ساقطة</div>
+                        ` : `
                         <div class="font-bold text-slate-900">الإجمالي: ${tr.total_amount} SR</div>
                         <div class="text-emerald-600">مدفوع: ${tr.paid_amount} SR</div>
                         <div class="text-rose-600">متبقي: ${tr.remaining_amount} SR</div>
                         <div class="text-amber-600 font-bold mt-0.5">العمولة: ${tr.driver_commission || 0} SR</div>
+                        `}
                     </td>
                     <td class="p-3.5 space-y-1.5">
                         <div>${statusBadge}</div>
@@ -2466,13 +2510,153 @@ function resetTripFilters() {
     if (paymentSelect) paymentSelect.value = 'all';
     filterAndRenderTrips();
 }
+const tripSuggestions = { client: [], city: [] };
+let suggestMenu = null;
+let suggestInput = null;
+let suggestItems = [];
+let suggestIndex = -1;
+
+function uniqueSorted(values) {
+    return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'ar'));
+}
+
+async function loadTripSuggestions() {
+    try {
+        const { data, error } = await client.from('trips').select('client_name, from_city, to_city');
+        if (error) throw error;
+        const clients = [];
+        const cities = [];
+        (data || []).forEach(trip => {
+            clients.push(trip.client_name);
+            cities.push(trip.from_city, trip.to_city);
+        });
+        tripSuggestions.client = uniqueSorted(clients);
+        tripSuggestions.city = uniqueSorted(cities);
+        if (suggestInput && document.activeElement === suggestInput) showTripSuggestions(suggestInput);
+    } catch (err) {
+        console.error('تعذر تحميل اقتراحات العملاء والمدن:', err);
+    }
+}
+
+function hideTripSuggestions() {
+    if (suggestMenu) suggestMenu.classList.add('hidden');
+    suggestInput = null;
+    suggestItems = [];
+    suggestIndex = -1;
+}
+
+function matchingSuggestions(source, query) {
+    const q = String(query || '').trim();
+    if (!q) return [];
+    const starts = [];
+    const contains = [];
+    source.forEach(item => {
+        const index = item.indexOf(q);
+        if (index === 0) starts.push(item);
+        else if (index > 0) contains.push(item);
+    });
+    return [...starts, ...contains].slice(0, 8);
+}
+
+function placeSuggestMenu(input) {
+    const rect = input.getBoundingClientRect();
+    suggestMenu.style.top = `${rect.bottom + 4}px`;
+    suggestMenu.style.left = `${rect.left}px`;
+    suggestMenu.style.width = `${rect.width}px`;
+}
+
+function paintSuggestActive() {
+    if (!suggestMenu) return;
+    [...suggestMenu.children].forEach((button, index) => {
+        button.classList.toggle('is-active', index === suggestIndex);
+        if (index === suggestIndex) button.scrollIntoView({ block: 'nearest' });
+    });
+}
+
+function chooseSuggestion(value) {
+    if (!suggestInput) return;
+    suggestInput.value = value;
+    suggestInput.focus();
+    hideTripSuggestions();
+}
+
+function showTripSuggestions(input) {
+    const source = tripSuggestions[input.dataset.suggest] || [];
+    const matches = matchingSuggestions(source, input.value);
+    if (!matches.length) {
+        hideTripSuggestions();
+        return;
+    }
+    if (!suggestMenu) {
+        suggestMenu = document.createElement('div');
+        suggestMenu.className = 'suggest-list hidden';
+        suggestMenu.setAttribute('role', 'listbox');
+        document.body.appendChild(suggestMenu);
+        suggestMenu.addEventListener('mousedown', (event) => {
+            const button = event.target.closest('.suggest-option');
+            if (!button) return;
+            event.preventDefault();
+            chooseSuggestion(suggestItems[Number(button.dataset.index)]);
+        });
+    }
+    suggestInput = input;
+    suggestItems = matches;
+    suggestIndex = -1;
+    suggestMenu.innerHTML = matches.map((value, index) =>
+        `<button type="button" class="suggest-option" data-index="${index}"></button>`
+    ).join('');
+    [...suggestMenu.children].forEach((button, index) => {
+        button.textContent = matches[index];
+    });
+    placeSuggestMenu(input);
+    suggestMenu.classList.remove('hidden');
+}
+
+function bindTripSuggestions() {
+    document.querySelectorAll('[data-suggest]').forEach(input => {
+        if (input.dataset.suggestBound) return;
+        input.dataset.suggestBound = '1';
+        input.addEventListener('input', () => showTripSuggestions(input));
+        input.addEventListener('keydown', (event) => {
+            if (!suggestMenu || suggestMenu.classList.contains('hidden') || suggestInput !== input) return;
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                suggestIndex = Math.min(suggestItems.length - 1, suggestIndex + 1);
+                paintSuggestActive();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                suggestIndex = Math.max(0, suggestIndex - 1);
+                paintSuggestActive();
+            } else if (event.key === 'Enter' && suggestIndex >= 0) {
+                event.preventDefault();
+                chooseSuggestion(suggestItems[suggestIndex]);
+            } else if (event.key === 'Escape') {
+                event.stopPropagation();
+                hideTripSuggestions();
+            }
+        });
+        input.addEventListener('blur', () => setTimeout(() => {
+            if (suggestInput === input) hideTripSuggestions();
+        }, 120));
+    });
+    const scroller = document.querySelector('#addTripModal .overflow-y-auto');
+    if (scroller && !scroller.dataset.suggestScroll) {
+        scroller.dataset.suggestScroll = '1';
+        scroller.addEventListener('scroll', hideTripSuggestions);
+    }
+}
+
     // 1. فتح نافذة إضافة رحلة جديدة (مدمجة ومنسقة بالكامل)
 function openAddTripModal() {
     loadDropdowns();
+    loadTripSuggestions();
+    bindTripSuggestions();
     document.getElementById('addTripModal').classList.remove('hidden');
 }
 // 2. إغلاق نافذة إضافة رحلة جديدة وتصفير النموذج بالكامل
 function closeAddTripModal() {
+    hideTripSuggestions();
     const modal = document.getElementById('addTripModal');
     if (modal) {
         modal.classList.add('hidden');
@@ -2499,16 +2683,20 @@ function closeAddTripModal() {
     const status = 'جارية';
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
 
-    const { data: activeTrips } = await client.from('trips').select('*').eq('status', 'جارية');
-    if (activeTrips) {
-        if (activeTrips.some(t => t.truck_plate === truck_plate)) {
-            alert('عذراً، هذه الشاحنة مسندة بالفعل إلى رحلة جارية أخرى!');
-            return;
-        }
-        if (activeTrips.some(d => d.driver_name === driver_name)) {
-            alert('عذراً، هذا السائق مشغول بالفعل في رحلة جارية أخرى!');
-            return;
-        }
+    let activeTrips = [];
+    try {
+        activeTrips = await fetchActiveTrips();
+    } catch (err) {
+        alert('تعذر التحقق من الرحلات الجارية. لم يتم حفظ الرحلة.');
+        return;
+    }
+    if (activeTrips.some(t => sameFleetValue(t.truck_plate, truck_plate))) {
+        alert('عذراً، هذه الشاحنة مسندة بالفعل إلى رحلة جارية أخرى!');
+        return;
+    }
+    if (activeTrips.some(d => sameFleetValue(d.driver_name, driver_name))) {
+        alert('عذراً، هذا السائق مشغول بالفعل في رحلة جارية أخرى!');
+        return;
     }
 
     const { error } = await client.from('trips').insert([{
@@ -2576,27 +2764,32 @@ async function cancelTrip(tripNo) {
         return;
     }
 
-    // تحديث حالة الرحلة إلى ملغاة
-    const { error: cancelErr } = await client.from('trips').update({ status: 'ملغاة' }).eq('trip_no', tripNo);
+    // إلغاء الرحلة وإسقاط مبلغها وعمولتها من الحسابات والإيرادات
+    const { error: cancelErr } = await client.from('trips').update({
+        status: 'ملغاة',
+        total_amount: 0,
+        paid_amount: 0,
+        remaining_amount: 0,
+        driver_commission: 0
+    }).eq('trip_no', tripNo);
 
     if (cancelErr) {
         alert('حدث خطأ أثناء إلغاء الرحلة');
         return;
     }
 
-    // تحرير الشاحنة
     const truckIdentifier = tripData.truck_plate || tripData.truck;
-if (truckIdentifier) {
-    await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
-}
-
-    // تحرير السائق
     const driverIdentifier = tripData.driver_name || tripData.driver;
+    if (truckIdentifier) {
+        const { error: truckError } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
+        if (truckError) console.error('خطأ في تحرير الشاحنة:', truckError);
+    }
     if (driverIdentifier) {
-        await client.from('drivers').update({ status: 'متوفر' }).eq('name', String(driverIdentifier).trim());
+        const { error: driverError } = await client.from('drivers').update({ status: 'متوفر' }).eq('name', String(driverIdentifier).trim());
+        if (driverError) console.error('خطأ في تحرير السائق:', driverError);
     }
 
-    alert('تم إلغاء الرحلة وتحرير الشاحنة والسائق بنجاح.');
+    alert('تم إلغاء الرحلة وتحرير الشاحنة والسائق. سقط مبلغ الرحلة من الإيرادات، وسقطت عمولة السائق.');
     if (typeof loadAllData === 'function') loadAllData();
 }       
         async function saveTruck(e) {
