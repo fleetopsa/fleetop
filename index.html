@@ -162,6 +162,8 @@
             font-size: 11px;
             color: #334155;
         }
+        html.session-restoring #loginSection { display: none !important; }
+        html.session-restoring #mainDashboard { display: flex !important; }
         #appContent, #appContent > main { min-height: 0; }
         #appContent { min-width: 0; }
         #menuToggleBtn, #sidebarBackdrop { display: none; }
@@ -270,8 +272,14 @@
             unicode-bidi: isolate;
         }
     </style>
+<script>
+        if (localStorage.getItem('sessionUserId')) document.documentElement.classList.add('session-restoring');
+    </script>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
+<script>
+    if (document.documentElement.classList.contains('session-restoring')) document.body.classList.add('dashboard-active');
+</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
     <symbol id="riyal-icon" viewBox="0 0 1124.14 1256.39">
         <path fill="currentColor" d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z"/>
@@ -342,6 +350,15 @@
                     <div>
                         <h1 class="font-black text-xs text-white">الاختيار العالمي</h1>
                         <p id="currentUserBadge" class="text-[10px] text-amber-400 font-bold">محمد القحطاني (مدير)</p>
+                        <script>
+                            (function () {
+                                if (!localStorage.getItem('sessionUserId')) return;
+                                var name = localStorage.getItem('userName') || '';
+                                var role = localStorage.getItem('userRole');
+                                var roleName = role === 'admin' ? 'مدير' : (role === 'accountant' ? 'محاسب' : 'مستخدم');
+                                if (name) document.getElementById('currentUserBadge').textContent = name + ' (' + roleName + ')';
+                            })();
+                        </script>
                     </div>
                 </div>
 
@@ -1493,75 +1510,7 @@ function isAdminUser(user = currentLoggedInUser) {
             document.getElementById('loginError').classList.remove('hidden');
             return;
         }
-        currentLoggedInUser = data;
-
-        // تخزين الدور واسم الموظف في المتصفح
-        localStorage.setItem('userRole', currentLoggedInUser.role);
-        localStorage.setItem('userName', currentLoggedInUser.employee_name);
-
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('mainDashboard').classList.remove('hidden');
-        document.body.classList.add('dashboard-active');
-        if (typeof switchTab === 'function') {
-            switchTab('dashboard');
-        }
-        
-        // تحديد مسمى الدور بالشكل الصحيح
-        let roleName = 'مستخدم';
-        if (currentLoggedInUser.role === 'admin') {
-            roleName = 'مدير';
-        } else if (currentLoggedInUser.role === 'accountant') {
-            roleName = 'محاسب';
-        }
-        
-        document.getElementById('currentUserBadge').innerText = (currentLoggedInUser.employee_name || u) + ' (' + roleName + ')';
-        
-        // ----------------------------------------------------
-        // الصلاحيات الأمنية للشرائط الجانبية
-        // ----------------------------------------------------
-        
-        // 1. القائمة المالية (للأدمن والمحاسب فقط)
-        const financialSubMenu = document.getElementById('financialSubMenu');
-        if (financialSubMenu) {
-            if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
-                financialSubMenu.classList.remove('hidden');
-            } else {
-                financialSubMenu.classList.add('hidden');
-            }
-        }
-// 3. البطاقات المالية في لوحة التحكم (للأدمن والمحاسب فقط)
-        const financialCardsContainer = document.getElementById('financialCardsContainer');
-        const dashboardStatGrid = document.getElementById('dashboardStatGrid');
-        if (financialCardsContainer) {
-            if (currentLoggedInUser.role === 'admin' || currentLoggedInUser.role === 'accountant') {
-                financialCardsContainer.classList.remove('hidden');
-                financialCardsContainer.classList.add('contents');
-                if (dashboardStatGrid) dashboardStatGrid.classList.add('stats-with-money');
-            } else {
-                financialCardsContainer.classList.add('hidden');
-                financialCardsContainer.classList.remove('contents');
-                if (dashboardStatGrid) dashboardStatGrid.classList.remove('stats-with-money');
-            }
-        }
-        
-        // 2. زر شاشة المستخدمين (للأدمن فقط حصرياً)
-        const tabUsersBtn = document.getElementById('tabUsersBtn');
-        if (tabUsersBtn) {
-            if (currentLoggedInUser.role === 'admin') {
-                tabUsersBtn.classList.remove('hidden');
-            } else {
-                tabUsersBtn.classList.add('hidden');
-            }
-        }
-        
-        if (typeof renderAdminControls === 'function') {
-            renderAdminControls();
-        }
-
-        // استدعاء دالة جلب كافة البيانات
-        if (typeof loadAllData === 'function') {
-            loadAllData();
-        }
+        openSession(data);
     } catch (err) {
         console.error("Login error:", err);
         document.getElementById('loginError').innerText = 'حدث خطأ في الاتصال، حاول مرة أخرى.';
@@ -3761,10 +3710,69 @@ async function loadUsers() {
             setTimeout(() => window.print(), 60);
         }
 
-        function handleLogout() {
-            currentLoggedInUser = null;
+        function clearStoredSession() {
+            localStorage.removeItem('sessionUserId');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
+            document.documentElement.classList.remove('session-restoring');
+        }
+
+        function openSession(user) {
+            currentLoggedInUser = user;
+            if (user && user.id != null) localStorage.setItem('sessionUserId', String(user.id));
+            localStorage.setItem('userRole', user.role || '');
+            localStorage.setItem('userName', user.employee_name || '');
+
+            document.documentElement.classList.remove('session-restoring');
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.body.classList.add('dashboard-active');
+            if (typeof switchTab === 'function') switchTab('dashboard');
+
+            let roleName = 'مستخدم';
+            if (user.role === 'admin') roleName = 'مدير';
+            else if (user.role === 'accountant') roleName = 'محاسب';
+            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')';
+
+            const financialSubMenu = document.getElementById('financialSubMenu');
+            const canSeeFinance = user.role === 'admin' || user.role === 'accountant';
+            if (financialSubMenu) financialSubMenu.classList.toggle('hidden', !canSeeFinance);
+
+            const financialCardsContainer = document.getElementById('financialCardsContainer');
+            const dashboardStatGrid = document.getElementById('dashboardStatGrid');
+            if (financialCardsContainer) {
+                financialCardsContainer.classList.toggle('hidden', !canSeeFinance);
+                financialCardsContainer.classList.toggle('contents', canSeeFinance);
+                if (dashboardStatGrid) dashboardStatGrid.classList.toggle('stats-with-money', canSeeFinance);
+            }
+
+            const tabUsersBtn = document.getElementById('tabUsersBtn');
+            if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
+
+            if (typeof renderAdminControls === 'function') renderAdminControls();
+            if (typeof loadAllData === 'function') loadAllData();
+        }
+
+        async function restoreSession() {
+            const id = localStorage.getItem('sessionUserId');
+            if (!id) return;
+            try {
+                const { data, error } = await client.from('app_users').select('*').eq('id', id).maybeSingle();
+                if (error || !data || data.status === 'موقوف') {
+                    clearStoredSession();
+                    return;
+                }
+                openSession(data);
+            } catch (err) {
+                console.error('Session restore error:', err);
+                document.documentElement.classList.remove('session-restoring');
+                document.body.classList.remove('dashboard-active');
+            }
+        }
+
+        function handleLogout() {
+            currentLoggedInUser = null;
+            clearStoredSession();
             closeOwnPasswordModal();
             closeResetPasswordModal();
             document.getElementById('mainDashboard').classList.add('hidden');
@@ -3776,6 +3784,7 @@ async function loadUsers() {
         }
         document.addEventListener("DOMContentLoaded", () => {
             initReportFilters();
+            restoreSession();
         });
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') closeMobileNav();
