@@ -254,9 +254,30 @@
             border: 0;
         }
         #settleDriversTable tr.driver-block-start td { border-top: 3px solid #0f172a; }
+        .riyal-symbol {
+            height: 0.9em;
+            width: auto;
+            aspect-ratio: 1124.14 / 1256.39;
+            display: inline-block;
+            vertical-align: -0.12em;
+            flex: none;
+        }
+        .money {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.22em;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+    <symbol id="riyal-icon" viewBox="0 0 1124.14 1256.39">
+        <path fill="currentColor" d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z"/>
+        <path fill="currentColor" d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z"/>
+    </symbol>
+</svg>
 
     <!-- خلفية شاحنات احترافية مع تغطية معتمة -->
     <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1920&auto=format&fit=crop');">
@@ -408,7 +429,7 @@
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500">إجمالي الإيرادات</span>
-                    <h3 id="dashTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                    <h3 id="dashTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg font-bold">
                     <i class="fa-solid fa-wallet"></i>
@@ -418,7 +439,7 @@
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500">المبالغ المحصلة</span>
-                    <h3 id="dashCollectedAmount" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                    <h3 id="dashCollectedAmount" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-lg font-bold">
                     <i class="fa-solid fa-circle-check"></i>
@@ -428,7 +449,7 @@
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500">المبالغ غير المحصلة</span>
-                    <h3 id="dashRemainingAmount" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                    <h3 id="dashRemainingAmount" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 text-lg font-bold">
                     <i class="fa-solid fa-clock-rotate-left"></i>
@@ -731,15 +752,15 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-xs text-slate-500 font-bold mb-1">إجمالي الإيرادات</div>
-            <div id="finTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono">0.00 SAR</div>
+            <div id="finTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
             <div class="text-xs text-emerald-600 font-bold mb-1">المبالغ المحصلة</div>
-            <div id="finCollectedAmount" class="text-2xl font-bold text-emerald-700 font-mono">0.00 SAR</div>
+            <div id="finCollectedAmount" class="text-2xl font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
             <div class="text-xs text-rose-600 font-bold mb-1">المبالغ غير المحصلة</div>
-            <div id="finPendingAmount" class="text-2xl font-bold text-rose-700 font-mono">0.00 SAR</div>
+            <div id="finPendingAmount" class="text-2xl font-bold text-rose-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-blue-100 bg-blue-50/20 shadow-sm flex items-center justify-between">
             <div>
@@ -994,7 +1015,7 @@
             <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm flex items-center justify-between">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-amber-700">إجمالي مبلغ العمولات</span>
-                    <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                    <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg">
                     <i class="fa-solid fa-wallet"></i>
@@ -1074,15 +1095,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
                 <span class="block text-[11px] font-bold text-amber-700">إجمالي العمولات</span>
-                <h3 id="settleEarnedDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                <h3 id="settleEarnedDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
                 <span class="block text-[11px] font-bold text-rose-700">المدفوع</span>
-                <h3 id="settlePaidDisplay" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                <h3 id="settlePaidDisplay" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
                 <span class="block text-[11px] font-bold text-emerald-700">المتبقي</span>
-                <h3 id="settleRemainingDisplay" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 SAR</h3>
+                <h3 id="settleRemainingDisplay" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
             </div>
         </div>
 
@@ -1256,13 +1277,25 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">إجمالي المبلغ (SR)</label>
-                        <input type="number" id="totalAmount" required oninput="calculateRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">مبلغ الرحلة <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                        <input type="number" id="totalAmount" required min="0" step="0.01" oninput="calculateRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المدفوع (SR)</label>
-                        <input type="number" id="paidAmount" required oninput="calculateRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المدفوع <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                        <input type="number" id="paidAmount" required min="0" step="0.01" oninput="calculateRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">ضريبة القيمة المضافة</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="vatMode" value="inclusive" checked onchange="calculateRemaining()" class="ml-2 accent-amber-500"> شامل الضريبة
+                        </label>
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="vatMode" value="exclusive" onchange="calculateRemaining()" class="ml-2 accent-amber-500"> غير شامل
+                        </label>
+                    </div>
+                    <p id="vatBreakdown" class="text-[11px] text-slate-500 mt-2 leading-5">سيُسجل المبلغ كما هو لأنه شامل ضريبة القيمة المضافة.</p>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المتبقي (تلقائي)</label>
@@ -1538,9 +1571,17 @@ function isAdminUser(user = currentLoggedInUser) {
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
 // دالة فتح تقرير العمولات البسيطة والمباشرة
-function formatSAR(amount) {
+function riyalMark() {
+    return '<svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>';
+}
+
+function formatMoney(amount) {
     const value = Number(amount) || 0;
-    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' SAR';
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatSAR(amount) {
+    return `<span class="money" dir="ltr">${riyalMark()}${formatMoney(amount)}</span>`;
 }
 
 function fillSelectOptions(selectId, items, allLabel) {
@@ -1607,7 +1648,7 @@ async function generateCommissionReport() {
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const earnedEl = document.getElementById('commTotalAmountDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
-        if (earnedEl) earnedEl.innerText = formatSAR(earned);
+        if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
         if (tripsEl) tripsEl.innerText = activeTrips.length.toLocaleString('en-US');
 
         if (!tbody) return;
@@ -1733,10 +1774,10 @@ function openTripDetails(tripNo) {
         ['الشاحنة', trip.truck_plate || trip.truck],
         ['السائق', trip.driver_name],
         ['حالة الرحلة', tripStatusLabel(trip)],
-        ['الإجمالي', formatSAR(trip.total_amount || 0)],
-        ['المدفوع', formatSAR(trip.paid_amount || 0)],
-        ['المتبقي', formatSAR(trip.remaining_amount || 0)],
-        ['عمولة السائق', formatSAR(commissionAmount(trip))],
+        ['الإجمالي', { html: formatSAR(trip.total_amount || 0) }],
+        ['المدفوع', { html: formatSAR(trip.paid_amount || 0) }],
+        ['المتبقي', { html: formatSAR(trip.remaining_amount || 0) }],
+        ['عمولة السائق', { html: formatSAR(commissionAmount(trip)) }],
         ['حالة السداد', tripPaymentLabel(trip)],
         ['طريقة السداد', trip.payment_method],
         ['تاريخ التحصيل', trip.collection_date]
@@ -1744,7 +1785,7 @@ function openTripDetails(tripNo) {
     body.innerHTML = fields.map(([label, value]) => `
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
             <div class="text-[10px] font-bold text-slate-500 mb-1">${label}</div>
-            <div class="font-bold text-slate-900">${escapeHtml(value || '---')}</div>
+            <div class="font-bold text-slate-900">${value && value.html ? value.html : escapeHtml(value || '---')}</div>
         </div>
     `).join('');
     modal.classList.remove('hidden');
@@ -1818,9 +1859,9 @@ async function generateCommissionSettlement() {
         const earnedEl = document.getElementById('settleEarnedDisplay');
         const paidEl = document.getElementById('settlePaidDisplay');
         const remainingEl = document.getElementById('settleRemainingDisplay');
-        if (earnedEl) earnedEl.innerText = formatSAR(earned);
-        if (paidEl) paidEl.innerText = formatSAR(paid);
-        if (remainingEl) remainingEl.innerText = formatSAR(earned - paid);
+        if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
+        if (paidEl) paidEl.innerHTML = formatSAR(paid);
+        if (remainingEl) remainingEl.innerHTML = formatSAR(earned - paid);
 
         const groups = new Map();
         const ensure = (name) => {
@@ -1921,7 +1962,7 @@ async function saveCommissionPayout(e) {
     try {
         const remaining = await driverCommissionBalance(driverName);
         if (amount - remaining > 0.009) {
-            alert('المبلغ أكبر من المتبقي في عمولة السائق. المتبقي: ' + formatSAR(remaining));
+            alert('المبلغ أكبر من المتبقي في عمولة السائق. المتبقي: ' + formatMoney(remaining));
             return;
         }
 
@@ -2044,11 +2085,11 @@ async function openCommissionAndRevenueReport() {
 
         // تحديث واجهة العرض للملخصات
         if (document.getElementById('totalRevenueDisplay')) 
-            document.getElementById('totalRevenueDisplay ലേഖن').innerText = totalRevenue.toLocaleString() + ' ر.س';
+            document.getElementById('totalRevenueDisplay ലേഖن').innerHTML = formatSAR(totalRevenue);
         if (document.getElementById('collectedRevenueDisplay')) 
-            document.getElementById('collectedRevenueDisplay').innerText = collectedRevenue.toLocaleString() + ' ر.س';
+            document.getElementById('collectedRevenueDisplay').innerHTML = formatSAR(collectedRevenue);
         if (document.getElementById('pendingRevenueDisplay')) 
-            document.getElementById('pendingRevenueDisplay').innerText = pendingRevenue.toLocaleString() + ' ر.س';
+            document.getElementById('pendingRevenueDisplay').innerHTML = formatSAR(pendingRevenue);
 
         // تعبئة جدول عمولات السائقين
         let driverTableHTML = '';
@@ -2057,7 +2098,7 @@ async function openCommissionAndRevenueReport() {
                 <tr class="border-b border-slate-100 hover:bg-slate-50 font-mono text-xs">
                     <td class="p-3 font-bold text-slate-800 font-sans">${driverName} <span class="block text-[10px] text-slate-400 font-normal">${stats.phone}</span></td>
                     <td class="p-3 text-center font-bold text-blue-600">${stats.tripsCount}</td>
-                    <td class="p-3 font-bold text-amber-600">${stats.totalCommission.toLocaleString()} ر.س</td>
+                    <td class="p-3 font-bold text-amber-600">${formatSAR(stats.totalCommission)}</td>
                 </tr>
             `;
         }
@@ -2077,7 +2118,7 @@ async function openCommissionAndRevenueReport() {
                     <td class="p-3 font-bold text-slate-800 font-sans">${truckPlate}</td>
                     <td class="p-3 text-slate-600 font-sans">${stats.model}</td>
                     <td class="p-3 text-center font-bold text-blue-600">${stats.tripsCount}</td>
-                    <td class="p-3 font-bold text-emerald-600">${stats.totalRevenue.toLocaleString()} ر.س</td>
+                    <td class="p-3 font-bold text-emerald-600">${formatSAR(stats.totalRevenue)}</td>
                 </tr>
             `;
         }
@@ -2203,9 +2244,9 @@ async function generateFinancialReport() {
         const collectedEl = document.getElementById('finCollectedAmount');
         const pendingEl = document.getElementById('finPendingAmount');
         const tripsEl = document.getElementById('finTotalTrips');
-        if (totalEl) totalEl.innerText = formatSAR(totalRev);
-        if (collectedEl) collectedEl.innerText = formatSAR(collectedRev);
-        if (pendingEl) pendingEl.innerText = formatSAR(pendingRev);
+        if (totalEl) totalEl.innerHTML = formatSAR(totalRev);
+        if (collectedEl) collectedEl.innerHTML = formatSAR(collectedRev);
+        if (pendingEl) pendingEl.innerHTML = formatSAR(pendingRev);
         if (tripsEl) tripsEl.innerText = activeTrips.length.toLocaleString('en-US');
 
         if (!tbody) return;
@@ -2469,9 +2510,9 @@ async function initReportFilters() {
                     });
                 }
 
-                document.getElementById('dashTotalRevenue').innerText = formatSAR(totalRev);
-                document.getElementById('dashCollectedAmount').innerText = formatSAR(collected);
-                document.getElementById('dashRemainingAmount').innerText = formatSAR(remaining);
+                document.getElementById('dashTotalRevenue').innerHTML = formatSAR(totalRev);
+                document.getElementById('dashCollectedAmount').innerHTML = formatSAR(collected);
+                document.getElementById('dashRemainingAmount').innerHTML = formatSAR(remaining);
                 document.getElementById('dashTotalTrips').innerText = trips ? trips.filter(isBillableTrip).length : 0;
 
                 const totalTrucks = trucks ? trucks.length : 0;
@@ -2506,7 +2547,7 @@ async function initReportFilters() {
                                 <div class="font-bold text-slate-800">لوحة: ${tr.truck_plate}</div>
                                 <div class="text-[11px] text-slate-600">السائق: ${tr.driver_name}</div>
                             </td>
-                            <td class="p-3.5 font-mono font-bold text-slate-900">${tr.total_amount} SR</td>
+                            <td class="p-3.5 font-mono font-bold text-slate-900">${formatSAR(tr.total_amount)}</td>
                             <td class="p-3.5"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">جارية</span></td>
                         </tr>
                     `).join('');
@@ -2789,11 +2830,28 @@ function switchTab(tabId) {
         console.error("Error generating report with filters:", err);
     }
 }
+        function roundMoney(value) {
+            return Math.round((Number(value) || 0) * 100) / 100;
+        }
+
+        function tripAmountBreakdown() {
+            const entered = roundMoney(parseFloat(document.getElementById('totalAmount').value) || 0);
+            const inclusive = document.querySelector('input[name="vatMode"]:checked')?.value !== 'exclusive';
+            const vat = inclusive ? 0 : roundMoney(entered * 0.15);
+            const total = roundMoney(entered + vat);
+            return { inclusive, entered, vat, total };
+        }
+
         function calculateRemaining() {
-            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const { inclusive, vat, total } = tripAmountBreakdown();
             const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
             const remaining = total - paid;
-            document.getElementById('remainingAmount').value = remaining >= 0 ? remaining : 0;
+            document.getElementById('remainingAmount').value = remaining >= 0 ? roundMoney(remaining) : 0;
+            const breakdown = document.getElementById('vatBreakdown');
+            if (!breakdown) return;
+            breakdown.innerHTML = inclusive
+                ? 'سيُسجل المبلغ كما هو لأنه شامل ضريبة القيمة المضافة.'
+                : `ضريبة 15٪: ${formatSAR(vat)} — الإجمالي الذي سيُسجل شامل الضريبة: ${formatSAR(total)}`;
         }
 
         async function loadDropdowns() {
@@ -2958,10 +3016,10 @@ function renderTripsTable(trips) {
                         <div class="font-bold text-rose-600">المبلغ: ساقط</div>
                         <div class="font-bold text-rose-600 mt-0.5">العمولة: ساقطة</div>
                         ` : `
-                        <div class="font-bold text-slate-900">الإجمالي: ${tr.total_amount} SR</div>
-                        <div class="text-emerald-600">مدفوع: ${tr.paid_amount} SR</div>
-                        <div class="text-rose-600">متبقي: ${tr.remaining_amount} SR</div>
-                        <div class="text-amber-600 font-bold mt-0.5">العمولة: ${tr.driver_commission || 0} SR</div>
+                        <div class="font-bold text-slate-900">الإجمالي: ${formatSAR(tr.total_amount)}</div>
+                        <div class="text-emerald-600">مدفوع: ${formatSAR(tr.paid_amount)}</div>
+                        <div class="text-rose-600">متبقي: ${formatSAR(tr.remaining_amount)}</div>
+                        <div class="text-amber-600 font-bold mt-0.5">العمولة: ${formatSAR(tr.driver_commission || 0)}</div>
                         `}
                     </td>
                     <td class="p-3.5 space-y-1.5">
@@ -3156,10 +3214,11 @@ function closeAddTripModal() {
     const truck_plate = document.getElementById('tripTruck').value;
     const driver_name = document.getElementById('tripDriver').value;
     const driver_commission = parseFloat(document.getElementById('driverCommissionInput').value) || 0;
-    const total_amount = parseFloat(document.getElementById('totalAmount').value);
-    let paid_amount = parseFloat(document.getElementById('paidAmount').value);
+    const { total: total_amount } = tripAmountBreakdown();
+    let paid_amount = parseFloat(document.getElementById('paidAmount').value) || 0;
     if (paid_amount > total_amount) paid_amount = total_amount;
-    const remaining_amount = total_amount - paid_amount;
+    paid_amount = roundMoney(paid_amount);
+    const remaining_amount = roundMoney(total_amount - paid_amount);
     const status = 'جارية';
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
 
