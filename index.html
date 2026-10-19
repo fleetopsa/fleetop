@@ -23,14 +23,15 @@
         .truck-card-fixed { width: 100%; }
         .stat-grid-wrap { container-type: inline-size; }
         .stat-grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
-        .stat-grid:not(.stats-with-money) { grid-template-columns: 9.25rem; }
+        .stat-grid:not(.stats-with-money) { grid-template-columns: 15.5rem; }
         .stat-card-money h3, .stat-card-trips h3 { white-space: nowrap; }
+        .stat-card-trips .stat-label { white-space: nowrap; }
         .driver-identity-cell { vertical-align: middle; text-align: center; }
         @container (min-width: 640px) {
             .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
         }
         @container (min-width: 1040px) {
-            .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 9.25rem; }
+            .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 15.5rem; }
         }
         @media (min-width: 640px) {
             .truck-cards-many { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -476,7 +477,7 @@
 
         <div class="stat-card-trips bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
             <div class="min-w-0">
-                <span class="block text-[11px] font-bold text-slate-500">عدد الرحلات</span>
+                <span class="stat-label block text-[11px] font-bold text-slate-500">عدد الرحلات المنجزة</span>
                 <h3 id="dashTotalTrips" class="text-2xl font-bold text-blue-600 font-mono mt-1">0</h3>
             </div>
             <div class="w-9 h-9 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-base font-bold">
@@ -586,9 +587,9 @@
                 <div class="flex flex-col">
                     <span class="block text-[11px] font-bold mb-1 invisible" aria-hidden="true">الارتفاع</span>
                     <div class="flex-1 bg-slate-50 px-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
-                        <span class="text-[11px] text-slate-500 font-bold whitespace-nowrap flex items-center gap-2">
+                        <span class="text-[11px] text-slate-500 font-bold flex items-center gap-2">
                             <i class="fa-solid fa-route text-amber-500"></i>
-                            عداد الرحلات
+                            عدد الرحلات كاملة
                         </span>
                         <span id="filterResultCount" class="text-sm font-bold text-slate-900 font-mono leading-none">0</span>
                     </div>
@@ -663,7 +664,7 @@
                 </div>
                 <div class="bg-slate-50 px-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shrink-0 min-w-[11rem] self-stretch">
                     <div>
-                        <span class="block text-[11px] text-slate-500 font-bold">عدد الرحلات</span>
+                        <span class="block text-[11px] text-slate-500 font-bold">عدد الرحلات المنجزة</span>
                         <span id="repTotalTrips" class="text-2xl font-bold text-slate-900 font-mono leading-none">0</span>
                     </div>
                     <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-amber-500 text-lg border border-slate-200">
@@ -698,7 +699,7 @@
     <thead class="bg-slate-800 text-slate-200 uppercase">
         <tr>
             <th class="p-3" id="driverReportIdentityHead">اسم السائق ورقم الجوال</th>
-            <th class="p-3 text-center">عدد الرحلات</th>
+            <th class="p-3 text-center">الرحلات المنجزة</th>
             <th colspan="5" class="p-3 text-center font-bold text-sm">
         تفاصيل الرحلات 
     
@@ -781,7 +782,7 @@
         </div>
         <div class="bg-white p-5 rounded-2xl border border-blue-100 bg-blue-50/20 shadow-sm flex items-center justify-between">
             <div>
-                <div class="text-xs text-blue-600 font-bold mb-1">عدد الرحلات</div>
+                <div class="text-xs text-blue-600 font-bold mb-1">عدد الرحلات المنجزة</div>
                 <div id="finTotalTrips" class="text-2xl font-bold text-blue-700 font-mono">0</div>
             </div>
             <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-xl">
@@ -834,7 +835,7 @@
                     <tr class="bg-slate-50 text-slate-700 border-b">
                         <th class="p-3">رقم اللوحة</th>
                         <th class="p-3">الطراز / النوع</th>
-                        <th class="p-3 text-center">عدد الرحلات</th>
+                        <th class="p-3 text-center">الرحلات المنجزة</th>
                         <th class="p-3">إجمالي الإيراد</th>
                     </tr>
                 </thead>
@@ -851,7 +852,7 @@
                 <thead>
                     <tr class="bg-slate-50 text-slate-700 border-b">
                         <th class="p-3">اسم السائق</th>
-                        <th class="p-3 text-center">عدد الرحلات</th>
+                        <th class="p-3 text-center">الرحلات المنجزة</th>
                         <th class="p-3">إجمالي العمولات المستحقة</th>
                     </tr>
                 </thead>
@@ -1040,7 +1041,7 @@
             </div>
             <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-blue-700">عدد الرحلات</span>
+                    <span class="block text-[11px] font-bold text-blue-700">عدد الرحلات المنجزة</span>
                     <h3 id="commTotalTripsDisplay" class="text-2xl font-bold text-blue-700 font-mono mt-1">0</h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-lg">
@@ -1321,6 +1322,104 @@
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ الرحلة</button>
                     <button type="button" onclick="closeAddTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editTripModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 text-slate-900 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> تعديل الرحلة <span id="editTripNo" class="font-mono text-amber-600 mr-1"></span></h3>
+                <button type="button" onclick="closeEditTripModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p id="editTripStatusNote" class="text-[11px] text-slate-500 mb-3 leading-5"></p>
+            <form onsubmit="saveEditTrip(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم العميل</label>
+                    <input type="text" id="editClientName" data-suggest="client" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">من (المدينة)</label>
+                        <input type="text" id="editFromCity" data-suggest="city" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى (المدينة)</label>
+                        <input type="text" id="editToCity" data-suggest="city" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">نوع الرحلة</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="editTripType" value="ذهاب" class="ml-2 accent-amber-500"> ذهاب فقط
+                        </label>
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="editTripType" value="ذهاب وعودة" class="ml-2 accent-amber-500"> ذهاب وعودة
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ المغادرة</label>
+                    <input type="date" id="editDepartureDate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
+                    <select id="editTripTruck" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                    <select id="editTripDriver" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">عمولة السائق</label>
+                    <input type="number" id="editDriverCommission" min="0" step="0.01" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">مبلغ الرحلة <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                        <input type="number" id="editTotalAmount" required min="0" step="0.01" oninput="calculateEditRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المدفوع <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                        <input type="number" id="editPaidAmount" required min="0" step="0.01" oninput="calculateEditRemaining()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">ضريبة القيمة المضافة</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="editVatMode" value="inclusive" checked onchange="calculateEditRemaining()" class="ml-2 accent-amber-500"> شامل الضريبة
+                        </label>
+                        <label class="flex items-center justify-center p-3 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-xs cursor-pointer hover:bg-amber-50 transition font-bold">
+                            <input type="radio" name="editVatMode" value="exclusive" onchange="calculateEditRemaining()" class="ml-2 accent-amber-500"> غير شامل
+                        </label>
+                    </div>
+                    <p id="editVatBreakdown" class="text-[11px] text-slate-500 mt-2 leading-5">المبلغ المعروض هو الإجمالي المسجل. اختر غير شامل فقط إذا كان الرقم قبل الضريبة.</p>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المتبقي (تلقائي)</label>
+                    <input type="text" id="editRemainingAmount" readonly class="w-full p-3 bg-slate-100 text-rose-600 border border-slate-200 rounded-xl text-xs font-black font-mono" value="0">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">طريقة السداد</label>
+                        <select id="editPaymentMethod" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="">بدون</option>
+                            <option value="نقدي">نقدي</option>
+                            <option value="تحويل على الراجحي">تحويل على الراجحي</option>
+                            <option value="تحويل على الأهلي">تحويل على الأهلي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ التحصيل</label>
+                        <input type="date" id="editCollectionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ التعديل</button>
+                    <button type="button" onclick="closeEditTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1688,7 +1787,7 @@ function tripRouteText(trip) {
 function tripStatusLabel(trip) {
     const status = String(trip?.status || '').trim();
     if (status === 'جارية') return 'جارية';
-    if (status === 'مكتملة') return 'منتهية';
+    if (status === 'مكتملة' || status === 'منتهية') return 'منتهية';
     if (status === 'ملغاة') return 'ملغاة';
     return status || '---';
 }
@@ -2239,6 +2338,11 @@ function sameFleetValue(a, b) {
 
 function isCancelledTrip(trip) {
     return String(trip?.status || '').trim() === 'ملغاة';
+}
+
+function isCompletedTrip(trip) {
+    const status = String(trip?.status || '').trim();
+    return status === 'مكتملة' || status === 'منتهية';
 }
 
 function isCommissionPayout(trip) {
@@ -2865,7 +2969,8 @@ function filterAndRenderTrips() {
 
     let filtered = allTripsCache.filter(tr => {
         const trStatus = (tr.status || '').trim();
-        const matchStatus = (statusFilter === 'all') || (trStatus === statusFilter.trim());
+        const normalizedStatus = trStatus === 'منتهية' ? 'مكتملة' : trStatus;
+        const matchStatus = (statusFilter === 'all') || (normalizedStatus === statusFilter.trim());
 
         const paid = parseFloat(tr.paid_amount || 0);
         const total = parseFloat(tr.total_amount || 0);
@@ -2916,7 +3021,7 @@ function renderTripsTable(trips) {
 
             if (tr.status === 'جارية') {
                 statusBadge = '<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full text-[10px] font-bold">جارية</span>';
-            } else if (tr.status === 'مكتملة') {
+            } else if (isCompletedTrip(tr)) {
                 statusBadge = '<span class="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-bold">منتهية</span>';
             } else if (tr.status === 'ملغاة') {
                 statusBadge = '<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-[10px] font-bold">ملغاة</span>';
@@ -2924,6 +3029,9 @@ function renderTripsTable(trips) {
 
             let actionButtons = '';
             const currentRemaining = tr.remaining_amount || 0;
+            const editButton = (isAdminUser() && (tr.status === 'جارية' || isCompletedTrip(tr)))
+                ? `<button type="button" onclick='openEditTripModal(${JSON.stringify(tr.trip_no)})' class="bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="تعديل بيانات الرحلة"><i class="fa-solid fa-pen-to-square ml-1"></i> تعديل</button>`
+                : '';
 
             if (tr.status === 'جارية') {
                 actionButtons = `
@@ -2977,8 +3085,11 @@ function renderTripsTable(trips) {
                         <div class="text-[11px] text-slate-700 font-bold"><i class="fa-solid fa-credit-card ml-1 text-amber-500"></i> ${tr.payment_method || '-'}</div>
                         <div class="text-[10px] text-slate-500 font-mono"><i class="fa-solid fa-calendar-days ml-1 text-amber-500"></i> التحصيل: ${tr.collection_date || '-'}</div>
                     </td>
-                    <td class="p-3.5 text-center space-x-1 space-x-reverse">
-                        ${actionButtons}
+                    <td class="p-3.5 text-center">
+                        <div class="flex flex-wrap items-center justify-center gap-1">
+                            ${editButton}
+                            ${actionButtons}
+                        </div>
                     </td>
                 </tr>
             `;
@@ -3127,11 +3238,11 @@ function bindTripSuggestions() {
             if (suggestInput === input) hideTripSuggestions();
         }, 120));
     });
-    const scroller = document.querySelector('#addTripModal .overflow-y-auto');
-    if (scroller && !scroller.dataset.suggestScroll) {
+    document.querySelectorAll('#addTripModal .overflow-y-auto, #editTripModal .overflow-y-auto').forEach(scroller => {
+        if (scroller.dataset.suggestScroll) return;
         scroller.dataset.suggestScroll = '1';
         scroller.addEventListener('scroll', hideTripSuggestions);
-    }
+    });
 }
 
     // 1. فتح نافذة إضافة رحلة جديدة (مدمجة ومنسقة بالكامل)
@@ -3204,6 +3315,197 @@ function closeAddTripModal() {
     } else {
         alert('حدث خطأ أثناء حفظ الرحلة: ' + error.message);
     }
+}
+
+let editingTripSnapshot = null;
+
+function dateInputValue(value) {
+    const text = String(value || '').trim();
+    return text.length >= 10 ? text.slice(0, 10) : '';
+}
+
+function editAmountBreakdown() {
+    const entered = roundMoney(parseFloat(document.getElementById('editTotalAmount').value) || 0);
+    const inclusive = document.querySelector('input[name="editVatMode"]:checked')?.value !== 'exclusive';
+    const vat = inclusive ? 0 : roundMoney(entered * 0.15);
+    const total = roundMoney(entered + vat);
+    return { inclusive, vat, total };
+}
+
+function calculateEditRemaining() {
+    const { inclusive, vat, total } = editAmountBreakdown();
+    const paid = parseFloat(document.getElementById('editPaidAmount').value) || 0;
+    const remaining = total - paid;
+    const remainingInput = document.getElementById('editRemainingAmount');
+    if (remainingInput) remainingInput.value = remaining >= 0 ? roundMoney(remaining) : 0;
+    const breakdown = document.getElementById('editVatBreakdown');
+    if (!breakdown) return;
+    breakdown.innerHTML = inclusive
+        ? 'المبلغ المعروض هو الإجمالي المسجل. اختر غير شامل فقط إذا كان الرقم قبل الضريبة.'
+        : `ضريبة 15٪: ${formatSAR(vat)} — الإجمالي بعد التعديل: ${formatSAR(total)}`;
+}
+
+function closeEditTripModal() {
+    hideTripSuggestions();
+    editingTripSnapshot = null;
+    document.getElementById('editTripModal')?.classList.add('hidden');
+}
+
+async function fillEditFleetOptions(trip) {
+    const { data: trucks } = await client.from('trucks').select('plate, status').order('plate');
+    const { data: drivers } = await client.from('drivers').select('name, status').order('name');
+    const truckSelect = document.getElementById('editTripTruck');
+    const driverSelect = document.getElementById('editTripDriver');
+    const plates = (trucks || []).map(t => String(t.plate || '').trim()).filter(Boolean);
+    const names = (drivers || []).map(d => String(d.name || '').trim()).filter(Boolean);
+    const currentPlate = String(trip.truck_plate || '').trim();
+    const currentDriver = String(trip.driver_name || '').trim();
+    if (currentPlate && !plates.includes(currentPlate)) plates.unshift(currentPlate);
+    if (currentDriver && !names.includes(currentDriver)) names.unshift(currentDriver);
+    truckSelect.innerHTML = plates.map(plate => {
+        const row = (trucks || []).find(t => String(t.plate || '').trim() === plate);
+        const status = row?.status ? ` (${row.status})` : '';
+        return `<option value="${escapeHtml(plate)}">${escapeHtml(plate + status)}</option>`;
+    }).join('');
+    driverSelect.innerHTML = names.map(name => {
+        const row = (drivers || []).find(d => String(d.name || '').trim() === name);
+        const status = row?.status ? ` (${row.status})` : '';
+        return `<option value="${escapeHtml(name)}">${escapeHtml(name + status)}</option>`;
+    }).join('');
+    truckSelect.value = currentPlate;
+    driverSelect.value = currentDriver;
+}
+
+async function openEditTripModal(tripNo) {
+    if (!isAdminUser()) {
+        alert('تعديل الرحلة متاح لصلاحيات المدير فقط.');
+        return;
+    }
+    let trip = allTripsCache.find(t => String(t.trip_no) === String(tripNo));
+    if (!trip) {
+        const { data, error } = await client.from('trips').select('*').eq('trip_no', tripNo).maybeSingle();
+        if (error || !data) {
+            alert('تعذر العثور على الرحلة.');
+            return;
+        }
+        trip = data;
+    }
+    if (isCancelledTrip(trip) || isCommissionPayout(trip)) {
+        alert('لا يمكن تعديل هذه الرحلة.');
+        return;
+    }
+    editingTripSnapshot = trip;
+    document.getElementById('editTripNo').textContent = trip.trip_no || '';
+    document.getElementById('editTripStatusNote').textContent = trip.status === 'جارية'
+        ? 'الرحلة جارية. تغيير الشاحنة أو السائق ينقل الرحلة إليهما، ويحرر السابقين إذا لم يكونا في رحلة أخرى.'
+        : 'الرحلة منتهية. التعديل يصحّح السجل فقط، ولا يغيّر حالة الشاحنة أو السائق الحالية.';
+    document.getElementById('editClientName').value = trip.client_name || '';
+    document.getElementById('editFromCity').value = trip.from_city || '';
+    document.getElementById('editToCity').value = trip.to_city || '';
+    const tripType = trip.trip_type === 'ذهاب وعودة' ? 'ذهاب وعودة' : 'ذهاب';
+    document.querySelectorAll('input[name="editTripType"]').forEach(input => {
+        input.checked = input.value === tripType;
+    });
+    document.getElementById('editDepartureDate').value = dateInputValue(trip.departure_date);
+    document.getElementById('editDriverCommission').value = trip.driver_commission || 0;
+    document.getElementById('editTotalAmount').value = trip.total_amount || 0;
+    document.getElementById('editPaidAmount').value = trip.paid_amount || 0;
+    document.querySelectorAll('input[name="editVatMode"]').forEach(input => {
+        input.checked = input.value === 'inclusive';
+    });
+    const method = document.getElementById('editPaymentMethod');
+    [...method.options].forEach(option => {
+        if (option.dataset.extra) option.remove();
+    });
+    const knownMethod = [...method.options].some(option => option.value === (trip.payment_method || ''));
+    if (!knownMethod && trip.payment_method) {
+        method.insertAdjacentHTML('beforeend', `<option data-extra="1" value="${escapeHtml(trip.payment_method)}">${escapeHtml(trip.payment_method)}</option>`);
+    }
+    method.value = trip.payment_method || '';
+    document.getElementById('editCollectionDate').value = dateInputValue(trip.collection_date);
+    await fillEditFleetOptions(trip);
+    calculateEditRemaining();
+    loadTripSuggestions();
+    bindTripSuggestions();
+    document.getElementById('editTripModal').classList.remove('hidden');
+}
+
+async function saveEditTrip(e) {
+    if (e) e.preventDefault();
+    if (!isAdminUser()) {
+        alert('تعديل الرحلة متاح لصلاحيات المدير فقط.');
+        return;
+    }
+    const trip = editingTripSnapshot;
+    if (!trip?.trip_no) {
+        alert('تعذر تحديد الرحلة.');
+        return;
+    }
+    const client_name = document.getElementById('editClientName').value.trim();
+    const from_city = document.getElementById('editFromCity').value.trim();
+    const to_city = document.getElementById('editToCity').value.trim();
+    const trip_type = document.querySelector('input[name="editTripType"]:checked')?.value || 'ذهاب';
+    const departure_date = document.getElementById('editDepartureDate').value;
+    const truck_plate = document.getElementById('editTripTruck').value.trim();
+    const driver_name = document.getElementById('editTripDriver').value.trim();
+    const driver_commission = roundMoney(parseFloat(document.getElementById('editDriverCommission').value) || 0);
+    const { total: total_amount } = editAmountBreakdown();
+    let paid_amount = roundMoney(parseFloat(document.getElementById('editPaidAmount').value) || 0);
+    if (paid_amount > total_amount) {
+        alert('المبلغ المدفوع أكبر من إجمالي الرحلة بعد التعديل.');
+        return;
+    }
+    const remaining_amount = roundMoney(total_amount - paid_amount);
+    const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
+    const payment_method = document.getElementById('editPaymentMethod').value.trim() || null;
+    const collection_date = document.getElementById('editCollectionDate').value || null;
+
+    if (trip.status === 'جارية') {
+        let activeTrips = [];
+        try {
+            activeTrips = await fetchActiveTrips();
+        } catch (err) {
+            alert('تعذر التحقق من الرحلات الجارية. لم يُحفظ التعديل.');
+            return;
+        }
+        const others = activeTrips.filter(t => String(t.trip_no) !== String(trip.trip_no));
+        if (others.some(t => sameFleetValue(t.truck_plate, truck_plate))) {
+            alert('عذراً، هذه الشاحنة مسندة بالفعل إلى رحلة جارية أخرى.');
+            return;
+        }
+        if (others.some(t => sameFleetValue(t.driver_name, driver_name))) {
+            alert('عذراً، هذا السائق مشغول بالفعل في رحلة جارية أخرى.');
+            return;
+        }
+    }
+
+    const { error } = await client.from('trips').update({
+        client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name,
+        driver_commission, total_amount, paid_amount, remaining_amount, payment_status,
+        payment_method, collection_date
+    }).eq('trip_no', trip.trip_no);
+
+    if (error) {
+        alert('تعذر حفظ التعديل: ' + error.message);
+        return;
+    }
+
+    if (trip.status === 'جارية') {
+        if (!sameFleetValue(trip.truck_plate, truck_plate)) {
+            await releaseFleetIfIdle({ truck_plate: trip.truck_plate }, trip.trip_no);
+            const truckUpdate = await client.from('trucks').update({ status: 'في رحلة' }).eq('plate', truck_plate);
+            if (truckUpdate.error) console.error('خطأ في تحديث الشاحنة:', truckUpdate.error);
+        }
+        if (!sameFleetValue(trip.driver_name, driver_name)) {
+            await releaseFleetIfIdle({ driver_name: trip.driver_name }, trip.trip_no);
+            const driverUpdate = await client.from('drivers').update({ status: 'في رحلة' }).eq('name', driver_name);
+            if (driverUpdate.error) console.error('خطأ في تحديث السائق:', driverUpdate.error);
+        }
+    }
+
+    closeEditTripModal();
+    alert('تم حفظ تعديل الرحلة ' + trip.trip_no);
+    if (typeof loadAllData === 'function') loadAllData();
 }
 
         async function loadTrucks() {
