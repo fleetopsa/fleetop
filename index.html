@@ -239,6 +239,14 @@
         }
         .suggest-option.is-active,
         .suggest-option:hover { background: #fffbeb; color: #92400e; }
+        .trip-detail-link {
+            font-weight: 900;
+            color: #d97706;
+            font-family: ui-monospace, SFMono-Regular, monospace;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .trip-detail-link:hover { color: #92400e; }
         #settleDriversTable .driver-gap td {
             height: 14px;
             padding: 0;
@@ -1011,13 +1019,16 @@
                         <tr>
                             <th class="p-3.5 rounded-r-xl">رقم الرحلة</th>
                             <th class="p-3.5">تاريخ المغادرة</th>
-                            <th class="p-3.5">اسم السائق</th>
+                            <th class="p-3.5">اسم العميل</th>
+                            <th class="p-3.5">من</th>
+                            <th class="p-3.5">إلى</th>
                             <th class="p-3.5">الشاحنة</th>
+                            <th class="p-3.5">السائق</th>
                             <th class="p-3.5 rounded-l-xl">مبلغ العمولة</th>
                         </tr>
                     </thead>
                     <tbody id="commissionReportTable" class="divide-y divide-slate-100">
-                        <tr><td colspan="5" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
+                        <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1405,6 +1416,16 @@
             </form>
         </div>
     </div>
+    <div id="tripDetailsModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-route text-amber-500 ml-2"></i> تفاصيل الرحلة <span id="tripDetailNo" class="font-mono text-amber-600 mr-1"></span></h3>
+                <button type="button" onclick="closeTripDetails()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="tripDetailBody" class="grid grid-cols-2 gap-3 text-xs"></div>
+            <button type="button" onclick="closeTripDetails()" class="w-full mt-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition">إغلاق</button>
+        </div>
+    </div>
     <script>
         const SUPABASE_URL = 'https://hmttwtlaeczvfjozsama.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtdHR3dGxhZWN6dmZqb3pzYW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNTU5NjIsImV4cCI6MjEwNTczMTk2Mn0.0-M1LVkNnbVSbUeYX_RueqUUcHNRbCtipCn5nGSuVNc';
@@ -1563,6 +1584,8 @@ async function populateCommissionFilters() {
     }
 }
 
+let commissionTripsByNo = new Map();
+
 async function generateCommissionReport() {
     const tbody = document.getElementById('commissionReportTable');
     const selectedDriver = document.getElementById('commDriverFilter')?.value || '';
@@ -1589,20 +1612,23 @@ async function generateCommissionReport() {
 
         if (!tbody) return;
         if (!activeTrips.length) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
             return;
         }
 
-        let totalCommission = 0;
+        commissionTripsByNo = new Map(activeTrips.filter(tr => tr.trip_no).map(tr => [String(tr.trip_no), tr]));
         const commissionRow = (tr) => {
             const commission = commissionAmount(tr);
-            totalCommission += commission;
+            const tripNo = tr.trip_no || tr.id || '---';
             return `
                 <tr class="hover:bg-slate-50 transition border-r-4 border-amber-400">
-                    <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
-                    <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
-                    <td class="p-3.5 font-bold text-slate-900">${tr.driver_name || 'غير محدد'}</td>
-                    <td class="p-3.5 text-slate-700 font-mono">${tr.truck_plate || tr.truck || '---'}</td>
+                    <td class="p-3.5"><a href="#" class="trip-detail-link" onclick='openTripDetails(${JSON.stringify(String(tr.trip_no || ''))}); return false;'>${escapeHtml(tripNo)}</a></td>
+                    <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(tr.departure_date || '---')}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(tr.client_name || '---')}</td>
+                    <td class="p-3.5 text-slate-700">${escapeHtml(tr.from_city || '---')}</td>
+                    <td class="p-3.5 text-slate-700">${escapeHtml(tripDestinationText(tr))}</td>
+                    <td class="p-3.5 text-slate-700 font-mono">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(tr.driver_name || 'غير محدد')}</td>
                     <td class="p-3.5 font-black text-emerald-600 font-mono">${formatSAR(commission)}</td>
                 </tr>
             `;
@@ -1624,7 +1650,7 @@ async function generateCommissionReport() {
                 const subtotal = list.reduce((sum, tr) => sum + commissionAmount(tr), 0);
                 return `
                     <tr class="bg-slate-900 text-white">
-                        <td colspan="5" class="px-3.5 py-2.5">
+                        <td colspan="8" class="px-3.5 py-2.5">
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="text-[10px] font-bold text-amber-300">${label}</span>
                                 <span class="font-black">${key}</span>
@@ -1647,8 +1673,85 @@ async function generateCommissionReport() {
         }
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
     }
+}
+
+function isRoundTrip(trip) {
+    return String(trip?.trip_type || '').trim() === 'ذهاب وعودة';
+}
+
+function tripDestinationText(trip) {
+    const to = String(trip?.to_city || '').trim() || '---';
+    const from = String(trip?.from_city || '').trim();
+    if (!isRoundTrip(trip) || !from) return to;
+    return `${to} ثم العودة إلى ${from}`;
+}
+
+function tripRouteText(trip) {
+    const from = String(trip?.from_city || '').trim() || '---';
+    const to = String(trip?.to_city || '').trim() || '---';
+    if (isRoundTrip(trip)) return `من ${from} إلى ${to} ثم العودة إلى ${from}`;
+    return `من ${from} إلى ${to}`;
+}
+
+function tripStatusLabel(trip) {
+    const status = String(trip?.status || '').trim();
+    if (status === 'جارية') return 'جارية';
+    if (status === 'مكتملة') return 'منتهية';
+    if (status === 'ملغاة') return 'ملغاة';
+    return status || '---';
+}
+
+function tripPaymentLabel(trip) {
+    const paid = parseFloat(trip?.paid_amount || 0);
+    const total = parseFloat(trip?.total_amount || 0);
+    const remaining = parseFloat(trip?.remaining_amount || 0);
+    if (isCancelledTrip(trip)) return 'ساقط من الحساب';
+    if (remaining <= 0 || paid >= total) return 'مسدد';
+    if (paid > 0) return 'سداد جزئي';
+    return 'غير مسدد';
+}
+
+function openTripDetails(tripNo) {
+    const trip = commissionTripsByNo.get(String(tripNo));
+    const modal = document.getElementById('tripDetailsModal');
+    const body = document.getElementById('tripDetailBody');
+    if (!trip || !modal || !body) {
+        alert('تعذر العثور على تفاصيل الرحلة.');
+        return;
+    }
+    const noEl = document.getElementById('tripDetailNo');
+    if (noEl) noEl.textContent = trip.trip_no || '';
+    const fields = [
+        ['اسم العميل', trip.client_name],
+        ['تاريخ المغادرة', trip.departure_date],
+        ['من', trip.from_city],
+        ['إلى', tripDestinationText(trip)],
+        ['المسار', tripRouteText(trip)],
+        ['نوع الرحلة', trip.trip_type || 'ذهاب'],
+        ['الشاحنة', trip.truck_plate || trip.truck],
+        ['السائق', trip.driver_name],
+        ['حالة الرحلة', tripStatusLabel(trip)],
+        ['الإجمالي', formatSAR(trip.total_amount || 0)],
+        ['المدفوع', formatSAR(trip.paid_amount || 0)],
+        ['المتبقي', formatSAR(trip.remaining_amount || 0)],
+        ['عمولة السائق', formatSAR(commissionAmount(trip))],
+        ['حالة السداد', tripPaymentLabel(trip)],
+        ['طريقة السداد', trip.payment_method],
+        ['تاريخ التحصيل', trip.collection_date]
+    ];
+    body.innerHTML = fields.map(([label, value]) => `
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <div class="text-[10px] font-bold text-slate-500 mb-1">${label}</div>
+            <div class="font-bold text-slate-900">${escapeHtml(value || '---')}</div>
+        </div>
+    `).join('');
+    modal.classList.remove('hidden');
+}
+
+function closeTripDetails() {
+    document.getElementById('tripDetailsModal')?.classList.add('hidden');
 }
 
 function canViewCommissionReports() {
@@ -2397,7 +2500,7 @@ async function initReportFilters() {
                             <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || 'TRIP-1000'}</td>
                             <td class="p-3.5">
                                 <div class="font-bold text-slate-900">${tr.client_name}</div>
-                                <div class="text-[11px] text-slate-500">من ${tr.from_city} إلى ${tr.to_city}</div>
+                                <div class="text-[11px] text-slate-500">${tripRouteText(tr)}</div>
                             </td>
                             <td class="p-3.5">
                                 <div class="font-bold text-slate-800">لوحة: ${tr.truck_plate}</div>
@@ -2593,7 +2696,7 @@ function switchTab(tabId) {
                     <td class="p-2 text-right font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
                     <td class="p-2 text-right font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
                     <td class="p-2 text-right font-bold text-slate-900">${dt.client_name || '---'}</td>
-                    <td class="p-2 text-right text-slate-600 font-sans">${dt.from_city || ''} إلى ${dt.to_city || ''}</td>
+                    <td class="p-2 text-right text-slate-600 font-sans">${tripRouteText(dt)}</td>
                     <td class="p-2 text-right font-bold text-emerald-700 font-mono">${formatSAR(dt.driver_commission || dt.commission || 0)}</td>
                 </tr>
             `).join('');
@@ -2843,7 +2946,7 @@ function renderTripsTable(trips) {
                     <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || 'TRIP-1000'}</td>
                     <td class="p-3.5">
                         <div class="font-bold text-slate-900">${tr.client_name}</div>
-                        <div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot ml-1 text-amber-500"></i> من ${tr.from_city} إلى ${tr.to_city}</div>
+                        <div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot ml-1 text-amber-500"></i> ${tripRouteText(tr)}</div>
                         <div class="text-[10px] text-slate-400 font-mono">التاريخ: ${tr.departure_date} (${tr.trip_type || 'ذهاب'})</div>
                     </td>
                     <td class="p-3.5">
