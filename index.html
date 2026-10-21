@@ -1036,7 +1036,7 @@
                             <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1">حالة الشاحنة</label>
                             <select id="truckStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 <option value="جاهزة للعمل">جاهزة للعمل</option>
-                                <option value="في رحلة">في رحلة</option>
+                                <option id="truckStatusTripOption" value="في رحلة">في رحلة</option>
                                 <option value="صيانة دورية">صيانة دورية</option>
                                 <option value="عطلانة">عطلانة</option>
                             </select>
@@ -1054,12 +1054,12 @@
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء التأمين</label>
                                 <input type="date" id="truckInsuranceExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
-                            <div>
+                            <div class="truck-operation-only">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء بطاقة التشغيل</label>
                                 <input type="date" id="truckOperationExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                         </div>
-                        <div>
+                        <div class="truck-operation-only">
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم بطاقة التشغيل</label>
                             <input type="text" id="truckOperationCardNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                         </div>
@@ -3227,21 +3227,27 @@ function collectExpiryAlerts(docs, trucks, drivers) {
     };
     (docs || []).forEach(doc => push('المنشأة', doc.title, doc.doc_type || 'ترخيص', doc.expiry_date, 'facility'));
     (trucks || []).forEach(truck => {
-        const tab = isCargoTruck(truck) ? 'trucks' : 'otherVehicles';
-        const name = truck.plate || 'مركبة';
-        push('مركبة', name, 'الاستمارة', truck.istimara_expiry, tab);
-        push('مركبة', name, 'الفحص الدوري', truck.inspection_expiry, tab);
-        push('مركبة', name, 'التأمين', truck.insurance_expiry, tab);
-        push('مركبة', name, 'بطاقة التشغيل', truck.operation_card_expiry, tab);
+        const cargo = isCargoTruck(truck);
+        const tab = cargo ? 'trucks' : 'otherVehicles';
+        const category = cargo ? 'شاحنة' : 'مركبة';
+        const name = truck.plate || (cargo ? 'شاحنة' : 'مركبة');
+        push(category, name, 'الاستمارة', truck.istimara_expiry, tab);
+        push(category, name, 'الفحص الدوري', truck.inspection_expiry, tab);
+        push(category, name, 'التأمين', truck.insurance_expiry, tab);
+        if (cargo) push(category, name, 'بطاقة التشغيل', truck.operation_card_expiry, tab);
     });
     (drivers || []).forEach(person => {
-        const tab = isTripDriver(person) ? 'drivers' : 'employees';
-        const name = person.name || 'موظف';
-        push('موظف', name, 'الإقامة', person.iqama_expiry, tab);
-        push('موظف', name, 'الجواز', person.passport_expiry, tab);
-        push('موظف', name, 'رخصة القيادة', person.license_expiry, tab);
-        push('موظف', name, 'بطاقة السائق', person.driver_card_expiry, tab);
-        push('موظف', name, 'التأمين الصحي', person.health_insurance_expiry, tab);
+        const tripDriver = isTripDriver(person);
+        const tab = tripDriver ? 'drivers' : 'employees';
+        const category = tripDriver ? 'سائق' : 'موظف';
+        const name = person.name || category;
+        push(category, name, 'الإقامة', person.iqama_expiry, tab);
+        push(category, name, 'الجواز', person.passport_expiry, tab);
+        if (tripDriver) {
+            push(category, name, 'رخصة القيادة', person.license_expiry, tab);
+            push(category, name, 'بطاقة السائق', person.driver_card_expiry, tab);
+        }
+        push(category, name, 'التأمين الصحي', person.health_insurance_expiry, tab);
     });
     items.sort((a, b) => a.days - b.days);
     return items;
@@ -3392,7 +3398,9 @@ function applyVehicleScreenLabels() {
     const formTitle = document.getElementById('truckFormTitle');
     const statusLabel = document.getElementById('truckStatusLabel');
     if (title) title.textContent = other ? 'المركبات الأخرى' : 'الشاحنات';
-    if (subtitle) subtitle.textContent = other ? 'السيارات والمركبات غير المستخدمة في الرحلات' : 'إضافة الشاحنات ومتابعة حالتها في الأسطول';
+    if (subtitle) subtitle.textContent = other
+        ? 'سيارات ومركبات الاستخدام اليومي — بلا بطاقة تشغيل ولا تظهر مع الشاحنات أو الرحلات'
+        : 'شاحنات النقل المستخدمة في الرحلات مع الاستمارة والفحص والتأمين وبطاقة التشغيل';
     if (listTitle) listTitle.innerHTML = other
         ? '<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> المركبات الأخرى المسجلة'
         : '<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> الشاحنات المسجلة في الأسطول';
@@ -3402,6 +3410,11 @@ function applyVehicleScreenLabels() {
             : '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة شاحنة جديدة';
     }
     if (statusLabel) statusLabel.textContent = other ? 'حالة المركبة' : 'حالة الشاحنة';
+    document.querySelectorAll('.truck-operation-only').forEach(el => el.classList.toggle('hidden', other));
+    const tripOption = document.getElementById('truckStatusTripOption');
+    if (tripOption) tripOption.classList.toggle('hidden', other);
+    const modelInput = document.getElementById('truckModel');
+    if (modelInput) modelInput.placeholder = other ? 'ادخل موديل المركبة ونوعها' : 'ادخل موديل الشاحنة و نوعها';
 }
 
 function applyStaffScreenLabels() {
@@ -4407,7 +4420,7 @@ async function saveEditTrip(e) {
                                     { label: 'الاستمارة', date: tr.istimara_expiry },
                                     { label: 'الفحص', date: tr.inspection_expiry },
                                     { label: 'التأمين', date: tr.insurance_expiry },
-                                    { label: 'بطاقة التشغيل', date: tr.operation_card_expiry }
+                                    ...(other ? [] : [{ label: 'بطاقة التشغيل', date: tr.operation_card_expiry }])
                                 ])}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
 <button onclick="editTruck(${tr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
@@ -4472,16 +4485,17 @@ async function cancelTrip(tripNo) {
             const model = document.getElementById('truckModel').value.trim();
             const status = document.getElementById('truckStatus').value;
 
+            const other = currentVehicleKind === 'أخرى';
             const payload = {
                 plate,
                 model,
-                status,
-                vehicle_kind: currentVehicleKind === 'أخرى' ? 'أخرى' : 'شاحنة',
+                status: other && status === 'في رحلة' ? 'جاهزة للعمل' : status,
+                vehicle_kind: other ? 'أخرى' : 'شاحنة',
                 istimara_expiry: dateField('truckIstimaraExpiry'),
                 inspection_expiry: dateField('truckInspectionExpiry'),
                 insurance_expiry: dateField('truckInsuranceExpiry'),
-                operation_card_no: emptyToNull(document.getElementById('truckOperationCardNo')?.value),
-                operation_card_expiry: dateField('truckOperationExpiry')
+                operation_card_no: other ? null : emptyToNull(document.getElementById('truckOperationCardNo')?.value),
+                operation_card_expiry: other ? null : dateField('truckOperationExpiry')
             };
             const write = async (data) => id
                 ? client.from('trucks').update(data).eq('id', id)
