@@ -274,7 +274,21 @@
         }
     </style>
 <script>
-        if (localStorage.getItem('sessionUserId')) document.documentElement.classList.add('session-restoring');
+        (function () {
+            try {
+                if (localStorage.getItem('sessionUserId')) {
+                    document.documentElement.classList.add('session-restoring');
+                    return;
+                }
+                for (var i = 0; i < localStorage.length; i++) {
+                    var key = localStorage.key(i);
+                    if (key && key.indexOf('sb-') === 0 && key.indexOf('-auth-token') !== -1) {
+                        document.documentElement.classList.add('session-restoring');
+                        return;
+                    }
+                }
+            } catch (e) {}
+        })();
     </script>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
@@ -1579,10 +1593,13 @@
     <script>
         const SUPABASE_URL = 'https://hmttwtlaeczvfjozsama.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtdHR3dGxhZWN6dmZqb3pzYW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNTU5NjIsImV4cCI6MjEwNTczMTk2Mn0.0-M1LVkNnbVSbUeYX_RueqUUcHNRbCtipCn5nGSuVNc';
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+        });
 
         let currentLoggedInUser = null;
         let appUsersById = {};
+        const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
 
 function isAdminUser(user = currentLoggedInUser) {
     if (!user) return false;
@@ -1590,31 +1607,56 @@ function isAdminUser(user = currentLoggedInUser) {
     return role === 'admin' || role === 'مدير';
 }
 
+function authEmailFor(username) {
+    const value = String(username || '').trim().toLowerCase();
+    if (!value) return '';
+    return value.includes('@') ? value : value + '@gstco.internal';
+}
+
+function showLoginError(message) {
+    const box = document.getElementById('loginError');
+    if (!box) return;
+    box.innerText = message;
+    box.classList.remove('hidden');
+}
+
+async function loadAppProfile(authId) {
+    const { data, error } = await client.from('app_users').select(APP_USER_FIELDS).eq('auth_id', authId).maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
       async function handleLogin(e) {
     e.preventDefault();
     const u = document.getElementById('usernameInput').value.trim();
     const p = document.getElementById('passwordInput').value.trim();
+    document.getElementById('loginError').classList.add('hidden');
 
     try {
-        const { data, error } = await client.from('app_users').select('*').eq('username', u).eq('password', p).maybeSingle();
-
         currentLoggedInUser = null;
-
-        if (error || !data) {
-            document.getElementById('loginError').innerText = 'خطأ في اسم المستخدم أو كلمة المرور.';
-            document.getElementById('loginError').classList.remove('hidden');
+        const { data, error } = await client.auth.signInWithPassword({
+            email: authEmailFor(u),
+            password: p
+        });
+        if (error || !data?.user) {
+            showLoginError('خطأ في اسم المستخدم أو كلمة المرور.');
             return;
         }
-        if (data.status === 'موقوف') {
-            document.getElementById('loginError').innerText = 'عذراً، هذا الحساب موقوف حالياً.';
-            document.getElementById('loginError').classList.remove('hidden');
+        const profile = await loadAppProfile(data.user.id);
+        if (!profile) {
+            await client.auth.signOut();
+            showLoginError('الحساب غير مربوط في النظام. نفّذ ملف الحماية supabase-security.sql ثم أعد المحاولة.');
             return;
         }
-        openSession(data);
+        if (profile.status === 'موقوف') {
+            await client.auth.signOut();
+            showLoginError('عذراً، هذا الحساب موقوف حالياً.');
+            return;
+        }
+        openSession(profile);
     } catch (err) {
         console.error("Login error:", err);
-        document.getElementById('loginError').innerText = 'حدث خطأ في الاتصال، حاول مرة أخرى.';
-        document.getElementById('loginError').classList.remove('hidden');
+        showLoginError('حدث خطأ في الاتصال، حاول مرة أخرى.');
     }
 }
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
@@ -3827,7 +3869,7 @@ async function loadUsers() {
             const table = document.getElementById('usersTable');
             table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">جاري تحميل المستخدمين...</td></tr>`;
             try {
-                const { data: users, error } = await client.from('app_users').select('*').order('id', { ascending: false });
+                const { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
                 if (error) throw error;
 
                 appUsersById = {};
@@ -3890,30 +3932,21 @@ async function loadUsers() {
                 return;
             }
 
-            if (id) {
-                const payload = { username, employee_name, role, status };
-                if (password) payload.password = password;
-                const { data: updated, error } = await client.from('app_users').update(payload).eq('id', id).select('id');
-                if (!error && updated && updated.length) {
-                    if (password && currentLoggedInUser && String(currentLoggedInUser.id) === String(id)) {
-                        currentLoggedInUser.password = password;
-                    }
-                    alert(password ? 'تم تحديث البيانات وكلمة المرور بنجاح!' : 'تم تحديث بيانات المستخدم بنجاح!'); 
-                    resetUserForm(); 
-                    loadUsers(); 
-                } else { 
-                    alert('تعذر التحديث، تأكد من عدم تكرار اسم المستخدم.'); 
-                }
-            } else {
-                const { error } = await client.from('app_users').insert([{ username, employee_name, password, role, status }]);
-                if (!error) { 
-                    alert('تمت إضافة المستخدم بنجاح!'); 
-                    resetUserForm(); 
-                    loadUsers(); 
-                } else { 
-                    alert('خطأ: اسم المستخدم موجود مسبقاً.'); 
-                }
+            const { error } = await client.rpc('admin_save_user', {
+                p_id: id ? Number(id) : null,
+                p_username: username,
+                p_employee_name: employee_name,
+                p_password: password || null,
+                p_role: role,
+                p_status: status
+            });
+            if (error) {
+                alert(error.message || 'تعذر حفظ المستخدم.');
+                return;
             }
+            alert(id ? (password ? 'تم تحديث البيانات وكلمة المرور بنجاح!' : 'تم تحديث بيانات المستخدم بنجاح!') : 'تمت إضافة المستخدم بنجاح!');
+            resetUserForm();
+            loadUsers();
         }
 
         function editUser(id) {
@@ -3948,10 +3981,13 @@ async function loadUsers() {
         }
 
         async function deleteUser(id) {
-            if (confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) {
-                const { error } = await client.from('app_users').delete().eq('id', id);
-                if (!error) loadUsers();
+            if (!confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) return;
+            const { error } = await client.rpc('admin_delete_user', { p_id: Number(id) });
+            if (error) {
+                alert(error.message || 'تعذر حذف المستخدم.');
+                return;
             }
+            loadUsers();
         }
 
         function showPasswordError(elementId, message) {
@@ -4020,34 +4056,19 @@ async function loadUsers() {
             }
 
             try {
-                let query = client.from('app_users').select('id, username, password');
-                if (currentLoggedInUser.id) query = query.eq('id', currentLoggedInUser.id);
-                else query = query.eq('username', currentLoggedInUser.username);
-                const { data, error } = await query.maybeSingle();
-                if (error) throw error;
-                if (!data) {
-                    showPasswordError('ownPasswordError', 'هذا الحساب غير مسجل في قائمة المستخدمين. اطلب من المدير إنشاء الحساب أولاً.');
-                    return;
-                }
-                if (data.password !== currentPassword) {
+                const email = authEmailFor(currentLoggedInUser.username);
+                const { error: checkError } = await client.auth.signInWithPassword({ email, password: currentPassword });
+                if (checkError) {
                     showPasswordError('ownPasswordError', 'كلمة المرور الحالية غير صحيحة.');
                     return;
                 }
-
-                const { data: updated, error: updateError } = await client.from('app_users').update({ password: newPassword }).eq('id', data.id).select('id');
-                if (updateError) throw updateError;
-                if (!updated || !updated.length) {
-                    showPasswordError('ownPasswordError', 'لم تُحفظ كلمة المرور. جدول المستخدمين يمنع التعديل من الصفحة.');
-                    return;
-                }
-
-                currentLoggedInUser.id = data.id;
-                currentLoggedInUser.password = newPassword;
+                const { error } = await client.auth.updateUser({ password: newPassword });
+                if (error) throw error;
                 closeOwnPasswordModal();
                 alert('تم تغيير كلمة المرور بنجاح.');
             } catch (err) {
                 console.error('Password change error:', err);
-                showPasswordError('ownPasswordError', 'تعذر تغيير كلمة المرور. حاول مرة أخرى.');
+                showPasswordError('ownPasswordError', err.message || 'تعذر تغيير كلمة المرور. حاول مرة أخرى.');
             }
         }
 
@@ -4075,21 +4096,16 @@ async function loadUsers() {
             }
 
             try {
-                const { data: updated, error } = await client.from('app_users').update({ password: newPassword }).eq('id', id).select('id');
+                const { error } = await client.rpc('admin_reset_password', {
+                    p_id: Number(id),
+                    p_password: newPassword
+                });
                 if (error) throw error;
-                if (!updated || !updated.length) {
-                    showPasswordError('resetPasswordError', 'لم تُحفظ كلمة المرور. جدول المستخدمين يمنع التعديل من الصفحة.');
-                    return;
-                }
-                if (currentLoggedInUser && String(currentLoggedInUser.id) === String(id)) {
-                    currentLoggedInUser.password = newPassword;
-                }
-                appUsersById[id].password = newPassword;
                 closeResetPasswordModal();
                 alert('تم تعيين كلمة المرور الجديدة. يمكن للمستخدم الدخول بها الآن.');
             } catch (err) {
                 console.error('Password reset error:', err);
-                showPasswordError('resetPasswordError', 'تعذر حفظ كلمة المرور الجديدة.');
+                showPasswordError('resetPasswordError', err.message || 'تعذر حفظ كلمة المرور الجديدة.');
             }
         }
 
@@ -4169,15 +4185,22 @@ async function loadUsers() {
         }
 
         async function restoreSession() {
-            const id = localStorage.getItem('sessionUserId');
-            if (!id) return;
             try {
-                const { data, error } = await client.from('app_users').select('*').eq('id', id).maybeSingle();
-                if (error || !data || data.status === 'موقوف') {
+                const { data: sessionData } = await client.auth.getSession();
+                const authUser = sessionData?.session?.user;
+                if (!authUser) {
                     clearStoredSession();
+                    document.body.classList.remove('dashboard-active');
                     return;
                 }
-                openSession(data);
+                const profile = await loadAppProfile(authUser.id);
+                if (!profile || profile.status === 'موقوف') {
+                    await client.auth.signOut();
+                    clearStoredSession();
+                    document.body.classList.remove('dashboard-active');
+                    return;
+                }
+                openSession(profile);
             } catch (err) {
                 console.error('Session restore error:', err);
                 document.documentElement.classList.remove('session-restoring');
@@ -4185,7 +4208,8 @@ async function loadUsers() {
             }
         }
 
-        function handleLogout() {
+        async function handleLogout() {
+            try { await client.auth.signOut(); } catch (err) { console.error(err); }
             currentLoggedInUser = null;
             clearStoredSession();
             closeOwnPasswordModal();
