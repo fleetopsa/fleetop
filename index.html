@@ -465,11 +465,14 @@
         <!-- المحتوى الرئيسي الواسع -->
         <div id="appContent" class="flex-grow flex flex-col bg-slate-50 overflow-hidden">
             <header class="bg-white border-b border-slate-200 px-4 xl:px-8 py-3 xl:py-4 flex justify-between items-center gap-3 text-slate-900 shadow-sm">
-                <div class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
                     <button type="button" id="menuToggleBtn" onclick="toggleMobileNav()" class="w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-400" aria-label="فتح القائمة">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h2 id="pageTitle" class="text-sm font-black text-slate-800 truncate"> </h2>
+                    <div class="min-w-0">
+                        <h2 id="pageTitle" class="text-sm xl:text-base font-black text-slate-800 truncate">لوحة التحكم</h2>
+                        <p id="pageSubtitle" class="text-[11px] text-slate-500 truncate">ملخص الإيرادات وحالة الأسطول والرحلات الجارية</p>
+                    </div>
                 </div>
                 <button type="button" id="refreshDataBtn" onclick="loadAllData()" class="px-3 xl:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 disabled:opacity-60 shrink-0">
                     <i id="refreshDataIcon" class="fa-solid fa-rotate"></i>
@@ -479,13 +482,6 @@
 
           <!-- قسم لوحة التحكم -->
     <main id="dashboardSection" class="p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
-        <div class="flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-bold text-slate-900">لوحة التحكم</h2>
-                <p class="text-xs text-slate-500">ملخص الإيرادات وحالة الأسطول والرحلات الجارية</p>
-            </div>
-        </div>
-
         <div class="stat-grid-wrap">
         <div id="dashboardStatGrid" class="stat-grid">
         <!-- البطاقات المالية (تظهر للأدمن والمحاسب فقط، وتختفي عن المستخدم العادي) -->
@@ -616,11 +612,7 @@
             </main>
        <!-- قسم الرحلات -->
 <main id="tripsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-    <div class="mb-6 flex justify-between items-center">
-        <div>
-            <h2 class="text-lg font-bold text-slate-900">إدارة الرحلات</h2>
-            <p class="text-xs text-slate-500">سجل الرحلات الجارية والمكتملة والملغاة</p>
-        </div>
+    <div class="mb-6 flex justify-end">
         <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2">
             <i class="fa-solid fa-circle-plus"></i> إضافة رحلة جديدة
         </button>
@@ -700,11 +692,7 @@
         <!-- قسم التقارير -->
 <main id="reportsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div id="printableReport" class="flex flex-col flex-grow">
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-bold text-slate-900">تقرير أداء الأسطول</h2>
-                <p class="text-xs text-slate-500">الشاحنات والسائقين والرحلات التشغيلية</p>
-            </div>
+        <div class="mb-6 flex justify-end">
             <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
                 <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
             </button>
@@ -789,11 +777,7 @@
 
 <!-- ================= قسم الملخص المالي العام ================= -->
 <main id="financialOverviewSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-    <div class="mb-6 flex justify-between items-center">
-        <div>
-            <h2 class="text-lg font-bold text-slate-900">تقرير الإيرادات</h2>
-            <p class="text-xs text-slate-500">إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات</p>
-        </div>
+    <div class="mb-6 flex justify-end">
         <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
@@ -888,11 +872,7 @@
 
 <!-- ================= قسم تقرير العمولات والإيرادات (الشاحنات والسائقين) ================= -->
 <main id="financialDetailsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-    <div class="mb-6 flex justify-between items-center">
-        <div>
-            <h2 class="text-lg font-bold text-slate-900">تقرير العمولات وإيرادات الأسطول</h2>
-            <p class="text-xs text-slate-500">تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة</p>
-        </div>
+    <div class="mb-6 flex justify-end">
         <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
@@ -935,10 +915,6 @@
 </main>
 
             <main id="facilitySection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-                <div class="mb-6">
-                    <h2 class="text-lg font-bold text-slate-900">بيانات المنشأة</h2>
-                    <p class="text-xs text-slate-500">السجلات والتراخيص وتواريخ انتهائها</p>
-                </div>
                 <div id="facilityExpiryBox" class="mb-6 bg-rose-50 border border-rose-100 rounded-2xl p-4 hidden">
                     <h3 class="text-xs font-bold text-rose-700 mb-2"><i class="fa-solid fa-bell ml-1"></i> وثائق قاربت على الانتهاء أو انتهت</h3>
                     <div id="facilityExpiryList" class="space-y-1 text-xs"></div>
@@ -1013,10 +989,6 @@
             </main>
             <!-- قسم الشاحنات -->
             <main id="trucksSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-                <div class="mb-6">
-                    <h2 id="trucksPageTitle" class="text-lg font-bold text-slate-900">الشاحنات</h2>
-                    <p id="trucksPageSubtitle" class="text-xs text-slate-500">إضافة الشاحنات ومتابعة حالتها في الأسطول</p>
-                </div>
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="truckFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1095,10 +1067,6 @@
 
             <!-- قسم السائقين -->
             <main id="driversSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-                <div class="mb-6">
-                    <h2 id="driversPageTitle" class="text-lg font-bold text-slate-900">السائقين</h2>
-                    <p id="driversPageSubtitle" class="text-xs text-slate-500">إضافة السائقين ومتابعة توفرهم</p>
-                </div>
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="driverFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1218,14 +1186,7 @@
     <main id="commissionReportSection" class="page-section hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
         <!-- ترويسة الصفحة وملخص الإحصائيات في الأعلى -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <div>
-                    <h3 class="font-black text-slate-900 text-sm flex items-center">
-                        <i class="fa-solid fa-file-invoice-dollar text-amber-500 ml-2"></i> تقرير عمولات السائقين
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">عرض وتصفية عمولات السائقين التفصيلية</p>
-                </div>
-                <!-- صلاحيات الاطلاع (أدمن ومحاسب فقط) -->
+            <div class="flex justify-end items-center border-b border-slate-100 pb-3">
                 <button onclick="printCurrentReport()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print">
                     <i class="fa-solid fa-print"></i> طباعة التقرير
                 </button>
@@ -1311,13 +1272,7 @@
 
     <main id="commissionPayoutSection" class="page-section hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
-                <div>
-                    <h3 class="font-black text-slate-900 text-sm flex items-center">
-                        <i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> سداد العمولات
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">عمولة كل سائق، وما تم صرفه، والمتبقي له</p>
-                </div>
+            <div class="flex flex-wrap justify-end items-center gap-3 border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2 no-print">
                     <button type="button" onclick="openPayoutModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-plus"></i> سداد عمولة
@@ -1404,10 +1359,6 @@
     </main>
             <!-- قسم المستخدمين -->
             <main id="usersSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-                <div class="mb-6">
-                    <h2 class="text-lg font-bold text-slate-900">المستخدمين</h2>
-                    <p class="text-xs text-slate-500">حسابات الدخول والصلاحيات</p>
-                </div>
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="userFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1921,6 +1872,7 @@ async function openCommissionReportTab() {
     }
     await generateCommissionReport();
     setActiveNav('commissionReportSection');
+    setPageHeader('commissionReportSection');
     focusActivePage();
 }
 
@@ -2128,6 +2080,7 @@ async function openCommissionPayoutTab() {
     await populateCommissionFilters();
     await generateCommissionSettlement();
     setActiveNav('commissionPayoutSection');
+    setPageHeader('commissionPayoutSection');
     focusActivePage();
 }
 
@@ -3395,15 +3348,10 @@ async function deleteFacilityDocument(id) {
 
 function applyVehicleScreenLabels() {
     const other = currentVehicleKind === 'أخرى';
-    const title = document.getElementById('trucksPageTitle');
-    const subtitle = document.getElementById('trucksPageSubtitle');
     const listTitle = document.getElementById('trucksListTitle');
     const formTitle = document.getElementById('truckFormTitle');
     const statusLabel = document.getElementById('truckStatusLabel');
-    if (title) title.textContent = other ? 'المركبات الأخرى' : 'الشاحنات';
-    if (subtitle) subtitle.textContent = other
-        ? 'سيارات ومركبات الاستخدام اليومي — بلا بطاقة تشغيل ولا تظهر مع الشاحنات أو الرحلات'
-        : 'شاحنات النقل المستخدمة في الرحلات مع الاستمارة والفحص والتأمين وبطاقة التشغيل';
+    setPageHeader(other ? 'otherVehicles' : 'trucks');
     if (listTitle) listTitle.innerHTML = other
         ? '<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> المركبات الأخرى المسجلة'
         : '<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> الشاحنات المسجلة في الأسطول';
@@ -3422,21 +3370,16 @@ function applyVehicleScreenLabels() {
 
 function applyStaffScreenLabels() {
     const employee = currentStaffKind === 'موظف';
-    const title = document.getElementById('driversPageTitle');
-    const subtitle = document.getElementById('driversPageSubtitle');
     const listTitle = document.getElementById('driversListTitle');
     const formTitle = document.getElementById('driverFormTitle');
     const nameLabel = document.getElementById('driverNameLabel');
     const statusLabel = document.getElementById('driverStatusLabel');
     const nameHead = document.querySelector('#driversSection thead th');
+    setPageHeader(employee ? 'employees' : 'drivers');
     const jobWrap = document.getElementById('staffJobWrap');
     const jobHead = document.getElementById('staffJobColHead');
     const jobFilterWrap = document.getElementById('staffJobFilterWrap');
     const tripOption = document.getElementById('driverStatusTripOption');
-    if (title) title.textContent = employee ? 'الموظفين الإداريين' : 'السائقين';
-    if (subtitle) subtitle.textContent = employee
-        ? 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية — منفصلون عن قائمة السائقين'
-        : 'إضافة السائقين ومتابعة توفرهم للرحلات';
     if (listTitle) listTitle.innerHTML = employee
         ? '<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> الموظفين حسب الوظيفة'
         : '<i class="fa-solid fa-id-badge text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول';
@@ -3494,6 +3437,42 @@ function setStaffJobTitle(job) {
     toggleStaffJobOther();
 }
 
+const PAGE_HEADERS = {
+    dashboard: ['لوحة التحكم', 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية'],
+    dashboardSection: ['لوحة التحكم', 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية'],
+    trips: ['إدارة الرحلات', 'سجل الرحلات الجارية والمكتملة والملغاة'],
+    tripsSection: ['إدارة الرحلات', 'سجل الرحلات الجارية والمكتملة والملغاة'],
+    reports: ['التقارير التشغيلية', 'الشاحنات والسائقين والرحلات التشغيلية'],
+    reportsSection: ['التقارير التشغيلية', 'الشاحنات والسائقين والرحلات التشغيلية'],
+    financialOverviewSection: ['تقرير الإيرادات', 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات'],
+    financialDetailsSection: ['تقرير العمولات وإيرادات الأسطول', 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة'],
+    commissionReportSection: ['تقرير العمولات', 'عرض وتصفية عمولات السائقين التفصيلية'],
+    commissionPayoutSection: ['سداد العمولات', 'عمولة كل سائق، وما تم صرفه، والمتبقي له'],
+    facility: ['بيانات المنشأة', 'السجلات والتراخيص وتواريخ انتهائها'],
+    trucks: ['الشاحنات', 'شاحنات النقل المستخدمة في الرحلات مع الاستمارة والفحص والتأمين وبطاقة التشغيل'],
+    otherVehicles: ['المركبات الأخرى', 'سيارات ومركبات الاستخدام اليومي — بلا بطاقة تشغيل ولا تظهر مع الشاحنات أو الرحلات'],
+    drivers: ['السائقين', 'إضافة السائقين ومتابعة توفرهم للرحلات'],
+    employees: ['الموظفين الإداريين', 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية — منفصلون عن قائمة السائقين'],
+    users: ['المستخدمين', 'حسابات الدخول والصلاحيات'],
+    usersSection: ['المستخدمين', 'حسابات الدخول والصلاحيات']
+};
+
+function setPageHeader(titleOrTab, subtitle) {
+    let title = titleOrTab;
+    let sub = subtitle;
+    if (sub === undefined) {
+        if (!PAGE_HEADERS[titleOrTab]) return;
+        [title, sub] = PAGE_HEADERS[titleOrTab];
+    }
+    const titleEl = document.getElementById('pageTitle');
+    const subEl = document.getElementById('pageSubtitle');
+    if (titleEl) titleEl.textContent = title || '';
+    if (subEl) {
+        subEl.textContent = sub || '';
+        subEl.classList.toggle('hidden', !sub);
+    }
+}
+
 function setActiveNav(tabId) {
     const activeClasses = ['bg-amber-500', 'text-slate-900', 'shadow-sm'];
     const idleClasses = ['text-slate-300', 'hover:bg-slate-800', 'hover:text-white'];
@@ -3516,6 +3495,7 @@ function setActiveNav(tabId) {
 
 function switchTab(tabId) {
     setActiveNav(tabId);
+    setPageHeader(tabId);
     closeMobileNav();
     // 1. إخفاء جميع الأقسام الرئيسية والمالية
     const allSections = document.querySelectorAll('main, section');
