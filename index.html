@@ -416,11 +416,11 @@
                                     <i id="staffMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
                                 <div id="staffSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r border-amber-500/20 pr-2">
-                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-user-tie ml-1.5 text-amber-500"></i> الموظفين
-                                    </button>
                                     <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-id-badge ml-1.5 text-emerald-400"></i> السائقين
+                                    </button>
+                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-user-tie ml-1.5 text-amber-500"></i> الموظفين الإداريين
                                     </button>
                                 </div>
                             </div>
@@ -1110,6 +1110,18 @@
                             <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1">اسم السائق</label>
                             <input type="text" id="driverName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم السائق">
                         </div>
+                        <div id="staffJobWrap" class="hidden">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">الوظيفة</label>
+                            <select id="staffJobTitle" onchange="toggleStaffJobOther()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="">اختر الوظيفة</option>
+                                <option value="مشرف تشغيل">مشرف تشغيل</option>
+                                <option value="مشرف صيانة">مشرف صيانة</option>
+                                <option value="محاسب">محاسب</option>
+                                <option value="إداري">إداري</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                            <input type="text" id="staffJobTitleOther" class="hidden mt-2 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اكتب المسمى الوظيفي">
+                        </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم الجوال</label>
                             <input type="text" id="driverPhone" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="ادخل رقم الجوال">
@@ -1118,7 +1130,7 @@
                             <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1">حالة السائق</label>
                             <select id="driverStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 <option value="متوفر">متوفر</option>
-                                <option value="في رحلة">في رحلة</option>
+                                <option id="driverStatusTripOption" value="في رحلة">في رحلة</option>
                                 <option value="إجازة">إجازة</option>
                                 <option value="موقوف">موقوف</option>
                             </select>
@@ -1140,19 +1152,19 @@
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الجواز</label>
                                 <input type="date" id="staffPassportExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
-                            <div>
+                            <div class="staff-driver-only">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">رخصة القيادة</label>
                                 <input type="text" id="staffLicenseNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
-                            <div>
+                            <div class="staff-driver-only">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الرخصة</label>
                                 <input type="date" id="staffLicenseExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
-                            <div>
+                            <div class="staff-driver-only">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">بطاقة السائق</label>
                                 <input type="text" id="staffDriverCardNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
-                            <div>
+                            <div class="staff-driver-only">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء بطاقة السائق</label>
                                 <input type="date" id="staffDriverCardExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
@@ -1172,14 +1184,22 @@
                     </form>
                 </div>
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                    <h3 id="driversListTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-users text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول
-                    </h3>
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                        <h3 id="driversListTitle" class="font-bold text-slate-900 text-sm flex items-center">
+                            <i class="fa-solid fa-users text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول
+                        </h3>
+                        <div id="staffJobFilterWrap" class="hidden">
+                            <select id="staffJobFilter" onchange="loadDrivers()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold outline-none focus:border-amber-500">
+                                <option value="">كل الوظائف</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto flex-grow">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
                                     <th class="p-3.5 rounded-r-xl">اسم السائق</th>
+                                    <th id="staffJobColHead" class="p-3.5 hidden">الوظيفة</th>
                                     <th class="p-3.5">رقم الجوال</th>
                                     <th class="p-3.5">الحالة</th>
                                     <th class="p-3.5">انتهاء الوثائق</th>
@@ -3393,11 +3413,17 @@ function applyStaffScreenLabels() {
     const nameLabel = document.getElementById('driverNameLabel');
     const statusLabel = document.getElementById('driverStatusLabel');
     const nameHead = document.querySelector('#driversSection thead th');
-    if (title) title.textContent = employee ? 'الموظفين' : 'السائقين';
-    if (subtitle) subtitle.textContent = employee ? 'إضافة الموظفين الإداريين ومتابعة حالتهم' : 'إضافة السائقين ومتابعة توفرهم';
+    const jobWrap = document.getElementById('staffJobWrap');
+    const jobHead = document.getElementById('staffJobColHead');
+    const jobFilterWrap = document.getElementById('staffJobFilterWrap');
+    const tripOption = document.getElementById('driverStatusTripOption');
+    if (title) title.textContent = employee ? 'الموظفين الإداريين' : 'السائقين';
+    if (subtitle) subtitle.textContent = employee
+        ? 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية — منفصلون عن قائمة السائقين'
+        : 'إضافة السائقين ومتابعة توفرهم للرحلات';
     if (listTitle) listTitle.innerHTML = employee
-        ? '<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> الموظفين المسجلين'
-        : '<i class="fa-solid fa-users text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول';
+        ? '<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> الموظفين حسب الوظيفة'
+        : '<i class="fa-solid fa-id-badge text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول';
     if (formTitle && !document.getElementById('driverId')?.value) {
         formTitle.innerHTML = employee
             ? '<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة موظف جديد'
@@ -3406,6 +3432,50 @@ function applyStaffScreenLabels() {
     if (nameLabel) nameLabel.textContent = employee ? 'اسم الموظف' : 'اسم السائق';
     if (statusLabel) statusLabel.textContent = employee ? 'حالة الموظف' : 'حالة السائق';
     if (nameHead) nameHead.textContent = employee ? 'اسم الموظف' : 'اسم السائق';
+    if (jobWrap) jobWrap.classList.toggle('hidden', !employee);
+    if (jobHead) jobHead.classList.toggle('hidden', !employee);
+    if (jobFilterWrap) jobFilterWrap.classList.toggle('hidden', !employee);
+    if (tripOption) tripOption.classList.toggle('hidden', employee);
+    document.querySelectorAll('.staff-driver-only').forEach(el => el.classList.toggle('hidden', employee));
+    const jobSelect = document.getElementById('staffJobTitle');
+    if (jobSelect) jobSelect.required = employee;
+    if (employee) toggleStaffJobOther();
+}
+
+function toggleStaffJobOther() {
+    const select = document.getElementById('staffJobTitle');
+    const other = document.getElementById('staffJobTitleOther');
+    if (!select || !other) return;
+    const show = select.value === 'أخرى';
+    other.classList.toggle('hidden', !show);
+    other.required = show;
+}
+
+function selectedStaffJobTitle() {
+    if (currentStaffKind !== 'موظف') return 'سائق';
+    const select = document.getElementById('staffJobTitle');
+    const other = document.getElementById('staffJobTitleOther');
+    const value = select?.value || '';
+    if (value === 'أخرى') return emptyToNull(other?.value) || 'أخرى';
+    return emptyToNull(value);
+}
+
+function setStaffJobTitle(job) {
+    const select = document.getElementById('staffJobTitle');
+    const other = document.getElementById('staffJobTitleOther');
+    if (!select) return;
+    const known = ['مشرف تشغيل', 'مشرف صيانة', 'محاسب', 'إداري', 'أخرى'];
+    if (!job) {
+        select.value = '';
+        if (other) other.value = '';
+    } else if (known.includes(job) && job !== 'أخرى') {
+        select.value = job;
+        if (other) other.value = '';
+    } else {
+        select.value = 'أخرى';
+        if (other) other.value = job === 'أخرى' ? '' : job;
+    }
+    toggleStaffJobOther();
 }
 
 function setActiveNav(tabId) {
@@ -4469,13 +4539,22 @@ async function cancelTrip(tripNo) {
             const table = document.getElementById('driversTable');
             applyStaffScreenLabels();
             const employee = currentStaffKind === 'موظف';
-            table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">${employee ? 'جاري تحميل الموظفين...' : 'جاري تحميل السائقين...'}</td></tr>`;
+            const cols = employee ? 6 : 5;
+            table.innerHTML = `<tr><td colspan="${cols}" class="text-center p-8 text-slate-400">${employee ? 'جاري تحميل الموظفين...' : 'جاري تحميل السائقين...'}</td></tr>`;
             try {
                 const { data: drivers, error } = await client.from('drivers').select('*').order('id', { ascending: false });
                 if (error) throw error;
                 allDriversById = {};
                 (drivers || []).forEach(dr => { allDriversById[dr.id] = dr; });
-                const visible = (drivers || []).filter(dr => employee ? !isTripDriver(dr) : isTripDriver(dr));
+                let visible = (drivers || []).filter(dr => employee ? !isTripDriver(dr) : isTripDriver(dr));
+                const jobFilter = document.getElementById('staffJobFilter');
+                if (employee && jobFilter) {
+                    const jobs = [...new Set(visible.map(dr => String(dr.job_title || '').trim()).filter(Boolean))].sort();
+                    const current = jobFilter.value;
+                    jobFilter.innerHTML = '<option value="">كل الوظائف</option>' + jobs.map(job => `<option value="${escapeHtml(job)}">${escapeHtml(job)}</option>`).join('');
+                    if (jobs.includes(current)) jobFilter.value = current;
+                    if (jobFilter.value) visible = visible.filter(dr => String(dr.job_title || '').trim() === jobFilter.value);
+                }
 
                 if (visible.length > 0) {
                     table.innerHTML = visible.map(dr => {
@@ -4483,19 +4562,28 @@ async function cancelTrip(tripNo) {
                         if (dr.status === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
                         if (dr.status === 'إجازة' || dr.status === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
                         if (dr.status === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        const jobCell = employee ? `<td class="p-3.5 font-bold text-amber-700">${escapeHtml(dr.job_title || '—')}</td>` : '';
+                        const docs = employee
+                            ? [
+                                { label: 'الإقامة', date: dr.iqama_expiry },
+                                { label: 'الجواز', date: dr.passport_expiry },
+                                { label: 'التأمين الصحي', date: dr.health_insurance_expiry }
+                            ]
+                            : [
+                                { label: 'الإقامة', date: dr.iqama_expiry },
+                                { label: 'الجواز', date: dr.passport_expiry },
+                                { label: 'الرخصة', date: dr.license_expiry },
+                                { label: 'بطاقة السائق', date: dr.driver_card_expiry },
+                                { label: 'التأمين الصحي', date: dr.health_insurance_expiry }
+                            ];
 
                         return `
                             <tr class="hover:bg-slate-50 transition">
                                 <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
+                                ${jobCell}
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(dr.status === 'في إجازة' ? 'إجازة' : dr.status)}</span></td>
-                                <td class="p-3.5">${compactExpiryHtml([
-                                    { label: 'الإقامة', date: dr.iqama_expiry },
-                                    { label: 'الجواز', date: dr.passport_expiry },
-                                    { label: 'الرخصة', date: dr.license_expiry },
-                                    { label: 'بطاقة السائق', date: dr.driver_card_expiry },
-                                    { label: 'التأمين الصحي', date: dr.health_insurance_expiry }
-                                ])}</td>
+                                <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     <button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button onclick="deleteDriver(${dr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
@@ -4504,11 +4592,11 @@ async function cancelTrip(tripNo) {
                         `;
                     }).join('');
                 } else {
-                    table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">${employee ? 'لا توجد موظفين مسجلين حالياً' : 'لا توجد سائقين مسجلين حالياً'}</td></tr>`;
+                    table.innerHTML = `<tr><td colspan="${cols}" class="text-center p-8 text-slate-400">${employee ? 'لا توجد موظفين مسجلين حالياً' : 'لا توجد سائقين مسجلين حالياً'}</td></tr>`;
                 }
             } catch (err) {
                 console.error("Error loading drivers:", err);
-                table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-600">حدث خطأ أثناء التحميل.</td></tr>`;
+                table.innerHTML = `<tr><td colspan="${employee ? 6 : 5}" class="text-center p-8 text-rose-600">حدث خطأ أثناء التحميل.</td></tr>`;
             }
         }
 
@@ -4524,6 +4612,7 @@ async function cancelTrip(tripNo) {
                 phone,
                 status,
                 staff_kind: currentStaffKind === 'موظف' ? 'موظف' : 'سائق',
+                job_title: selectedStaffJobTitle(),
                 iqama_no: emptyToNull(document.getElementById('staffIqamaNo')?.value),
                 iqama_expiry: dateField('staffIqamaExpiry'),
                 passport_no: emptyToNull(document.getElementById('staffPassportNo')?.value),
@@ -4550,6 +4639,7 @@ async function cancelTrip(tripNo) {
             document.getElementById('driverName').value = dr.name || '';
             document.getElementById('driverPhone').value = dr.phone || '';
             document.getElementById('driverStatus').value = dr.status === 'في إجازة' ? 'إجازة' : dr.status;
+            setStaffJobTitle(dr.job_title);
             setField('staffIqamaNo', dr.iqama_no);
             setField('staffIqamaExpiry', dr.iqama_expiry);
             setField('staffPassportNo', dr.passport_no);
@@ -4568,6 +4658,8 @@ async function cancelTrip(tripNo) {
         function resetDriverForm() {
             document.getElementById('driverId').value = '';
             document.querySelector('#driversSection form').reset();
+            setStaffJobTitle('');
+            applyStaffScreenLabels();
             document.getElementById('driverFormTitle').innerHTML = `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${currentStaffKind === 'موظف' ? 'إضافة موظف جديد' : 'إضافة سائق جديد'}`;
             document.getElementById('driverSaveBtn').innerText = 'حفظ';
             document.getElementById('driverCancelBtn').classList.add('hidden');
