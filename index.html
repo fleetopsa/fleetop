@@ -584,9 +584,9 @@
                     </div>
 
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[280px] xl:min-h-0 xl:h-full">
-                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2 shrink-0">
+                    <div class="mb-3 border-b border-slate-100 pb-2 shrink-0">
                         <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-bell text-rose-500 ml-2"></i> تنبيهات الوثائق القريبة من الانتهاء</h4>
-                        <button type="button" onclick="switchTab('facility')" class="text-[11px] font-bold text-amber-600 hover:text-amber-700 shrink-0">بيانات المنشأة</button>
+                        <p class="text-[11px] text-slate-400 mt-1">اضغط التنبيه لفتح شاشة السجل المرتبط به</p>
                     </div>
                     <div id="dashExpiryAlerts" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-xs text-slate-500">جاري فحص التواريخ...</div>
                 </div>
@@ -3263,9 +3263,12 @@ function renderExpiryAlerts(targetId, items, emptyText) {
     box.innerHTML = items.map(item => {
         const tone = item.days < 0 ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-amber-200 bg-amber-50 text-amber-800';
         const when = item.days < 0 ? `منتهية منذ ${Math.abs(item.days)} يوم` : `متبقٍ ${item.days} يوم`;
-        return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${tone} rounded-xl px-3 py-2">
-            <span class="font-bold">${escapeHtml(item.category)} — ${escapeHtml(item.name)}</span>
-            <span class="block text-[11px] mt-0.5">${escapeHtml(item.label)} (${escapeHtml(item.date)}) — ${when}</span>
+        return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${tone} rounded-xl px-3 py-2 flex items-center gap-2">
+            <span class="flex-1 min-w-0">
+                <span class="font-bold">${escapeHtml(item.category)} — ${escapeHtml(item.name)}</span>
+                <span class="block text-[11px] mt-0.5">${escapeHtml(item.label)} (${escapeHtml(item.date)}) — ${when}</span>
+            </span>
+            <i class="fa-solid fa-chevron-left text-[10px] opacity-60 shrink-0"></i>
         </button>`;
     }).join('');
 }
