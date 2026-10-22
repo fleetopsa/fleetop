@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فليتوب FleetOp — إدارة الأسطول والرحلات</title>
-    <link rel="icon" href="fleetop-logo.jpg" type="image/jpeg">
+    <link rel="icon" href="fleetop-logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style> 
-        body { font-family: 'Cairo', 'Inter', sans-serif; background: #f6f4ef; }
+        body { font-family: 'Cairo', 'Inter', sans-serif; background: #faf7f2; }
         html[lang="en"] body { font-family: 'Inter', 'Cairo', sans-serif; }
         .truck-cards-few { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
         .truck-cards-many {
@@ -125,23 +125,30 @@
         body.is-printing .print-letterhead-grid {
             direction: ltr;
             display: grid;
-            grid-template-columns: 1fr 22mm 1fr;
+            grid-template-columns: 1fr 24mm 1fr;
             align-items: center;
             gap: 6mm;
         }
-        body.is-printing .print-letterhead-grid img.print-platform-logo {
-            width: 28mm;
-            height: 28mm;
+        body.is-printing .print-company-logo {
+            width: 22mm;
+            height: 22mm;
             object-fit: contain;
             justify-self: center;
         }
-        body.is-printing .print-company-logo {
-            width: 16mm;
-            height: 16mm;
-            object-fit: contain;
-            margin-bottom: 2mm;
-        }
         body.is-printing .print-letterhead-grid img.print-company-logo.hidden { display: none !important; }
+        body.is-printing .print-platform-mark {
+            display: flex !important;
+            align-items: center;
+            gap: 2mm;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        body.is-printing .print-platform-mark img {
+            width: 9mm;
+            height: 9mm;
+            object-fit: contain;
+        }
         body.is-printing .print-brand-en { text-align: left; }
         body.is-printing .print-brand-ar { text-align: right; direction: rtl; }
         body.is-printing .print-brand-en strong,
@@ -171,6 +178,31 @@
             font-size: 11px;
             color: #334155;
         }
+        #loginBackdrop {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            background: #0b2a4a;
+        }
+        #loginBackdrop img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: saturate(0.85);
+        }
+        #loginBackdrop::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(11, 42, 74, 0.62) 0%, rgba(11, 42, 74, 0.42) 40%, rgba(11, 42, 74, 0.72) 100%),
+                linear-gradient(90deg, rgba(11, 42, 74, 0.35), transparent 30%, transparent 70%, rgba(27, 107, 74, 0.2));
+        }
+        body.dashboard-active #loginBackdrop,
+        body.is-printing #loginBackdrop,
+        html.session-restoring #loginBackdrop { display: none !important; }
         html.session-restoring #loginSection { display: none !important; }
         html.session-restoring #mainDashboard { display: flex !important; }
         #appContent, #appContent > main { min-height: 0; }
@@ -339,37 +371,39 @@
     </symbol>
 </svg>
 
-    <div class="absolute inset-0 z-0" style="background: radial-gradient(circle at 100% 0%, rgba(184,144,74,0.16), transparent 34%), radial-gradient(circle at 0% 100%, rgba(26,127,140,0.1), transparent 32%), #f6f4ef;"></div>
+    <div id="loginBackdrop" aria-hidden="true">
+        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80" alt="">
+    </div>
 
     <!-- شاشة تسجيل الدخول -->
-    <div id="loginSection" class="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-[#e6dcc8]">
+    <div id="loginSection" class="relative z-10 max-w-md w-full rounded-3xl shadow-2xl p-8 border" style="background:rgba(11,42,74,0.72);border-color:rgba(196,163,90,0.45);backdrop-filter:blur(18px);">
         <div class="flex justify-end mb-3">
-            <div class="flex rounded-xl border border-slate-200 overflow-hidden text-[11px] font-black">
-                <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-3 py-1.5">عربي</button>
-                <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-3 py-1.5">EN</button>
+            <div class="flex rounded-xl border overflow-hidden text-[11px] font-black" style="border-color:rgba(196,163,90,0.45);">
+                <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-3 py-1.5 text-[#c4a35a]">عربي</button>
+                <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-3 py-1.5 text-[#c4a35a]">EN</button>
             </div>
         </div>
         <div class="text-center mb-6">
-            <div class="mb-2 flex justify-center">
-                <img src="fleetop-logo.jpg" alt="FleetOp" class="w-52 max-w-full h-auto object-contain">
+            <div class="mb-1 flex justify-center">
+                <img src="fleetop-logo.png" alt="FleetOp" class="w-56 max-w-full h-auto object-contain">
             </div>
-            <p class="text-xs font-bold mt-1" style="color:#1a7f8c" data-i18n="login.tagline">منصة إدارة الأسطول والرحلات</p>
-            <p class="text-[11px] text-slate-500 font-bold mt-1" data-i18n="login.product">منصة عامة لكل شركات النقل</p>
+            <p class="text-xs font-bold mt-1" style="color:#e8d5a3" data-i18n="login.tagline">منصة إدارة الأسطول والرحلات</p>
+            <p class="text-[11px] font-bold mt-1" style="color:#c4a35a" data-i18n="login.product">منصة عامة لكل شركات النقل</p>
         </div>
         
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="login.username">اسم المستخدم</label>
-                <input type="text" id="usernameInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
+                <input type="text" id="usernameInput" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="login.password">كلمة المرور</label>
-                <input type="password" id="passwordInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="••••••••">
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
+                <input type="password" id="passwordInput" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
             </div>
-            <div id="loginError" class="hidden text-rose-600 text-xs font-bold text-center bg-rose-50 py-2.5 rounded-xl border border-rose-200" data-i18n="login.error">
+            <div id="loginError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20" data-i18n="login.error">
                 خطأ في اسم المستخدم أو كلمة المرور.
             </div>
-            <button type="submit" class="w-full font-bold py-3.5 rounded-xl shadow-md transition" style="background:#10243f;color:#e4c78a" data-i18n="login.submit">
+            <button type="submit" class="w-full font-bold py-3.5 rounded-xl shadow-md transition" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.submit">
                 تسجيل الدخول للنظام
             </button>
         </form>
@@ -379,13 +413,11 @@
         <div id="printLetterhead" class="print-only" aria-hidden="true">
             <div class="print-letterhead-grid">
                 <div class="print-brand-en">
-                    <img id="printCompanyLogoEn" class="print-company-logo hidden" alt="">
                     <strong id="printCompanyNameEn">Company name</strong>
                     <span id="printCompanySloganEn">Fleet operations</span>
                 </div>
-                <img src="fleetop-logo.jpg" alt="FleetOp" class="print-platform-logo">
+                <img id="printCompanyLogo" class="print-company-logo hidden" alt="">
                 <div class="print-brand-ar">
-                    <img id="printCompanyLogoAr" class="print-company-logo hidden" alt="">
                     <strong id="printCompanyNameAr">اسم الشركة</strong>
                     <span id="printCompanySloganAr">إدارة الأسطول والرحلات</span>
                 </div>
@@ -393,6 +425,7 @@
         </div>
         <div id="printFooter" class="print-only" aria-hidden="true">
             <span id="printUserName"></span>
+            <span class="print-platform-mark"><img src="fleetop-logo.png" alt="FleetOp"> FleetOp</span>
             <span id="printTimestamp"></span>
         </div>
         
@@ -401,7 +434,7 @@
         <aside id="appSidebar" class="bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-6">
-                    <img src="fleetop-logo.jpg" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain bg-white p-0.5">
+                    <img src="fleetop-logo.png" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain">
                     <div class="min-w-0">
                         <h1 class="font-black text-xs text-white">FleetOp · فليتوب</h1>
                         <p id="sidebarCompanyName" class="text-[10px] text-slate-400 font-bold truncate"></p>
@@ -3598,7 +3631,7 @@ function setStaffJobTitle(job) {
 let currentLang = localStorage.getItem('fleetop_lang') || 'ar';
 let currentNavTab = 'dashboard';
 let companySettings = {};
-const PLATFORM_LOGO = 'fleetop-logo.jpg';
+const PLATFORM_LOGO = 'fleetop-logo.png';
 
 const I18N = {
     ar: {
@@ -3854,13 +3887,14 @@ function applyCompanyBranding() {
     if (enEl) enEl.textContent = nameEn || nameAr || 'Company';
     if (arSlogan) arSlogan.textContent = sloganAr;
     if (enSlogan) enSlogan.textContent = sloganEn;
-    ['printCompanyLogoAr', 'printCompanyLogoEn', 'companyLogoPreview'].forEach(id => {
+    const logos = ['printCompanyLogo', 'companyLogoPreview'];
+    logos.forEach(id => {
         const img = document.getElementById(id);
         if (!img) return;
         if (companySettings.logo_data) {
             img.src = companySettings.logo_data;
             img.classList.remove('hidden');
-        } else if (id !== 'companyLogoPreview') {
+        } else {
             img.removeAttribute('src');
             img.classList.add('hidden');
         }
