@@ -225,11 +225,21 @@
             color: #0b2a4a !important;
         }
         #appSidebar .nav-open { color: #c4a35a !important; }
+        #appSidebar nav button {
+            justify-content: flex-start;
+            text-align: start;
+        }
+        #appSidebar nav .text-right,
+        #appSidebar nav .text-start { text-align: start; }
         #appContent { background: #faf7f2; }
         #menuToggleBtn { background: #0b2a4a; color: #c4a35a; }
         body.dashboard-active #loginBackdrop,
         body.is-printing #loginBackdrop,
         html.session-restoring #loginBackdrop { display: none !important; }
+        html[lang="en"] #appContent table,
+        html[lang="en"] #appContent th,
+        html[lang="en"] #appContent td,
+        html[lang="en"] #appContent .text-right { text-align: left; }
         html.session-restoring #loginSection { display: none !important; }
         html.session-restoring #mainDashboard { display: flex !important; }
         #appContent, #appContent > main { min-height: 0; }
@@ -488,24 +498,24 @@
                     <div>
                         <button type="button" onclick="toggleFacilityMenu()" id="tabFacilityBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-building text-base"></i>
-                            <span class="flex-1 text-right" data-i18n="nav.facility">إدارة المنشأة</span>
+                            <span class="flex-1 text-start" data-i18n="nav.facility">إدارة المنشأة</span>
                             <i id="facilityMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="facilitySubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 pr-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                        <div id="facilitySubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">بيانات المنشأة</span>
                             </button>
                             <div>
                                 <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
                                     <i class="fa-solid fa-car-side" style="color:#c4a35a"></i>
-                                    <span class="flex-1 text-right" data-i18n="nav.vehicles">المركبات</span>
+                                    <span class="flex-1 text-start" data-i18n="nav.vehicles">المركبات</span>
                                     <i id="vehiclesMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
-                                <div id="vehiclesSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r pr-2" style="border-color:rgba(196,163,90,0.25)">
-                                    <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <div id="vehiclesSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-truck-moving ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.trucks">الشاحنات</span>
                                     </button>
-                                    <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                    <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-van-shuttle ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
                                     </button>
                                 </div>
@@ -513,14 +523,14 @@
                             <div>
                                 <button type="button" onclick="toggleStaffMenu()" id="tabStaffBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
                                     <i class="fa-solid fa-id-card-clip" style="color:#c4a35a"></i>
-                                    <span class="flex-1 text-right" data-i18n="nav.staff">الموظفين</span>
+                                    <span class="flex-1 text-start" data-i18n="nav.staff">الموظفين</span>
                                     <i id="staffMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
-                                <div id="staffSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r pr-2" style="border-color:rgba(196,163,90,0.25)">
-                                    <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <div id="staffSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-id-badge ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.drivers">السائقين</span>
                                     </button>
-                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-user-tie ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.employees">الموظفين الإداريين</span>
                                     </button>
                                 </div>
@@ -533,17 +543,17 @@
                     <div id="financialMenu" class="hidden">
                         <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-coins text-base"></i>
-                            <span class="flex-1 text-right" data-i18n="nav.financial">التقارير المالية</span>
+                            <span class="flex-1 text-start" data-i18n="nav.financial">التقارير المالية</span>
                             <i id="financialMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 pr-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                        <div id="financialSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                             </button>
-                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
                             </button>
-                            <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                            <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-money-bill-wave ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
                             </button>
                         </div>
@@ -598,7 +608,7 @@
         <div id="financialCardsContainer" class="contents hidden">
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500">إجمالي الإيرادات</span>
+                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</span>
                     <h3 id="dashTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg font-bold">
@@ -608,7 +618,7 @@
             
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500">المبالغ المحصلة</span>
+                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.collected">المبالغ المحصلة</span>
                     <h3 id="dashCollectedAmount" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-lg font-bold">
@@ -618,7 +628,7 @@
             
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500">المبالغ غير المحصلة</span>
+                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.uncollected">المبالغ غير المحصلة</span>
                     <h3 id="dashRemainingAmount" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 text-lg font-bold">
@@ -629,7 +639,7 @@
 
         <div class="stat-card-trips bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
             <div class="min-w-0">
-                <span class="stat-label block text-[11px] font-bold text-slate-500">عدد الرحلات المنجزة</span>
+                <span class="stat-label block text-[11px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
                 <h3 id="dashTotalTrips" class="text-2xl font-bold text-blue-600 font-mono mt-1">0</h3>
             </div>
             <div class="w-9 h-9 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-base font-bold">
@@ -641,24 +651,24 @@
         <div class="grid grid-cols-1 xl:grid-cols-[minmax(240px,280px)_minmax(240px,280px)_minmax(0,1fr)] gap-6 items-stretch">
                     <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden xl:aspect-square">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
-                            <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> الشاحنات</h4>
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> <span data-i18n="ui.trucks">الشاحنات</span></h4>
                             <span id="dashTotalTrucksBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
                         <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-emerald-50 px-2.5 rounded-xl border border-emerald-100">
-                                <span class="text-[11px] font-bold text-emerald-700">جاهزة للعمل</span>
+                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.readyWork">جاهزة للعمل</span>
                                 <span id="dashReadyTrucks" class="text-lg font-bold text-emerald-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-blue-50 px-2.5 rounded-xl border border-blue-100">
-                                <span class="text-[11px] font-bold text-blue-700">في رحلة</span>
+                                <span class="text-[11px] font-bold text-blue-700" data-i18n="ui.onTrip">في رحلة</span>
                                 <span id="dashBusyTrucks" class="text-lg font-bold text-blue-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-amber-50 px-2.5 rounded-xl border border-amber-100">
-                                <span class="text-[11px] font-bold text-amber-700">صيانة دورية</span>
+                                <span class="text-[11px] font-bold text-amber-700" data-i18n="ui.maint">صيانة دورية</span>
                                 <span id="dashMaintTrucks" class="text-lg font-bold text-amber-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700">عطلانة</span>
+                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.broken">عطلانة</span>
                                 <span id="dashBrokenTrucks" class="text-lg font-bold text-rose-800">0</span>
                             </div>
                         </div>
@@ -666,24 +676,24 @@
 
                     <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden xl:aspect-square">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
-                            <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> السائقين</h4>
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.drivers">السائقين</span></h4>
                             <span id="dashTotalDriversBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
                         <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-emerald-50 px-2.5 rounded-xl border border-emerald-100">
-                                <span class="text-[11px] font-bold text-emerald-700">متوفر</span>
+                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.available">متوفر</span>
                                 <span id="dashReadyDrivers" class="text-lg font-bold text-emerald-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-blue-50 px-2.5 rounded-xl border border-blue-100">
-                                <span class="text-[11px] font-bold text-blue-700">في رحلة</span>
+                                <span class="text-[11px] font-bold text-blue-700" data-i18n="ui.onTrip">في رحلة</span>
                                 <span id="dashBusyDrivers" class="text-lg font-bold text-blue-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-amber-50 px-2.5 rounded-xl border border-amber-100">
-                                <span class="text-[11px] font-bold text-amber-700">إجازة</span>
+                                <span class="text-[11px] font-bold text-amber-700" data-i18n="ui.leave">إجازة</span>
                                 <span id="dashLeaveDrivers" class="text-lg font-bold text-amber-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700">موقوف</span>
+                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.suspended">موقوف</span>
                                 <span id="dashSuspendedDrivers" class="text-lg font-bold text-rose-800">0</span>
                             </div>
                         </div>
@@ -691,26 +701,26 @@
 
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[280px] xl:min-h-0 xl:h-full">
                     <div class="mb-3 border-b border-slate-100 pb-2 shrink-0">
-                        <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-bell text-rose-500 ml-2"></i> تنبيهات الوثائق القريبة من الانتهاء</h4>
-                        <p class="text-[11px] text-slate-400 mt-1">اضغط التنبيه لفتح شاشة السجل المرتبط به</p>
+                        <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-bell text-rose-500 ml-2"></i> <span data-i18n="ui.expiryAlerts">تنبيهات الوثائق القريبة من الانتهاء</span></h4>
+                        <p class="text-[11px] text-slate-400 mt-1" data-i18n="ui.expiryHint">اضغط التنبيه لفتح شاشة السجل المرتبط به</p>
                     </div>
-                    <div id="dashExpiryAlerts" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-xs text-slate-500">جاري فحص التواريخ...</div>
+                    <div id="dashExpiryAlerts" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-xs text-slate-500" data-i18n="ui.checkingDates">جاري فحص التواريخ...</div>
                 </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
                     <h4 class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-bolt text-amber-500 ml-2"></i> الرحلات الجارية حالياً في الميدان
+                        <i class="fa-solid fa-bolt text-amber-500 ml-2"></i> <span data-i18n="ui.activeTripsField">الرحلات الجارية حالياً في الميدان</span>
                     </h4>
                     <div class="overflow-x-auto flex-grow">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
-                                    <th class="p-3.5 rounded-r-xl">رقم الرحلة</th>
-                                    <th class="p-3.5">العميل والوجهة</th>
-                                    <th class="p-3.5">الشاحنة والسائق</th>
-                                    <th class="p-3.5">المبلغ الإجمالي</th>
-                                    <th class="p-3.5 rounded-l-xl">الحالة</th>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
+                                    <th class="p-3.5" data-i18n="th.clientDest">العميل والوجهة</th>
+                                    <th class="p-3.5" data-i18n="th.truckDriver">الشاحنة والسائق</th>
+                                    <th class="p-3.5" data-i18n="th.totalAmount">المبلغ الإجمالي</th>
+                                    <th class="p-3.5 rounded-l-xl" data-i18n="th.status">الحالة</th>
                                 </tr>
                             </thead>
                             <tbody id="dashActiveTripsTable" class="divide-y divide-slate-100">
@@ -726,21 +736,21 @@
         <div class="flex flex-col lg:flex-row lg:items-end gap-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 flex-1">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة الرحلة</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.tripStatus">حالة الرحلة</label>
                     <select id="filterTripStatus" onchange="filterAndRenderTrips()" class="w-full p-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="all">جميع الرحلات</option>
-                        <option value="جارية">الرحلات الجارية فقط</option>
-                        <option value="مكتملة">الرحلات المكتملة فقط</option>
-                        <option value="ملغاة">الرحلات الملغاة</option>
+                        <option value="all" data-i18n="ui.allTrips">جميع الرحلات</option>
+                        <option value="جارية" data-i18n="ui.activeOnly">الرحلات الجارية فقط</option>
+                        <option value="مكتملة" data-i18n="ui.completedOnly">الرحلات المكتملة فقط</option>
+                        <option value="ملغاة" data-i18n="ui.cancelledOnly">الرحلات الملغاة</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة السداد</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
                     <select id="filterPaymentStatus" onchange="filterAndRenderTrips()" class="w-full p-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="all">جميع حالات السداد</option>
-                        <option value="غير مسدد">غير مسدد</option>
-                        <option value="سداد جزئي">سداد جزئي</option>
-                        <option value="مسدد">مسدد (بالكامل)</option>
+                        <option value="all" data-i18n="ui.allPay">جميع حالات السداد</option>
+                        <option value="غير مسدد" data-i18n="ui.unpaid">غير مسدد</option>
+                        <option value="سداد جزئي" data-i18n="ui.partial">سداد جزئي</option>
+                        <option value="مسدد" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
                     </select>
                 </div>
                 <div class="flex flex-col">
@@ -767,7 +777,7 @@
             <div class="flex flex-col justify-end gap-2 shrink-0 self-end min-w-[8.5rem]">
                 <div id="resetCounterContainerTrips" class="hidden"></div>
                 <button onclick="resetTripFilters()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-rotate-left ml-1"></i> إعادة الضبط
+                    <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
                 </button>
             </div>
         </div>
@@ -775,22 +785,22 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
         <div class="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <h3 class="font-bold text-slate-900 text-sm flex items-center">
-                <i class="fa-solid fa-list-check text-amber-500 ml-2"></i> سجل الرحلات
+                <i class="fa-solid fa-list-check text-amber-500 ml-2"></i> <span data-i18n="ui.tripLog">سجل الرحلات</span>
             </h3>
             <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2 shrink-0">
-                <i class="fa-solid fa-circle-plus"></i> إضافة رحلة جديدة
+                <i class="fa-solid fa-circle-plus"></i> <span data-i18n="ui.addTrip">إضافة رحلة جديدة</span>
             </button>
         </div>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
                 <thead class="bg-slate-100 text-slate-700">
                     <tr>
-                        <th class="p-3.5 rounded-r-xl">رقم الرحلة</th>
-                        <th class="p-3.5">العميل والمسار</th>
-                        <th class="p-3.5">الشاحنة والسائق</th>
-                        <th class="p-3.5">المبالغ والعمولة</th>
-                        <th class="p-3.5">الحالة والسداد</th>
-                        <th class="p-3.5 rounded-l-xl text-center">الإجراءات</th>
+                        <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
+                        <th class="p-3.5" data-i18n="th.clientRoute">العميل والمسار</th>
+                        <th class="p-3.5" data-i18n="th.truckDriver">الشاحنة والسائق</th>
+                        <th class="p-3.5" data-i18n="th.amountsComm">المبالغ والعمولة</th>
+                        <th class="p-3.5" data-i18n="th.statusPay">الحالة والسداد</th>
+                        <th class="p-3.5 rounded-l-xl text-center" data-i18n="th.actions">الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="tripsTable" class="divide-y divide-slate-100">
@@ -804,7 +814,7 @@
     <div id="printableReport" class="flex flex-col flex-grow">
         <div class="mb-6 flex justify-end">
             <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
-                <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
+                <i class="fa-solid fa-print ml-1"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
             </button>
         </div>
 
@@ -812,29 +822,29 @@
             <div class="flex flex-col xl:flex-row xl:items-stretch gap-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 no-print">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                         <input type="date" id="reportStartDate" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى تاريخ</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                         <input type="date" id="reportEndDate" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
                         <select id="reportTruckFilter" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
-                            <option value="">جميع الشاحنات</option>
+                            <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                         <select id="reportDriverFilter" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
-                            <option value="">جميع السائقين</option>
+                            <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
                         </select>
                     </div>
                 </div>
                 <div class="bg-slate-50 px-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shrink-0 min-w-[11rem] self-stretch">
                     <div>
-                        <span class="block text-[11px] text-slate-500 font-bold">عدد الرحلات المنجزة</span>
+                        <span class="block text-[11px] text-slate-500 font-bold" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
                         <span id="repTotalTrips" class="text-2xl font-bold text-slate-900 font-mono leading-none">0</span>
                     </div>
                     <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-amber-500 text-lg border border-slate-200">
@@ -844,7 +854,7 @@
             </div>
             <div class="flex justify-end mt-4 no-print">
                 <button onclick="generateReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-magnifying-glass"></i> عرض التقرير
+                    <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
                 </button>
             </div>
         </div>
@@ -853,7 +863,7 @@
             <div id="reportDriverCard" class="hidden mb-4">
                 <div class="inline-flex items-center gap-2 h-11 bg-slate-50 border border-slate-200 rounded-xl px-4">
                     <i class="fa-solid fa-user text-amber-500 text-xs"></i>
-                    <span class="text-[10px] font-bold text-slate-400">السائق</span>
+                    <span class="text-[10px] font-bold text-slate-400" data-i18n="ui.driver">السائق</span>
                     <span id="reportDriverCardName" class="font-black text-slate-900 text-sm"></span>
                     <span id="reportDriverCardPhone" class="text-xs text-slate-500 font-mono"></span>
                 </div>
@@ -863,14 +873,14 @@
             </div>
 
                     <div class="mb-4">
-                        <h4 id="driverReportHeading" class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> تقرير السائقين التفصيلي والعمولات المستحقة</h4>
+                        <h4 id="driverReportHeading" class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.driverReportHead">تقرير السائقين التفصيلي والعمولات المستحقة</span></h4>
                         <div class="overflow-x-auto">
                            <table class="w-full text-right text-xs">
     <thead class="bg-slate-800 text-slate-200 uppercase">
         <tr>
-            <th class="p-3" id="driverReportIdentityHead">اسم السائق ورقم الجوال</th>
+            <th class="p-3" id="driverReportIdentityHead" data-i18n="th.driverPhone">اسم السائق ورقم الجوال</th>
             <th class="p-3 text-center">الرحلات المنجزة</th>
-            <th colspan="5" class="p-3 text-center font-bold text-sm">
+            <th colspan="5" class="p-3 text-center font-bold text-sm" data-i18n="th.tripDetails">
         تفاصيل الرحلات 
     
 </tr>
@@ -889,66 +899,66 @@
 <main id="financialOverviewSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-end">
         <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
-            <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
+            <i class="fa-solid fa-print ml-1"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
         </button>
     </div>
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 no-print">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="finStartDate" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى تاريخ</label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                 <input type="date" id="finEndDate" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
                 <select id="finTruckFilter" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="">جميع الشاحنات</option>
+                    <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                 <select id="finDriverFilter" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="">جميع السائقين</option>
+                    <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">طريقة السداد</label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
                 <select id="finPaymentMethodFilter" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="">جميع الطرق</option>
-                    <option value="نقدي">نقدي</option>
-                    <option value="تحويل على الراجحي">تحويل على الراجحي</option>
-                    <option value="تحويل على الأهلي">تحويل على الأهلي</option>
+                    <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
+                    <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
+                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
                 </select>
             </div>
         </div>
         <div class="flex justify-end gap-2 mt-4">
             <button type="button" onclick="generateFinancialReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                <i class="fa-solid fa-filter ml-1"></i> تشغيل الفلتر
+                <i class="fa-solid fa-filter ml-1"></i> <span data-i18n="ui.runFilter">تشغيل الفلتر</span>
             </button>
             <button type="button" onclick="resetFinancialFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                <i class="fa-solid fa-rotate-left ml-1"></i> إعادة الضبط
+                <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
             </button>
         </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-bold mb-1">إجمالي الإيرادات</div>
+            <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="finTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
-            <div class="text-xs text-emerald-600 font-bold mb-1">المبالغ المحصلة</div>
+            <div class="text-xs text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
             <div id="finCollectedAmount" class="text-2xl font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
-            <div class="text-xs text-rose-600 font-bold mb-1">المبالغ غير المحصلة</div>
+            <div class="text-xs text-rose-600 font-bold mb-1" data-i18n="ui.uncollected">المبالغ غير المحصلة</div>
             <div id="finPendingAmount" class="text-2xl font-bold text-rose-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-blue-100 bg-blue-50/20 shadow-sm flex items-center justify-between">
             <div>
-                <div class="text-xs text-blue-600 font-bold mb-1">عدد الرحلات المنجزة</div>
+                <div class="text-xs text-blue-600 font-bold mb-1" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
                 <div id="finTotalTrips" class="text-2xl font-bold text-blue-700 font-mono">0</div>
             </div>
             <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-xl">
@@ -958,18 +968,18 @@
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
-            <i class="fa-solid fa-list text-amber-500 ml-2"></i> تفاصيل الإيرادات
+            <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.revenueDetails">تفاصيل الإيرادات</span>
         </h3>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
                 <thead class="bg-slate-100 text-slate-700">
                     <tr>
-                        <th class="p-3.5 rounded-r-xl">رقم الرحلة</th>
-                        <th class="p-3.5">تاريخ الرحلة</th>
-                        <th class="p-3.5">اسم العميل</th>
-                        <th class="p-3.5">المبلغ</th>
-                        <th class="p-3.5">طريقة السداد</th>
-                        <th class="p-3.5 rounded-l-xl">تاريخ التحصيل</th>
+                        <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
+                        <th class="p-3.5" data-i18n="th.tripDate">تاريخ الرحلة</th>
+                        <th class="p-3.5" data-i18n="th.clientName">اسم العميل</th>
+                        <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
+                        <th class="p-3.5" data-i18n="ui.payMethod">طريقة السداد</th>
+                        <th class="p-3.5 rounded-l-xl" data-i18n="th.collectDate">تاريخ التحصيل</th>
                     </tr>
                 </thead>
                 <tbody id="financialReportTable" class="divide-y divide-slate-100">
@@ -984,21 +994,21 @@
 <main id="financialDetailsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-end">
         <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
-            <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
+            <i class="fa-solid fa-print ml-1"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
         </button>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
-            <i class="fa-solid fa-truck ml-2 text-amber-500"></i> إجمالي الإيرادات لكل شاحنة
+            <i class="fa-solid fa-truck ml-2 text-amber-500"></i> <span data-i18n="ui.truckRevenue">إجمالي الإيرادات لكل شاحنة</span>
         </h3>
         <div class="overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead>
                     <tr class="bg-slate-50 text-slate-700 border-b">
-                        <th class="p-3">رقم اللوحة</th>
-                        <th class="p-3">الطراز / النوع</th>
+                        <th class="p-3" data-i18n="th.plate">رقم اللوحة</th>
+                        <th class="p-3" data-i18n="th.modelType">الطراز / النوع</th>
                         <th class="p-3 text-center">الرحلات المنجزة</th>
-                        <th class="p-3">إجمالي الإيراد</th>
+                        <th class="p-3" data-i18n="th.totalRev">إجمالي الإيراد</th>
                     </tr>
                 </thead>
                 <tbody id="truckFinancialTable" class="divide-y divide-slate-100 font-mono"></tbody>
@@ -1007,15 +1017,15 @@
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
-            <i class="fa-solid fa-user-tie ml-2 text-amber-500"></i> تقرير العمولات التفصيلي لكل سائق
+            <i class="fa-solid fa-user-tie ml-2 text-amber-500"></i> <span data-i18n="ui.driverCommReport">تقرير العمولات التفصيلي لكل سائق</span>
         </h3>
         <div class="overflow-x-auto">
             <table class="w-full text-right text-xs">
                 <thead>
                     <tr class="bg-slate-50 text-slate-700 border-b">
-                        <th class="p-3">اسم السائق</th>
+                        <th class="p-3" data-i18n="th.driverName">اسم السائق</th>
                         <th class="p-3 text-center">الرحلات المنجزة</th>
-                        <th class="p-3">إجمالي العمولات المستحقة</th>
+                        <th class="p-3" data-i18n="th.totalCommDue">إجمالي العمولات المستحقة</th>
                     </tr>
                 </thead>
                 <tbody id="driverFinancialTable" class="divide-y divide-slate-100 font-mono"></tbody>
@@ -1026,64 +1036,64 @@
 
             <main id="facilitySection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
                 <div id="facilityExpiryBox" class="mb-6 bg-rose-50 border border-rose-100 rounded-2xl p-4 hidden">
-                    <h3 class="text-xs font-bold text-rose-700 mb-2"><i class="fa-solid fa-bell ml-1"></i> وثائق قاربت على الانتهاء أو انتهت</h3>
+                    <h3 class="text-xs font-bold text-rose-700 mb-2"><i class="fa-solid fa-bell ml-1"></i> <span data-i18n="ui.docsExpiring">وثائق قاربت على الانتهاء أو انتهت</span></h3>
                     <div id="facilityExpiryList" class="space-y-1 text-xs"></div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                         <h3 id="facilityFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                            <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة سجل أو ترخيص
+                            <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addLicense">إضافة سجل أو ترخيص</span>
                         </h3>
                         <form onsubmit="saveFacilityDocument(event)" class="space-y-3.5">
                             <input type="hidden" id="facilityDocId">
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم السجل / الترخيص</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.docName">اسم السجل / الترخيص</label>
                                 <input type="text" id="facilityDocTitle" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="مثل: السجل التجاري">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">النوع</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.type">النوع</label>
                                 <select id="facilityDocType" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                    <option value="سجل تجاري">سجل تجاري</option>
-                                    <option value="ترخيص نقل">ترخيص نقل</option>
-                                    <option value="رخصة بلدية">رخصة بلدية</option>
-                                    <option value="اشتراك غرفة">اشتراك غرفة</option>
-                                    <option value="أخرى">أخرى</option>
+                                    <option value="سجل تجاري" data-i18n="ui.crType">سجل تجاري</option>
+                                    <option value="ترخيص نقل" data-i18n="ui.transportLic">ترخيص نقل</option>
+                                    <option value="رخصة بلدية" data-i18n="ui.municipality">رخصة بلدية</option>
+                                    <option value="اشتراك غرفة" data-i18n="ui.chamber">اشتراك غرفة</option>
+                                    <option value="أخرى" data-i18n="ui.other">أخرى</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم الوثيقة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.docNo">رقم الوثيقة</label>
                                 <input type="text" id="facilityDocNumber" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ الإصدار</label>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.issueDate">تاريخ الإصدار</label>
                                     <input type="date" id="facilityDocIssue" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ الانتهاء</label>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.expiryDate">تاريخ الانتهاء</label>
                                     <input type="date" id="facilityDocExpiry" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">ملاحظة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.note">ملاحظة</label>
                                 <input type="text" id="facilityDocNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div class="flex gap-2 pt-2">
-                                <button type="submit" id="saveFacilityDocBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs">حفظ</button>
-                                <button type="button" onclick="resetFacilityDocForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs">إلغاء</button>
+                                <button type="submit" id="saveFacilityDocBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs" data-i18n="ui.save">حفظ</button>
+                                <button type="button" onclick="resetFacilityDocForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs" data-i18n="ui.cancel">إلغاء</button>
                             </div>
                         </form>
                     </div>
                     <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                            <i class="fa-solid fa-folder-open text-amber-500 ml-2"></i> سجلات وتراخيص المنشأة
+                            <i class="fa-solid fa-folder-open text-amber-500 ml-2"></i> <span data-i18n="ui.facilityDocs">سجلات وتراخيص المنشأة</span>
                         </h3>
                         <div class="overflow-x-auto">
                             <table class="w-full text-right text-xs">
                                 <thead class="bg-slate-100 text-slate-700">
                                     <tr>
                                         <th class="p-3.5 rounded-r-xl">الاسم</th>
-                                        <th class="p-3.5">النوع</th>
+                                        <th class="p-3.5" data-i18n="ui.type">النوع</th>
                                         <th class="p-3.5">الرقم</th>
                                         <th class="p-3.5">الانتهاء</th>
                                         <th class="p-3.5 rounded-l-xl text-center">إجراءات</th>
@@ -1102,67 +1112,67 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="truckFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة شاحنة جديدة
+                        <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addTruck">إضافة شاحنة جديدة</span>
                     </h3>
                     <form onsubmit="saveTruck(event)" class="space-y-3.5">
                         <input type="hidden" id="truckId">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم اللوحة </label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.plate">رقم اللوحة </label>
                             <input type="text" id="truckPlate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="ادخل رقم اللوحة">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">الموديل / النوع</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.model">الموديل / النوع</label>
                             <input type="text" id="truckModel" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل موديل الشاحنة و نوعها">
                         </div>
                         <div>
-                            <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1">حالة الشاحنة</label>
+                            <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truckStatus">حالة الشاحنة</label>
                             <select id="truckStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="جاهزة للعمل">جاهزة للعمل</option>
-                                <option id="truckStatusTripOption" value="في رحلة">في رحلة</option>
-                                <option value="صيانة دورية">صيانة دورية</option>
-                                <option value="عطلانة">عطلانة</option>
+                                <option value="جاهزة للعمل" data-i18n="ui.readyWork">جاهزة للعمل</option>
+                                <option id="truckStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
+                                <option value="صيانة دورية" data-i18n="ui.maint">صيانة دورية</option>
+                                <option value="عطلانة" data-i18n="ui.broken">عطلانة</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الاستمارة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.istimara">انتهاء الاستمارة</label>
                                 <input type="date" id="truckIstimaraExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الفحص الدوري</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.inspection">انتهاء الفحص الدوري</label>
                                 <input type="date" id="truckInspectionExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء التأمين</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.insurance">انتهاء التأمين</label>
                                 <input type="date" id="truckInsuranceExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div class="truck-operation-only">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء بطاقة التشغيل</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.opCardExpiry">انتهاء بطاقة التشغيل</label>
                                 <input type="date" id="truckOperationExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                         </div>
                         <div class="truck-operation-only">
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم بطاقة التشغيل</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.opCardNo">رقم بطاقة التشغيل</label>
                             <input type="text" id="truckOperationCardNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                         </div>
                         <div class="flex gap-2 pt-2">
-                            <button type="submit" id="saveTruckBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ</button>
-                            <button type="button" id="cancelTruckBtn" onclick="resetTruckForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                            <button type="submit" id="saveTruckBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
+                            <button type="button" id="cancelTruckBtn" onclick="resetTruckForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                         </div>
                     </form>
                 </div>
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                     <h3 id="trucksListTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> الشاحنات المسجلة في الأسطول
+                        <i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> <span data-i18n="ui.trucksList">الشاحنات المسجلة في الأسطول</span>
                     </h3>
                     <div class="overflow-x-auto flex-grow">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
-                                    <th class="p-3.5 rounded-r-xl">رقم اللوحة</th>
-                                    <th class="p-3.5">الموديل</th>
-                                    <th class="p-3.5">الحالة</th>
-                                    <th class="p-3.5">انتهاء الوثائق</th>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.plate">رقم اللوحة</th>
+                                    <th class="p-3.5" data-i18n="th.model">الموديل</th>
+                                    <th class="p-3.5" data-i18n="th.status">الحالة</th>
+                                    <th class="p-3.5" data-i18n="th.docExpiry">انتهاء الوثائق</th>
                                     <th class="p-3.5 rounded-l-xl text-center">إجراءات</th>
                                 </tr>
                             </thead>
@@ -1180,95 +1190,95 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="driverFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة سائق جديد
+                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addDriver">إضافة سائق جديد</span>
                     </h3>
                     <form onsubmit="saveDriver(event)" class="space-y-3.5">
                         <input type="hidden" id="driverId">
                         <div>
-                            <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1">اسم السائق</label>
+                            <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.driverName">اسم السائق</label>
                             <input type="text" id="driverName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم السائق">
                         </div>
                         <div id="staffJobWrap" class="hidden">
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">الوظيفة</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.job">الوظيفة</label>
                             <select id="staffJobTitle" onchange="toggleStaffJobOther()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="">اختر الوظيفة</option>
-                                <option value="مشرف تشغيل">مشرف تشغيل</option>
-                                <option value="مشرف صيانة">مشرف صيانة</option>
-                                <option value="محاسب">محاسب</option>
-                                <option value="إداري">إداري</option>
-                                <option value="أخرى">أخرى</option>
+                                <option value="" data-i18n="ui.chooseJob">اختر الوظيفة</option>
+                                <option value="مشرف تشغيل" data-i18n="ui.opsSupervisor">مشرف تشغيل</option>
+                                <option value="مشرف صيانة" data-i18n="ui.maintSupervisor">مشرف صيانة</option>
+                                <option value="محاسب" data-i18n="ui.accountant">محاسب</option>
+                                <option value="إداري" data-i18n="ui.adminStaff">إداري</option>
+                                <option value="أخرى" data-i18n="ui.other">أخرى</option>
                             </select>
                             <input type="text" id="staffJobTitleOther" class="hidden mt-2 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اكتب المسمى الوظيفي">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم الجوال</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.phone">رقم الجوال</label>
                             <input type="text" id="driverPhone" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="ادخل رقم الجوال">
                         </div>
                         <div>
-                            <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1">حالة السائق</label>
+                            <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driverStatus">حالة السائق</label>
                             <select id="driverStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="متوفر">متوفر</option>
-                                <option id="driverStatusTripOption" value="في رحلة">في رحلة</option>
-                                <option value="إجازة">إجازة</option>
-                                <option value="موقوف">موقوف</option>
+                                <option value="متوفر" data-i18n="ui.available">متوفر</option>
+                                <option id="driverStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
+                                <option value="إجازة" data-i18n="ui.leave">إجازة</option>
+                                <option value="موقوف" data-i18n="ui.suspended">موقوف</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم الإقامة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.iqamaNo">رقم الإقامة</label>
                                 <input type="text" id="staffIqamaNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الإقامة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.iqamaExp">انتهاء الإقامة</label>
                                 <input type="date" id="staffIqamaExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">رقم الجواز</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.passportNo">رقم الجواز</label>
                                 <input type="text" id="staffPassportNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الجواز</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.passportExp">انتهاء الجواز</label>
                                 <input type="date" id="staffPassportExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div class="staff-driver-only">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">رخصة القيادة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.licenseNo">رخصة القيادة</label>
                                 <input type="text" id="staffLicenseNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div class="staff-driver-only">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء الرخصة</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.licenseExp">انتهاء الرخصة</label>
                                 <input type="date" id="staffLicenseExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div class="staff-driver-only">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">بطاقة السائق</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driverCard">بطاقة السائق</label>
                                 <input type="text" id="staffDriverCardNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div class="staff-driver-only">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء بطاقة السائق</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driverCardExp">انتهاء بطاقة السائق</label>
                                 <input type="date" id="staffDriverCardExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">التأمين الصحي</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.health">التأمين الصحي</label>
                                 <input type="text" id="staffHealthNo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1">انتهاء التأمين الصحي</label>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.healthExp">انتهاء التأمين الصحي</label>
                                 <input type="date" id="staffHealthExpiry" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             </div>
                         </div>
                         <div class="flex gap-2 pt-2">
-                            <button type="submit" id="driverSaveBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ</button>
-                            <button type="button" id="driverCancelBtn" onclick="resetDriverForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                            <button type="submit" id="driverSaveBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
+                            <button type="button" id="driverCancelBtn" onclick="resetDriverForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                         </div>
                     </form>
                 </div>
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <h3 id="driversListTitle" class="font-bold text-slate-900 text-sm flex items-center">
-                            <i class="fa-solid fa-users text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول
+                            <i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.driversList">السائقين المسجلين في الأسطول</span>
                         </h3>
                         <div id="staffJobFilterWrap" class="hidden">
                             <select id="staffJobFilter" onchange="loadDrivers()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold outline-none focus:border-amber-500">
-                                <option value="">كل الوظائف</option>
+                                <option value="" data-i18n="ui.allJobs">كل الوظائف</option>
                             </select>
                         </div>
                     </div>
@@ -1276,11 +1286,11 @@
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
-                                    <th class="p-3.5 rounded-r-xl">اسم السائق</th>
-                                    <th id="staffJobColHead" class="p-3.5 hidden">الوظيفة</th>
-                                    <th class="p-3.5">رقم الجوال</th>
-                                    <th class="p-3.5">الحالة</th>
-                                    <th class="p-3.5">انتهاء الوثائق</th>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.driverName">اسم السائق</th>
+                                    <th id="staffJobColHead" class="p-3.5 hidden" data-i18n="ui.job">الوظيفة</th>
+                                    <th class="p-3.5" data-i18n="ui.phone">رقم الجوال</th>
+                                    <th class="p-3.5" data-i18n="th.status">الحالة</th>
+                                    <th class="p-3.5" data-i18n="th.docExpiry">انتهاء الوثائق</th>
                                     <th class="p-3.5 rounded-l-xl text-center">إجراءات</th>
                                 </tr>
                             </thead>
@@ -1298,39 +1308,39 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
             <div class="flex justify-end items-center border-b border-slate-100 pb-3">
                 <button onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print" style="background:#0b2a4a;color:#c4a35a">
-                    <i class="fa-solid fa-print"></i> طباعة التقرير
+                    <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
                 </button>
             </div>
 
             <!-- الفلاتر -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 no-print">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                     <input type="date" id="commStartDate" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                     <input type="date" id="commEndDate" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
                     <select id="commTruckFilter" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="">جميع الشاحنات</option>
+                        <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                     <select id="commDriverFilter" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="">جميع السائقين</option>
+                        <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
                     </select>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2 no-print">
                 <button type="button" onclick="generateCommissionReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                    <i class="fa-solid fa-filter ml-1"></i> تشغيل الفلتر
+                    <i class="fa-solid fa-filter ml-1"></i> <span data-i18n="ui.runFilter">تشغيل الفلتر</span>
                 </button>
                 <button type="button" onclick="resetCommissionFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                    <i class="fa-solid fa-rotate-left ml-1"></i> إعادة الضبط
+                    <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
                 </button>
             </div>
         </div>
@@ -1338,7 +1348,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm flex items-center justify-between">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-amber-700">إجمالي مبلغ العمولات</span>
+                    <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</span>
                     <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg">
@@ -1347,7 +1357,7 @@
             </div>
             <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
                 <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-blue-700">عدد الرحلات المنجزة</span>
+                    <span class="block text-[11px] font-bold text-blue-700" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
                     <h3 id="commTotalTripsDisplay" class="text-2xl font-bold text-blue-700 font-mono mt-1">0</h3>
                 </div>
                 <div class="w-10 h-10 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-lg">
@@ -1362,13 +1372,13 @@
                 <table class="w-full text-right text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
-                            <th class="p-3.5 rounded-r-xl">رقم الرحلة</th>
+                            <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
                             <th class="p-3.5">تاريخ المغادرة</th>
-                            <th class="p-3.5">اسم العميل</th>
+                            <th class="p-3.5" data-i18n="th.clientName">اسم العميل</th>
                             <th class="p-3.5">من</th>
                             <th class="p-3.5">إلى</th>
-                            <th class="p-3.5">الشاحنة</th>
-                            <th class="p-3.5">السائق</th>
+                            <th class="p-3.5" data-i18n="ui.truck">الشاحنة</th>
+                            <th class="p-3.5" data-i18n="ui.driver">السائق</th>
                             <th class="p-3.5 rounded-l-xl">مبلغ العمولة</th>
                         </tr>
                     </thead>
@@ -1394,17 +1404,17 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 no-print">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">من تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                     <input type="date" id="settleStartDate" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">إلى تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                     <input type="date" id="settleEndDate" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                     <select id="settleDriverFilter" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="">جميع السائقين</option>
+                        <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
                     </select>
                 </div>
             </div>
@@ -1412,7 +1422,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-amber-700">إجمالي العمولات</span>
+                <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalComms">إجمالي العمولات</span>
                 <h3 id="settleEarnedDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
@@ -1430,12 +1440,12 @@
                 <table class="w-full text-right text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
-                            <th class="p-3.5 rounded-r-xl">السائق</th>
-                            <th class="p-3.5">رقم الرحلة</th>
+                            <th class="p-3.5 rounded-r-xl" data-i18n="ui.driver">السائق</th>
+                            <th class="p-3.5" data-i18n="th.tripNo">رقم الرحلة</th>
                             <th class="p-3.5">تاريخ المغادرة</th>
-                            <th class="p-3.5">الشاحنة</th>
+                            <th class="p-3.5" data-i18n="ui.truck">الشاحنة</th>
                             <th class="p-3.5">مبلغ العمولة</th>
-                            <th class="p-3.5 rounded-l-xl">إجمالي العمولات</th>
+                            <th class="p-3.5 rounded-l-xl" data-i18n="ui.totalComms">إجمالي العمولات</th>
                         </tr>
                     </thead>
                     <tbody id="settleDriversTable">
@@ -1447,17 +1457,17 @@
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center">
-                <i class="fa-solid fa-receipt text-amber-500 ml-2"></i> سجل المبالغ المصروفة
+                <i class="fa-solid fa-receipt text-amber-500 ml-2"></i> <span data-i18n="ui.payoutLog">سجل المبالغ المصروفة</span>
             </h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-right text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
-                            <th class="p-3.5 rounded-r-xl">التاريخ</th>
-                            <th class="p-3.5">السائق</th>
-                            <th class="p-3.5">المبلغ</th>
-                            <th class="p-3.5">ملاحظة</th>
-                            <th class="p-3.5 rounded-l-xl text-center no-print">إجراء</th>
+                            <th class="p-3.5 rounded-r-xl" data-i18n="th.date">التاريخ</th>
+                            <th class="p-3.5" data-i18n="ui.driver">السائق</th>
+                            <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
+                            <th class="p-3.5" data-i18n="ui.note">ملاحظة</th>
+                            <th class="p-3.5 rounded-l-xl text-center no-print" data-i18n="th.action">إجراء</th>
                         </tr>
                     </thead>
                     <tbody id="commissionPayoutTable" class="divide-y divide-slate-100">
@@ -1472,56 +1482,56 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="userFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة مستخدم جديد
+                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addUser">إضافة مستخدم جديد</span>
                     </h3>
                     <form onsubmit="saveUser(event)" class="space-y-3.5">
                         <input type="hidden" id="appUserId">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم المستخدم (للدخول)</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.loginUsername">اسم المستخدم (للدخول)</label>
                             <input type="text" id="appUsername" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="username">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الموظف</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.employeeName">اسم الموظف</label>
                             <input type="text" id="appEmployeeName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم الموظف">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">كلمة المرور</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.password">كلمة المرور</label>
                             <input type="password" id="appPassword" autocomplete="new-password" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="أدخل كلمة المرور">
                             <p id="appPasswordHint" class="hidden text-[10px] text-slate-500 mt-1">اتركها فارغة للإبقاء على كلمة المرور الحالية، أو اكتب كلمة جديدة.</p>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">الدور</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.role">الدور</label>
                           <select id="appUserRole" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-    <option value="user">مستخدم </option>
-    <option value="accountant">محاسب</option>
-    <option value="admin">مدير</option>
+    <option value="user" data-i18n="role.user">مستخدم</option>
+    <option value="accountant" data-i18n="role.accountant">محاسب</option>
+    <option value="admin" data-i18n="role.admin">مدير</option>
 </select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة الحساب</label>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.accountStatus">حالة الحساب</label>
                             <select id="appUserStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="نشط">نشط</option>
-                                <option value="موقوف">موقوف</option>
+                                <option value="نشط" data-i18n="ui.active">نشط</option>
+                                <option value="موقوف" data-i18n="ui.suspended">موقوف</option>
                             </select>
                         </div>
                         <div class="flex gap-2 pt-2">
-                            <button type="submit" id="saveUserBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ المستخدم</button>
-                            <button type="button" id="cancelUserBtn" onclick="resetUserForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                            <button type="submit" id="saveUserBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.saveUser">حفظ المستخدم</button>
+                            <button type="button" id="cancelUserBtn" onclick="resetUserForm()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                         </div>
                     </form>
                 </div>
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                     <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-shield-halved text-amber-500 ml-2"></i> قائمة مستخدمي النظام والصلاحيات
+                        <i class="fa-solid fa-shield-halved text-amber-500 ml-2"></i> <span data-i18n="ui.usersList">قائمة مستخدمي النظام والصلاحيات</span>
                     </h3>
                     <div class="overflow-x-auto flex-grow">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
-                                    <th class="p-3.5 rounded-r-xl">اسم المستخدم</th>
-                                    <th class="p-3.5">اسم الموظف</th>
-                                    <th class="p-3.5">الصلاحية</th>
-                                    <th class="p-3.5">الحالة</th>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.username">اسم المستخدم</th>
+                                    <th class="p-3.5" data-i18n="ui.employeeName">اسم الموظف</th>
+                                    <th class="p-3.5" data-i18n="th.permission">الصلاحية</th>
+                                    <th class="p-3.5" data-i18n="th.status">الحالة</th>
                                     <th class="p-3.5 rounded-l-xl text-center">إجراءات</th>
                                 </tr>
                             </thead>
@@ -1603,12 +1613,12 @@
     <div id="addTripModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 text-slate-900 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة رحلة جديدة</h3>
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addTrip">إضافة رحلة جديدة</span></h3>
                 <button onclick="closeAddTripModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="saveTrip(event)" class="space-y-3.5">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم العميل</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.clientName">اسم العميل</label>
                     <input type="text" id="clientName" data-suggest="client" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="أدخل اسم العميل">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -1680,7 +1690,7 @@
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ الرحلة</button>
-                    <button type="button" onclick="closeAddTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="button" onclick="closeAddTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1695,7 +1705,7 @@
             <p id="editTripStatusNote" class="text-[11px] text-slate-500 mb-3 leading-5"></p>
             <form onsubmit="saveEditTrip(event)" class="space-y-3.5">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم العميل</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.clientName">اسم العميل</label>
                     <input type="text" id="editClientName" data-suggest="client" autocomplete="off" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -1724,11 +1734,11 @@
                     <input type="date" id="editDepartureDate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الشاحنة</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
                     <select id="editTripTruck" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                     <select id="editTripDriver" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
                 </div>
                 <div>
@@ -1763,22 +1773,22 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">طريقة السداد</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
                         <select id="editPaymentMethod" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                             <option value="">بدون</option>
-                            <option value="نقدي">نقدي</option>
-                            <option value="تحويل على الراجحي">تحويل على الراجحي</option>
-                            <option value="تحويل على الأهلي">تحويل على الأهلي</option>
+                            <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                            <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
+                            <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ التحصيل</label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل</label>
                         <input type="date" id="editCollectionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ التعديل</button>
-                    <button type="button" onclick="closeEditTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="button" onclick="closeEditTripModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1815,24 +1825,24 @@
             
             <!-- خانة طريقة السداد الإجبارية -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">طريقة السداد </label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد </label>
                 <select id="modalPaymentMethod"  class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="">اختر طريقة السداد...</option>
-                    <option value="نقدي">نقدي</option>
-                    <option value="تحويل على الراجحي">تحويل على الراجحي</option>
-                    <option value="تحويل على الأهلي">تحويل على الأهلي</option>
+                    <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
+                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
                 </select>
             </div>
 
             <!-- خانة تاريخ التحصيل الإجبارية -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">تاريخ التحصيل </label>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل </label>
                 <input type="date" id="modalCollectionDate"  class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
             </div>
 
             <div class="flex gap-2 pt-2">
                 <button type="submit" id="completeTripSubmitBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow-sm transition">تأكيد السداد والعمولة وإنهاء الرحلة</button>
-                <button type="button" onclick="closeCompleteModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                <button type="button" onclick="closeCompleteModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
             </div>
         </form>
     </div>
@@ -1860,7 +1870,7 @@
                 <div id="ownPasswordError" class="hidden text-rose-600 text-xs font-bold text-center bg-rose-50 py-2.5 rounded-xl border border-rose-200"></div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ كلمة المرور</button>
-                    <button type="button" onclick="closeOwnPasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="button" onclick="closeOwnPasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1887,7 +1897,7 @@
                 <div id="resetPasswordError" class="hidden text-rose-600 text-xs font-bold text-center bg-rose-50 py-2.5 rounded-xl border border-rose-200"></div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ كلمة المرور الجديدة</button>
-                    <button type="button" onclick="closeResetPasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="button" onclick="closeResetPasswordModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1901,9 +1911,9 @@
             <p class="text-xs text-slate-500 mb-4">يُخصم المبلغ من متبقي السائق ويظهر في سجل المدفوعات.</p>
             <form onsubmit="saveCommissionPayout(event)" class="space-y-3.5">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السائق</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                     <select id="payoutDriver" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="">اختر السائق</option>
+                        <option value="" data-i18n="ui.chooseDriver">اختر السائق</option>
                     </select>
                 </div>
                 <div>
@@ -1915,12 +1925,12 @@
                     <input type="date" id="payoutDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">ملاحظة</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.note">ملاحظة</label>
                     <input type="text" id="payoutNote" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اختياري">
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">تسجيل الدفعة</button>
-                    <button type="button" onclick="closePayoutModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="button" onclick="closePayoutModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1928,11 +1938,11 @@
     <div id="tripDetailsModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-route text-amber-500 ml-2"></i> تفاصيل الرحلة <span id="tripDetailNo" class="font-mono text-amber-600 mr-1"></span></h3>
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-route text-amber-500 ml-2"></i> <span data-i18n="ui.tripDetails">تفاصيل الرحلة</span> <span id="tripDetailNo" class="font-mono text-amber-600 mr-1"></span></h3>
                 <button type="button" onclick="closeTripDetails()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="tripDetailBody" class="grid grid-cols-2 gap-3 text-xs"></div>
-            <button type="button" onclick="closeTripDetails()" class="w-full mt-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition">إغلاق</button>
+            <button type="button" onclick="closeTripDetails()" class="w-full mt-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition" data-i18n="ui.close">إغلاق</button>
         </div>
     </div>
     <script>
@@ -2053,10 +2063,10 @@ async function populateCommissionFilters() {
     try {
         const { data: drivers } = await client.from('drivers').select('name, staff_kind').order('name');
         const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
-        fillSelectOptions('commDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
-        fillSelectOptions('commTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
-        fillSelectOptions('settleDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
-        fillSelectOptions('payoutDriver', tripDriverNameList(drivers), 'اختر السائق');
+        fillSelectOptions('commDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
+        fillSelectOptions('commTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
+        fillSelectOptions('settleDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
+        fillSelectOptions('payoutDriver', tripDriverNameList(drivers), t('ui.chooseDriver'));
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر العمولات:', err);
     }
@@ -2644,8 +2654,8 @@ async function populateFinancialFilters() {
     try {
         const { data: drivers } = await client.from('drivers').select('name, staff_kind').order('name');
         const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
-        fillSelectOptions('finDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
-        fillSelectOptions('finTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
+        fillSelectOptions('finDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
+        fillSelectOptions('finTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
 
         const paymentSelect = document.getElementById('finPaymentMethodFilter');
         if (paymentSelect) {
@@ -3107,12 +3117,12 @@ async function initReportFilters() {
 
         // 3. تعبئة قائمة الشاحنات
         if (truckSelect && trucks) {
-            fillSelectOptions('reportTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
+            fillSelectOptions('reportTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
         }
 
         // 4. تعبئة قائمة السائقين
         if (driverSelect && drivers) {
-            fillSelectOptions('reportDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
+            fillSelectOptions('reportDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
         }
     } catch (err) {
         console.error("Error loading filter options:", err);
@@ -3161,7 +3171,7 @@ async function initReportFilters() {
                 const maintTrucks = fleetTrucks.filter(t => t.status === 'صيانة دورية' || t.status === 'في الصيانة').length;
                 const brokenTrucks = fleetTrucks.filter(t => t.status === 'عطلانة').length;
 
-                document.getElementById('dashTotalTrucksBadge').innerText = `إجمالي: ${totalTrucks}`;
+                document.getElementById('dashTotalTrucksBadge').innerText = tf('dash.totalPrefix', totalTrucks);
                 document.getElementById('dashReadyTrucks').innerText = readyTrucks;
                 document.getElementById('dashBusyTrucks').innerText = busyTrucks;
                 document.getElementById('dashMaintTrucks').innerText = maintTrucks;
@@ -3174,7 +3184,7 @@ async function initReportFilters() {
                 const leaveDrivers = fleetDrivers.filter(d => d.status === 'إجازة' || d.status === 'في إجازة').length;
                 const suspendedDrivers = fleetDrivers.filter(d => d.status === 'موقوف').length;
 
-                document.getElementById('dashTotalDriversBadge').innerText = `إجمالي: ${totalDrivers}`;
+                document.getElementById('dashTotalDriversBadge').innerText = tf('dash.totalPrefix', totalDrivers);
                 document.getElementById('dashReadyDrivers').innerText = readyDrivers;
                 document.getElementById('dashBusyDrivers').innerText = busyDrivers;
                 document.getElementById('dashLeaveDrivers').innerText = leaveDrivers;
@@ -3183,7 +3193,7 @@ async function initReportFilters() {
                 let facilityDocs = [];
                 const { data: docs, error: docsErr } = await client.from('facility_documents').select('*');
                 if (!docsErr) facilityDocs = docs || [];
-                renderExpiryAlerts('dashExpiryAlerts', collectExpiryAlerts(facilityDocs, trucks, drivers), 'لا توجد وثائق منتهية أو قاربت على الانتهاء خلال 30 يوماً.');
+                renderExpiryAlerts('dashExpiryAlerts', collectExpiryAlerts(facilityDocs, trucks, drivers), t('ui.checkingExpiryEmpty'));
 
                 if (activeTripsList.length > 0) {
                     activeTable.innerHTML = activeTripsList.map(tr => `
@@ -3194,15 +3204,15 @@ async function initReportFilters() {
                                 <div class="text-[11px] text-slate-500">${tripRouteText(tr)}</div>
                             </td>
                             <td class="p-3.5">
-                                <div class="font-bold text-slate-800">لوحة: ${tr.truck_plate}</div>
-                                <div class="text-[11px] text-slate-600">السائق: ${tr.driver_name}</div>
+                                <div class="font-bold text-slate-800">${t('ui.plateLabel')}: ${tr.truck_plate}</div>
+                                <div class="text-[11px] text-slate-600">${t('ui.driverLabel')}: ${tr.driver_name}</div>
                             </td>
                             <td class="p-3.5 font-mono font-bold text-slate-900">${formatSAR(tr.total_amount)}</td>
-                            <td class="p-3.5"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">جارية</span></td>
+                            <td class="p-3.5"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${tv('جارية')}</span></td>
                         </tr>
                     `).join('');
                 } else {
-                    activeTable.innerHTML = `<tr><td colspan="5" class="text-center p-6 text-slate-400">لا توجد رحلات جارية حالياً في الميدان</td></tr>`;
+                    activeTable.innerHTML = `<tr><td colspan="5" class="text-center p-6 text-slate-400">${t('ui.noActiveTrips')}</td></tr>`;
                 }
 
             } catch (err) {
@@ -3218,8 +3228,8 @@ function renderAdminControls() {
     if (isAdminUser()) {
         container.classList.remove('hidden');
         container.innerHTML = `
-            <button onclick="resetTripCounter()" class="w-full bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap" title="تصفير عداد الرحلات والبدء من جديد">
-                <i class="fa-solid fa-rotate-right"></i> تصفير العداد
+            <button onclick="resetTripCounter()" class="w-full bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap" title="${t('ui.resetCounter')}">
+                <i class="fa-solid fa-rotate-right"></i> ${t('ui.resetCounter')}
             </button>
         `;
     } else {
@@ -3350,23 +3360,23 @@ function expiryAlertStyle(days) {
         return {
             tone: 'border-rose-300 bg-rose-50 text-rose-800',
             badge: 'bg-rose-600 text-white',
-            when: days < 0 ? `منتهي/ة منذ ${Math.abs(days)} يوم` : 'منتهي/ة',
-            tag: 'منتهي/ة'
+            when: days < 0 ? tf('expiry.expiredSince', Math.abs(days)) : t('expiry.expired'),
+            tag: t('expiry.expired')
         };
     }
     if (level === 'warn') {
         return {
             tone: 'border-orange-400 bg-orange-50 text-orange-900',
             badge: 'bg-orange-500 text-white',
-            when: `متبقٍ ${days} يوم`,
-            tag: `${days} يوم`
+            when: tf('expiry.leftDays', days),
+            tag: tf('expiry.days', days)
         };
     }
     return {
         tone: 'border-yellow-400 bg-yellow-50 text-yellow-900',
         badge: 'bg-yellow-400 text-yellow-900',
-        when: `متبقٍ ${days} يوم`,
-        tag: `${days} يوم`
+        when: tf('expiry.leftDays', days),
+        tag: tf('expiry.days', days)
     };
 }
 
@@ -3385,8 +3395,8 @@ function compactExpiryHtml(items) {
         const days = daysUntilDate(item.date);
         return days !== null && days <= EXPIRY_SOON_DAYS;
     });
-    if (!alerts.length) return '<span class="text-slate-400">لا تنبيهات</span>';
-    return alerts.map(item => `<div class="mb-1">${escapeHtml(item.label)}: ${expiryBadgeHtml(item.date)}</div>`).join('');
+    if (!alerts.length) return `<span class="text-slate-400">${t('expiry.none')}</span>`;
+    return alerts.map(item => `<div class="mb-1">${escapeHtml(tv(item.label))}: ${expiryBadgeHtml(item.date)}</div>`).join('');
 }
 
 function collectExpiryAlerts(docs, trucks, drivers) {
@@ -3401,7 +3411,7 @@ function collectExpiryAlerts(docs, trucks, drivers) {
         const cargo = isCargoTruck(truck);
         const tab = cargo ? 'trucks' : 'otherVehicles';
         const category = cargo ? 'شاحنة' : 'مركبة';
-        const name = truck.plate || (cargo ? 'شاحنة' : 'مركبة');
+        const name = truck.plate || category;
         push(category, name, 'الاستمارة', truck.istimara_expiry, tab);
         push(category, name, 'الفحص الدوري', truck.inspection_expiry, tab);
         push(category, name, 'التأمين', truck.insurance_expiry, tab);
@@ -3435,8 +3445,8 @@ function renderExpiryAlerts(targetId, items, emptyText) {
         const style = expiryAlertStyle(item.days);
         return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${style.tone} rounded-xl px-3 py-2 flex items-center gap-2">
             <span class="flex-1 min-w-0">
-                <span class="font-bold">${escapeHtml(item.category)} — ${escapeHtml(item.name)}</span>
-                <span class="block text-[11px] mt-0.5">${escapeHtml(item.label)} (${escapeHtml(item.date)}) — ${style.when}</span>
+                <span class="font-bold">${escapeHtml(tv(item.category))} — ${escapeHtml(item.name)}</span>
+                <span class="block text-[11px] mt-0.5">${escapeHtml(tv(item.label))} (${escapeHtml(item.date)}) — ${style.when}</span>
             </span>
             <span class="${style.badge} px-2 py-0.5 rounded-full text-[10px] font-black shrink-0">${style.tag}</span>
             <i class="fa-solid fa-chevron-left text-[10px] opacity-60 shrink-0"></i>
@@ -3571,14 +3581,14 @@ function applyVehicleScreenLabels() {
     const statusLabel = document.getElementById('truckStatusLabel');
     setPageHeader(other ? 'otherVehicles' : 'trucks');
     if (listTitle) listTitle.innerHTML = other
-        ? '<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> المركبات الأخرى المسجلة'
-        : '<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> الشاحنات المسجلة في الأسطول';
+        ? `<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> ${t('ui.otherVehiclesList')}`
+        : `<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> ${t('ui.trucksList')}`;
     if (formTitle && !document.getElementById('truckId')?.value) {
         formTitle.innerHTML = other
-            ? '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة مركبة أخرى'
-            : '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة شاحنة جديدة';
+            ? `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addOtherVehicle')}`
+            : `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addTruck')}`;
     }
-    if (statusLabel) statusLabel.textContent = other ? 'حالة المركبة' : 'حالة الشاحنة';
+    if (statusLabel) statusLabel.textContent = other ? t('ui.vehicleStatus') : t('ui.truckStatus');
     document.querySelectorAll('.truck-operation-only').forEach(el => el.classList.toggle('hidden', other));
     const tripOption = document.getElementById('truckStatusTripOption');
     if (tripOption) tripOption.classList.toggle('hidden', other);
@@ -3599,16 +3609,16 @@ function applyStaffScreenLabels() {
     const jobFilterWrap = document.getElementById('staffJobFilterWrap');
     const tripOption = document.getElementById('driverStatusTripOption');
     if (listTitle) listTitle.innerHTML = employee
-        ? '<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> الموظفين حسب الوظيفة'
-        : '<i class="fa-solid fa-id-badge text-amber-500 ml-2"></i> السائقين المسجلين في الأسطول';
+        ? `<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> ${t('ui.employeesByJob')}`
+        : `<i class="fa-solid fa-id-badge text-amber-500 ml-2"></i> ${t('ui.driversList')}`;
     if (formTitle && !document.getElementById('driverId')?.value) {
         formTitle.innerHTML = employee
-            ? '<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة موظف جديد'
-            : '<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة سائق جديد';
+            ? `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addEmployee')}`
+            : `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addDriver')}`;
     }
-    if (nameLabel) nameLabel.textContent = employee ? 'اسم الموظف' : 'اسم السائق';
-    if (statusLabel) statusLabel.textContent = employee ? 'حالة الموظف' : 'حالة السائق';
-    if (nameHead) nameHead.textContent = employee ? 'اسم الموظف' : 'اسم السائق';
+    if (nameLabel) nameLabel.textContent = employee ? t('ui.employeeName') : t('ui.driverName');
+    if (statusLabel) statusLabel.textContent = employee ? t('ui.employeeStatus') : t('ui.driverStatus');
+    if (nameHead) nameHead.textContent = employee ? t('ui.employeeName') : t('ui.driverName');
     if (jobWrap) jobWrap.classList.toggle('hidden', !employee);
     if (jobHead) jobHead.classList.toggle('hidden', !employee);
     if (jobFilterWrap) jobFilterWrap.classList.toggle('hidden', !employee);
@@ -3737,7 +3747,234 @@ const I18N = {
         'print.at': 'تاريخ الطباعة: ',
         'role.admin': 'مدير',
         'role.accountant': 'محاسب',
-        'role.user': 'مستخدم'
+        'role.user': 'مستخدم',
+        'ui.totalRevenue': 'إجمالي الإيرادات',
+        'ui.collected': 'المبالغ المحصلة',
+        'ui.uncollected': 'المبالغ غير المحصلة',
+        'ui.completedTrips': 'عدد الرحلات المنجزة',
+        'ui.trucks': 'الشاحنات',
+        'ui.drivers': 'السائقين',
+        'ui.readyWork': 'جاهزة للعمل',
+        'ui.onTrip': 'في رحلة',
+        'ui.maint': 'صيانة دورية',
+        'ui.broken': 'عطلانة',
+        'ui.available': 'متوفر',
+        'ui.leave': 'إجازة',
+        'ui.suspended': 'موقوف',
+        'ui.expiryAlerts': 'تنبيهات الوثائق القريبة من الانتهاء',
+        'ui.expiryHint': 'اضغط التنبيه لفتح شاشة السجل المرتبط به',
+        'ui.checkingDates': 'جاري فحص التواريخ...',
+        'ui.activeTripsField': 'الرحلات الجارية حالياً في الميدان',
+        'th.tripNo': 'رقم الرحلة',
+        'th.clientDest': 'العميل والوجهة',
+        'th.truckDriver': 'الشاحنة والسائق',
+        'th.totalAmount': 'المبلغ الإجمالي',
+        'th.status': 'الحالة',
+        'ui.loading': 'جاري التحميل...',
+        'ui.tripStatus': 'حالة الرحلة',
+        'ui.allTrips': 'جميع الرحلات',
+        'ui.activeOnly': 'الرحلات الجارية فقط',
+        'ui.completedOnly': 'الرحلات المكتملة فقط',
+        'ui.cancelledOnly': 'الرحلات الملغاة',
+        'ui.payStatus': 'حالة السداد',
+        'ui.allPay': 'جميع حالات السداد',
+        'ui.unpaid': 'غير مسدد',
+        'ui.partial': 'سداد جزئي',
+        'ui.paidFull': 'مسدد (بالكامل)',
+        'ui.fullTripCount': 'عدد الرحلات كاملة',
+        'ui.unpaidAmounts': 'المبالغ الغير مسددة',
+        'ui.reset': 'إعادة الضبط',
+        'ui.tripLog': 'سجل الرحلات',
+        'ui.addTrip': 'إضافة رحلة جديدة',
+        'th.clientRoute': 'العميل والمسار',
+        'th.amountsComm': 'المبالغ والعمولة',
+        'th.statusPay': 'الحالة والسداد',
+        'th.actions': 'الإجراءات',
+        'ui.printReport': 'طباعة التقرير',
+        'ui.fromDate': 'من تاريخ',
+        'ui.toDate': 'إلى تاريخ',
+        'ui.truck': 'الشاحنة',
+        'ui.driver': 'السائق',
+        'ui.allTrucks': 'جميع الشاحنات',
+        'ui.allDrivers': 'جميع السائقين',
+        'ui.showReport': 'عرض التقرير',
+        'ui.driverReportHead': 'تقرير السائقين التفصيلي والعمولات المستحقة',
+        'th.driverPhone': 'اسم السائق ورقم الجوال',
+        'th.tripDetails': 'تفاصيل الرحلات',
+        'ui.payMethod': 'طريقة السداد',
+        'ui.allMethods': 'جميع الطرق',
+        'ui.cash': 'نقدي',
+        'ui.rajhi': 'تحويل على الراجحي',
+        'ui.ahli': 'تحويل على الأهلي',
+        'ui.runFilter': 'تشغيل الفلتر',
+        'ui.revenueDetails': 'تفاصيل الإيرادات',
+        'th.tripDate': 'تاريخ الرحلة',
+        'th.clientName': 'اسم العميل',
+        'th.amount': 'المبلغ',
+        'th.collectDate': 'تاريخ التحصيل',
+        'ui.loadingData': 'جاري تحميل البيانات...',
+        'ui.truckRevenue': 'إجمالي الإيرادات لكل شاحنة',
+        'th.plate': 'رقم اللوحة',
+        'th.modelType': 'الطراز / النوع',
+        'th.totalRev': 'إجمالي الإيراد',
+        'ui.driverCommReport': 'تقرير العمولات التفصيلي لكل سائق',
+        'th.driverName': 'اسم السائق',
+        'th.totalCommDue': 'إجمالي العمولات المستحقة',
+        'ui.docsExpiring': 'وثائق قاربت على الانتهاء أو انتهت',
+        'ui.addLicense': 'إضافة سجل أو ترخيص',
+        'ui.docName': 'اسم السجل / الترخيص',
+        'ui.type': 'النوع',
+        'ui.docNo': 'رقم الوثيقة',
+        'ui.issueDate': 'تاريخ الإصدار',
+        'ui.expiryDate': 'تاريخ الانتهاء',
+        'ui.note': 'ملاحظة',
+        'ui.save': 'حفظ',
+        'ui.cancel': 'إلغاء',
+        'ui.facilityDocs': 'سجلات وتراخيص المنشأة',
+        'ui.addTruck': 'إضافة شاحنة جديدة',
+        'ui.plateNo': 'رقم اللوحة',
+        'ui.model': 'الموديل / النوع',
+        'ui.truckStatus': 'حالة الشاحنة',
+        'ui.istimara': 'انتهاء الاستمارة',
+        'ui.inspection': 'انتهاء الفحص الدوري',
+        'ui.insurance': 'انتهاء التأمين',
+        'ui.opCardExpiry': 'انتهاء بطاقة التشغيل',
+        'ui.opCardNo': 'رقم بطاقة التشغيل',
+        'ui.trucksList': 'الشاحنات المسجلة في الأسطول',
+        'th.model': 'الموديل',
+        'th.docExpiry': 'انتهاء الوثائق',
+        'ui.addDriver': 'إضافة سائق جديد',
+        'ui.driverName': 'اسم السائق',
+        'ui.job': 'الوظيفة',
+        'ui.chooseJob': 'اختر الوظيفة',
+        'ui.opsSupervisor': 'مشرف تشغيل',
+        'ui.maintSupervisor': 'مشرف صيانة',
+        'ui.accountant': 'محاسب',
+        'ui.adminStaff': 'إداري',
+        'ui.other': 'أخرى',
+        'ui.phone': 'رقم الجوال',
+        'ui.driverStatus': 'حالة السائق',
+        'ui.iqamaNo': 'رقم الإقامة',
+        'ui.iqamaExp': 'انتهاء الإقامة',
+        'ui.passportNo': 'رقم الجواز',
+        'ui.passportExp': 'انتهاء الجواز',
+        'ui.licenseNo': 'رخصة القيادة',
+        'ui.licenseExp': 'انتهاء الرخصة',
+        'ui.driverCard': 'بطاقة السائق',
+        'ui.driverCardExp': 'انتهاء بطاقة السائق',
+        'ui.health': 'التأمين الصحي',
+        'ui.healthExp': 'انتهاء التأمين الصحي',
+        'ui.driversList': 'السائقين المسجلين في الأسطول',
+        'ui.allJobs': 'كل الوظائف',
+        'th.job': 'الوظيفة',
+        'ui.totalCommAmount': 'إجمالي مبلغ العمولات',
+        'ui.totalComms': 'إجمالي العمولات',
+        'ui.payoutLog': 'سجل المبالغ المصروفة',
+        'th.date': 'التاريخ',
+        'th.note': 'ملاحظة',
+        'th.action': 'إجراء',
+        'ui.noPayouts': 'لا توجد دفعات مسجلة',
+        'ui.addUser': 'إضافة مستخدم جديد',
+        'ui.loginUsername': 'اسم المستخدم (للدخول)',
+        'ui.employeeName': 'اسم الموظف',
+        'ui.password': 'كلمة المرور',
+        'ui.role': 'الدور',
+        'ui.accountStatus': 'حالة الحساب',
+        'ui.saveUser': 'حفظ المستخدم',
+        'ui.usersList': 'قائمة مستخدمي النظام والصلاحيات',
+        'th.username': 'اسم المستخدم',
+        'th.permission': 'الصلاحية',
+        'ui.crType': 'سجل تجاري',
+        'ui.transportLic': 'ترخيص نقل',
+        'ui.municipality': 'رخصة بلدية',
+        'ui.chamber': 'اشتراك غرفة',
+        'ui.active': 'نشط',
+        'ui.close': 'إغلاق',
+        'ui.tripDetails': 'تفاصيل الرحلة',
+        'v.جارية': 'جارية',
+        'v.مكتملة': 'مكتملة',
+        'v.منتهية': 'منتهية',
+        'v.ملغاة': 'ملغاة',
+        'v.جاهزة للعمل': 'جاهزة للعمل',
+        'v.في رحلة': 'في رحلة',
+        'v.صيانة دورية': 'صيانة دورية',
+        'v.في الصيانة': 'في الصيانة',
+        'v.عطلانة': 'عطلانة',
+        'v.متوفر': 'متوفر',
+        'v.إجازة': 'إجازة',
+        'v.في إجازة': 'في إجازة',
+        'v.موقوف': 'موقوف',
+        'v.مسدد': 'مسدد',
+        'v.سداد جزئي': 'سداد جزئي',
+        'v.غير مسدد': 'غير مسدد',
+        'v.ساقط من الحساب': 'ساقط من الحساب',
+        'v.نقدي': 'نقدي',
+        'v.تحويل على الراجحي': 'تحويل على الراجحي',
+        'v.تحويل على الأهلي': 'تحويل على الأهلي',
+        'v.ذهاب': 'ذهاب',
+        'v.ذهاب وعودة': 'ذهاب وعودة',
+        'v.نشط': 'نشط',
+        'v.مشرف تشغيل': 'مشرف تشغيل',
+        'v.مشرف صيانة': 'مشرف صيانة',
+        'v.محاسب': 'محاسب',
+        'v.إداري': 'إداري',
+        'v.أخرى': 'أخرى',
+        'v.سجل تجاري': 'سجل تجاري',
+        'v.ترخيص نقل': 'ترخيص نقل',
+        'v.رخصة بلدية': 'رخصة بلدية',
+        'v.اشتراك غرفة': 'اشتراك غرفة',
+        'v.المنشأة': 'المنشأة',
+        'v.شاحنة': 'شاحنة',
+        'v.مركبة': 'مركبة',
+        'v.سائق': 'سائق',
+        'v.موظف': 'موظف',
+        'v.الاستمارة': 'الاستمارة',
+        'v.الفحص الدوري': 'الفحص الدوري',
+        'v.التأمين': 'التأمين',
+        'v.بطاقة التشغيل': 'بطاقة التشغيل',
+        'v.الإقامة': 'الإقامة',
+        'v.الجواز': 'الجواز',
+        'v.رخصة القيادة': 'رخصة القيادة',
+        'v.بطاقة السائق': 'بطاقة السائق',
+        'v.التأمين الصحي': 'التأمين الصحي',
+        'v.الفحص': 'الفحص',
+        'v.الرخصة': 'الرخصة',
+        'ui.otherVehiclesList': 'المركبات الأخرى المسجلة',
+        'ui.addOtherVehicle': 'إضافة مركبة أخرى',
+        'ui.vehicleStatus': 'حالة المركبة',
+        'ui.employeesByJob': 'الموظفين حسب الوظيفة',
+        'ui.addEmployee': 'إضافة موظف جديد',
+        'ui.employeeStatus': 'حالة الموظف',
+        'v.ترخيص': 'ترخيص',
+        'dash.totalPrefix': 'إجمالي: {n}',
+        'ui.noActiveTrips': 'لا توجد رحلات جارية حالياً في الميدان',
+        'ui.plateLabel': 'لوحة',
+        'ui.driverLabel': 'السائق',
+        'ui.checkingExpiryEmpty': 'لا توجد وثائق منتهية أو قاربت على الانتهاء خلال 30 يوماً.',
+        'ui.resetCounter': 'تصفير العداد',
+        'ui.chooseDriver': 'اختر السائق',
+        'ui.chooseTruck': 'اختر الشاحنة',
+        'ui.noFilterTrips': 'لا توجد رحلات تطابق خيارات الفلترة الحالية',
+        'ui.dropped': 'ساقط',
+        'ui.droppedComm': 'ساقطة',
+        'ui.total': 'الإجمالي',
+        'ui.paid': 'مدفوع',
+        'ui.remaining': 'متبقي',
+        'ui.commission': 'العمولة',
+        'ui.date': 'التاريخ',
+        'ui.edit': 'تعديل',
+        'ui.finishSettle': 'إنهاء وتسوية',
+        'ui.cancelTrip': 'إلغاء',
+        'ui.settleRemain': 'تسوية المتبقي',
+        'ui.cancelledTrip': 'رحلة ملغاة',
+        'ui.donePaid': 'منتهية ومسددة',
+        'ui.amountDropped': 'المبلغ: ساقط',
+        'ui.commDropped': 'العمولة: ساقطة',
+        'expiry.expired': 'منتهي/ة',
+        'expiry.expiredSince': 'منتهي/ة منذ {n} يوم',
+        'expiry.leftDays': 'متبقٍ {n} يوم',
+        'expiry.days': '{n} يوم',
+        'expiry.none': 'لا تنبيهات'
     },
     en: {
         'login.tagline': 'Fleet and trip management platform',
@@ -3815,7 +4052,234 @@ const I18N = {
         'print.at': 'Printed on: ',
         'role.admin': 'Admin',
         'role.accountant': 'Accountant',
-        'role.user': 'User'
+        'role.user': 'User',
+        'ui.totalRevenue': 'Total revenue',
+        'ui.collected': 'Collected',
+        'ui.uncollected': 'Outstanding',
+        'ui.completedTrips': 'Completed trips',
+        'ui.trucks': 'Trucks',
+        'ui.drivers': 'Drivers',
+        'ui.readyWork': 'Ready',
+        'ui.onTrip': 'On trip',
+        'ui.maint': 'Scheduled maintenance',
+        'ui.broken': 'Out of service',
+        'ui.available': 'Available',
+        'ui.leave': 'On leave',
+        'ui.suspended': 'Suspended',
+        'ui.expiryAlerts': 'Documents nearing expiry',
+        'ui.expiryHint': 'Tap an alert to open its related screen',
+        'ui.checkingDates': 'Checking dates...',
+        'ui.activeTripsField': 'Trips currently on the road',
+        'th.tripNo': 'Trip no.',
+        'th.clientDest': 'Client and destination',
+        'th.truckDriver': 'Truck and driver',
+        'th.totalAmount': 'Total amount',
+        'th.status': 'Status',
+        'ui.loading': 'Loading...',
+        'ui.tripStatus': 'Trip status',
+        'ui.allTrips': 'All trips',
+        'ui.activeOnly': 'Active trips only',
+        'ui.completedOnly': 'Completed trips only',
+        'ui.cancelledOnly': 'Cancelled trips',
+        'ui.payStatus': 'Payment status',
+        'ui.allPay': 'All payment statuses',
+        'ui.unpaid': 'Unpaid',
+        'ui.partial': 'Partial payment',
+        'ui.paidFull': 'Paid in full',
+        'ui.fullTripCount': 'All matching trips',
+        'ui.unpaidAmounts': 'Unpaid amounts',
+        'ui.reset': 'Reset',
+        'ui.tripLog': 'Trip log',
+        'ui.addTrip': 'Add trip',
+        'th.clientRoute': 'Client and route',
+        'th.amountsComm': 'Amounts and commission',
+        'th.statusPay': 'Status and payment',
+        'th.actions': 'Actions',
+        'ui.printReport': 'Print report',
+        'ui.fromDate': 'From date',
+        'ui.toDate': 'To date',
+        'ui.truck': 'Truck',
+        'ui.driver': 'Driver',
+        'ui.allTrucks': 'All trucks',
+        'ui.allDrivers': 'All drivers',
+        'ui.showReport': 'Show report',
+        'ui.driverReportHead': 'Driver details and due commissions',
+        'th.driverPhone': 'Driver name and mobile',
+        'th.tripDetails': 'Trip details',
+        'ui.payMethod': 'Payment method',
+        'ui.allMethods': 'All methods',
+        'ui.cash': 'Cash',
+        'ui.rajhi': 'Al Rajhi transfer',
+        'ui.ahli': 'Al Ahli transfer',
+        'ui.runFilter': 'Apply filter',
+        'ui.revenueDetails': 'Revenue details',
+        'th.tripDate': 'Trip date',
+        'th.clientName': 'Client name',
+        'th.amount': 'Amount',
+        'th.collectDate': 'Collection date',
+        'ui.loadingData': 'Loading data...',
+        'ui.truckRevenue': 'Total revenue per truck',
+        'th.plate': 'Plate',
+        'th.modelType': 'Model / type',
+        'th.totalRev': 'Total revenue',
+        'ui.driverCommReport': 'Commission report by driver',
+        'th.driverName': 'Driver name',
+        'th.totalCommDue': 'Total commissions due',
+        'ui.docsExpiring': 'Documents expired or near expiry',
+        'ui.addLicense': 'Add record or license',
+        'ui.docName': 'Record / license name',
+        'ui.type': 'Type',
+        'ui.docNo': 'Document number',
+        'ui.issueDate': 'Issue date',
+        'ui.expiryDate': 'Expiry date',
+        'ui.note': 'Note',
+        'ui.save': 'Save',
+        'ui.cancel': 'Cancel',
+        'ui.facilityDocs': 'Company records and licenses',
+        'ui.addTruck': 'Add truck',
+        'ui.plateNo': 'Plate number',
+        'ui.model': 'Model / type',
+        'ui.truckStatus': 'Truck status',
+        'ui.istimara': 'Registration expiry',
+        'ui.inspection': 'Inspection expiry',
+        'ui.insurance': 'Insurance expiry',
+        'ui.opCardExpiry': 'Operating card expiry',
+        'ui.opCardNo': 'Operating card number',
+        'ui.trucksList': 'Registered trucks',
+        'th.model': 'Model',
+        'th.docExpiry': 'Document expiry',
+        'ui.addDriver': 'Add driver',
+        'ui.driverName': 'Driver name',
+        'ui.job': 'Job title',
+        'ui.chooseJob': 'Select job title',
+        'ui.opsSupervisor': 'Operations supervisor',
+        'ui.maintSupervisor': 'Maintenance supervisor',
+        'ui.accountant': 'Accountant',
+        'ui.adminStaff': 'Administrator',
+        'ui.other': 'Other',
+        'ui.phone': 'Mobile number',
+        'ui.driverStatus': 'Driver status',
+        'ui.iqamaNo': 'Iqama number',
+        'ui.iqamaExp': 'Iqama expiry',
+        'ui.passportNo': 'Passport number',
+        'ui.passportExp': 'Passport expiry',
+        'ui.licenseNo': 'Driving license',
+        'ui.licenseExp': 'License expiry',
+        'ui.driverCard': 'Driver card',
+        'ui.driverCardExp': 'Driver card expiry',
+        'ui.health': 'Health insurance',
+        'ui.healthExp': 'Health insurance expiry',
+        'ui.driversList': 'Registered drivers',
+        'ui.allJobs': 'All jobs',
+        'th.job': 'Job title',
+        'ui.totalCommAmount': 'Total commission amount',
+        'ui.totalComms': 'Total commissions',
+        'ui.payoutLog': 'Paid commission log',
+        'th.date': 'Date',
+        'th.note': 'Note',
+        'th.action': 'Action',
+        'ui.noPayouts': 'No payouts recorded',
+        'ui.addUser': 'Add user',
+        'ui.loginUsername': 'Username (login)',
+        'ui.employeeName': 'Employee name',
+        'ui.password': 'Password',
+        'ui.role': 'Role',
+        'ui.accountStatus': 'Account status',
+        'ui.saveUser': 'Save user',
+        'ui.usersList': 'System users and permissions',
+        'th.username': 'Username',
+        'th.permission': 'Permission',
+        'ui.crType': 'Commercial registration',
+        'ui.transportLic': 'Transport license',
+        'ui.municipality': 'Municipal license',
+        'ui.chamber': 'Chamber membership',
+        'ui.active': 'Active',
+        'ui.close': 'Close',
+        'ui.tripDetails': 'Trip details',
+        'dash.totalPrefix': 'Total: {n}',
+        'ui.noActiveTrips': 'No active trips on the road',
+        'ui.plateLabel': 'Plate',
+        'ui.driverLabel': 'Driver',
+        'ui.checkingExpiryEmpty': 'No documents expired or due within 30 days.',
+        'ui.resetCounter': 'Reset counter',
+        'v.جارية': 'Active',
+        'v.مكتملة': 'Completed',
+        'v.منتهية': 'Completed',
+        'v.ملغاة': 'Cancelled',
+        'v.جاهزة للعمل': 'Ready',
+        'v.في رحلة': 'On trip',
+        'v.صيانة دورية': 'Scheduled maintenance',
+        'v.في الصيانة': 'In maintenance',
+        'v.عطلانة': 'Out of service',
+        'v.متوفر': 'Available',
+        'v.إجازة': 'On leave',
+        'v.في إجازة': 'On leave',
+        'v.موقوف': 'Suspended',
+        'v.مسدد': 'Paid',
+        'v.سداد جزئي': 'Partial',
+        'v.غير مسدد': 'Unpaid',
+        'v.ساقط من الحساب': 'Written off',
+        'v.نقدي': 'Cash',
+        'v.تحويل على الراجحي': 'Al Rajhi transfer',
+        'v.تحويل على الأهلي': 'Al Ahli transfer',
+        'v.ذهاب': 'One way',
+        'v.ذهاب وعودة': 'Round trip',
+        'v.نشط': 'Active',
+        'v.مشرف تشغيل': 'Operations supervisor',
+        'v.مشرف صيانة': 'Maintenance supervisor',
+        'v.محاسب': 'Accountant',
+        'v.إداري': 'Administrator',
+        'v.أخرى': 'Other',
+        'v.سجل تجاري': 'Commercial registration',
+        'v.ترخيص نقل': 'Transport license',
+        'v.رخصة بلدية': 'Municipal license',
+        'v.اشتراك غرفة': 'Chamber membership',
+        'v.المنشأة': 'Company',
+        'v.شاحنة': 'Truck',
+        'v.مركبة': 'Vehicle',
+        'v.سائق': 'Driver',
+        'v.موظف': 'Staff',
+        'v.الاستمارة': 'Registration',
+        'v.الفحص الدوري': 'Inspection',
+        'v.التأمين': 'Insurance',
+        'v.بطاقة التشغيل': 'Operating card',
+        'v.الإقامة': 'Iqama',
+        'v.الجواز': 'Passport',
+        'v.رخصة القيادة': 'Driving license',
+        'v.بطاقة السائق': 'Driver card',
+        'v.التأمين الصحي': 'Health insurance',
+        'v.الفحص': 'Inspection',
+        'v.الرخصة': 'License',
+        'ui.otherVehiclesList': 'Registered other vehicles',
+        'ui.addOtherVehicle': 'Add other vehicle',
+        'ui.vehicleStatus': 'Vehicle status',
+        'ui.employeesByJob': 'Staff by job title',
+        'ui.addEmployee': 'Add employee',
+        'ui.employeeStatus': 'Employee status',
+        'v.ترخيص': 'License',
+        'ui.chooseDriver': 'Select driver',
+        'ui.chooseTruck': 'Select truck',
+        'ui.noFilterTrips': 'No trips match the current filters',
+        'ui.dropped': 'Written off',
+        'ui.droppedComm': 'Commission written off',
+        'ui.total': 'Total',
+        'ui.paid': 'Paid',
+        'ui.remaining': 'Remaining',
+        'ui.commission': 'Commission',
+        'ui.date': 'Date',
+        'ui.edit': 'Edit',
+        'ui.finishSettle': 'Complete and settle',
+        'ui.cancelTrip': 'Cancel',
+        'ui.settleRemain': 'Settle remaining',
+        'ui.cancelledTrip': 'Cancelled trip',
+        'ui.donePaid': 'Completed and paid',
+        'ui.amountDropped': 'Amount: written off',
+        'ui.commDropped': 'Commission: written off',
+        'expiry.expired': 'Expired',
+        'expiry.expiredSince': 'Expired {n} days ago',
+        'expiry.leftDays': '{n} days left',
+        'expiry.days': '{n} days',
+        'expiry.none': 'No alerts'
     }
 };
 
@@ -3842,6 +4306,18 @@ const PAGE_HEADER_KEYS = {
 
 function t(key) {
     return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ar[key] || key;
+}
+
+function tv(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const key = 'v.' + raw;
+    const dict = I18N[currentLang] || {};
+    return dict[key] || I18N.ar[key] || raw;
+}
+
+function tf(key, n) {
+    return t(key).replace('{n}', String(n));
 }
 
 function applyI18n() {
@@ -3877,6 +4353,10 @@ function setAppLang(lang) {
         const roleKey = currentLoggedInUser.role === 'admin' ? 'role.admin' : (currentLoggedInUser.role === 'accountant' ? 'role.accountant' : 'role.user');
         const badge = document.getElementById('currentUserBadge');
         if (badge) badge.textContent = (currentLoggedInUser.employee_name || currentLoggedInUser.username || '') + ' (' + t(roleKey) + ')';
+        if (typeof renderAdminControls === 'function') renderAdminControls();
+        if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
+        if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
+        if (document.body.classList.contains('dashboard-active') && typeof loadAllData === 'function') loadAllData();
     }
 }
 
@@ -4305,10 +4785,10 @@ function switchTab(tabId) {
             const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
             const availableDrivers = drivers ? drivers.filter(d => isTripDriver(d) && d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
 
-            truckSelect.innerHTML = `<option value="">اختر الشاحنة (الجاهزة للعمل فقط)...</option>` + 
-                readyTrucks.map(t => `<option value="${t.plate}">لوحة: ${t.plate} (${t.model || 'بدون موديل'})</option>`).join('');
+            truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` + 
+                readyTrucks.map(t => `<option value="${t.plate}">${t('ui.plateLabel')}: ${t.plate} (${t.model || '—'})</option>`).join('');
 
-            driverSelect.innerHTML = `<option value="">اختر السائق (المتوفر فقط)...</option>` + 
+            driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>` +  
                 availableDrivers.map(d => `<option value="${d.name}">${d.name} (${d.phone})</option>`).join('');
         }
         async function generateTripNo() {
@@ -4406,49 +4886,49 @@ function renderTripsTable(trips) {
             const remaining = parseFloat(tr.remaining_amount || 0);
 
             if (isCancelledTrip(tr)) {
-                paymentBadge = '<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">ساقط من الحساب</span>';
+                paymentBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${tv('ساقط من الحساب')}</span>`;
             } else if (remaining <= 0 || paid >= total) {
-                paymentBadge = '<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">مسدد</span>';
+                paymentBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${tv('مسدد')}</span>`;
             } else if (paid > 0) {
-                paymentBadge = '<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">سداد جزئي</span>';
+                paymentBadge = `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${tv('سداد جزئي')}</span>`;
             } else {
-                paymentBadge = '<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">غير مسدد</span>';
+                paymentBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${tv('غير مسدد')}</span>`;
             }
 
             if (tr.status === 'جارية') {
-                statusBadge = '<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full text-[10px] font-bold">جارية</span>';
+                statusBadge = `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full text-[10px] font-bold">${tv('جارية')}</span>`;
             } else if (isCompletedTrip(tr)) {
-                statusBadge = '<span class="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-bold">منتهية</span>';
+                statusBadge = `<span class="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-bold">${tv('منتهية')}</span>`;
             } else if (tr.status === 'ملغاة') {
-                statusBadge = '<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-[10px] font-bold">ملغاة</span>';
+                statusBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-[10px] font-bold">${tv('ملغاة')}</span>`;
             }
 
             let actionButtons = '';
             const currentRemaining = tr.remaining_amount || 0;
             const editButton = (isAdminUser() && (tr.status === 'جارية' || isCompletedTrip(tr)))
-                ? `<button type="button" onclick='openEditTripModal(${JSON.stringify(tr.trip_no)})' class="bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="تعديل بيانات الرحلة"><i class="fa-solid fa-pen-to-square ml-1"></i> تعديل</button>`
+                ? `<button type="button" onclick='openEditTripModal(${JSON.stringify(tr.trip_no)})' class="bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.edit')}"><i class="fa-solid fa-pen-to-square ml-1"></i> ${t('ui.edit')}</button>`
                 : '';
 
             if (tr.status === 'جارية') {
                 actionButtons = `
-                    <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="إنهاء وتسوية">
-                        <i class="fa-solid fa-flag-checkered ml-1"></i> إنهاء وتسوية
+                    <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.finishSettle')}">
+                        <i class="fa-solid fa-flag-checkered ml-1"></i> ${t('ui.finishSettle')}
                     </button>
-                    <button onclick="cancelTrip('${tr.trip_no}')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="إلغاء الرحلة">
-                        <i class="fa-solid fa-ban ml-1"></i> إلغاء
+                    <button onclick="cancelTrip('${tr.trip_no}')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.cancelTrip')}">
+                        <i class="fa-solid fa-ban ml-1"></i> ${t('ui.cancelTrip')}
                     </button>
                 `;
             } else if (tr.status === 'ملغاة') {
-                actionButtons = `<span class="text-rose-500 text-[11px] font-bold">رحلة ملغاة</span>`;
+                actionButtons = `<span class="text-rose-500 text-[11px] font-bold">${t('ui.cancelledTrip')}</span>`;
             } else {
                 if (currentRemaining > 0) {
                     actionButtons = `
-                        <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="سداد المبلغ المتبقي">
-                            <i class="fa-solid fa-wallet ml-1"></i> تسوية المتبقي
+                        <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.settleRemain')}">
+                            <i class="fa-solid fa-wallet ml-1"></i> ${t('ui.settleRemain')}
                         </button>
                     `;
                 } else {
-                    actionButtons = `<span class="text-emerald-600 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> منتهية ومسددة</span>`;
+                    actionButtons = `<span class="text-emerald-600 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> ${t('ui.donePaid')}</span>`;
                 }
             }
 
@@ -4458,21 +4938,21 @@ function renderTripsTable(trips) {
                     <td class="p-3.5">
                         <div class="font-bold text-slate-900">${tr.client_name}</div>
                         <div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot ml-1 text-amber-500"></i> ${tripRouteText(tr)}</div>
-                        <div class="text-[10px] text-slate-400 font-mono">التاريخ: ${tr.departure_date} (${tr.trip_type || 'ذهاب'})</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${t('ui.date')}: ${tr.departure_date} (${tv(tr.trip_type || 'ذهاب')})</div>
                     </td>
                     <td class="p-3.5">
-                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> لوحة: ${tr.truck_plate}</div>
-                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> السائق: ${tr.driver_name}</div>
+                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${t('ui.plateLabel')}: ${tr.truck_plate}</div>
+                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${t('ui.driverLabel')}: ${tr.driver_name}</div>
                     </td>
                     <td class="p-3.5 font-mono text-[11px]">
                         ${isCancelledTrip(tr) ? `
-                        <div class="font-bold text-rose-600">المبلغ: ساقط</div>
-                        <div class="font-bold text-rose-600 mt-0.5">العمولة: ساقطة</div>
+                        <div class="font-bold text-rose-600">${t('ui.amountDropped')}</div>
+                        <div class="font-bold text-rose-600 mt-0.5">${t('ui.commDropped')}</div>
                         ` : `
-                        <div class="font-bold text-slate-900">الإجمالي: ${formatSAR(tr.total_amount)}</div>
-                        <div class="text-emerald-600">مدفوع: ${formatSAR(tr.paid_amount)}</div>
-                        <div class="text-rose-600">متبقي: ${formatSAR(tr.remaining_amount)}</div>
-                        <div class="text-amber-600 font-bold mt-0.5">العمولة: ${formatSAR(tr.driver_commission || 0)}</div>
+                        <div class="font-bold text-slate-900">${t('ui.total')}: ${formatSAR(tr.total_amount)}</div>
+                        <div class="text-emerald-600">${t('ui.paid')}: ${formatSAR(tr.paid_amount)}</div>
+                        <div class="text-rose-600">${t('ui.remaining')}: ${formatSAR(tr.remaining_amount)}</div>
+                        <div class="text-amber-600 font-bold mt-0.5">${t('ui.commission')}: ${formatSAR(tr.driver_commission || 0)}</div>
                         `}
                     </td>
                     <td class="p-3.5 space-y-1.5">
@@ -4490,7 +4970,7 @@ function renderTripsTable(trips) {
             `;
         }).join('');
     } else {
-        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد رحلات تطابق خيارات الفلترة الحالية</td></tr>`;
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('ui.noFilterTrips')}</td></tr>`;
     }
 }
 
@@ -4872,12 +5352,12 @@ async function fillEditFleetOptions(trip) {
     if (currentDriver && !names.includes(currentDriver)) names.unshift(currentDriver);
     truckSelect.innerHTML = plates.map(plate => {
         const row = (trucks || []).find(t => String(t.plate || '').trim() === plate);
-        const status = row?.status ? ` (${row.status})` : '';
+        const status = row?.status ? ` (${tv(row.status)})` : '';
         return `<option value="${escapeHtml(plate)}">${escapeHtml(plate + status)}</option>`;
     }).join('');
     driverSelect.innerHTML = names.map(name => {
         const row = (drivers || []).find(d => String(d.name || '').trim() === name);
-        const status = row?.status ? ` (${row.status})` : '';
+        const status = row?.status ? ` (${tv(row.status)})` : '';
         return `<option value="${escapeHtml(name)}">${escapeHtml(name + status)}</option>`;
     }).join('');
     truckSelect.value = currentPlate;
@@ -5041,7 +5521,7 @@ async function saveEditTrip(e) {
                             <tr class="hover:bg-slate-50 transition">
                                 <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tr.status === 'في الصيانة' ? 'صيانة دورية' : tr.status)}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(tr.status === 'في الصيانة' ? 'صيانة دورية' : tr.status))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml([
                                     { label: 'الاستمارة', date: tr.istimara_expiry },
                                     { label: 'الفحص', date: tr.inspection_expiry },
@@ -5202,7 +5682,7 @@ async function cancelTrip(tripNo) {
                         if (dr.status === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
                         if (dr.status === 'إجازة' || dr.status === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
                         if (dr.status === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
-                        const jobCell = employee ? `<td class="p-3.5 font-bold text-amber-700">${escapeHtml(dr.job_title || '—')}</td>` : '';
+                        const jobCell = employee ? `<td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(dr.job_title) || '—')}</td>` : '';
                         const docs = employee
                             ? [
                                 { label: 'الإقامة', date: dr.iqama_expiry },
@@ -5222,7 +5702,7 @@ async function cancelTrip(tripNo) {
                                 <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
                                 ${jobCell}
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(dr.status === 'في إجازة' ? 'إجازة' : dr.status)}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(dr.status === 'في إجازة' ? 'إجازة' : dr.status))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     <button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -5327,14 +5807,14 @@ async function loadUsers() {
 
                         // تحديد الشارة واللون بناءً على الدور (مدير، محاسب، مستخدم)
                         let roleBadge = 'bg-slate-100 text-slate-700';
-                        let roleText = 'مستخدم';
+                        let roleText = t('role.user');
                         
                         if (usr.role === 'admin') {
                             roleBadge = 'bg-amber-50 text-amber-700 border border-amber-200';
-                            roleText = 'مدير';
+                            roleText = t('role.admin');
                         } else if (usr.role === 'accountant') {
                             roleBadge = 'bg-blue-50 text-blue-700 border border-blue-200';
-                            roleText = 'محاسب';
+                            roleText = t('role.accountant');
                         }
 
                         return `
@@ -5342,7 +5822,7 @@ async function loadUsers() {
                                 <td class="p-3.5 font-black text-slate-900">${usr.username}</td>
                                 <td class="p-3.5 text-slate-700">${usr.employee_name}</td>
                                 <td class="p-3.5"><span class="${roleBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${roleText}</span></td>
-                                <td class="p-3.5"><span class="${statusBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${usr.status || 'نشط'}</span></td>
+                                <td class="p-3.5"><span class="${statusBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${tv(usr.status || 'نشط')}</span></td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     <button type="button" onclick="editUser(${usr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button type="button" onclick="openResetPasswordModal(${usr.id})" class="text-blue-600 hover:text-blue-800 font-bold p-1" title="إعادة ضبط كلمة المرور"><i class="fa-solid fa-key"></i></button>
@@ -5631,9 +6111,6 @@ async function loadUsers() {
             if (tabSettingsBtn) tabSettingsBtn.classList.toggle('hidden', user.role !== 'admin');
             setAppLang(currentLang);
             loadCompanySettings();
-
-            if (typeof renderAdminControls === 'function') renderAdminControls();
-            if (typeof loadAllData === 'function') loadAllData();
         }
 
         async function restoreSession() {
