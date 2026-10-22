@@ -190,16 +190,43 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
-            filter: saturate(0.85);
+            filter: saturate(0.78) brightness(0.92);
         }
         #loginBackdrop::after {
             content: "";
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(180deg, rgba(11, 42, 74, 0.62) 0%, rgba(11, 42, 74, 0.42) 40%, rgba(11, 42, 74, 0.72) 100%),
-                linear-gradient(90deg, rgba(11, 42, 74, 0.35), transparent 30%, transparent 70%, rgba(27, 107, 74, 0.2));
+                linear-gradient(180deg, rgba(11, 42, 74, 0.64) 0%, rgba(11, 42, 74, 0.48) 40%, rgba(11, 42, 74, 0.78) 100%),
+                linear-gradient(90deg, rgba(11, 42, 74, 0.42), transparent 34%, transparent 68%, rgba(27, 107, 74, 0.18));
         }
+        #appSidebar {
+            background: #0b2a4a;
+            color: #f5ead0;
+            border-color: rgba(196, 163, 90, 0.28);
+        }
+        #appSidebar [data-nav],
+        #appSidebar #tabFacilityBtn,
+        #appSidebar #tabFinancialBtn,
+        #appSidebar #tabVehiclesBtn,
+        #appSidebar #tabStaffBtn {
+            color: #d6c9a8;
+        }
+        #appSidebar [data-nav]:hover,
+        #appSidebar #tabFacilityBtn:hover,
+        #appSidebar #tabFinancialBtn:hover,
+        #appSidebar #tabVehiclesBtn:hover,
+        #appSidebar #tabStaffBtn:hover {
+            background: rgba(196, 163, 90, 0.14);
+            color: #fff8ea;
+        }
+        #appSidebar .nav-active {
+            background: #c4a35a !important;
+            color: #0b2a4a !important;
+        }
+        #appSidebar .nav-open { color: #c4a35a !important; }
+        #appContent { background: #faf7f2; }
+        #menuToggleBtn { background: #0b2a4a; color: #c4a35a; }
         body.dashboard-active #loginBackdrop,
         body.is-printing #loginBackdrop,
         html.session-restoring #loginBackdrop { display: none !important; }
@@ -409,7 +436,7 @@
         </form>
     </div>
     <!-- لوحة التحكم الاحترافية -->
-    <div id="mainDashboard" class="hidden relative z-10 w-full h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
+    <div id="mainDashboard" class="hidden relative z-10 w-full h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" style="border:1px solid rgba(196,163,90,0.28)">
         <div id="printLetterhead" class="print-only" aria-hidden="true">
             <div class="print-letterhead-grid">
                 <div class="print-brand-en">
@@ -431,14 +458,14 @@
         
         <div id="sidebarBackdrop" onclick="closeMobileNav()"></div>
         <!-- الشريط الجانبي الأيمن -->
-        <aside id="appSidebar" class="bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
+        <aside id="appSidebar" class="text-white border-l p-6 flex flex-col justify-between shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-6">
                     <img src="fleetop-logo.png" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain">
                     <div class="min-w-0">
-                        <h1 class="font-black text-xs text-white">FleetOp · فليتوب</h1>
-                        <p id="sidebarCompanyName" class="text-[10px] text-slate-400 font-bold truncate"></p>
-                        <p id="currentUserBadge" class="text-[10px] text-amber-400 font-bold">محمد القحطاني (مدير)</p>
+                        <h1 class="font-black text-xs" style="color:#f5ead0">FleetOp · فليتوب</h1>
+                        <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
+                        <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3">محمد القحطاني (مدير)</p>
                         <script>
                             (function () {
                                 if (!localStorage.getItem('sessionUserId')) return;
@@ -452,85 +479,85 @@
                 </div>
 
                 <nav class="space-y-2">
-                    <button onclick="switchTab('dashboard')" id="tabDashboardBtn" data-nav="dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm">
+                    <button onclick="switchTab('dashboard')" id="tabDashboardBtn" data-nav="dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition nav-active">
                         <i class="fa-solid fa-chart-pie text-base"></i> <span data-i18n="nav.dashboard">لوحة التحكم</span>
                     </button>
-                    <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-route text-base"></i> <span data-i18n="nav.trips">إدارة الرحلات</span>
                     </button>
                     <div>
-                        <button type="button" onclick="toggleFacilityMenu()" id="tabFacilityBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                        <button type="button" onclick="toggleFacilityMenu()" id="tabFacilityBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-building text-base"></i>
                             <span class="flex-1 text-right" data-i18n="nav.facility">إدارة المنشأة</span>
                             <i id="facilityMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="facilitySubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
-                            <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-shield ml-1.5 text-amber-500"></i> <span data-i18n="nav.facilityDocs">بيانات المنشأة</span>
+                        <div id="facilitySubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 pr-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">بيانات المنشأة</span>
                             </button>
                             <div>
-                                <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-                                    <i class="fa-solid fa-car-side text-amber-500"></i>
+                                <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
+                                    <i class="fa-solid fa-car-side" style="color:#c4a35a"></i>
                                     <span class="flex-1 text-right" data-i18n="nav.vehicles">المركبات</span>
                                     <i id="vehiclesMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
-                                <div id="vehiclesSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r border-amber-500/20 pr-2">
-                                    <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-truck-moving ml-1.5 text-amber-500"></i> <span data-i18n="nav.trucks">الشاحنات</span>
+                                <div id="vehiclesSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-truck-moving ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.trucks">الشاحنات</span>
                                     </button>
-                                    <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-van-shuttle ml-1.5 text-emerald-400"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
+                                    <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-van-shuttle ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
                                     </button>
                                 </div>
                             </div>
                             <div>
-                                <button type="button" onclick="toggleStaffMenu()" id="tabStaffBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-                                    <i class="fa-solid fa-id-card-clip text-amber-500"></i>
+                                <button type="button" onclick="toggleStaffMenu()" id="tabStaffBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
+                                    <i class="fa-solid fa-id-card-clip" style="color:#c4a35a"></i>
                                     <span class="flex-1 text-right" data-i18n="nav.staff">الموظفين</span>
                                     <i id="staffMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
-                                <div id="staffSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r border-amber-500/20 pr-2">
-                                    <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-id-badge ml-1.5 text-emerald-400"></i> <span data-i18n="nav.drivers">السائقين</span>
+                                <div id="staffSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-id-badge ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.drivers">السائقين</span>
                                     </button>
-                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-user-tie ml-1.5 text-amber-500"></i> <span data-i18n="nav.employees">الموظفين الإداريين</span>
+                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-user-tie ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.employees">الموظفين الإداريين</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-chart-line text-base"></i> <span data-i18n="nav.reports">التقارير التشغيلية</span>
                     </button>
                     <div id="financialMenu" class="hidden">
-                        <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                        <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-coins text-base"></i>
                             <span class="flex-1 text-right" data-i18n="nav.financial">التقارير المالية</span>
                             <i id="financialMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
-                            <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
+                        <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 pr-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                             </button>
-                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
+                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
                             </button>
-                            <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-money-bill-wave ml-1.5 text-emerald-400"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
+                            <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-right text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-money-bill-wave ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
                             </button>
                         </div>
                     </div>
-                    <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-user-shield text-base"></i> <span data-i18n="nav.users">المستخدمين</span>
                     </button>
-                    <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-gear text-base"></i> <span data-i18n="nav.settings">إعدادات النظام</span>
                     </button>
                 </nav>
             </div>
-            <div class="pt-6 border-t border-slate-800 space-y-2">
-                <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-xl text-xs transition border border-slate-700">
+            <div class="pt-6 space-y-2" style="border-top:1px solid rgba(196,163,90,0.28)">
+                <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(196,163,90,0.12);color:#c4a35a;border:1px solid rgba(196,163,90,0.4)">
                     <i class="fa-solid fa-key"></i> <span data-i18n="nav.password">تغيير كلمة المرور</span>
                 </button>
                 <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white font-bold rounded-xl text-xs transition border border-rose-500/20">
@@ -540,10 +567,10 @@
         </aside>
 
         <!-- المحتوى الرئيسي الواسع -->
-        <div id="appContent" class="flex-grow flex flex-col bg-slate-50 overflow-hidden">
-            <header class="bg-white border-b border-slate-200 px-4 xl:px-8 py-3 xl:py-4 flex justify-between items-center gap-3 text-slate-900 shadow-sm">
+        <div id="appContent" class="flex-grow flex flex-col overflow-hidden">
+            <header class="bg-white px-4 xl:px-8 py-3 xl:py-4 flex justify-between items-center gap-3 text-slate-900 shadow-sm" style="border-bottom:1px solid rgba(196,163,90,0.22)">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
-                    <button type="button" id="menuToggleBtn" onclick="toggleMobileNav()" class="w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-400" aria-label="فتح القائمة">
+                    <button type="button" id="menuToggleBtn" onclick="toggleMobileNav()" class="w-10 h-10 shrink-0 items-center justify-center rounded-xl" aria-label="فتح القائمة">
                         <i class="fa-solid fa-bars"></i>
                     </button>
                     <div class="min-w-0">
@@ -776,7 +803,7 @@
 <main id="reportsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div id="printableReport" class="flex flex-col flex-grow">
         <div class="mb-6 flex justify-end">
-            <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
+            <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
                 <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
             </button>
         </div>
@@ -861,7 +888,7 @@
 <!-- ================= قسم الملخص المالي العام ================= -->
 <main id="financialOverviewSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-end">
-        <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
+        <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
     </div>
@@ -956,7 +983,7 @@
 <!-- ================= قسم تقرير العمولات والإيرادات (الشاحنات والسائقين) ================= -->
 <main id="financialDetailsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
     <div class="mb-6 flex justify-end">
-        <button onclick="printCurrentReport()" class="bg-slate-900 text-amber-400 px-4 py-2 rounded-xl text-xs font-bold transition hover:bg-slate-800 no-print">
+        <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
             <i class="fa-solid fa-print ml-1"></i> طباعة التقرير
         </button>
     </div>
@@ -1270,7 +1297,7 @@
         <!-- ترويسة الصفحة وملخص الإحصائيات في الأعلى -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
             <div class="flex justify-end items-center border-b border-slate-100 pb-3">
-                <button onclick="printCurrentReport()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print">
+                <button onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 no-print" style="background:#0b2a4a;color:#c4a35a">
                     <i class="fa-solid fa-print"></i> طباعة التقرير
                 </button>
             </div>
@@ -1360,7 +1387,7 @@
                     <button type="button" onclick="openPayoutModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-plus"></i> سداد عمولة
                     </button>
-                    <button onclick="printCurrentReport()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                    <button onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                         <i class="fa-solid fa-print"></i> طباعة
                     </button>
                 </div>
@@ -3970,23 +3997,19 @@ async function saveCompanySettings(e) {
 }
 
 function setActiveNav(tabId) {
-    const activeClasses = ['bg-amber-500', 'text-slate-900', 'shadow-sm'];
-    const idleClasses = ['text-slate-300', 'hover:bg-slate-800', 'hover:text-white'];
     document.querySelectorAll('[data-nav]').forEach(btn => {
-        const isActive = btn.dataset.nav === tabId;
-        activeClasses.forEach(cls => btn.classList.toggle(cls, isActive));
-        idleClasses.forEach(cls => btn.classList.toggle(cls, !isActive));
+        btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
     const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId);
     const financialBtn = document.getElementById('tabFinancialBtn');
-    if (financialBtn) financialBtn.classList.toggle('text-amber-400', financialOpen);
+    if (financialBtn) financialBtn.classList.toggle('nav-open', financialOpen);
     const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'drivers' || tabId === 'employees';
     const facilityBtn = document.getElementById('tabFacilityBtn');
-    if (facilityBtn) facilityBtn.classList.toggle('text-amber-400', facilityOpen);
+    if (facilityBtn) facilityBtn.classList.toggle('nav-open', facilityOpen);
     const vehiclesBtn = document.getElementById('tabVehiclesBtn');
-    if (vehiclesBtn) vehiclesBtn.classList.toggle('text-amber-400', tabId === 'trucks' || tabId === 'otherVehicles');
+    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles');
     const staffBtn = document.getElementById('tabStaffBtn');
-    if (staffBtn) staffBtn.classList.toggle('text-amber-400', tabId === 'drivers' || tabId === 'employees');
+    if (staffBtn) staffBtn.classList.toggle('nav-open', tabId === 'drivers' || tabId === 'employees');
 }
 
 function switchTab(tabId) {
