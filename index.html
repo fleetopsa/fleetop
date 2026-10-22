@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة الاختيار العالمي للنقليات - إدارة الأسطول</title>
-    <link rel="icon" href="GSTCO1.png" type="image/png">
+    <title>فليتوب FleetOp — إدارة الأسطول والرحلات</title>
+    <link rel="icon" href="fleetop-logo.jpg" type="image/jpeg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style> 
-        body { font-family: 'Cairo', sans-serif; }
+        body { font-family: 'Cairo', 'Inter', sans-serif; background: #f6f4ef; }
+        html[lang="en"] body { font-family: 'Inter', 'Cairo', sans-serif; }
         .truck-cards-few { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
         .truck-cards-many {
             display: grid;
@@ -128,12 +129,19 @@
             align-items: center;
             gap: 6mm;
         }
-        body.is-printing .print-letterhead-grid img {
-            width: 20mm;
-            height: 20mm;
+        body.is-printing .print-letterhead-grid img.print-platform-logo {
+            width: 28mm;
+            height: 28mm;
             object-fit: contain;
             justify-self: center;
         }
+        body.is-printing .print-company-logo {
+            width: 16mm;
+            height: 16mm;
+            object-fit: contain;
+            margin-bottom: 2mm;
+        }
+        body.is-printing .print-letterhead-grid img.print-company-logo.hidden { display: none !important; }
         body.is-printing .print-brand-en { text-align: left; }
         body.is-printing .print-brand-ar { text-align: right; direction: rtl; }
         body.is-printing .print-brand-en strong,
@@ -311,10 +319,16 @@
                     }
                 }
             } catch (e) {}
+            try {
+                if (localStorage.getItem('fleetop_lang') === 'en') {
+                    document.documentElement.lang = 'en';
+                    document.documentElement.dir = 'ltr';
+                }
+            } catch (e2) {}
         })();
     </script>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
+<body class="min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
 <script>
     if (document.documentElement.classList.contains('session-restoring')) document.body.classList.add('dashboard-active');
 </script>
@@ -325,34 +339,37 @@
     </symbol>
 </svg>
 
-    <!-- خلفية شاحنات احترافية مع تغطية معتمة -->
-    <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1920&auto=format&fit=crop');">
-        <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px]"></div>
-    </div>
+    <div class="absolute inset-0 z-0" style="background: radial-gradient(circle at 100% 0%, rgba(184,144,74,0.16), transparent 34%), radial-gradient(circle at 0% 100%, rgba(26,127,140,0.1), transparent 32%), #f6f4ef;"></div>
 
     <!-- شاشة تسجيل الدخول -->
-    <div id="loginSection" class="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-slate-200">
-        <div class="text-center mb-6">
-            <div class="mb-4 flex justify-center">
-                <img src="GSTCO1.png" alt="شعار الشركة" class="w-20 h-20 object-contain rounded-xl">
+    <div id="loginSection" class="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-[#e6dcc8]">
+        <div class="flex justify-end mb-3">
+            <div class="flex rounded-xl border border-slate-200 overflow-hidden text-[11px] font-black">
+                <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-3 py-1.5">عربي</button>
+                <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-3 py-1.5">EN</button>
             </div>
-            <h2 class="text-xl font-black text-slate-900">شركة الاختيار العالمي للنقليات</h2>
-            <p class="text-xs text-amber-600 font-bold mt-1">نظام إدارة الأسطول والرحلات</p>
+        </div>
+        <div class="text-center mb-6">
+            <div class="mb-2 flex justify-center">
+                <img src="fleetop-logo.jpg" alt="FleetOp" class="w-52 max-w-full h-auto object-contain">
+            </div>
+            <p class="text-xs font-bold mt-1" style="color:#1a7f8c" data-i18n="login.tagline">منصة إدارة الأسطول والرحلات</p>
+            <p class="text-[11px] text-slate-500 font-bold mt-1" data-i18n="login.product">منصة عامة لكل شركات النقل</p>
         </div>
         
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
-                <input type="text" id="usernameInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="أدخل اسم المستخدم">
+                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="login.username">اسم المستخدم</label>
+                <input type="text" id="usernameInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="login.password">كلمة المرور</label>
                 <input type="password" id="passwordInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="••••••••">
             </div>
-            <div id="loginError" class="hidden text-rose-600 text-xs font-bold text-center bg-rose-50 py-2.5 rounded-xl border border-rose-200">
+            <div id="loginError" class="hidden text-rose-600 text-xs font-bold text-center bg-rose-50 py-2.5 rounded-xl border border-rose-200" data-i18n="login.error">
                 خطأ في اسم المستخدم أو كلمة المرور.
             </div>
-            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold py-3.5 rounded-xl shadow-md transition">
+            <button type="submit" class="w-full font-bold py-3.5 rounded-xl shadow-md transition" style="background:#10243f;color:#e4c78a" data-i18n="login.submit">
                 تسجيل الدخول للنظام
             </button>
         </form>
@@ -362,13 +379,15 @@
         <div id="printLetterhead" class="print-only" aria-hidden="true">
             <div class="print-letterhead-grid">
                 <div class="print-brand-en">
-                    <strong>Global Selection Transport Co.</strong>
-                    <span>Fleet &amp; Trips Management</span>
+                    <img id="printCompanyLogoEn" class="print-company-logo hidden" alt="">
+                    <strong id="printCompanyNameEn">Company name</strong>
+                    <span id="printCompanySloganEn">Fleet operations</span>
                 </div>
-                <img src="GSTCO1.png" alt="شعار الشركة">
+                <img src="fleetop-logo.jpg" alt="FleetOp" class="print-platform-logo">
                 <div class="print-brand-ar">
-                    <strong>شركة الاختيار العالمي للنقليات</strong>
-                    <span>إدارة الأسطول والرحلات</span>
+                    <img id="printCompanyLogoAr" class="print-company-logo hidden" alt="">
+                    <strong id="printCompanyNameAr">اسم الشركة</strong>
+                    <span id="printCompanySloganAr">إدارة الأسطول والرحلات</span>
                 </div>
             </div>
         </div>
@@ -381,12 +400,11 @@
         <!-- الشريط الجانبي الأيمن -->
         <aside id="appSidebar" class="bg-slate-900 text-white border-l border-slate-200 p-6 flex flex-col justify-between shrink-0">
             <div>
-                <div class="flex items-center space-x-3 space-x-reverse mb-6">
-                    <div class="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-slate-900 font-black">
-                        <i class="fa-solid fa-truck"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-black text-xs text-white">الاختيار العالمي</h1>
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="fleetop-logo.jpg" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain bg-white p-0.5">
+                    <div class="min-w-0">
+                        <h1 class="font-black text-xs text-white">FleetOp · فليتوب</h1>
+                        <p id="sidebarCompanyName" class="text-[10px] text-slate-400 font-bold truncate"></p>
                         <p id="currentUserBadge" class="text-[10px] text-amber-400 font-bold">محمد القحطاني (مدير)</p>
                         <script>
                             (function () {
@@ -402,85 +420,88 @@
 
                 <nav class="space-y-2">
                     <button onclick="switchTab('dashboard')" id="tabDashboardBtn" data-nav="dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-900 shadow-sm">
-                        <i class="fa-solid fa-chart-pie text-base"></i> لوحة التحكم
+                        <i class="fa-solid fa-chart-pie text-base"></i> <span data-i18n="nav.dashboard">لوحة التحكم</span>
                     </button>
                     <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-                        <i class="fa-solid fa-route text-base"></i> إدارة الرحلات
+                        <i class="fa-solid fa-route text-base"></i> <span data-i18n="nav.trips">إدارة الرحلات</span>
                     </button>
                     <div>
                         <button type="button" onclick="toggleFacilityMenu()" id="tabFacilityBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
                             <i class="fa-solid fa-building text-base"></i>
-                            <span class="flex-1 text-right">إدارة المنشأة</span>
+                            <span class="flex-1 text-right" data-i18n="nav.facility">إدارة المنشأة</span>
                             <i id="facilityMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
                         <div id="facilitySubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
                             <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-shield ml-1.5 text-amber-500"></i> بيانات المنشأة
+                                <i class="fa-solid fa-file-shield ml-1.5 text-amber-500"></i> <span data-i18n="nav.facilityDocs">بيانات المنشأة</span>
                             </button>
                             <div>
                                 <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
                                     <i class="fa-solid fa-car-side text-amber-500"></i>
-                                    <span class="flex-1 text-right">المركبات</span>
+                                    <span class="flex-1 text-right" data-i18n="nav.vehicles">المركبات</span>
                                     <i id="vehiclesMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
                                 <div id="vehiclesSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r border-amber-500/20 pr-2">
                                     <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-truck-moving ml-1.5 text-amber-500"></i> الشاحنات
+                                        <i class="fa-solid fa-truck-moving ml-1.5 text-amber-500"></i> <span data-i18n="nav.trucks">الشاحنات</span>
                                     </button>
                                     <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-van-shuttle ml-1.5 text-emerald-400"></i> المركبات الأخرى
+                                        <i class="fa-solid fa-van-shuttle ml-1.5 text-emerald-400"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
                                     </button>
                                 </div>
                             </div>
                             <div>
                                 <button type="button" onclick="toggleStaffMenu()" id="tabStaffBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
                                     <i class="fa-solid fa-id-card-clip text-amber-500"></i>
-                                    <span class="flex-1 text-right">الموظفين</span>
+                                    <span class="flex-1 text-right" data-i18n="nav.staff">الموظفين</span>
                                     <i id="staffMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                                 </button>
                                 <div id="staffSubMenu" class="hidden mr-3 mt-0.5 space-y-0.5 border-r border-amber-500/20 pr-2">
                                     <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-id-badge ml-1.5 text-emerald-400"></i> السائقين
+                                        <i class="fa-solid fa-id-badge ml-1.5 text-emerald-400"></i> <span data-i18n="nav.drivers">السائقين</span>
                                     </button>
                                     <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-user-tie ml-1.5 text-amber-500"></i> الموظفين الإداريين
+                                        <i class="fa-solid fa-user-tie ml-1.5 text-amber-500"></i> <span data-i18n="nav.employees">الموظفين الإداريين</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-                        <i class="fa-solid fa-chart-line text-base"></i> التقارير التشغيلية
+                        <i class="fa-solid fa-chart-line text-base"></i> <span data-i18n="nav.reports">التقارير التشغيلية</span>
                     </button>
                     <div id="financialMenu" class="hidden">
                         <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
                             <i class="fa-solid fa-coins text-base"></i>
-                            <span class="flex-1 text-right">التقارير المالية</span>
+                            <span class="flex-1 text-right" data-i18n="nav.financial">التقارير المالية</span>
                             <i id="financialMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
                         <div id="financialSubMenu" class="hidden mr-4 mt-1 space-y-1 border-r-2 border-amber-500/30 pr-3 pt-1">
                             <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> تقرير الإيرادات
+                                <i class="fa-solid fa-wallet ml-1.5 text-emerald-500"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                             </button>
                             <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> تقرير العمولات
+                                <i class="fa-solid fa-file-invoice-dollar ml-1.5 text-amber-500"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
                             </button>
                             <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-right text-xs text-slate-300 hover:text-white py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-money-bill-wave ml-1.5 text-emerald-400"></i> سداد العمولات
+                                <i class="fa-solid fa-money-bill-wave ml-1.5 text-emerald-400"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
                             </button>
                         </div>
                     </div>
                     <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-                        <i class="fa-solid fa-user-shield text-base"></i> المستخدمين
+                        <i class="fa-solid fa-user-shield text-base"></i> <span data-i18n="nav.users">المستخدمين</span>
+                    </button>
+                    <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+                        <i class="fa-solid fa-gear text-base"></i> <span data-i18n="nav.settings">إعدادات النظام</span>
                     </button>
                 </nav>
             </div>
             <div class="pt-6 border-t border-slate-800 space-y-2">
                 <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-xl text-xs transition border border-slate-700">
-                    <i class="fa-solid fa-key"></i> تغيير كلمة المرور
+                    <i class="fa-solid fa-key"></i> <span data-i18n="nav.password">تغيير كلمة المرور</span>
                 </button>
                 <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white font-bold rounded-xl text-xs transition border border-rose-500/20">
-                    <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
+                    <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="nav.logout">تسجيل الخروج</span>
                 </button>
             </div>
         </aside>
@@ -497,10 +518,16 @@
                         <p id="pageSubtitle" class="text-[11px] text-slate-500 truncate">ملخص الإيرادات وحالة الأسطول والرحلات الجارية</p>
                     </div>
                 </div>
-                <button type="button" id="refreshDataBtn" onclick="loadAllData()" class="px-3 xl:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 disabled:opacity-60 shrink-0">
-                    <i id="refreshDataIcon" class="fa-solid fa-rotate"></i>
-                    <span id="refreshDataLabel" class="hidden sm:inline">تحديث البيانات</span>
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <div class="flex rounded-xl border border-slate-200 overflow-hidden text-[11px] font-black">
+                        <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-2.5 py-2">عربي</button>
+                        <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-2.5 py-2">EN</button>
+                    </div>
+                    <button type="button" id="refreshDataBtn" onclick="loadAllData()" class="px-3 xl:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 disabled:opacity-60">
+                        <i id="refreshDataIcon" class="fa-solid fa-rotate"></i>
+                        <span id="refreshDataLabel" class="hidden sm:inline" data-i18n="header.refresh">تحديث البيانات</span>
+                    </button>
+                </div>
             </header>
 
           <!-- قسم لوحة التحكم -->
@@ -1444,6 +1471,69 @@
                         </table>
                     </div>
                 </div>
+                </div>
+            </main>
+            <main id="settingsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+                <div class="max-w-3xl">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
+                            <i class="fa-solid fa-building text-amber-500 ml-2"></i>
+                            <span data-i18n="settings.title">بيانات الشركة المستخدمة للمنصة</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
+                        <form onsubmit="saveCompanySettings(event)" class="space-y-3.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameAr">اسم الشركة بالعربية</label>
+                                    <input type="text" id="companyNameAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameEn">اسم الشركة بالإنجليزية</label>
+                                    <input type="text" id="companyNameEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganAr">الوصف بالعربية</label>
+                                    <input type="text" id="companySloganAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganEn">الوصف بالإنجليزية</label>
+                                    <input type="text" id="companySloganEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.phone">الهاتف</label>
+                                    <input type="text" id="companyPhone" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.email">البريد</label>
+                                    <input type="email" id="companyEmail" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.city">المدينة</label>
+                                    <input type="text" id="companyCity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.cr">السجل التجاري</label>
+                                    <input type="text" id="companyCr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.vat">الرقم الضريبي</label>
+                                    <input type="text" id="companyVat" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.address">العنوان</label>
+                                    <input type="text" id="companyAddress" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.logo">شعار الشركة (للتقارير)</label>
+                                    <div class="flex items-center gap-4">
+                                        <img id="companyLogoPreview" src="" alt="" class="hidden w-16 h-16 rounded-xl object-contain border border-slate-200 bg-white">
+                                        <input type="file" id="companyLogoFile" accept="image/*" class="text-xs">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
+                        </form>
+                    </div>
                 </div>
             </main>
         </div>
@@ -2918,10 +3008,11 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     const refreshLabel = document.getElementById('refreshDataLabel');
     if (refreshBtn) refreshBtn.disabled = true;
     if (refreshIcon) refreshIcon.classList.add('fa-spin');
-    if (refreshLabel) refreshLabel.textContent = 'جارٍ التحديث...';
+    if (refreshLabel) refreshLabel.textContent = t('header.refreshing');
 
     console.log("جاري تحديث كافة البيانات...");
     try {
+        try { if (typeof loadCompanySettings === 'function') await loadCompanySettings(); } catch (e) { console.error(e); }
         try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
         try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
         try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
@@ -2939,7 +3030,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         console.log("تم التحديث بنجاح.");
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-        if (refreshLabel) refreshLabel.textContent = 'تحديث البيانات';
+        if (refreshLabel) refreshLabel.textContent = t('header.refresh');
         if (refreshBtn) refreshBtn.disabled = false;
     }
 }
@@ -3504,32 +3595,239 @@ function setStaffJobTitle(job) {
     toggleStaffJobOther();
 }
 
-const PAGE_HEADERS = {
-    dashboard: ['لوحة التحكم', 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية'],
-    dashboardSection: ['لوحة التحكم', 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية'],
-    trips: ['إدارة الرحلات', 'سجل الرحلات الجارية والمكتملة والملغاة'],
-    tripsSection: ['إدارة الرحلات', 'سجل الرحلات الجارية والمكتملة والملغاة'],
-    reports: ['التقارير التشغيلية', 'الشاحنات والسائقين والرحلات التشغيلية'],
-    reportsSection: ['التقارير التشغيلية', 'الشاحنات والسائقين والرحلات التشغيلية'],
-    financialOverviewSection: ['تقرير الإيرادات', 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات'],
-    financialDetailsSection: ['تقرير العمولات وإيرادات الأسطول', 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة'],
-    commissionReportSection: ['تقرير العمولات', 'عرض وتصفية عمولات السائقين التفصيلية'],
-    commissionPayoutSection: ['سداد العمولات', 'عمولة كل سائق، وما تم صرفه، والمتبقي له'],
-    facility: ['بيانات المنشأة', 'السجلات والتراخيص وتواريخ انتهائها'],
-    trucks: ['الشاحنات', 'شاحنات النقل المستخدمة في الرحلات اليومية'],
-    otherVehicles: ['المركبات الأخرى', 'سيارات ومركبات الاستخدام اليومي'],
-    drivers: ['السائقين', 'إضافة السائقين ومتابعة توفرهم للرحلات'],
-    employees: ['الموظفين الإداريين', 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية'],
-    users: ['المستخدمين', 'حسابات الدخول والصلاحيات'],
-    usersSection: ['المستخدمين', 'حسابات الدخول والصلاحيات']
+let currentLang = localStorage.getItem('fleetop_lang') || 'ar';
+let currentNavTab = 'dashboard';
+let companySettings = {};
+const PLATFORM_LOGO = 'fleetop-logo.jpg';
+
+const I18N = {
+    ar: {
+        'login.tagline': 'منصة إدارة الأسطول والرحلات',
+        'login.product': 'منصة عامة لكل شركات النقل',
+        'login.username': 'اسم المستخدم',
+        'login.usernamePh': 'أدخل اسم المستخدم',
+        'login.password': 'كلمة المرور',
+        'login.error': 'خطأ في اسم المستخدم أو كلمة المرور.',
+        'login.submit': 'تسجيل الدخول للنظام',
+        'nav.dashboard': 'لوحة التحكم',
+        'nav.trips': 'إدارة الرحلات',
+        'nav.facility': 'إدارة المنشأة',
+        'nav.facilityDocs': 'بيانات المنشأة',
+        'nav.vehicles': 'المركبات',
+        'nav.trucks': 'الشاحنات',
+        'nav.otherVehicles': 'المركبات الأخرى',
+        'nav.staff': 'الموظفين',
+        'nav.drivers': 'السائقين',
+        'nav.employees': 'الموظفين الإداريين',
+        'nav.reports': 'التقارير التشغيلية',
+        'nav.financial': 'التقارير المالية',
+        'nav.revenue': 'تقرير الإيرادات',
+        'nav.commissions': 'تقرير العمولات',
+        'nav.payouts': 'سداد العمولات',
+        'nav.users': 'المستخدمين',
+        'nav.settings': 'إعدادات النظام',
+        'nav.password': 'تغيير كلمة المرور',
+        'nav.logout': 'تسجيل الخروج',
+        'header.refresh': 'تحديث البيانات',
+        'header.refreshing': 'جارٍ التحديث...',
+        'page.dashboard': 'لوحة التحكم',
+        'page.dashboardSub': 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية',
+        'page.trips': 'إدارة الرحلات',
+        'page.tripsSub': 'سجل الرحلات الجارية والمكتملة والملغاة',
+        'page.reports': 'التقارير التشغيلية',
+        'page.reportsSub': 'الشاحنات والسائقين والرحلات التشغيلية',
+        'page.revenue': 'تقرير الإيرادات',
+        'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
+        'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
+        'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
+        'page.commissions': 'تقرير العمولات',
+        'page.commissionsSub': 'عرض وتصفية عمولات السائقين التفصيلية',
+        'page.payouts': 'سداد العمولات',
+        'page.payoutsSub': 'عمولة كل سائق، وما تم صرفه، والمتبقي له',
+        'page.facility': 'بيانات المنشأة',
+        'page.facilitySub': 'السجلات والتراخيص وتواريخ انتهائها',
+        'page.trucks': 'الشاحنات',
+        'page.trucksSub': 'شاحنات النقل المستخدمة في الرحلات اليومية',
+        'page.otherVehicles': 'المركبات الأخرى',
+        'page.otherVehiclesSub': 'سيارات ومركبات الاستخدام اليومي',
+        'page.drivers': 'السائقين',
+        'page.driversSub': 'إضافة السائقين ومتابعة توفرهم للرحلات',
+        'page.employees': 'الموظفين الإداريين',
+        'page.employeesSub': 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية',
+        'page.users': 'المستخدمين',
+        'page.usersSub': 'حسابات الدخول والصلاحيات',
+        'page.settings': 'إعدادات النظام',
+        'page.settingsSub': 'بيانات الشركة وشعارها في التقارير والسجلات',
+        'settings.title': 'بيانات الشركة المستخدمة للمنصة',
+        'settings.hint': 'شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.',
+        'settings.nameAr': 'اسم الشركة بالعربية',
+        'settings.nameEn': 'اسم الشركة بالإنجليزية',
+        'settings.sloganAr': 'الوصف بالعربية',
+        'settings.sloganEn': 'الوصف بالإنجليزية',
+        'settings.phone': 'الهاتف',
+        'settings.email': 'البريد',
+        'settings.city': 'المدينة',
+        'settings.cr': 'السجل التجاري',
+        'settings.vat': 'الرقم الضريبي',
+        'settings.address': 'العنوان',
+        'settings.logo': 'شعار الشركة (للتقارير)',
+        'settings.save': 'حفظ إعدادات الشركة',
+        'settings.saved': 'تم حفظ بيانات الشركة.',
+        'print.by': 'طُبع بواسطة: ',
+        'print.at': 'تاريخ الطباعة: ',
+        'role.admin': 'مدير',
+        'role.accountant': 'محاسب',
+        'role.user': 'مستخدم'
+    },
+    en: {
+        'login.tagline': 'Fleet and trip management platform',
+        'login.product': 'A public platform for every transport company',
+        'login.username': 'Username',
+        'login.usernamePh': 'Enter username',
+        'login.password': 'Password',
+        'login.error': 'Incorrect username or password.',
+        'login.submit': 'Sign in',
+        'nav.dashboard': 'Dashboard',
+        'nav.trips': 'Trips',
+        'nav.facility': 'Organization',
+        'nav.facilityDocs': 'Company documents',
+        'nav.vehicles': 'Vehicles',
+        'nav.trucks': 'Trucks',
+        'nav.otherVehicles': 'Other vehicles',
+        'nav.staff': 'Staff',
+        'nav.drivers': 'Drivers',
+        'nav.employees': 'Office staff',
+        'nav.reports': 'Operations reports',
+        'nav.financial': 'Financial reports',
+        'nav.revenue': 'Revenue report',
+        'nav.commissions': 'Commission report',
+        'nav.payouts': 'Commission payouts',
+        'nav.users': 'Users',
+        'nav.settings': 'System settings',
+        'nav.password': 'Change password',
+        'nav.logout': 'Sign out',
+        'header.refresh': 'Refresh',
+        'header.refreshing': 'Refreshing...',
+        'page.dashboard': 'Dashboard',
+        'page.dashboardSub': 'Revenue summary, fleet status and active trips',
+        'page.trips': 'Trip management',
+        'page.tripsSub': 'Active, completed and cancelled trips',
+        'page.reports': 'Operations reports',
+        'page.reportsSub': 'Trucks, drivers and operational trips',
+        'page.revenue': 'Revenue report',
+        'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
+        'page.fleetFinance': 'Commissions and fleet revenue',
+        'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
+        'page.commissions': 'Commission report',
+        'page.commissionsSub': 'Filter and review driver commissions',
+        'page.payouts': 'Commission payouts',
+        'page.payoutsSub': 'Earned, paid and remaining commission by driver',
+        'page.facility': 'Company documents',
+        'page.facilitySub': 'Licenses, records and expiry dates',
+        'page.trucks': 'Trucks',
+        'page.trucksSub': 'Transport trucks used for daily trips',
+        'page.otherVehicles': 'Other vehicles',
+        'page.otherVehiclesSub': 'Cars and vehicles for daily use',
+        'page.drivers': 'Drivers',
+        'page.driversSub': 'Add drivers and track trip availability',
+        'page.employees': 'Office staff',
+        'page.employeesSub': 'Operations, maintenance, accounting and admin roles',
+        'page.users': 'Users',
+        'page.usersSub': 'Login accounts and permissions',
+        'page.settings': 'System settings',
+        'page.settingsSub': 'Your company details and logo for reports and records',
+        'settings.title': 'Company profile on FleetOp',
+        'settings.hint': 'The FleetOp logo is the platform brand. Enter your company name and logo to show on your reports and records.',
+        'settings.nameAr': 'Company name in Arabic',
+        'settings.nameEn': 'Company name in English',
+        'settings.sloganAr': 'Arabic description',
+        'settings.sloganEn': 'English description',
+        'settings.phone': 'Phone',
+        'settings.email': 'Email',
+        'settings.city': 'City',
+        'settings.cr': 'Commercial registration',
+        'settings.vat': 'VAT number',
+        'settings.address': 'Address',
+        'settings.logo': 'Company logo (for reports)',
+        'settings.save': 'Save company settings',
+        'settings.saved': 'Company details saved.',
+        'print.by': 'Printed by: ',
+        'print.at': 'Printed on: ',
+        'role.admin': 'Admin',
+        'role.accountant': 'Accountant',
+        'role.user': 'User'
+    }
 };
+
+const PAGE_HEADER_KEYS = {
+    dashboard: ['page.dashboard', 'page.dashboardSub'],
+    dashboardSection: ['page.dashboard', 'page.dashboardSub'],
+    trips: ['page.trips', 'page.tripsSub'],
+    tripsSection: ['page.trips', 'page.tripsSub'],
+    reports: ['page.reports', 'page.reportsSub'],
+    reportsSection: ['page.reports', 'page.reportsSub'],
+    financialOverviewSection: ['page.revenue', 'page.revenueSub'],
+    financialDetailsSection: ['page.fleetFinance', 'page.fleetFinanceSub'],
+    commissionReportSection: ['page.commissions', 'page.commissionsSub'],
+    commissionPayoutSection: ['page.payouts', 'page.payoutsSub'],
+    facility: ['page.facility', 'page.facilitySub'],
+    trucks: ['page.trucks', 'page.trucksSub'],
+    otherVehicles: ['page.otherVehicles', 'page.otherVehiclesSub'],
+    drivers: ['page.drivers', 'page.driversSub'],
+    employees: ['page.employees', 'page.employeesSub'],
+    users: ['page.users', 'page.usersSub'],
+    usersSection: ['page.users', 'page.usersSub'],
+    settings: ['page.settings', 'page.settingsSub']
+};
+
+function t(key) {
+    return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ar[key] || key;
+}
+
+function applyI18n() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    document.querySelectorAll('.lang-ar-btn').forEach(btn => {
+        btn.classList.toggle('bg-amber-500', currentLang === 'ar');
+        btn.classList.toggle('text-slate-900', currentLang === 'ar');
+        btn.classList.toggle('bg-slate-100', currentLang !== 'ar');
+        btn.classList.toggle('text-slate-600', currentLang !== 'ar');
+    });
+    document.querySelectorAll('.lang-en-btn').forEach(btn => {
+        btn.classList.toggle('bg-amber-500', currentLang === 'en');
+        btn.classList.toggle('text-slate-900', currentLang === 'en');
+        btn.classList.toggle('bg-slate-100', currentLang !== 'en');
+        btn.classList.toggle('text-slate-600', currentLang !== 'en');
+    });
+}
+
+function setAppLang(lang) {
+    currentLang = lang === 'en' ? 'en' : 'ar';
+    localStorage.setItem('fleetop_lang', currentLang);
+    document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    applyI18n();
+    setPageHeader(currentNavTab);
+    applyCompanyBranding();
+    if (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) {
+        const roleKey = currentLoggedInUser.role === 'admin' ? 'role.admin' : (currentLoggedInUser.role === 'accountant' ? 'role.accountant' : 'role.user');
+        const badge = document.getElementById('currentUserBadge');
+        if (badge) badge.textContent = (currentLoggedInUser.employee_name || currentLoggedInUser.username || '') + ' (' + t(roleKey) + ')';
+    }
+}
 
 function setPageHeader(titleOrTab, subtitle) {
     let title = titleOrTab;
     let sub = subtitle;
     if (sub === undefined) {
-        if (!PAGE_HEADERS[titleOrTab]) return;
-        [title, sub] = PAGE_HEADERS[titleOrTab];
+        if (!PAGE_HEADER_KEYS[titleOrTab]) return;
+        const keys = PAGE_HEADER_KEYS[titleOrTab];
+        title = t(keys[0]);
+        sub = t(keys[1]);
     }
     const titleEl = document.getElementById('pageTitle');
     const subEl = document.getElementById('pageSubtitle');
@@ -3538,6 +3836,103 @@ function setPageHeader(titleOrTab, subtitle) {
         subEl.textContent = sub || '';
         subEl.classList.toggle('hidden', !sub);
     }
+}
+
+function applyCompanyBranding() {
+    const nameAr = companySettings.company_name_ar || '';
+    const nameEn = companySettings.company_name_en || '';
+    const sloganAr = companySettings.slogan_ar || t('login.tagline');
+    const sloganEn = companySettings.slogan_en || 'Fleet & Trips Management';
+    const display = currentLang === 'en' ? (nameEn || nameAr) : (nameAr || nameEn);
+    const side = document.getElementById('sidebarCompanyName');
+    if (side) side.textContent = display;
+    const arEl = document.getElementById('printCompanyNameAr');
+    const enEl = document.getElementById('printCompanyNameEn');
+    const arSlogan = document.getElementById('printCompanySloganAr');
+    const enSlogan = document.getElementById('printCompanySloganEn');
+    if (arEl) arEl.textContent = nameAr || nameEn || 'Company';
+    if (enEl) enEl.textContent = nameEn || nameAr || 'Company';
+    if (arSlogan) arSlogan.textContent = sloganAr;
+    if (enSlogan) enSlogan.textContent = sloganEn;
+    ['printCompanyLogoAr', 'printCompanyLogoEn', 'companyLogoPreview'].forEach(id => {
+        const img = document.getElementById(id);
+        if (!img) return;
+        if (companySettings.logo_data) {
+            img.src = companySettings.logo_data;
+            img.classList.remove('hidden');
+        } else if (id !== 'companyLogoPreview') {
+            img.removeAttribute('src');
+            img.classList.add('hidden');
+        }
+    });
+}
+
+async function loadCompanySettings() {
+    try {
+        const { data, error } = await client.from('company_settings').select('*').order('id', { ascending: true }).limit(1);
+        if (error) throw error;
+        companySettings = data && data[0] ? data[0] : {};
+    } catch (err) {
+        companySettings = JSON.parse(localStorage.getItem('fleetop_company') || '{}');
+    }
+    fillCompanySettingsForm();
+    applyCompanyBranding();
+}
+
+function fillCompanySettingsForm() {
+    const map = {
+        companyNameAr: 'company_name_ar',
+        companyNameEn: 'company_name_en',
+        companySloganAr: 'slogan_ar',
+        companySloganEn: 'slogan_en',
+        companyPhone: 'phone',
+        companyEmail: 'email',
+        companyCity: 'city',
+        companyCr: 'cr_number',
+        companyVat: 'vat_number',
+        companyAddress: 'address'
+    };
+    Object.entries(map).forEach(([id, key]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = companySettings[key] || '';
+    });
+    const preview = document.getElementById('companyLogoPreview');
+    if (preview) {
+        preview.src = companySettings.logo_data || '';
+        preview.classList.toggle('hidden', !companySettings.logo_data);
+    }
+}
+
+async function saveCompanySettings(e) {
+    e.preventDefault();
+    const payload = {
+        company_name_ar: emptyToNull(document.getElementById('companyNameAr')?.value),
+        company_name_en: emptyToNull(document.getElementById('companyNameEn')?.value),
+        slogan_ar: emptyToNull(document.getElementById('companySloganAr')?.value),
+        slogan_en: emptyToNull(document.getElementById('companySloganEn')?.value),
+        phone: emptyToNull(document.getElementById('companyPhone')?.value),
+        email: emptyToNull(document.getElementById('companyEmail')?.value),
+        city: emptyToNull(document.getElementById('companyCity')?.value),
+        cr_number: emptyToNull(document.getElementById('companyCr')?.value),
+        vat_number: emptyToNull(document.getElementById('companyVat')?.value),
+        address: emptyToNull(document.getElementById('companyAddress')?.value),
+        logo_data: companySettings.logo_data || null,
+        updated_at: new Date().toISOString()
+    };
+    const write = (data) => companySettings.id
+        ? client.from('company_settings').update(data).eq('id', companySettings.id)
+        : client.from('company_settings').insert([data]);
+    const { error } = await writeIgnoringUnknownColumns(write, payload);
+    if (error) {
+        localStorage.setItem('fleetop_company', JSON.stringify(payload));
+        companySettings = { ...companySettings, ...payload };
+        applyCompanyBranding();
+        alert(t('settings.saved') + '\n' + (error.message || ''));
+        return;
+    }
+    localStorage.setItem('fleetop_company', JSON.stringify(payload));
+    await loadCompanySettings();
+    alert(t('settings.saved'));
 }
 
 function setActiveNav(tabId) {
@@ -3561,6 +3956,7 @@ function setActiveNav(tabId) {
 }
 
 function switchTab(tabId) {
+    currentNavTab = tabId;
     setActiveNav(tabId);
     setPageHeader(tabId);
     closeMobileNav();
@@ -3588,6 +3984,16 @@ function switchTab(tabId) {
             }
             return;
         }
+    }
+
+    if (tabId === 'settings') {
+        const section = document.getElementById('settingsSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        fillCompanySettingsForm();
+        return;
     }
 
     if (tabId === 'facility') {
@@ -5102,9 +5508,9 @@ async function loadUsers() {
             const userName = user.employee_name || user.username || '';
             const userLabel = document.getElementById('printUserName');
             const timeLabel = document.getElementById('printTimestamp');
-            if (userLabel) userLabel.textContent = userName ? 'طُبع بواسطة: ' + userName : '';
+            if (userLabel) userLabel.textContent = userName ? t('print.by') + userName : '';
             if (timeLabel) {
-                const stamp = new Date().toLocaleString('ar-SA', {
+                const stamp = new Date().toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
                     numberingSystem: 'latn',
                     year: 'numeric',
                     month: '2-digit',
@@ -5112,8 +5518,9 @@ async function loadUsers() {
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                timeLabel.textContent = 'تاريخ الطباعة: ' + stamp;
+                timeLabel.textContent = t('print.at') + stamp;
             }
+            applyCompanyBranding();
 
             document.body.classList.add('is-printing');
             const cleanup = () => {
@@ -5163,6 +5570,10 @@ async function loadUsers() {
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
+            const tabSettingsBtn = document.getElementById('tabSettingsBtn');
+            if (tabSettingsBtn) tabSettingsBtn.classList.toggle('hidden', user.role !== 'admin');
+            setAppLang(currentLang);
+            loadCompanySettings();
 
             if (typeof renderAdminControls === 'function') renderAdminControls();
             if (typeof loadAllData === 'function') loadAllData();
@@ -5206,6 +5617,29 @@ async function loadUsers() {
             document.getElementById('passwordInput').value = '';
         }
         document.addEventListener("DOMContentLoaded", () => {
+            const logoInput = document.getElementById('companyLogoFile');
+            if (logoInput) {
+                logoInput.addEventListener('change', (event) => {
+                    const file = event.target.files && event.target.files[0];
+                    if (!file) return;
+                    if (file.size > 500000) {
+                        alert(currentLang === 'en' ? 'Logo is too large (max 500KB).' : 'حجم الشعار كبير. الحد 500 كيلوبايت.');
+                        event.target.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        companySettings.logo_data = reader.result;
+                        const preview = document.getElementById('companyLogoPreview');
+                        if (preview) {
+                            preview.src = reader.result;
+                            preview.classList.remove('hidden');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            setAppLang(currentLang);
             initReportFilters();
             restoreSession();
         });
