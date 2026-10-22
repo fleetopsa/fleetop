@@ -1878,12 +1878,12 @@ async function openCommissionReportTab() {
 
 async function populateCommissionFilters() {
     try {
-        const { data: drivers } = await client.from('drivers').select('name').order('name');
-        const { data: trucks } = await client.from('trucks').select('plate').order('plate');
-        fillSelectOptions('commDriverFilter', (drivers || []).map(d => d.name), 'جميع السائقين');
-        fillSelectOptions('commTruckFilter', (trucks || []).map(t => t.plate), 'جميع الشاحنات');
-        fillSelectOptions('settleDriverFilter', (drivers || []).map(d => d.name), 'جميع السائقين');
-        fillSelectOptions('payoutDriver', (drivers || []).map(d => d.name), 'اختر السائق');
+        const { data: drivers } = await client.from('drivers').select('name, staff_kind').order('name');
+        const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
+        fillSelectOptions('commDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
+        fillSelectOptions('commTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
+        fillSelectOptions('settleDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
+        fillSelectOptions('payoutDriver', tripDriverNameList(drivers), 'اختر السائق');
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر العمولات:', err);
     }
@@ -2469,10 +2469,10 @@ function closeCompleteModal() {
 }
 async function populateFinancialFilters() {
     try {
-        const { data: drivers } = await client.from('drivers').select('name').order('name');
-        const { data: trucks } = await client.from('trucks').select('plate').order('plate');
-        fillSelectOptions('finDriverFilter', (drivers || []).map(d => d.name), 'جميع السائقين');
-        fillSelectOptions('finTruckFilter', (trucks || []).map(t => t.plate), 'جميع الشاحنات');
+        const { data: drivers } = await client.from('drivers').select('name, staff_kind').order('name');
+        const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
+        fillSelectOptions('finDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
+        fillSelectOptions('finTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
 
         const paymentSelect = document.getElementById('finPaymentMethodFilter');
         if (paymentSelect) {
@@ -2924,8 +2924,8 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
 async function initReportFilters() {
     try {
         // 1. جلب الشاحنات والسائقين من قاعدة البيانات Supabase
-        const { data: trucks } = await client.from('trucks').select('plate');
-        const { data: drivers } = await client.from('drivers').select('name');
+        const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind');
+        const { data: drivers } = await client.from('drivers').select('name, staff_kind');
 
         // 2. ربط القوائم بعناصرها في الصفحة
         const truckSelect = document.getElementById('reportTruckFilter');
@@ -2933,12 +2933,12 @@ async function initReportFilters() {
 
         // 3. تعبئة قائمة الشاحنات
         if (truckSelect && trucks) {
-            fillSelectOptions('reportTruckFilter', trucks.map(tr => tr.plate), 'جميع الشاحنات');
+            fillSelectOptions('reportTruckFilter', cargoTruckPlateList(trucks), 'جميع الشاحنات');
         }
 
         // 4. تعبئة قائمة السائقين
         if (driverSelect && drivers) {
-            fillSelectOptions('reportDriverFilter', drivers.map(dr => dr.name), 'جميع السائقين');
+            fillSelectOptions('reportDriverFilter', tripDriverNameList(drivers), 'جميع السائقين');
         }
     } catch (err) {
         console.error("Error loading filter options:", err);
@@ -3133,7 +3133,16 @@ function isTripDriver(row) {
     return String(row?.staff_kind || 'سائق').trim() !== 'موظف';
 }
 
+function tripDriverNameList(rows) {
+    return [...new Set((rows || []).filter(isTripDriver).map(d => String(d.name || '').trim()).filter(Boolean))];
+}
+
+function cargoTruckPlateList(rows) {
+    return [...new Set((rows || []).filter(isCargoTruck).map(t => String(t.plate || '').trim()).filter(Boolean))];
+}
+
 const EXPIRY_SOON_DAYS = 30;
+const EXPIRY_WARN_DAYS = 15;
 let allTrucksById = {};
 let allDriversById = {};
 let allFacilityDocs = [];
@@ -3153,13 +3162,48 @@ function daysUntilDate(dateStr) {
     return Math.round((date - today) / 86400000);
 }
 
+function expiryAlertLevel(days) {
+    if (days === null) return null;
+    if (days <= 0) return 'expired';
+    if (days <= EXPIRY_WARN_DAYS) return 'warn';
+    if (days <= EXPIRY_SOON_DAYS) return 'soon';
+    return null;
+}
+
+function expiryAlertStyle(days) {
+    const level = expiryAlertLevel(days);
+    if (level === 'expired') {
+        return {
+            tone: 'border-rose-300 bg-rose-50 text-rose-800',
+            badge: 'bg-rose-600 text-white',
+            when: days < 0 ? `منتهي/ة منذ ${Math.abs(days)} يوم` : 'منتهي/ة',
+            tag: 'منتهي/ة'
+        };
+    }
+    if (level === 'warn') {
+        return {
+            tone: 'border-orange-400 bg-orange-50 text-orange-900',
+            badge: 'bg-orange-500 text-white',
+            when: `متبقٍ ${days} يوم`,
+            tag: `${days} يوم`
+        };
+    }
+    return {
+        tone: 'border-yellow-400 bg-yellow-50 text-yellow-900',
+        badge: 'bg-yellow-400 text-yellow-900',
+        when: `متبقٍ ${days} يوم`,
+        tag: `${days} يوم`
+    };
+}
+
 function expiryBadgeHtml(dateStr) {
     const days = daysUntilDate(dateStr);
     const label = String(dateStr || '').slice(0, 10);
     if (days === null) return '<span class="text-slate-400">—</span>';
-    if (days < 0) return `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">منتهية ${escapeHtml(label)}</span>`;
-    if (days <= EXPIRY_SOON_DAYS) return `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">تنتهي خلال ${days} يوم</span>`;
-    return `<span class="text-slate-600 font-mono">${escapeHtml(label)}</span>`;
+    const level = expiryAlertLevel(days);
+    if (!level) return `<span class="text-slate-600 font-mono">${escapeHtml(label)}</span>`;
+    const style = expiryAlertStyle(days);
+    return `<span class="${style.tone} px-2 py-0.5 rounded-full text-[10px] font-bold">${style.tag}${days > 0 ? '' : ' ' + escapeHtml(label)}</span>`;
 }
 
 function compactExpiryHtml(items) {
@@ -3214,13 +3258,13 @@ function renderExpiryAlerts(targetId, items, emptyText) {
         return;
     }
     box.innerHTML = items.map(item => {
-        const tone = item.days < 0 ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-amber-200 bg-amber-50 text-amber-800';
-        const when = item.days < 0 ? `منتهية منذ ${Math.abs(item.days)} يوم` : `متبقٍ ${item.days} يوم`;
-        return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${tone} rounded-xl px-3 py-2 flex items-center gap-2">
+        const style = expiryAlertStyle(item.days);
+        return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${style.tone} rounded-xl px-3 py-2 flex items-center gap-2">
             <span class="flex-1 min-w-0">
                 <span class="font-bold">${escapeHtml(item.category)} — ${escapeHtml(item.name)}</span>
-                <span class="block text-[11px] mt-0.5">${escapeHtml(item.label)} (${escapeHtml(item.date)}) — ${when}</span>
+                <span class="block text-[11px] mt-0.5">${escapeHtml(item.label)} (${escapeHtml(item.date)}) — ${style.when}</span>
             </span>
+            <span class="${style.badge} px-2 py-0.5 rounded-full text-[10px] font-black shrink-0">${style.tag}</span>
             <i class="fa-solid fa-chevron-left text-[10px] opacity-60 shrink-0"></i>
         </button>`;
     }).join('');
@@ -3607,7 +3651,8 @@ function switchTab(tabId) {
         const totalTripsEl = document.getElementById('repTotalTrips');
         if (totalTripsEl) totalTripsEl.innerText = totalTrips;
 
-        const filteredDrivers = selectedDriver ? (drivers || []).filter(dr => dr.name === selectedDriver) : (drivers || []);
+        const fleetDrivers = (drivers || []).filter(isTripDriver);
+        const filteredDrivers = selectedDriver ? fleetDrivers.filter(dr => dr.name === selectedDriver) : fleetDrivers;
         const showTruckStrip = Boolean(selectedTruck || selectedDriver);
         const truckStrip = document.getElementById('truckReportStrip');
         const truckCards = document.getElementById('truckReportCards');
@@ -4220,8 +4265,8 @@ function closeEditTripModal() {
 }
 
 async function fillEditFleetOptions(trip) {
-    const { data: trucks } = await client.from('trucks').select('plate, status').order('plate');
-    const { data: drivers } = await client.from('drivers').select('name, status').order('name');
+    const { data: trucks } = await client.from('trucks').select('plate, status, vehicle_kind').order('plate');
+    const { data: drivers } = await client.from('drivers').select('name, status, staff_kind').order('name');
     const truckSelect = document.getElementById('editTripTruck');
     const driverSelect = document.getElementById('editTripDriver');
     const plates = (trucks || []).filter(isCargoTruck).map(t => String(t.plate || '').trim()).filter(Boolean);
