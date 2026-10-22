@@ -230,16 +230,39 @@
             padding: 0.25rem;
         }
         .suggest-option {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 0.15rem;
             width: 100%;
             text-align: right;
-            padding: 0.55rem 0.7rem;
+            padding: 0.2rem 0.25rem 0.2rem 0.35rem;
             border-radius: 0.55rem;
             font-size: 12px;
             font-weight: 700;
             color: #0f172a;
             background: transparent;
         }
+        .suggest-pick {
+            flex: 1;
+            min-w-0;
+            text-align: right;
+            padding: 0.4rem 0.45rem;
+            border-radius: 0.45rem;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .suggest-act {
+            width: 1.65rem;
+            height: 1.65rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.45rem;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+        .suggest-act:hover { background: #e2e8f0; color: #0f172a; }
+        .suggest-act.danger:hover { background: #ffe4e6; color: #e11d48; }
         .suggest-option.is-active,
         .suggest-option:hover { background: #fffbeb; color: #92400e; }
         .trip-detail-link {
@@ -4017,10 +4040,38 @@ function resetTripFilters() {
     filterAndRenderTrips();
 }
 const tripSuggestions = { client: [], city: [] };
+const HIDDEN_SUGGESTIONS_KEY = 'gstco_hidden_suggestions';
 let suggestMenu = null;
 let suggestInput = null;
 let suggestItems = [];
 let suggestIndex = -1;
+
+function loadHiddenSuggestions() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(HIDDEN_SUGGESTIONS_KEY) || '{}');
+        return {
+            client: new Set(raw.client || []),
+            city: new Set(raw.city || [])
+        };
+    } catch (err) {
+        return { client: new Set(), city: new Set() };
+    }
+}
+
+function saveHiddenSuggestions() {
+    localStorage.setItem(HIDDEN_SUGGESTIONS_KEY, JSON.stringify({
+        client: [...hiddenSuggestions.client],
+        city: [...hiddenSuggestions.city]
+    }));
+}
+
+const hiddenSuggestions = loadHiddenSuggestions();
+
+function revealSuggestion(kind, value) {
+    const name = String(value || '').trim();
+    if (!name || !hiddenSuggestions[kind]) return;
+    if (hiddenSuggestions[kind].delete(name)) saveHiddenSuggestions();
+}
 
 function uniqueSorted(values) {
     return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))]
@@ -4038,8 +4089,8 @@ async function loadTripSuggestions() {
             clients.push(trip.client_name);
             cities.push(trip.from_city, trip.to_city);
         });
-        tripSuggestions.client = uniqueSorted(clients);
-        tripSuggestions.city = uniqueSorted(cities);
+        tripSuggestions.client = uniqueSorted(clients).filter(name => !hiddenSuggestions.client.has(name));
+        tripSuggestions.city = uniqueSorted(cities).filter(name => !hiddenSuggestions.city.has(name));
         if (suggestInput && document.activeElement === suggestInput) showTripSuggestions(suggestInput);
     } catch (err) {
         console.error('تعذر تحميل اقتراحات العملاء والمدن:', err);
@@ -4088,6 +4139,74 @@ function chooseSuggestion(value) {
     hideTripSuggestions();
 }
 
+function currentSuggestKind() {
+    return suggestInput?.dataset.suggest || 'client';
+}
+
+function hideTripSuggestion(value) {
+    const kind = currentSuggestKind();
+    const name = String(value || '').trim();
+    if (!name) return;
+    const label = kind === 'city' ? 'هذه المدينة' : 'هذا العميل';
+    if (!confirm(`حذف «${name}» من قائمة الاقتراحات؟\nلن يُحذف من الرحلات المسجّلة، ويمكنك إعادته بكتابته وحفظ رحلة.`)) return;
+    hiddenSuggestions[kind].add(name);
+    saveHiddenSuggestions();
+    const input = suggestInput;
+    hideTripSuggestions();
+    loadTripSuggestions().then(() => { if (input) showTripSuggestions(input); });
+}
+
+async function editTripSuggestion(value) {
+    const kind = currentSuggestKind();
+    const oldName = String(value || '').trim();
+    if (!oldName) return;
+    const next = prompt(kind === 'city' ? 'الاسم الصحيح للمدينة:' : 'الاسم الصحيح للعميل:', oldName);
+    if (next === null) return;
+    const newName = String(next).trim();
+    if (!newName || newName === oldName) return;
+    const { data: rows, error: fetchErr } = await client.from('trips').select('id, status, client_name, from_city, to_city');
+    if (fetchErr) {
+        alert('تعذر تعديل الاسم في الرحلات: ' + fetchErr.message);
+        return;
+    }
+    const ids = (rows || []).filter(trip => {
+        if (isSettlementRecord(trip) || isCommissionPayout(trip)) return false;
+        if (kind === 'client') return String(trip.client_name || '').trim() === oldName;
+        return String(trip.from_city || '').trim() === oldName || String(trip.to_city || '').trim() === oldName;
+    }).map(trip => trip.id);
+    if (ids.length) {
+        const payload = kind === 'client' ? { client_name: newName } : {};
+        if (kind === 'city') {
+            const fromIds = (rows || []).filter(trip => ids.includes(trip.id) && String(trip.from_city || '').trim() === oldName).map(trip => trip.id);
+            const toIds = (rows || []).filter(trip => ids.includes(trip.id) && String(trip.to_city || '').trim() === oldName).map(trip => trip.id);
+            if (fromIds.length) {
+                const { error } = await client.from('trips').update({ from_city: newName }).in('id', fromIds);
+                if (error) { alert('تعذر تعديل الاسم في الرحلات: ' + error.message); return; }
+            }
+            if (toIds.length) {
+                const { error } = await client.from('trips').update({ to_city: newName }).in('id', toIds);
+                if (error) { alert('تعذر تعديل الاسم في الرحلات: ' + error.message); return; }
+            }
+        } else {
+            const { error } = await client.from('trips').update(payload).in('id', ids);
+            if (error) {
+                alert('تعذر تعديل الاسم في الرحلات: ' + error.message);
+                return;
+            }
+        }
+    }
+    hiddenSuggestions[kind].delete(oldName);
+    hiddenSuggestions[kind].delete(newName);
+    saveHiddenSuggestions();
+    if (suggestInput) suggestInput.value = newName;
+    const input = suggestInput;
+    hideTripSuggestions();
+    if (typeof loadTripsData === 'function') loadTripsData();
+    await loadTripSuggestions();
+    if (input) showTripSuggestions(input);
+    alert('تم تصحيح الاسم في الرحلات والاقتراحات.');
+}
+
 function showTripSuggestions(input) {
     const source = tripSuggestions[input.dataset.suggest] || [];
     const matches = matchingSuggestions(source, input.value);
@@ -4101,21 +4220,31 @@ function showTripSuggestions(input) {
         suggestMenu.setAttribute('role', 'listbox');
         document.body.appendChild(suggestMenu);
         suggestMenu.addEventListener('mousedown', (event) => {
-            const button = event.target.closest('.suggest-option');
-            if (!button) return;
+            const row = event.target.closest('.suggest-option');
+            if (!row) return;
             event.preventDefault();
-            chooseSuggestion(suggestItems[Number(button.dataset.index)]);
+            const value = suggestItems[Number(row.dataset.index)];
+            if (event.target.closest('.suggest-edit')) {
+                editTripSuggestion(value);
+                return;
+            }
+            if (event.target.closest('.suggest-hide')) {
+                hideTripSuggestion(value);
+                return;
+            }
+            chooseSuggestion(value);
         });
     }
     suggestInput = input;
     suggestItems = matches;
     suggestIndex = -1;
     suggestMenu.innerHTML = matches.map((value, index) =>
-        `<button type="button" class="suggest-option" data-index="${index}"></button>`
+        `<div class="suggest-option" data-index="${index}" role="option">
+            <button type="button" class="suggest-pick">${escapeHtml(value)}</button>
+            <button type="button" class="suggest-act suggest-edit" title="تعديل الاسم"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button type="button" class="suggest-act danger suggest-hide" title="حذف من الاقتراحات"><i class="fa-solid fa-trash-can"></i></button>
+        </div>`
     ).join('');
-    [...suggestMenu.children].forEach((button, index) => {
-        button.textContent = matches[index];
-    });
     placeSuggestMenu(input);
     suggestMenu.classList.remove('hidden');
 }
@@ -4212,6 +4341,9 @@ function closeAddTripModal() {
     }]);
 
     if (!error) {
+        revealSuggestion('client', client_name);
+        revealSuggestion('city', from_city);
+        revealSuggestion('city', to_city);
         if (paid_amount > 0) {
             const settlement = await recordSettlementPayment(trip_no, paid_amount, '', departure_date);
             if (settlement.error) console.error('تعذر حفظ دفعة الإنشاء:', settlement.error);
@@ -4416,6 +4548,9 @@ async function saveEditTrip(e) {
         }
     }
 
+    revealSuggestion('client', client_name);
+    revealSuggestion('city', from_city);
+    revealSuggestion('city', to_city);
     closeEditTripModal();
     alert('تم حفظ تعديل الرحلة ' + trip.trip_no);
     if (typeof loadAllData === 'function') loadAllData();
