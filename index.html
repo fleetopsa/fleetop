@@ -4821,8 +4821,8 @@ function switchTab(tabId) {
             const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
             const availableDrivers = drivers ? drivers.filter(d => isTripDriver(d) && d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
 
-            truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` + 
-                readyTrucks.map(t => `<option value="${t.plate}">${t('ui.plateLabel')}: ${t.plate} (${t.model || '—'})</option>`).join('');
+            truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
+                readyTrucks.map(truck => `<option value="${truck.plate}">${t('ui.plateLabel')}: ${truck.plate} (${truck.model || '—'})</option>`).join('');
 
             driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>` +  
                 availableDrivers.map(d => `<option value="${d.name}">${d.name} (${d.phone})</option>`).join('');
