@@ -732,12 +732,12 @@
             </main>
        <!-- قسم الرحلات -->
 <main id="tripsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
-        <div class="flex flex-col lg:flex-row lg:items-end gap-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 flex-1">
+    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 mb-3">
+        <div class="flex flex-col lg:flex-row lg:items-end gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 flex-1">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.tripStatus">حالة الرحلة</label>
-                    <select id="filterTripStatus" onchange="filterAndRenderTrips()" class="w-full p-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <select id="filterTripStatus" onchange="filterAndRenderTrips()" class="w-full p-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                         <option value="all" data-i18n="ui.allTrips">جميع الرحلات</option>
                         <option value="جارية" data-i18n="ui.activeOnly">الرحلات الجارية فقط</option>
                         <option value="مكتملة" data-i18n="ui.completedOnly">الرحلات المكتملة فقط</option>
@@ -746,40 +746,31 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
-                    <select id="filterPaymentStatus" onchange="filterAndRenderTrips()" class="w-full p-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <select id="filterPaymentStatus" onchange="filterAndRenderTrips()" class="w-full p-2 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                         <option value="all" data-i18n="ui.allPay">جميع حالات السداد</option>
                         <option value="غير مسدد" data-i18n="ui.unpaid">غير مسدد</option>
                         <option value="سداد جزئي" data-i18n="ui.partial">سداد جزئي</option>
                         <option value="مسدد" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
                     </select>
                 </div>
-                <div class="flex flex-col">
-                    <span class="block text-[11px] font-bold mb-1 invisible" aria-hidden="true">الارتفاع</span>
-                    <div class="flex-1 bg-slate-50 px-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
-                        <span class="text-[11px] text-slate-500 font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-route text-amber-500"></i>
-                            <span data-i18n="ui.fullTripCount">عدد الرحلات كاملة</span>
-                        </span>
-                        <span id="filterResultCount" class="text-sm font-bold text-slate-900 font-mono leading-none">0</span>
-                    </div>
+                <div class="bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex items-center justify-between gap-3 min-h-[2.5rem]">
+                    <span class="text-[11px] text-slate-500 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-route text-amber-500"></i>
+                        <span data-i18n="ui.fullTripCount">عدد الرحلات كاملة</span>
+                    </span>
+                    <span id="filterResultCount" class="text-sm font-bold text-slate-900 font-mono leading-none">0</span>
                 </div>
-                <div class="flex flex-col">
-                    <span class="block text-[11px] font-bold mb-1 invisible" aria-hidden="true">الارتفاع</span>
-                    <div class="flex-1 bg-rose-50 px-3 rounded-xl border border-rose-100 flex items-center justify-between gap-3">
-                        <span class="text-[11px] text-rose-700 font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                            <span data-i18n="ui.unpaidAmounts">المبالغ الغير مسددة</span>
-                        </span>
-                        <span id="unpaidRemainingTotal" class="text-sm font-bold text-rose-700 font-mono leading-none">0.00</span>
-                    </div>
+                <div class="bg-rose-50 px-3 py-2 rounded-xl border border-rose-100 flex items-center justify-between gap-3 min-h-[2.5rem]">
+                    <span class="text-[11px] text-rose-700 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span data-i18n="ui.unpaidAmounts">المبالغ الغير مسددة</span>
+                    </span>
+                    <span id="unpaidRemainingTotal" class="text-sm font-bold text-rose-700 font-mono leading-none">0.00</span>
                 </div>
             </div>
-            <div class="flex flex-col justify-end gap-2 shrink-0 self-end min-w-[8.5rem]">
-                <div id="resetCounterContainerTrips" class="hidden"></div>
-                <button onclick="resetTripFilters()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
-                </button>
-            </div>
+            <button onclick="resetTripFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition whitespace-nowrap flex items-center justify-center gap-1.5 shrink-0">
+                <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+            </button>
         </div>
     </div>
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
@@ -787,9 +778,12 @@
             <h3 class="font-bold text-slate-900 text-sm flex items-center">
                 <i class="fa-solid fa-list-check text-amber-500 ml-2"></i> <span data-i18n="ui.tripLog">سجل الرحلات</span>
             </h3>
-            <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2 shrink-0">
-                <i class="fa-solid fa-circle-plus"></i> <span data-i18n="ui.addTrip">إضافة رحلة جديدة</span>
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+                <div id="resetCounterContainerTrips" class="hidden"></div>
+                <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus"></i> <span data-i18n="ui.addTrip">إضافة رحلة جديدة</span>
+                </button>
+            </div>
         </div>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
@@ -3228,7 +3222,7 @@ function renderAdminControls() {
     if (isAdminUser()) {
         container.classList.remove('hidden');
         container.innerHTML = `
-            <button onclick="resetTripCounter()" class="w-full bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap" title="${t('ui.resetCounter')}">
+            <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap" title="${t('ui.resetCounter')}">
                 <i class="fa-solid fa-rotate-right"></i> ${t('ui.resetCounter')}
             </button>
         `;
@@ -3956,7 +3950,7 @@ const I18N = {
         'ui.plateLabel': 'لوحة',
         'ui.driverLabel': 'السائق',
         'ui.checkingExpiryEmpty': 'لا توجد وثائق منتهية أو قاربت على الانتهاء خلال 30 يوماً.',
-        'ui.resetCounter': 'تصفير العداد',
+        'ui.resetCounter': 'تصفير عداد الرحلات',
         'ui.chooseDriver': 'اختر السائق',
         'ui.chooseTruck': 'اختر الشاحنة',
         'ui.noFilterTrips': 'لا توجد رحلات تطابق خيارات الفلترة الحالية',
@@ -4219,7 +4213,7 @@ const I18N = {
         'ui.plateLabel': 'Plate',
         'ui.driverLabel': 'Driver',
         'ui.checkingExpiryEmpty': 'No documents expired or due within 30 days.',
-        'ui.resetCounter': 'Reset counter',
+        'ui.resetCounter': 'Reset trip counter',
         'v.جارية': 'Active',
         'v.مكتملة': 'Completed',
         'v.منتهية': 'Completed',
