@@ -413,7 +413,7 @@
     </div>
 
     <!-- شاشة تسجيل الدخول -->
-    <div id="loginSection" class="relative z-10 max-w-md w-full rounded-3xl shadow-2xl p-8 border" style="background:rgba(11,42,74,0.72);border-color:rgba(196,163,90,0.45);backdrop-filter:blur(18px);">
+    <div id="loginSection" class="relative z-10 max-w-md w-full rounded-3xl shadow-2xl p-8 border" style="background:rgba(11,42,74,0.88);border-color:rgba(196,163,90,0.45);">
         <div class="flex justify-end mb-3">
             <div class="flex rounded-xl border overflow-hidden text-[11px] font-black" style="border-color:rgba(196,163,90,0.45);">
                 <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-3 py-1.5 text-[#c4a35a]">عربي</button>
@@ -431,16 +431,16 @@
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
-                <input type="text" id="usernameInput" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
+                <input type="text" id="usernameInput" name="username" autocomplete="username" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
-                <input type="password" id="passwordInput" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+                <input type="password" id="passwordInput" name="password" autocomplete="current-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
             </div>
             <div id="loginError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20" data-i18n="login.error">
                 خطأ في اسم المستخدم أو كلمة المرور.
             </div>
-            <button type="submit" class="w-full font-bold py-3.5 rounded-xl shadow-md transition" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.submit">
+            <button type="submit" id="loginSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.submit">
                 تسجيل الدخول للنظام
             </button>
         </form>
@@ -1954,8 +1954,24 @@
         });
 
         let currentLoggedInUser = null;
+        let loginBusy = false;
         let appUsersById = {};
         const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
+
+        function setLoginBusy(busy) {
+            loginBusy = !!busy;
+            const btn = document.getElementById('loginSubmitBtn');
+            const user = document.getElementById('usernameInput');
+            const pass = document.getElementById('passwordInput');
+            if (btn) {
+                btn.disabled = loginBusy;
+                btn.textContent = loginBusy
+                    ? (currentLang === 'en' ? 'Signing in…' : 'جاري التحقق…')
+                    : t('login.submit');
+            }
+            if (user) user.disabled = loginBusy;
+            if (pass) pass.disabled = loginBusy;
+        }
 
 function isAdminUser(user = currentLoggedInUser) {
     if (!user) return false;
@@ -1984,9 +2000,11 @@ async function loadAppProfile(authId) {
 
       async function handleLogin(e) {
     e.preventDefault();
+    if (loginBusy) return;
     const u = document.getElementById('usernameInput').value.trim();
     const p = document.getElementById('passwordInput').value.trim();
     document.getElementById('loginError').classList.add('hidden');
+    setLoginBusy(true);
 
     try {
         currentLoggedInUser = null;
@@ -2013,6 +2031,8 @@ async function loadAppProfile(authId) {
     } catch (err) {
         console.error("Login error:", err);
         showLoginError('حدث خطأ في الاتصال، حاول مرة أخرى.');
+    } finally {
+        if (!currentLoggedInUser) setLoginBusy(false);
     }
 }
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
@@ -3081,24 +3101,28 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     if (refreshIcon) refreshIcon.classList.add('fa-spin');
     if (refreshLabel) refreshLabel.textContent = t('header.refreshing');
 
-    console.log("جاري تحديث كافة البيانات...");
     try {
-        try { if (typeof loadCompanySettings === 'function') await loadCompanySettings(); } catch (e) { console.error(e); }
-        try { if (typeof loadDashboardData === 'function') await loadDashboardData(); } catch (e) { console.error(e); }
-        try { if (typeof loadTripsData === 'function') await loadTripsData(); } catch (e) { console.error(e); }
-        try { if (typeof loadTrucks === 'function') await loadTrucks(); } catch (e) { console.error(e); }
-        try { if (typeof loadDrivers === 'function') await loadDrivers(); } catch (e) { console.error(e); }
-        try { if (typeof loadFacilityDocuments === 'function') await loadFacilityDocuments(); } catch (e) { console.error(e); }
-        try { if (typeof loadUsers === 'function') await loadUsers(); } catch (e) { console.error(e); }
-        try { if (typeof loadDropdowns === 'function') await loadDropdowns(); } catch (e) { console.error(e); }
-        try { if (typeof renderAdminControls === 'function') renderAdminControls(); } catch (e) { console.error(e); }
-        try { if (typeof initReportFilters === 'function') await initReportFilters(); } catch (e) { console.error(e); }
-        try { if (typeof generateReport === 'function') await generateReport(); } catch (e) { console.error(e); }
-        try { if (typeof generateFinancialReport === 'function') await generateFinancialReport(); } catch (e) { console.error(e); }
-        try { if (typeof populateCommissionFilters === 'function') await populateCommissionFilters(); } catch (e) { console.error(e); }
-        try { if (typeof generateCommissionReport === 'function') await generateCommissionReport(); } catch (e) { console.error(e); }
-        try { if (typeof generateCommissionSettlement === 'function') await generateCommissionSettlement(); } catch (e) { console.error(e); }
-        console.log("تم التحديث بنجاح.");
+        const core = [];
+        if (typeof loadCompanySettings === 'function') core.push(loadCompanySettings());
+        if (typeof loadDashboardData === 'function') core.push(loadDashboardData());
+        if (typeof loadTripsData === 'function') core.push(loadTripsData());
+        if (typeof loadTrucks === 'function') core.push(loadTrucks());
+        if (typeof loadDrivers === 'function') core.push(loadDrivers());
+        if (typeof loadFacilityDocuments === 'function') core.push(loadFacilityDocuments());
+        if (typeof isAdminUser === 'function' && isAdminUser() && typeof loadUsers === 'function') core.push(loadUsers());
+        const results = await Promise.allSettled(core);
+        results.forEach(result => { if (result.status === 'rejected') console.error(result.reason); });
+        if (typeof renderAdminControls === 'function') renderAdminControls();
+
+        Promise.allSettled([
+            typeof initReportFilters === 'function' ? initReportFilters() : null,
+            typeof generateReport === 'function' ? generateReport() : null,
+            typeof generateFinancialReport === 'function' ? generateFinancialReport() : null,
+            typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => Promise.allSettled([
+                typeof generateCommissionReport === 'function' ? generateCommissionReport() : null,
+                typeof generateCommissionSettlement === 'function' ? generateCommissionSettlement() : null
+            ])) : null
+        ]).catch(err => console.error(err));
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         if (refreshLabel) refreshLabel.textContent = t('header.refresh');
@@ -4358,10 +4382,11 @@ function tf(key, n) {
 }
 
 function applyI18n() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
+    const scope = (currentLoggedInUser ? document : document.getElementById('loginSection')) || document;
+    scope.querySelectorAll('[data-i18n]').forEach(el => {
         el.textContent = t(el.dataset.i18n);
     });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    scope.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         el.placeholder = t(el.dataset.i18nPlaceholder);
     });
     document.querySelectorAll('.lang-ar-btn').forEach(btn => {
@@ -4393,7 +4418,7 @@ function setAppLang(lang) {
         if (typeof renderAdminControls === 'function') renderAdminControls();
         if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
-        if (document.body.classList.contains('dashboard-active') && typeof loadAllData === 'function') loadAllData();
+        if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
     }
 }
 
@@ -4849,11 +4874,6 @@ async function loadTripsData() {
     try {
         const { data: trips, error } = await client.from('trips').select('*').order('id', { ascending: false });
         
-        // --- سطر الفحص الجديد ---
-        console.log("البيانات الراجعة من جدول الرحلات:", trips);
-        console.log("الخطأ إن وجد:", error);
-        // -----------------------
-
         if (error) throw error;
 
         const rows = await reconcileDuplicateSettlements(trips);
@@ -6147,11 +6167,12 @@ async function loadUsers() {
             const tabSettingsBtn = document.getElementById('tabSettingsBtn');
             if (tabSettingsBtn) tabSettingsBtn.classList.toggle('hidden', user.role !== 'admin');
             setAppLang(currentLang);
-            loadCompanySettings();
+            if (typeof loadAllData === 'function') loadAllData();
         }
 
         async function restoreSession() {
             try {
+                if (loginBusy) return;
                 const { data: sessionData } = await client.auth.getSession();
                 const authUser = sessionData?.session?.user;
                 if (!authUser) {
@@ -6211,7 +6232,6 @@ async function loadUsers() {
                 });
             }
             setAppLang(currentLang);
-            initReportFilters();
             restoreSession();
         });
         document.addEventListener('keydown', (event) => {
