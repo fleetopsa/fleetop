@@ -28,6 +28,15 @@
         .stat-card-money h3, .stat-card-trips h3 { white-space: nowrap; }
         .stat-card-trips .stat-label { white-space: nowrap; }
         .driver-identity-cell { vertical-align: middle; text-align: center; }
+        .ops-driver-report { table-layout: fixed; width: 100%; }
+        .ops-driver-report th, .ops-driver-report td { vertical-align: top; }
+        .ops-driver-report th:nth-child(1), .ops-driver-report td.ops-identity { width: 16%; }
+        .ops-driver-report th:nth-child(2), .ops-driver-report td.ops-count { width: 8%; text-align: center; }
+        .ops-driver-report th:nth-child(3), .ops-driver-report td.ops-tripno { width: 12%; }
+        .ops-driver-report th:nth-child(4), .ops-driver-report td.ops-plate { width: 12%; }
+        .ops-driver-report th:nth-child(5), .ops-driver-report td.ops-client { width: 16%; }
+        .ops-driver-report th:nth-child(6), .ops-driver-report td.ops-route { width: 22%; }
+        .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         @container (min-width: 640px) {
             .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
         }
@@ -876,15 +885,17 @@
                     <div class="mb-4">
                         <h4 id="driverReportHeading" class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.driverReportHead">تقرير السائقين التفصيلي والعمولات المستحقة</span></h4>
                         <div class="overflow-x-auto">
-                           <table class="w-full text-right text-xs">
+                           <table class="ops-driver-report w-full text-right text-xs">
     <thead class="bg-slate-800 text-slate-200 uppercase">
         <tr>
             <th class="p-3" id="driverReportIdentityHead" data-i18n="th.driverPhone">اسم السائق ورقم الجوال</th>
             <th class="p-3 text-center" data-i18n="th.completedTrips">الرحلات المنجزة</th>
-            <th colspan="5" class="p-3 text-center font-bold text-sm" data-i18n="th.tripDetails">
-        تفاصيل الرحلات 
-    
-</tr>
+            <th class="p-3" data-i18n="th.tripNo">رقم الرحلة</th>
+            <th class="p-3" data-i18n="th.plate">اللوحة</th>
+            <th class="p-3" data-i18n="th.clientName">اسم العميل</th>
+            <th class="p-3" data-i18n="th.route">خط السير</th>
+            <th class="p-3" data-i18n="th.commAmount">مبلغ العمولة</th>
+        </tr>
     </thead>
     <tbody id="driverReportTable">
         <!-- يتم تعبئتها برمجياً -->
@@ -2181,7 +2192,7 @@ async function generateCommissionReport() {
         const { data: trips, error } = await query;
         if (error) throw error;
 
-        const activeTrips = (trips || []).filter(isBillableTrip);
+        const activeTrips = sortTripsByNoDesc((trips || []).filter(isCompletedTrip));
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const earnedEl = document.getElementById('commTotalAmountDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
@@ -2391,7 +2402,7 @@ async function generateCommissionSettlement() {
         const { data: trips, error } = await query;
         if (error) throw error;
 
-        const accountTrips = (trips || []).filter(isBillableTrip);
+        const accountTrips = sortTripsByNoDesc((trips || []).filter(isCompletedTrip));
         const payouts = (trips || []).filter(isCommissionPayout);
         const earned = accountTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const paid = payouts.reduce((sum, trip) => sum + commissionAmount(trip), 0);
@@ -2474,7 +2485,7 @@ async function driverCommissionBalance(driverName) {
     (data || []).forEach(trip => {
         const amount = commissionAmount(trip);
         if (isCommissionPayout(trip)) paid += amount;
-        else if (!isCancelledTrip(trip) && !isSettlementRecord(trip)) earned += amount;
+        else if (isCompletedTrip(trip)) earned += amount;
     });
     return earned - paid;
 }
@@ -2612,8 +2623,10 @@ async function openCommissionAndRevenueReport() {
             if (!driverStats[driver]) {
                 driverStats[driver] = { tripsCount: 0, totalCommission: 0, phone: trip.driver_phone || '-' };
             }
-            driverStats[driver].tripsCount += 1;
-            driverStats[driver].totalCommission += commission;
+            if (isCompletedTrip(trip)) {
+                driverStats[driver].tripsCount += 1;
+                driverStats[driver].totalCommission += commission;
+            }
 
             // تجميع إيرادات الشاحنات
             if (!truckStats[truck]) {
@@ -2854,6 +2867,19 @@ function isCancelledTrip(trip) {
 function isCompletedTrip(trip) {
     const status = String(trip?.status || '').trim();
     return status === 'مكتملة' || status === 'منتهية';
+}
+
+function tripNoValue(trip) {
+    const n = parseInt(String(trip?.trip_no || '').replace(/\D/g, ''), 10);
+    return Number.isFinite(n) ? n : 0;
+}
+
+function sortTripsByNoDesc(list) {
+    return [...(list || [])].sort((a, b) => {
+        const diff = tripNoValue(b) - tripNoValue(a);
+        if (diff) return diff;
+        return String(b.trip_no || '').localeCompare(String(a.trip_no || ''), 'en', { numeric: true });
+    });
 }
 
 function isCommissionPayout(trip) {
@@ -3253,12 +3279,13 @@ async function initReportFilters() {
                             activeTripsList.push(t);
                         }
                     });
+                    activeTripsList = sortTripsByNoDesc(activeTripsList);
                 }
 
                 document.getElementById('dashTotalRevenue').innerHTML = formatSAR(totalRev);
                 document.getElementById('dashCollectedAmount').innerHTML = formatSAR(collected);
                 document.getElementById('dashRemainingAmount').innerHTML = formatSAR(remaining);
-                document.getElementById('dashTotalTrips').innerText = trips ? trips.filter(isBillableTrip).length : 0;
+                document.getElementById('dashTotalTrips').innerText = trips ? trips.filter(isCompletedTrip).length : 0;
 
                 const fleetTrucks = trucks ? trucks.filter(isCargoTruck) : [];
                 const totalTrucks = fleetTrucks.length;
@@ -4749,7 +4776,7 @@ function switchTab(tabId) {
         const { data: trucks } = await client.from('trucks').select('*');
         const { data: drivers } = await client.from('drivers').select('*');
 
-        let activeTrips = trips ? trips.filter(isBillableTrip) : [];
+        let activeTrips = sortTripsByNoDesc(trips ? trips.filter(isCompletedTrip) : []);
         let totalTrips = activeTrips.length;
 
         const totalTripsEl = document.getElementById('repTotalTrips');
@@ -4785,31 +4812,36 @@ function switchTab(tabId) {
             }
         }
 
-        const tripDetailsTable = (list) => {
-            if (!list.length) return '<span class="text-slate-400 text-xs">لا توجد رحلات مسجلة في هذه الفترة</span>';
-            const rows = list.map(dt => `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-2 text-right font-bold text-amber-600 font-mono">${dt.trip_no || '---'}</td>
-                    <td class="p-2 text-right font-bold text-slate-800 font-mono">${dt.truck_plate || '---'}</td>
-                    <td class="p-2 text-right font-bold text-slate-900">${dt.client_name || '---'}</td>
-                    <td class="p-2 text-right text-slate-600 font-sans">${tripRouteText(dt)}</td>
-                    <td class="p-2 text-right font-bold text-emerald-700 font-mono">${formatSAR(dt.driver_commission || dt.commission || 0)}</td>
+        const opsTripCells = (dt) => `
+            <td class="p-2 ops-tripno font-bold text-amber-600 font-mono">${escapeHtml(dt.trip_no || '---')}</td>
+            <td class="p-2 ops-plate font-bold text-slate-800 font-mono">${escapeHtml(dt.truck_plate || '---')}</td>
+            <td class="p-2 ops-client font-bold text-slate-900">${escapeHtml(dt.client_name || '---')}</td>
+            <td class="p-2 ops-route text-slate-600">${escapeHtml(tripRouteText(dt))}</td>
+            <td class="p-2 ops-comm font-bold text-emerald-700 font-mono">${formatSAR(commissionAmount(dt))}</td>
+        `;
+        const renderOpsGroupRows = (identityHtml, trips, index) => {
+            const list = sortTripsByNoDesc(trips);
+            const span = Math.max(list.length, 1);
+            const band = index % 2 ? 'bg-amber-50/60' : 'bg-white';
+            const gap = index === 0 ? '' : `<tr class="h-2 bg-slate-100"><td colspan="7" class="p-0"></td></tr>`;
+            if (!list.length) {
+                return gap + `
+                    <tr class="${band} border-b border-slate-200">
+                        <td rowspan="1" class="ops-identity p-4 align-middle border-l border-slate-200">${identityHtml}</td>
+                        <td rowspan="1" class="ops-count p-4 align-middle font-black text-amber-600 font-mono text-lg border-l border-slate-200">0</td>
+                        <td colspan="5" class="p-3 text-slate-400">لا توجد رحلات مسجلة في هذه الفترة</td>
+                    </tr>
+                `;
+            }
+            return gap + list.map((dt, rowIndex) => `
+                <tr class="${band} border-b border-slate-100">
+                    ${rowIndex === 0 ? `
+                        <td rowspan="${span}" class="ops-identity p-4 align-middle border-l border-slate-200">${identityHtml}</td>
+                        <td rowspan="${span}" class="ops-count p-4 align-middle font-black text-amber-600 font-mono text-lg border-l border-slate-200">${list.length}</td>
+                    ` : ''}
+                    ${opsTripCells(dt)}
                 </tr>
             `).join('');
-            return `
-                <table class="w-full text-right text-[11px] border-collapse bg-white rounded-lg overflow-hidden border border-slate-200">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                            <th class="p-2 font-bold">${t('th.tripNo')}</th>
-                            <th class="p-2 font-bold">${t('th.plate')}</th>
-                            <th class="p-1.5 font-bold">${t('th.clientName')}</th>
-                            <th class="p-1.5 font-bold">${t('th.route')}</th>
-                            <th class="p-1.5 font-bold">${t('th.commAmount')}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 font-mono">${rows}</tbody>
-                </table>
-            `;
         };
 
         const identityHead = document.getElementById('driverReportIdentityHead');
@@ -4845,39 +4877,24 @@ function switchTab(tabId) {
                 });
                 const plates = [...groups.keys()].sort((a, b) => groups.get(b).length - groups.get(a).length);
                 if (!plates.length) {
-                    driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+                    driverTable.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
                 } else {
-                    driverTable.innerHTML = plates.map((plate, index) => `
-                        <tr class="border-b-4 border-slate-200 ${index % 2 ? 'bg-amber-50/60' : 'bg-white'}">
-                            <td class="driver-identity-cell p-4 border-l border-slate-200">
-                                <div class="text-[10px] font-bold text-slate-400">${t('ui.truck')}</div>
-                                <div class="font-black text-slate-900 font-mono text-sm mt-0.5">${plate}</div>
-                            </td>
-                            <td class="driver-identity-cell p-4 font-black text-amber-600 font-mono text-lg border-l border-slate-200">${groups.get(plate).length}</td>
-                            <td class="p-3 align-top">${tripDetailsTable(groups.get(plate))}</td>
-                        </tr>
-                    `).join('');
+                    driverTable.innerHTML = plates.map((plate, index) => renderOpsGroupRows(`
+                        <div class="text-[10px] font-bold text-slate-400">${t('ui.truck')}</div>
+                        <div class="font-black text-slate-900 font-mono text-sm mt-0.5">${escapeHtml(plate)}</div>
+                    `, groups.get(plate), index)).join('');
                 }
             } else {
                 const driversToShow = selectedTruck
                     ? filteredDrivers.filter(dr => activeTrips.some(t => t.driver_name === dr.name))
                     : filteredDrivers;
                 if (driversToShow.length > 0) {
-                    driverTable.innerHTML = driversToShow.map(dr => {
-                        const drTrips = activeTrips.filter(t => t.driver_name === dr.name);
-                        return `
-                            <tr class="border-b border-slate-200 hover:bg-slate-50/50 transition">
-                                <td class="driver-identity-cell p-4 border-l border-slate-200 bg-slate-50/30">
-                                    <div class="font-bold text-slate-900 text-sm">${dr.name}</div>
-                                    <div class="text-xs text-slate-500 font-mono mt-0.5">${dr.phone || ''}</div>
-                                </td>
-                                <td class="driver-identity-cell p-4 font-bold text-amber-600 font-mono text-base border-l border-slate-200">${drTrips.length}</td>
-                                <td class="p-3 align-top bg-white">${tripDetailsTable(drTrips)}</td>
-                            </tr>
-                        `;
-                    }).join('');
+                    driverTable.innerHTML = driversToShow.map((dr, index) => renderOpsGroupRows(`
+                        <div class="font-bold text-slate-900 text-sm">${escapeHtml(dr.name || '')}</div>
+                        <div class="text-xs text-slate-500 font-mono mt-0.5">${escapeHtml(dr.phone || '')}</div>
+                    `, activeTrips.filter(t => t.driver_name === dr.name), index)).join('');
                 } else {
-                    driverTable.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+                    driverTable.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
                 }
             }
         }
