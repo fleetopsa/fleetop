@@ -2061,11 +2061,80 @@ function fillSelectOptions(selectId, items, allLabel) {
     if (current && uniqueItems.includes(current)) select.value = current;
 }
 
+function setFilterValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+}
+
+function clearAllPageFilters() {
+    setFilterValue('filterTripStatus', 'all');
+    setFilterValue('filterPaymentStatus', 'all');
+    setFilterValue('reportStartDate', '');
+    setFilterValue('reportEndDate', '');
+    setFilterValue('reportTruckFilter', '');
+    setFilterValue('reportDriverFilter', '');
+    setFilterValue('finStartDate', '');
+    setFilterValue('finEndDate', '');
+    setFilterValue('finTruckFilter', '');
+    setFilterValue('finDriverFilter', '');
+    setFilterValue('finPaymentMethodFilter', '');
+    setFilterValue('commStartDate', '');
+    setFilterValue('commEndDate', '');
+    setFilterValue('commTruckFilter', '');
+    setFilterValue('commDriverFilter', '');
+    setFilterValue('settleStartDate', '');
+    setFilterValue('settleEndDate', '');
+    setFilterValue('settleDriverFilter', '');
+    setFilterValue('staffJobFilter', '');
+}
+
+function resetFiltersForScreen(tabId) {
+    const id = String(tabId || '');
+    if (id === 'trips' || id === 'tripsSection') {
+        setFilterValue('filterTripStatus', 'all');
+        setFilterValue('filterPaymentStatus', 'all');
+        return;
+    }
+    if (id === 'reports' || id === 'reportsSection') {
+        setFilterValue('reportStartDate', '');
+        setFilterValue('reportEndDate', '');
+        setFilterValue('reportTruckFilter', '');
+        setFilterValue('reportDriverFilter', '');
+        return;
+    }
+    if (id === 'financialOverviewSection' || id === 'financialDetailsSection') {
+        setFilterValue('finStartDate', '');
+        setFilterValue('finEndDate', '');
+        setFilterValue('finTruckFilter', '');
+        setFilterValue('finDriverFilter', '');
+        setFilterValue('finPaymentMethodFilter', '');
+        return;
+    }
+    if (id === 'commissionReportSection') {
+        setFilterValue('commStartDate', '');
+        setFilterValue('commEndDate', '');
+        setFilterValue('commTruckFilter', '');
+        setFilterValue('commDriverFilter', '');
+        return;
+    }
+    if (id === 'commissionPayoutSection') {
+        setFilterValue('settleStartDate', '');
+        setFilterValue('settleEndDate', '');
+        setFilterValue('settleDriverFilter', '');
+        return;
+    }
+    if (id === 'drivers' || id === 'employees') {
+        setFilterValue('staffJobFilter', '');
+    }
+}
+
 async function openCommissionReportTab() {
     if (!canViewCommissionReports()) {
         alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
         return;
     }
+    currentNavTab = 'commissionReportSection';
+    resetFiltersForScreen('commissionReportSection');
     showAppSection('commissionReportSection');
 
     await populateCommissionFilters();
@@ -2280,6 +2349,8 @@ async function openCommissionPayoutTab() {
         alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
         return;
     }
+    currentNavTab = 'commissionPayoutSection';
+    resetFiltersForScreen('commissionPayoutSection');
     showAppSection('commissionPayoutSection');
     await populateCommissionFilters();
     await generateCommissionSettlement();
@@ -4556,6 +4627,7 @@ function setActiveNav(tabId) {
 
 function switchTab(tabId) {
     currentNavTab = tabId;
+    resetFiltersForScreen(tabId);
     setActiveNav(tabId);
     setPageHeader(tabId);
     closeMobileNav();
@@ -4638,8 +4710,12 @@ function switchTab(tabId) {
     if (target) {
         target.classList.remove('hidden');
         target.scrollTop = 0;
-        if ((tabId === 'trips' || tabId === 'tripsSection') && typeof renderAdminControls === 'function') {
-            renderAdminControls();
+        if (tabId === 'trips' || tabId === 'tripsSection') {
+            if (typeof renderAdminControls === 'function') renderAdminControls();
+            if (typeof filterAndRenderTrips === 'function') filterAndRenderTrips();
+        }
+        if ((tabId === 'reports' || tabId === 'reportsSection') && typeof generateReport === 'function') {
+            generateReport();
         }
     } else {
         console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
@@ -6142,6 +6218,7 @@ async function loadUsers() {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainDashboard').classList.remove('hidden');
             document.body.classList.add('dashboard-active');
+            if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
             if (typeof switchTab === 'function') switchTab('dashboard');
 
             let roleName = 'مستخدم';
@@ -6198,6 +6275,7 @@ async function loadUsers() {
         async function handleLogout() {
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
             currentLoggedInUser = null;
+            if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
             clearStoredSession();
             closeOwnPasswordModal();
             closeResetPasswordModal();
