@@ -2870,7 +2870,29 @@ function isCompletedTrip(trip) {
     return status === 'مكتملة' || status === 'منتهية';
 }
 
+function tripYearCode(date = new Date()) {
+    return String(date.getFullYear()).slice(-2);
+}
+
+function parseTripSerial(tripNo) {
+    const raw = String(tripNo || '').trim().toUpperCase();
+    const withYear = raw.match(/^(?:TRP|TRIP)-(\d{2})-(\d+)$/);
+    if (withYear) return { year: withYear[1], serial: parseInt(withYear[2], 10) };
+    const legacy = raw.match(/^(?:TRP|TRIP)-(\d+)$/);
+    if (legacy) return { year: '', serial: parseInt(legacy[1], 10) };
+    return null;
+}
+
+function formatTripNo(yearCode, serial) {
+    return 'TRP-' + yearCode + '-' + serial;
+}
+
 function tripNoValue(trip) {
+    const parsed = parseTripSerial(trip?.trip_no);
+    if (parsed && Number.isFinite(parsed.serial)) {
+        const year = parsed.year ? parseInt(parsed.year, 10) : 0;
+        return year * 100000 + parsed.serial;
+    }
     const n = parseInt(String(trip?.trip_no || '').replace(/\D/g, ''), 10);
     return Number.isFinite(n) ? n : 0;
 }
@@ -2925,10 +2947,66 @@ function openingBalanceDate() {
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
+function tripReceivableRemaining(trip) {
+    const total = parseFloat(trip?.total_amount || 0) || 0;
+    let paid = parseFloat(trip?.paid_amount || 0) || 0;
+    if (paid > total) paid = total;
+    const stored = parseFloat(trip?.remaining_amount || 0);
+    const remaining = Number.isFinite(stored) ? stored : (total - paid);
+    return roundMoney(Math.max(0, remaining));
+}
+
+function isActiveOperationalTrip(trip) {
+    return String(trip?.status || '').trim() === 'جارية';
+}
+
+function isOpenReceivableTrip(trip) {
+    return isCompletedTrip(trip) && tripReceivableRemaining(trip) > 0.009;
+}
+
+function yearResetKeepKeys(trips) {
+    const keys = new Set();
+    (trips || []).forEach(trip => {
+        if (!isBillableTrip(trip) && !isActiveOperationalTrip(trip)) return;
+        if (isActiveOperationalTrip(trip) || isOpenReceivableTrip(trip)) {
+            tripNumberKeys(trip.trip_no).forEach(key => keys.add(key));
+        }
+    });
+    return keys;
+}
+
+function shouldKeepAfterYearReset(trip, keepKeys) {
+    if (isOpeningBalance(trip) || isCommissionPayout(trip)) return true;
+    if (isSettlementRecord(trip)) {
+        return tripNumberKeys(trip.client_name).some(key => keepKeys.has(key));
+    }
+    if (isCancelledTrip(trip)) return false;
+    if (isActiveOperationalTrip(trip) || isOpenReceivableTrip(trip)) return true;
+    return false;
+}
+
+async function deleteTripRowsByIds(ids) {
+    for (let i = 0; i < ids.length; i += 80) {
+        const chunk = ids.slice(i, i + 80);
+        const { error } = await client.from('trips').delete().in('id', chunk);
+        if (error) throw error;
+    }
+}
+
 function tripNumberKeys(tripNo) {
     const raw = String(tripNo || '').trim();
-    const digits = raw.replace(/\D/g, '');
-    return [...new Set([raw, digits, digits ? 'TRIP-' + digits : ''].filter(Boolean))];
+    const keys = [raw];
+    const parsed = parseTripSerial(raw);
+    if (parsed && Number.isFinite(parsed.serial)) {
+        keys.push(String(parsed.serial));
+        keys.push('TRIP-' + parsed.serial);
+        keys.push('TRP-' + parsed.serial);
+        if (parsed.year) {
+            keys.push('TRP-' + parsed.year + '-' + parsed.serial);
+            keys.push('TRIP-' + parsed.year + '-' + parsed.serial);
+        }
+    }
+    return [...new Set(keys.filter(Boolean))];
 }
 
 function settlementFingerprint(row) {
@@ -3352,7 +3430,7 @@ async function initReportFilters() {
                 if (activeTripsList.length > 0) {
                     activeTable.innerHTML = activeTripsList.map(tr => `
                         <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || 'TRIP-1000'}</td>
+                            <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || '—'}</td>
                             <td class="p-3.5">
                                 <div class="font-bold text-slate-900">${tr.client_name}</div>
                                 <div class="text-[11px] text-slate-500">${tripRouteText(tr)}</div>
@@ -3401,34 +3479,43 @@ async function resetTripCounter() {
     }
     const ar = currentLang !== 'en';
     if (!confirm(ar
-        ? 'تحذير: سيتم حذف سجل الرحلات بالكامل والبدء من جديد برقم TRIP-1001.\nالشاحنات والسائقين وبيانات المنشأة لن تُحذف.\nهل تريد المتابعة؟'
-        : 'Warning: all trip records will be deleted and numbering will restart at TRIP-1001.\nTrucks, drivers and facility data will not be deleted.\nContinue?')) {
+        ? 'تصفير نهاية العام:\n• الرحلات الجارية تبقى حتى إنهائها في العام الجديد\n• الرحلات المنتهية وغير المسددة تبقى لتحصيلها لاحقاً\n• الرحلات المسددة بالكامل والملغاة تُحذف\n• عمولات الرحلات المحذوفة تُرحّل رصيد افتتاحي\n• الشاحنات المرتبطة برحلة جارية تبقى في رحلة\nهل تريد المتابعة؟'
+        : 'Year-end reset:\n• Active trips stay until completed in the new year\n• Completed unpaid trips stay so they can be collected later\n• Fully paid and cancelled trips are deleted\n• Commissions from deleted trips are carried as opening balance\n• Trucks still on an active trip remain on trip\nContinue?')) {
         return;
     }
 
     try {
         const { data: currentTrips, error: loadError } = await client.from('trips').select('*');
         if (loadError) throw loadError;
+        const trips = currentTrips || [];
+        const keepKeys = yearResetKeepKeys(trips);
+        const kept = [];
+        const removed = [];
+        trips.forEach(trip => {
+            if (shouldKeepAfterYearReset(trip, keepKeys)) kept.push(trip);
+            else removed.push(trip);
+        });
 
-        const leftover = remainingCommissionsByDriver(currentTrips);
-        const leftoverTotal = leftover.reduce((sum, [, amount]) => sum + amount, 0);
-        let carryForward = false;
-        if (leftover.length) {
-            const lines = leftover.map(([name, amount]) => `${name}: ${formatMoney(amount)}`).join('\n');
-            carryForward = confirm(ar
-                ? `يوجد عمولات لم تُصرف بعد:\n${lines}\nالإجمالي: ${formatMoney(leftoverTotal)}\n\nموافق = نقلها رصيد افتتاحي للعام الجديد\nإلغاء = تصفير بدون نقل العمولات`
-                : `Unpaid commissions:\n${lines}\nTotal: ${formatMoney(leftoverTotal)}\n\nOK = carry as opening balance for the new year\nCancel = reset without carrying commissions`);
-        }
+        const openingByDriver = new Map();
+        removed.forEach(trip => {
+            if (!isCompletedTrip(trip)) return;
+            const name = String(trip.driver_name || '').trim();
+            const amount = roundMoney(commissionAmount(trip));
+            if (!name || amount <= 0.009) return;
+            openingByDriver.set(name, roundMoney((openingByDriver.get(name) || 0) + amount));
+        });
+        const openingRows = [...openingByDriver.entries()].filter(([, amount]) => amount > 0.009);
 
-        const { error } = await client.from('trips').delete().neq('id', 0);
-        if (error) throw error;
+        const removeIds = removed.map(trip => trip.id).filter(id => id != null);
+        if (removeIds.length) await deleteTripRowsByIds(removeIds);
 
         let carried = 0;
-        if (carryForward && leftover.length) {
+        if (openingRows.length) {
             const openDate = openingBalanceDate();
             const year = openDate.slice(0, 4);
-            const rows = leftover.map(([name, amount], index) => ({
-                trip_no: `OPEN-${year}-${index + 1}`,
+            const existingOpen = kept.filter(isOpeningBalance).length;
+            const rows = openingRows.map(([name, amount], index) => ({
+                trip_no: `OPEN-${year}-${existingOpen + index + 1}`,
                 client_name: ar ? 'رصيد افتتاحي' : 'Opening balance',
                 from_city: '-',
                 to_city: '-',
@@ -3442,30 +3529,34 @@ async function resetTripCounter() {
                 remaining_amount: 0,
                 status: 'رصيد افتتاحي',
                 payment_status: 'مرحّل',
-                payment_method: ar ? `عمولة مرحلة من العام السابق` : 'Carried commission from previous year'
+                payment_method: ar ? 'عمولة مرحلة من رحلات العام السابق' : 'Carried commission from previous-year trips'
             }));
             const { error: insertError } = await client.from('trips').insert(rows);
             if (insertError) {
                 alert((ar
-                    ? 'تم حذف الرحلات، لكن تعذر حفظ الرصيد الافتتاحي. سجّل هذه المبالغ يدوياً:\n'
-                    : 'Trips were deleted, but opening balances could not be saved. Record these amounts manually:\n')
-                    + leftover.map(([name, amount]) => `${name}: ${formatMoney(amount)}`).join('\n')
+                    ? 'حُذفت الرحلات المغلقة، لكن تعذر حفظ رصيد العمولة الافتتاحي. سجّل هذه المبالغ:\n'
+                    : 'Closed trips were deleted, but opening commissions could not be saved. Record these amounts:\n')
+                    + openingRows.map(([name, amount]) => `${name}: ${formatMoney(amount)}`).join('\n')
                     + '\n' + insertError.message);
             } else {
-                carried = leftover.length;
+                carried = openingRows.length;
             }
         }
 
-        await client.from('trucks').update({ status: 'جاهزة للعمل' });
-        await client.from('drivers').update({ status: 'متوفر' });
+        const busyPlates = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.truck_plate || '').trim()).filter(Boolean));
+        const busyDrivers = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.driver_name || '').trim()).filter(Boolean));
+        const { data: onTripTrucks } = await client.from('trucks').select('id, plate, status').eq('status', 'في رحلة');
+        const freeTruckIds = (onTripTrucks || []).filter(tr => !busyPlates.has(String(tr.plate || '').trim())).map(tr => tr.id);
+        if (freeTruckIds.length) await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeTruckIds);
+        const { data: onTripDrivers } = await client.from('drivers').select('id, name, status').eq('status', 'في رحلة');
+        const freeDriverIds = (onTripDrivers || []).filter(dr => !busyDrivers.has(String(dr.name || '').trim())).map(dr => dr.id);
+        if (freeDriverIds.length) await client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds);
 
-        alert(carried
-            ? (ar
-                ? `تم تصفير الرحلات. نُقل رصيد عمولة ${carried} سائق إلى العام الجديد، ويمكن الصرف من تقرير سداد العمولات.`
-                : `Trips were reset. Commission balances for ${carried} drivers were carried to the new year.`)
-            : (ar
-                ? 'تم تصفير عداد الرحلات بنجاح، ويمكنك البدء من جديد!'
-                : 'Trip counter reset successfully. You can start again.'));
+        const activeCount = kept.filter(isActiveOperationalTrip).length;
+        const unpaidCount = kept.filter(isOpenReceivableTrip).length;
+        alert(ar
+            ? `تم إغلاق العام.\nرحلات جارية متبقية: ${activeCount}\nرحلات غير مسددة متبقية: ${unpaidCount}\nعمولات مرحلة كرصيد افتتاحي: ${carried} سائق\nالرحلات الجديدة تأخذ رقم السنة، مثل TRP-27-1001 في عام 2027.`
+            : `Year closed.\nActive trips kept: ${activeCount}\nUnpaid completed trips kept: ${unpaidCount}\nOpening commission balances: ${carried} drivers\nNew trips use a year code, e.g. TRP-27-1001 in 2027.`);
         if (typeof loadAllData === 'function') loadAllData();
     } catch (err) {
         console.error(err);
@@ -5041,15 +5132,14 @@ function switchTab(tabId) {
                 availableDrivers.map(d => `<option value="${d.name}">${d.name} (${d.phone})</option>`).join('');
         }
         async function generateTripNo() {
+            const year = tripYearCode();
             const { data: trips } = await client.from('trips').select('trip_no');
-            let nextNum = 1001;
-            if (trips && trips.length > 0) {
-                const nums = trips.map(t => parseInt(t.trip_no ? t.trip_no.replace('TRIP-', '') : '1000')).filter(n => !isNaN(n));
-                if (nums.length > 0) {
-                    nextNum = Math.max(...nums) + 1;
-                }
-            }
-            return 'TRIP-' + nextNum;
+            const nums = (trips || [])
+                .map(row => parseTripSerial(row.trip_no))
+                .filter(parsed => parsed && parsed.year === year && Number.isFinite(parsed.serial))
+                .map(parsed => parsed.serial);
+            const nextNum = (nums.length ? Math.max(...nums) : 1000) + 1;
+            return formatTripNo(year, nextNum);
         }
 
       // متغير عالمي لحفظ الرحلات مؤقتاً لغرض الفلترة الفورية
@@ -5178,7 +5268,7 @@ function renderTripsTable(trips) {
 
             return `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || 'TRIP-1000'}</td>
+                    <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || '—'}</td>
                     <td class="p-3.5">
                         <div class="font-bold text-slate-900">${tr.client_name}</div>
                         <div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot ml-1 text-amber-500"></i> ${tripRouteText(tr)}</div>
