@@ -3089,7 +3089,7 @@ async function generateFinancialReport() {
         if (settlementError) throw settlementError;
         indexSettlements(settlementRows);
 
-        let activeTrips = filterBillableTripsForPeriod(trips, startDate, endDate);
+        let activeTrips = filterCompletedTripsForPeriod(trips, startDate, endDate);
         if (selectedMethod) {
             activeTrips = activeTrips.filter(trip => paymentLineItems(trip).some(line => line.payment_method === selectedMethod));
         }
