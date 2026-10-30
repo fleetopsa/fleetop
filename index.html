@@ -42,6 +42,8 @@
         .ops-driver-report th:nth-child(5), .ops-driver-report td.ops-client { width: 16%; }
         .ops-driver-report th:nth-child(6), .ops-driver-report td.ops-route { width: 22%; }
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
+        .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+        .analytics-fill { height: 100%; border-radius: 999px; }
         @container (min-width: 640px) {
             .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
         }
@@ -505,6 +507,9 @@
                     <button onclick="switchTab('dashboard')" id="tabDashboardBtn" data-nav="dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition nav-active">
                         <i class="fa-solid fa-chart-pie text-base"></i> <span data-i18n="nav.dashboard">لوحة التحكم</span>
                     </button>
+                    <button onclick="switchTab('analytics')" id="tabAnalyticsBtn" data-nav="analytics" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-chart-column text-base"></i> <span data-i18n="nav.analytics">المتابعة والرسوم</span>
+                    </button>
                     <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-route text-base"></i> <span data-i18n="nav.trips">إدارة الرحلات</span>
                     </button>
@@ -743,6 +748,53 @@
                     </div>
                 </div>
             </main>
+<main id="analyticsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                <input type="date" id="analyticsStartDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                <input type="date" id="analyticsEndDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <button type="button" onclick="setAnalyticsMonthRange(); renderAnalyticsDashboard();" class="h-10 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-xl text-xs">
+                <span data-i18n="ui.thisMonth">هذا الشهر</span>
+            </button>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+            <div class="text-[11px] font-bold text-amber-700 mb-1" data-i18n="analytics.bestTruck">أفضل شاحنة</div>
+            <div id="analyticsBestTruck" class="font-black text-slate-900 text-lg">—</div>
+            <div id="analyticsBestTruckMeta" class="text-xs text-slate-500 mt-1"></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-100">
+            <div class="text-[11px] font-bold text-blue-700 mb-1" data-i18n="analytics.bestDriver">أفضل سائق</div>
+            <div id="analyticsBestDriver" class="font-black text-slate-900 text-lg">—</div>
+            <div id="analyticsBestDriverMeta" class="text-xs text-slate-500 mt-1"></div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
+            <div id="analyticsTruckTripBars" class="space-y-3"></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
+            <div id="analyticsTruckRevenueBars" class="space-y-3"></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
+            <div id="analyticsDriverTripBars" class="space-y-3"></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.driverComm">عمولات السائقين</h3>
+            <div id="analyticsDriverCommBars" class="space-y-3"></div>
+        </div>
+    </div>
+</main>
        <!-- قسم الرحلات -->
 <main id="tripsSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto">
     <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 mb-3">
@@ -4234,6 +4286,7 @@ const I18N = {
         'login.error': 'خطأ في اسم المستخدم أو كلمة المرور.',
         'login.submit': 'تسجيل الدخول للنظام',
         'nav.dashboard': 'لوحة التحكم',
+        'nav.analytics': 'المتابعة والرسوم',
         'nav.trips': 'إدارة الرحلات',
         'nav.facility': 'إدارة المنشأة',
         'nav.facilityDocs': 'بيانات المنشأة',
@@ -4256,6 +4309,17 @@ const I18N = {
         'header.refreshing': 'جارٍ التحديث...',
         'page.dashboard': 'لوحة التحكم',
         'page.dashboardSub': 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية',
+        'page.analytics': 'المتابعة والرسوم البيانية',
+        'page.analyticsSub': 'مقارنة الأداء والإنتاجية والإيرادات والعمولات حسب الفترة',
+        'ui.thisMonth': 'هذا الشهر',
+        'analytics.bestTruck': 'أفضل شاحنة',
+        'analytics.bestDriver': 'أفضل سائق',
+        'analytics.truckTrips': 'إنتاجية الشاحنات (عدد الرحلات)',
+        'analytics.truckRevenue': 'إيرادات الشاحنات',
+        'analytics.driverTrips': 'إنتاجية السائقين (عدد الرحلات)',
+        'analytics.driverComm': 'عمولات السائقين',
+        'analytics.noData': 'لا توجد رحلات مكتملة في هذه الفترة',
+        'analytics.tripsCount': '{n} رحلة',
         'page.trips': 'إدارة الرحلات',
         'page.tripsSub': 'سجل الرحلات الجارية والمكتملة والملغاة',
         'page.reports': 'التقارير التشغيلية',
@@ -4561,6 +4625,7 @@ const I18N = {
         'login.error': 'Incorrect username or password.',
         'login.submit': 'Sign in',
         'nav.dashboard': 'Dashboard',
+        'nav.analytics': 'Analytics',
         'nav.trips': 'Trips',
         'nav.facility': 'Organization',
         'nav.facilityDocs': 'Company documents',
@@ -4583,6 +4648,17 @@ const I18N = {
         'header.refreshing': 'Refreshing...',
         'page.dashboard': 'Dashboard',
         'page.dashboardSub': 'Revenue summary, fleet status and active trips',
+        'page.analytics': 'Analytics and charts',
+        'page.analyticsSub': 'Compare performance, productivity, revenue and commissions by period',
+        'ui.thisMonth': 'This month',
+        'analytics.bestTruck': 'Top truck',
+        'analytics.bestDriver': 'Top driver',
+        'analytics.truckTrips': 'Truck productivity (trips)',
+        'analytics.truckRevenue': 'Truck revenue',
+        'analytics.driverTrips': 'Driver productivity (trips)',
+        'analytics.driverComm': 'Driver commissions',
+        'analytics.noData': 'No completed trips in this period',
+        'analytics.tripsCount': '{n} trips',
         'page.trips': 'Trip management',
         'page.tripsSub': 'Active, completed and cancelled trips',
         'page.reports': 'Operations reports',
@@ -4884,6 +4960,8 @@ const I18N = {
 const PAGE_HEADER_KEYS = {
     dashboard: ['page.dashboard', 'page.dashboardSub'],
     dashboardSection: ['page.dashboard', 'page.dashboardSub'],
+    analytics: ['page.analytics', 'page.analyticsSub'],
+    analyticsSection: ['page.analytics', 'page.analyticsSub'],
     trips: ['page.trips', 'page.tripsSub'],
     tripsSection: ['page.trips', 'page.tripsSub'],
     reports: ['page.reports', 'page.reportsSub'],
@@ -5183,12 +5261,118 @@ function switchTab(tabId) {
         if ((tabId === 'reports' || tabId === 'reportsSection') && typeof generateReport === 'function') {
             generateReport();
         }
+        if ((tabId === 'analytics' || tabId === 'analyticsSection') && typeof renderAnalyticsDashboard === 'function') {
+            renderAnalyticsDashboard();
+        }
     } else {
         console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
         const defaultSec = document.getElementById('dashboardSection') || allSections[0];
         if (defaultSec) defaultSec.classList.remove('hidden');
     }
 }
+function setAnalyticsMonthRange() {
+    const startEl = document.getElementById('analyticsStartDate');
+    const endEl = document.getElementById('analyticsEndDate');
+    const now = new Date();
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const end = todayDateInput();
+    if (startEl) startEl.value = start;
+    if (endEl) endEl.value = end;
+}
+
+function analyticsBarHtml(items, valueFn, labelFn, metaFn, color) {
+    if (!items.length) return `<div class="text-xs text-slate-400 py-4">${t('analytics.noData')}</div>`;
+    const max = Math.max(...items.map(valueFn), 1);
+    return items.map((item, index) => {
+        const value = valueFn(item);
+        const pct = Math.max(4, Math.round((value / max) * 100));
+        return `
+            <div>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <span class="text-xs font-bold text-slate-800 truncate">${escapeHtml(labelFn(item))}${index === 0 ? ' ★' : ''}</span>
+                    <span class="text-[11px] font-mono font-bold text-slate-500 shrink-0">${metaFn(item)}</span>
+                </div>
+                <div class="analytics-track">
+                    <div class="analytics-fill" style="width:${pct}%;background:${color}"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function renderAnalyticsDashboard() {
+    const startEl = document.getElementById('analyticsStartDate');
+    const endEl = document.getElementById('analyticsEndDate');
+    if (startEl && !startEl.value) setAnalyticsMonthRange();
+    const startDate = startEl?.value || '';
+    const endDate = endEl?.value || '';
+    const showMoney = typeof canViewCommissionReports === 'function' && canViewCommissionReports();
+    document.querySelectorAll('.analytics-money').forEach(el => el.classList.toggle('hidden', !showMoney));
+
+    let trips = Array.isArray(allTripsCache) ? allTripsCache.slice() : [];
+    if (!trips.length) {
+        const { data, error } = await client.from('trips').select('*');
+        if (error) {
+            console.error(error);
+            return;
+        }
+        trips = data || [];
+    }
+    const inPeriod = trips.filter(trip => {
+        if (!isCompletedTrip(trip)) return false;
+        const doneOn = tripCompletionDate(trip);
+        if (startDate && doneOn && doneOn < startDate) return false;
+        if (endDate && doneOn && doneOn > endDate) return false;
+        if ((startDate || endDate) && !doneOn) return false;
+        return true;
+    });
+
+    const trucks = new Map();
+    const drivers = new Map();
+    inPeriod.forEach(trip => {
+        const plate = String(trip.truck_plate || '').trim();
+        if (plate && plate !== '-') {
+            if (!trucks.has(plate)) trucks.set(plate, { name: plate, trips: 0, revenue: 0 });
+            const row = trucks.get(plate);
+            row.trips += 1;
+            row.revenue += parseFloat(trip.total_amount || 0) || 0;
+        }
+        const driver = String(trip.driver_name || '').trim();
+        if (driver) {
+            if (!drivers.has(driver)) drivers.set(driver, { name: driver, trips: 0, commission: 0 });
+            const row = drivers.get(driver);
+            row.trips += 1;
+            row.commission += commissionAmount(trip);
+        }
+    });
+    const truckList = [...trucks.values()].sort((a, b) => b.trips - a.trips || b.revenue - a.revenue).slice(0, 8);
+    const driverList = [...drivers.values()].sort((a, b) => b.trips - a.trips || b.commission - a.commission).slice(0, 8);
+    const bestTruck = truckList[0];
+    const bestDriver = driverList[0];
+
+    const bestTruckEl = document.getElementById('analyticsBestTruck');
+    const bestTruckMeta = document.getElementById('analyticsBestTruckMeta');
+    const bestDriverEl = document.getElementById('analyticsBestDriver');
+    const bestDriverMeta = document.getElementById('analyticsBestDriverMeta');
+    if (bestTruckEl) bestTruckEl.textContent = bestTruck ? bestTruck.name : '—';
+    if (bestTruckMeta) bestTruckMeta.textContent = bestTruck
+        ? `${tf('analytics.tripsCount', bestTruck.trips)}${showMoney ? ' · ' + formatMoney(bestTruck.revenue) : ''}`
+        : t('analytics.noData');
+    if (bestDriverEl) bestDriverEl.textContent = bestDriver ? bestDriver.name : '—';
+    if (bestDriverMeta) bestDriverMeta.textContent = bestDriver
+        ? `${tf('analytics.tripsCount', bestDriver.trips)}${showMoney ? ' · ' + formatMoney(bestDriver.commission) : ''}`
+        : t('analytics.noData');
+
+    const truckTripBars = document.getElementById('analyticsTruckTripBars');
+    const truckRevBars = document.getElementById('analyticsTruckRevenueBars');
+    const driverTripBars = document.getElementById('analyticsDriverTripBars');
+    const driverCommBars = document.getElementById('analyticsDriverCommBars');
+    if (truckTripBars) truckTripBars.innerHTML = analyticsBarHtml(truckList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#c4a35a');
+    if (truckRevBars) truckRevBars.innerHTML = analyticsBarHtml([...truckList].sort((a, b) => b.revenue - a.revenue), x => x.revenue, x => x.name, x => formatMoney(x.revenue), '#0b2a4a');
+    if (driverTripBars) driverTripBars.innerHTML = analyticsBarHtml(driverList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#2563eb');
+    if (driverCommBars) driverCommBars.innerHTML = analyticsBarHtml([...driverList].sort((a, b) => b.commission - a.commission), x => x.commission, x => x.name, x => formatMoney(x.commission), '#059669');
+}
+
                async function generateReport() {
     // 1. جلب قيم الفلاتر المحددة
     const startDate = document.getElementById('reportStartDate').value;
