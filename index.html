@@ -5409,7 +5409,7 @@ async function renderAnalyticsDashboard() {
         console.error(error);
         return;
     }
-    const inPeriod = filterBillableTripsForPeriod(data, startDate, endDate);
+    const inPeriod = filterCompletedTripsForPeriod(data, startDate, endDate);
 
     const trucks = new Map();
     const drivers = new Map();
