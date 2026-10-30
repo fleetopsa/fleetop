@@ -434,7 +434,6 @@
                 <img src="fleetop-logo.png" alt="FleetOp" class="w-56 max-w-full h-auto object-contain">
             </div>
             <p class="text-xs font-bold mt-1" style="color:#e8d5a3" data-i18n="login.tagline">منصة إدارة الأسطول والرحلات</p>
-            <p class="text-[11px] font-bold mt-1" style="color:#c4a35a" data-i18n="login.product">منصة عامة لكل شركات النقل</p>
         </div>
         
         <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -1327,11 +1326,11 @@
             <!-- الفلاتر -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 no-print">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromCompletionDate">من تاريخ الإنهاء</label>
                     <input type="date" id="commStartDate" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toCompletionDate">إلى تاريخ الإنهاء</label>
                     <input type="date" id="commEndDate" onchange="generateCommissionReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <div>
@@ -1385,7 +1384,7 @@
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
                             <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
-                            <th class="p-3.5" data-i18n="th.departureDate">تاريخ المغادرة</th>
+                            <th class="p-3.5" data-i18n="th.completionDate">تاريخ إنهاء الرحلة</th>
                             <th class="p-3.5" data-i18n="th.clientName">اسم العميل</th>
                             <th class="p-3.5" data-i18n="th.from">من</th>
                             <th class="p-3.5" data-i18n="th.to">إلى</th>
@@ -1846,7 +1845,10 @@
                 </select>
             </div>
 
-            <!-- خانة تاريخ التحصيل الإجبارية -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.completionDate">تاريخ إنهاء الرحلة</label>
+                <input type="date" id="modalCompletionDate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+            </div>
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل </label>
                 <input type="date" id="modalCollectionDate"  class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
@@ -2186,13 +2188,18 @@ async function generateCommissionReport() {
         let query = client.from('trips').select('*').order('id', { ascending: false });
         if (selectedDriver) query = query.eq('driver_name', selectedDriver);
         if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
-        if (startDate) query = query.gte('departure_date', startDate);
-        if (endDate) query = query.lte('departure_date', endDate);
 
         const { data: trips, error } = await query;
         if (error) throw error;
 
-        const activeTrips = sortTripsByNoDesc((trips || []).filter(isCommissionEarnedTrip));
+        const activeTrips = sortTripsByCompletionDesc((trips || []).filter(trip => {
+            if (!isCommissionEarnedTrip(trip)) return false;
+            const doneOn = tripCompletionDate(trip);
+            if (startDate && doneOn && doneOn < startDate) return false;
+            if (endDate && doneOn && doneOn > endDate) return false;
+            if ((startDate || endDate) && !doneOn) return false;
+            return true;
+        }));
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const earnedEl = document.getElementById('commTotalAmountDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
@@ -2212,7 +2219,7 @@ async function generateCommissionReport() {
             return `
                 <tr class="hover:bg-slate-50 transition border-r-4 border-amber-400">
                     <td class="p-3.5"><a href="#" class="trip-detail-link" onclick='openTripDetails(${JSON.stringify(String(tr.trip_no || ''))}); return false;'>${escapeHtml(tripNo)}</a></td>
-                    <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(tr.departure_date || '---')}</td>
+                    <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(tripCompletionDate(tr) || '---')}</td>
                     <td class="p-3.5 font-bold text-slate-900">${escapeHtml(tr.client_name || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(tr.from_city || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(tripDestinationText(tr))}</td>
@@ -2316,6 +2323,7 @@ function openTripDetails(tripNo) {
     const fields = [
         ['اسم العميل', trip.client_name],
         ['تاريخ المغادرة', trip.departure_date],
+        ['تاريخ إنهاء الرحلة', tripCompletionDate(trip)],
         ['من', trip.from_city],
         ['إلى', tripDestinationText(trip)],
         ['المسار', tripRouteText(trip)],
@@ -2717,6 +2725,8 @@ function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmou
     
     const modalCollectionDate = document.getElementById('modalCollectionDate');
     if (modalCollectionDate) modalCollectionDate.value = '';
+    const modalCompletionDate = document.getElementById('modalCompletionDate');
+    if (modalCompletionDate) modalCompletionDate.value = todayDateInput();
 
     const priorBox = document.getElementById('priorPaymentsBox');
     const trip = allTripsCache.find(item => String(item.trip_no) === String(tripNo));
@@ -2868,6 +2878,27 @@ function isCancelledTrip(trip) {
 function isCompletedTrip(trip) {
     const status = String(trip?.status || '').trim();
     return status === 'مكتملة' || status === 'منتهية';
+}
+
+function dateOnly(value) {
+    return String(value || '').slice(0, 10);
+}
+
+function todayDateInput() {
+    return new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+function tripCompletionDate(trip) {
+    if (isOpeningBalance(trip)) return dateOnly(trip.departure_date);
+    return dateOnly(trip.completion_date) || dateOnly(trip.collection_date) || dateOnly(trip.departure_date);
+}
+
+function sortTripsByCompletionDesc(list) {
+    return [...(list || [])].sort((a, b) => {
+        const diff = tripCompletionDate(b).localeCompare(tripCompletionDate(a));
+        if (diff) return diff;
+        return tripNoValue(b) - tripNoValue(a);
+    });
 }
 
 function tripYearCode(date = new Date()) {
@@ -3236,6 +3267,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         
         const paymentMethodVal = document.getElementById('modalPaymentMethod').value;
         const collectionDateVal = document.getElementById('modalCollectionDate').value;
+        const completionDateVal = document.getElementById('modalCompletionDate')?.value || todayDateInput();
 
         const endingActiveTrip = String(currentTrip.status || '').trim() === 'جارية';
         let settlementNo = null;
@@ -3255,14 +3287,25 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             payment_method: paymentMethodVal ? paymentMethodVal.trim() : null,
             collection_date: collectionDateVal ? collectionDateVal.trim() : null
         };
-        if (endingActiveTrip) updateData.status = 'مكتملة';
+        if (endingActiveTrip) {
+            updateData.status = 'مكتملة';
+            updateData.completion_date = completionDateVal;
+        }
         Object.keys(updateData).forEach(key => {
             if (updateData[key] === "" || updateData[key] === "mm / dd / yyyy" || updateData[key] === undefined) {
                 delete updateData[key];
             }
         });
 
-        const { error: updateError } = await client.from('trips').update(updateData).eq('trip_no', tripId);
+        let { error: updateError } = await client.from('trips').update(updateData).eq('trip_no', tripId);
+        if (updateError && /completion_date/i.test(updateError.message || '')) {
+            delete updateData.completion_date;
+            const retry = await client.from('trips').update(updateData).eq('trip_no', tripId);
+            updateError = retry.error;
+            if (!updateError) {
+                console.warn('عمود completion_date غير موجود. نفّذ ملف add-completion-date.sql في Supabase.');
+            }
+        }
 
         if (updateError) {
             console.error("خطأ قاعدة البيانات في الرحلات:", updateError);
@@ -4273,6 +4316,9 @@ const I18N = {
         'ui.paid': 'مدفوع',
         'ui.remaining': 'متبقي',
         'th.departureDate': 'تاريخ المغادرة',
+        'th.completionDate': 'تاريخ إنهاء الرحلة',
+        'ui.fromCompletionDate': 'من تاريخ الإنهاء',
+        'ui.toCompletionDate': 'إلى تاريخ الإنهاء',
         'th.from': 'من',
         'th.to': 'إلى',
         'th.commAmount': 'مبلغ العمولة',
@@ -4597,6 +4643,9 @@ const I18N = {
         'ui.paid': 'Paid',
         'ui.remaining': 'Remaining',
         'th.departureDate': 'Departure date',
+        'th.completionDate': 'Trip completion date',
+        'ui.fromCompletionDate': 'From completion date',
+        'ui.toCompletionDate': 'To completion date',
         'th.from': 'From',
         'th.to': 'To',
         'th.commAmount': 'Commission amount',
