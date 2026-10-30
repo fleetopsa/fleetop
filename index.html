@@ -4205,7 +4205,9 @@ function applyVehicleScreenLabels() {
     const listTitle = document.getElementById('trucksListTitle');
     const formTitle = document.getElementById('truckFormTitle');
     const statusLabel = document.getElementById('truckStatusLabel');
-    setPageHeader(other ? 'otherVehicles' : 'trucks');
+    if (currentNavTab === 'trucks' || currentNavTab === 'otherVehicles') {
+        setPageHeader(other ? 'otherVehicles' : 'trucks');
+    }
     if (listTitle) listTitle.innerHTML = other
         ? `<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> ${t('ui.otherVehiclesList')}`
         : `<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> ${t('ui.trucksList')}`;
@@ -4229,7 +4231,9 @@ function applyStaffScreenLabels() {
     const nameLabel = document.getElementById('driverNameLabel');
     const statusLabel = document.getElementById('driverStatusLabel');
     const nameHead = document.querySelector('#driversSection thead th');
-    setPageHeader(employee ? 'employees' : 'drivers');
+    if (currentNavTab === 'drivers' || currentNavTab === 'employees') {
+        setPageHeader(employee ? 'employees' : 'drivers');
+    }
     const jobWrap = document.getElementById('staffJobWrap');
     const jobHead = document.getElementById('staffJobColHead');
     const jobFilterWrap = document.getElementById('staffJobFilterWrap');
