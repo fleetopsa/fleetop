@@ -3065,8 +3065,6 @@ async function generateFinancialReport() {
         const selectedMethod = document.getElementById('finPaymentMethodFilter')?.value || '';
 
         let query = client.from('trips').select('*').order('id', { ascending: false });
-        if (startDate) query = query.gte('departure_date', startDate);
-        if (endDate) query = query.lte('departure_date', endDate);
         if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
         if (selectedDriver) query = query.eq('driver_name', selectedDriver);
 
@@ -3076,7 +3074,7 @@ async function generateFinancialReport() {
         if (settlementError) throw settlementError;
         indexSettlements(settlementRows);
 
-        let activeTrips = (trips || []).filter(isBillableTrip);
+        let activeTrips = filterBillableTripsForPeriod(trips, startDate, endDate);
         if (selectedMethod) {
             activeTrips = activeTrips.filter(trip => paymentLineItems(trip).some(line => line.payment_method === selectedMethod));
         }
@@ -3085,9 +3083,9 @@ async function generateFinancialReport() {
         let pendingRev = 0;
 
         activeTrips.forEach(t => {
-            totalRev += parseFloat(t.total_amount || t.revenue || 0);
-            collectedRev += parseFloat(t.paid_amount || 0);
-            pendingRev += parseFloat(t.remaining_amount || 0);
+            totalRev += roundMoney(t.total_amount || t.revenue || 0);
+            collectedRev += roundMoney(t.paid_amount || 0);
+            pendingRev += roundMoney(t.remaining_amount || 0);
         });
 
         const totalEl = document.getElementById('finTotalRevenue');
@@ -3169,6 +3167,10 @@ function tripInDateRange(when, startDate, endDate) {
 
 function filterCompletedTripsForPeriod(trips, startDate, endDate) {
     return (trips || []).filter(trip => isCompletedTrip(trip) && tripInDateRange(tripCompletionDate(trip), startDate, endDate));
+}
+
+function filterBillableTripsForPeriod(trips, startDate, endDate) {
+    return (trips || []).filter(trip => isBillableTrip(trip) && tripInDateRange(dateOnly(trip.departure_date), startDate, endDate));
 }
 
 function sortTripsByCompletionDesc(list) {
@@ -5334,7 +5336,7 @@ async function renderAnalyticsDashboard() {
         console.error(error);
         return;
     }
-    const inPeriod = filterCompletedTripsForPeriod(data, startDate, endDate);
+    const inPeriod = filterBillableTripsForPeriod(data, startDate, endDate);
 
     const trucks = new Map();
     const drivers = new Map();
