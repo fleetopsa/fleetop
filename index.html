@@ -2513,10 +2513,19 @@ async function generateCommissionSettlement() {
         }
 
         if (payoutBody) {
-            const sortedPayouts = [...payouts].sort((a, b) => String(b.departure_date || '').localeCompare(String(a.departure_date || '')));
+            const payoutTime = (payout) => {
+                const raw = dateOnly(payout?.departure_date) || dateOnly(payout?.collection_date);
+                const time = Date.parse(raw);
+                return Number.isFinite(time) ? time : 0;
+            };
+            const sortedPayouts = [...payouts].sort((a, b) => {
+                const diff = payoutTime(b) - payoutTime(a);
+                if (diff) return diff;
+                return (Number(b.id) || 0) - (Number(a.id) || 0);
+            });
             payoutBody.innerHTML = sortedPayouts.length ? sortedPayouts.map(payout => `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3.5 font-mono text-slate-600">${escapeHtml(payout.departure_date || '---')}</td>
+                    <td class="p-3.5 font-mono text-slate-600">${escapeHtml(dateOnly(payout.departure_date) || '---')}</td>
                     <td class="p-3.5 font-bold text-slate-900">${escapeHtml(payout.driver_name || 'غير محدد')}</td>
                     <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
                     <td class="p-3.5 text-slate-600">${escapeHtml(payout.payment_method || '—')}</td>
