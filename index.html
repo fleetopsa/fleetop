@@ -759,9 +759,15 @@
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                 <input type="date" id="analyticsEndDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
-            <button type="button" onclick="setAnalyticsMonthRange(); renderAnalyticsDashboard();" class="h-10 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-xl text-xs">
-                <span data-i18n="ui.thisMonth">هذا الشهر</span>
-            </button>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="analytics.period">الفترة</label>
+                <select id="analyticsPeriodPreset" onchange="setAnalyticsDateRange(this.value)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="all" data-i18n="analytics.allPeriod">كل الفترة</option>
+                    <option value="this" data-i18n="ui.thisMonth">الشهر الحالي</option>
+                    <option value="last" data-i18n="analytics.lastMonth">الشهر السابق</option>
+                    <option value="custom" data-i18n="analytics.customPeriod">فترة مخصصة</option>
+                </select>
+            </div>
         </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -2188,6 +2194,9 @@ function clearAllPageFilters() {
     setFilterValue('settleEndDate', '');
     setFilterValue('settleDriverFilter', '');
     setFilterValue('staffJobFilter', '');
+    setFilterValue('analyticsStartDate', '');
+    setFilterValue('analyticsEndDate', '');
+    setFilterValue('analyticsPeriodPreset', 'all');
 }
 
 function resetFiltersForScreen(tabId) {
@@ -2227,6 +2236,12 @@ function resetFiltersForScreen(tabId) {
     }
     if (id === 'drivers' || id === 'employees') {
         setFilterValue('staffJobFilter', '');
+        return;
+    }
+    if (id === 'analytics' || id === 'analyticsSection') {
+        setFilterValue('analyticsStartDate', '');
+        setFilterValue('analyticsEndDate', '');
+        setFilterValue('analyticsPeriodPreset', 'all');
     }
 }
 
@@ -4334,7 +4349,11 @@ const I18N = {
         'page.dashboardSub': 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية',
         'page.analytics': 'المتابعة والرسوم البيانية',
         'page.analyticsSub': 'مقارنة الأداء والإنتاجية والإيرادات والعمولات حسب الفترة',
-        'ui.thisMonth': 'هذا الشهر',
+        'ui.thisMonth': 'الشهر الحالي',
+        'analytics.period': 'الفترة',
+        'analytics.allPeriod': 'كل الفترة',
+        'analytics.lastMonth': 'الشهر السابق',
+        'analytics.customPeriod': 'فترة مخصصة',
         'analytics.bestTruck': 'أفضل شاحنة',
         'analytics.bestDriver': 'أفضل سائق',
         'analytics.truckTrips': 'إنتاجية الشاحنات (عدد الرحلات)',
@@ -4673,7 +4692,11 @@ const I18N = {
         'page.dashboardSub': 'Revenue summary, fleet status and active trips',
         'page.analytics': 'Analytics and charts',
         'page.analyticsSub': 'Compare performance, productivity, revenue and commissions by period',
-        'ui.thisMonth': 'This month',
+        'ui.thisMonth': 'Current month',
+        'analytics.period': 'Period',
+        'analytics.allPeriod': 'All time',
+        'analytics.lastMonth': 'Last month',
+        'analytics.customPeriod': 'Custom period',
         'analytics.bestTruck': 'Top truck',
         'analytics.bestDriver': 'Top driver',
         'analytics.truckTrips': 'Truck productivity (trips)',
@@ -5293,14 +5316,55 @@ function switchTab(tabId) {
         if (defaultSec) defaultSec.classList.remove('hidden');
     }
 }
-function setAnalyticsMonthRange() {
+function formatLocalDateInput(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function analyticsMonthBounds(offset = 0) {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const end = offset === 0
+        ? new Date()
+        : new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
+    return { start: formatLocalDateInput(start), end: formatLocalDateInput(end) };
+}
+
+function currentAnalyticsPreset() {
+    const start = document.getElementById('analyticsStartDate')?.value || '';
+    const end = document.getElementById('analyticsEndDate')?.value || '';
+    if (!start && !end) return 'all';
+    const thisMonth = analyticsMonthBounds(0);
+    if (start === thisMonth.start && end === thisMonth.end) return 'this';
+    const lastMonth = analyticsMonthBounds(-1);
+    if (start === lastMonth.start && end === lastMonth.end) return 'last';
+    return 'custom';
+}
+
+function updateAnalyticsRangeButtons() {
+    const sel = document.getElementById('analyticsPeriodPreset');
+    if (sel) sel.value = currentAnalyticsPreset();
+}
+
+function setAnalyticsDateRange(mode) {
     const startEl = document.getElementById('analyticsStartDate');
     const endEl = document.getElementById('analyticsEndDate');
-    const now = new Date();
-    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const end = todayDateInput();
-    if (startEl) startEl.value = start;
-    if (endEl) endEl.value = end;
+    if (mode === 'this') {
+        const range = analyticsMonthBounds(0);
+        if (startEl) startEl.value = range.start;
+        if (endEl) endEl.value = range.end;
+    } else if (mode === 'last') {
+        const range = analyticsMonthBounds(-1);
+        if (startEl) startEl.value = range.start;
+        if (endEl) endEl.value = range.end;
+    } else if (mode !== 'custom') {
+        if (startEl) startEl.value = '';
+        if (endEl) endEl.value = '';
+    }
+    renderAnalyticsDashboard();
+}
+
+function setAnalyticsMonthRange() {
+    setAnalyticsDateRange('this');
 }
 
 function analyticsBarHtml(items, valueFn, labelFn, metaFn, color) {
@@ -5328,6 +5392,7 @@ async function renderAnalyticsDashboard() {
     const endEl = document.getElementById('analyticsEndDate');
     const startDate = startEl?.value || '';
     const endDate = endEl?.value || '';
+    updateAnalyticsRangeButtons();
     const showMoney = typeof canViewCommissionReports === 'function' && canViewCommissionReports();
     document.querySelectorAll('.analytics-money').forEach(el => el.classList.toggle('hidden', !showMoney));
 
