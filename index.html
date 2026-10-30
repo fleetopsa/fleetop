@@ -764,6 +764,20 @@
             </button>
         </div>
     </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200">
+            <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+            <div id="analyticsTotalTrips" class="text-2xl font-black text-slate-900 font-mono mt-1">0</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 analytics-money">
+            <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+            <div id="analyticsTotalRevenue" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 analytics-money">
+            <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
+            <div id="analyticsTotalCommission" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
+        </div>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
             <div class="text-[11px] font-bold text-amber-700 mb-1" data-i18n="analytics.bestTruck">أفضل شاحنة</div>
@@ -2269,11 +2283,7 @@ async function generateCommissionReport() {
 
         const activeTrips = sortTripsByCompletionDesc((trips || []).filter(trip => {
             if (!isCommissionEarnedTrip(trip)) return false;
-            const doneOn = tripCompletionDate(trip);
-            if (startDate && doneOn && doneOn < startDate) return false;
-            if (endDate && doneOn && doneOn > endDate) return false;
-            if ((startDate || endDate) && !doneOn) return false;
-            return true;
+            return tripInDateRange(tripCompletionDate(trip), startDate, endDate);
         }));
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const earnedEl = document.getElementById('commTotalAmountDisplay');
@@ -3148,6 +3158,17 @@ function todayDateInput() {
 function tripCompletionDate(trip) {
     if (isOpeningBalance(trip)) return dateOnly(trip.departure_date);
     return dateOnly(trip.completion_date) || dateOnly(trip.collection_date) || dateOnly(trip.departure_date);
+}
+
+function tripInDateRange(when, startDate, endDate) {
+    const day = dateOnly(when);
+    if (startDate && (!day || day < startDate)) return false;
+    if (endDate && (!day || day > endDate)) return false;
+    return true;
+}
+
+function filterCompletedTripsForPeriod(trips, startDate, endDate) {
+    return (trips || []).filter(trip => isCompletedTrip(trip) && tripInDateRange(tripCompletionDate(trip), startDate, endDate));
 }
 
 function sortTripsByCompletionDesc(list) {
@@ -5303,48 +5324,48 @@ function analyticsBarHtml(items, valueFn, labelFn, metaFn, color) {
 async function renderAnalyticsDashboard() {
     const startEl = document.getElementById('analyticsStartDate');
     const endEl = document.getElementById('analyticsEndDate');
-    if (startEl && !startEl.value) setAnalyticsMonthRange();
     const startDate = startEl?.value || '';
     const endDate = endEl?.value || '';
     const showMoney = typeof canViewCommissionReports === 'function' && canViewCommissionReports();
     document.querySelectorAll('.analytics-money').forEach(el => el.classList.toggle('hidden', !showMoney));
 
-    let trips = Array.isArray(allTripsCache) ? allTripsCache.slice() : [];
-    if (!trips.length) {
-        const { data, error } = await client.from('trips').select('*');
-        if (error) {
-            console.error(error);
-            return;
-        }
-        trips = data || [];
+    const { data, error } = await client.from('trips').select('*');
+    if (error) {
+        console.error(error);
+        return;
     }
-    const inPeriod = trips.filter(trip => {
-        if (!isCompletedTrip(trip)) return false;
-        const doneOn = tripCompletionDate(trip);
-        if (startDate && doneOn && doneOn < startDate) return false;
-        if (endDate && doneOn && doneOn > endDate) return false;
-        if ((startDate || endDate) && !doneOn) return false;
-        return true;
-    });
+    const inPeriod = filterCompletedTripsForPeriod(data, startDate, endDate);
 
     const trucks = new Map();
     const drivers = new Map();
+    let totalRevenue = 0;
+    let totalCommission = 0;
     inPeriod.forEach(trip => {
-        const plate = String(trip.truck_plate || '').trim();
+        const revenue = roundMoney(trip.total_amount || 0);
+        const commission = roundMoney(commissionAmount(trip));
+        totalRevenue += revenue;
+        totalCommission += commission;
+        const plate = String(trip.truck_plate || trip.truck || '').trim();
         if (plate && plate !== '-') {
             if (!trucks.has(plate)) trucks.set(plate, { name: plate, trips: 0, revenue: 0 });
             const row = trucks.get(plate);
             row.trips += 1;
-            row.revenue += parseFloat(trip.total_amount || 0) || 0;
+            row.revenue += revenue;
         }
         const driver = String(trip.driver_name || '').trim();
         if (driver) {
             if (!drivers.has(driver)) drivers.set(driver, { name: driver, trips: 0, commission: 0 });
             const row = drivers.get(driver);
             row.trips += 1;
-            row.commission += commissionAmount(trip);
+            row.commission += commission;
         }
     });
+    const totalTripsEl = document.getElementById('analyticsTotalTrips');
+    const totalRevEl = document.getElementById('analyticsTotalRevenue');
+    const totalCommEl = document.getElementById('analyticsTotalCommission');
+    if (totalTripsEl) totalTripsEl.textContent = inPeriod.length.toLocaleString('en-US');
+    if (totalRevEl) totalRevEl.innerHTML = formatSAR(totalRevenue);
+    if (totalCommEl) totalCommEl.innerHTML = formatSAR(totalCommission);
     const truckList = [...trucks.values()].sort((a, b) => b.trips - a.trips || b.revenue - a.revenue).slice(0, 8);
     const driverList = [...drivers.values()].sort((a, b) => b.trips - a.trips || b.commission - a.commission).slice(0, 8);
     const bestTruck = truckList[0];
@@ -5382,16 +5403,9 @@ async function renderAnalyticsDashboard() {
 
     try {
         // 2. بناء استعلام Supabase مع تطبيق الفلاتر والترتيب التنازلي (الأحدث أولاً)
-        let query = client.from('trips').select('*');
-        
-        if (startDate) query = query.gte('departure_date', startDate);
-        if (endDate) query = query.lte('departure_date', endDate);
-        
+        let query = client.from('trips').select('*').order('trip_no', { ascending: false });
         if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
         if (selectedDriver) query = query.eq('driver_name', selectedDriver);
-
-        // الترتيب تنازلياً حسب رقم الرحلة
-        query = query.order('trip_no', { ascending: false });
 
         const { data: trips, error } = await query;
         if (error) throw error;
@@ -5399,7 +5413,7 @@ async function renderAnalyticsDashboard() {
         const { data: trucks } = await client.from('trucks').select('*');
         const { data: drivers } = await client.from('drivers').select('*');
 
-        let activeTrips = sortTripsByNoDesc(trips ? trips.filter(isCompletedTrip) : []);
+        let activeTrips = sortTripsByNoDesc(filterCompletedTripsForPeriod(trips, startDate, endDate));
         let totalTrips = activeTrips.length;
 
         const totalTripsEl = document.getElementById('repTotalTrips');
