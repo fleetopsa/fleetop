@@ -748,9 +748,9 @@
                     </div>
                 </div>
             </main>
-<main id="analyticsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+<main id="analyticsSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3">
+    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="analyticsStartDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -764,48 +764,48 @@
             </button>
         </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div class="bg-white px-4 py-3 rounded-2xl border border-slate-200">
             <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
             <div id="analyticsTotalTrips" class="text-2xl font-black text-slate-900 font-mono mt-1">0</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 analytics-money">
+        <div class="bg-white px-4 py-3 rounded-2xl border border-slate-200 analytics-money">
             <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="analyticsTotalRevenue" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 analytics-money">
+        <div class="bg-white px-4 py-3 rounded-2xl border border-slate-200 analytics-money">
             <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
             <div id="analyticsTotalCommission" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
         </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-amber-100">
             <div class="text-[11px] font-bold text-amber-700 mb-1" data-i18n="analytics.bestTruck">أفضل شاحنة</div>
             <div id="analyticsBestTruck" class="font-black text-slate-900 text-lg">—</div>
             <div id="analyticsBestTruckMeta" class="text-xs text-slate-500 mt-1"></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-100">
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-blue-100">
             <div class="text-[11px] font-bold text-blue-700 mb-1" data-i18n="analytics.bestDriver">أفضل سائق</div>
             <div id="analyticsBestDriver" class="font-black text-slate-900 text-lg">—</div>
             <div id="analyticsBestDriverMeta" class="text-xs text-slate-500 mt-1"></div>
         </div>
     </div>
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
-            <div id="analyticsTruckTripBars" class="space-y-3"></div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
+            <div id="analyticsTruckTripBars" class="space-y-2"></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
-            <div id="analyticsTruckRevenueBars" class="space-y-3"></div>
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
+            <div id="analyticsTruckRevenueBars" class="space-y-2"></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
-            <div id="analyticsDriverTripBars" class="space-y-3"></div>
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
+            <div id="analyticsDriverTripBars" class="space-y-2"></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-4" data-i18n="analytics.driverComm">عمولات السائقين</h3>
-            <div id="analyticsDriverCommBars" class="space-y-3"></div>
+        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverComm">عمولات السائقين</h3>
+            <div id="analyticsDriverCommBars" class="space-y-2"></div>
         </div>
     </div>
 </main>
