@@ -5252,7 +5252,10 @@ function switchTab(tabId) {
         }
 
         const opsTripCells = (dt) => `
-            <td class="p-2 ops-tripno font-bold text-amber-600 font-mono">${escapeHtml(dt.trip_no || '---')}</td>
+            <td class="p-2 ops-tripno font-bold text-amber-600 font-mono">
+                <div>${escapeHtml(dt.trip_no || '---')}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-0.5">${escapeHtml(dateOnly(dt.departure_date) || '---')}</div>
+            </td>
             <td class="p-2 ops-plate font-bold text-slate-800 font-mono">${escapeHtml(dt.truck_plate || '---')}</td>
             <td class="p-2 ops-client font-bold text-slate-900">${escapeHtml(dt.client_name || '---')}</td>
             <td class="p-2 ops-route text-slate-600">${escapeHtml(tripRouteText(dt))}</td>
