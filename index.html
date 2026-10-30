@@ -777,11 +777,11 @@
         </div>
         <div class="bg-white px-4 py-3 rounded-2xl border border-slate-200 analytics-money">
             <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
-            <div id="analyticsTotalRevenue" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
+            <div id="analyticsTotalRevenue" class="text-2xl font-black text-slate-900 font-mono mt-1"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
         </div>
         <div class="bg-white px-4 py-3 rounded-2xl border border-slate-200 analytics-money">
             <div class="text-[11px] font-bold text-slate-500" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
-            <div id="analyticsTotalCommission" class="text-2xl font-black text-slate-900 font-mono mt-1">0.00</div>
+            <div id="analyticsTotalCommission" class="text-2xl font-black text-slate-900 font-mono mt-1"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -5080,6 +5080,7 @@ function setAppLang(lang) {
         if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
         if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
+        if (typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
     }
 }
 
@@ -5450,22 +5451,22 @@ async function renderAnalyticsDashboard() {
     const bestDriverEl = document.getElementById('analyticsBestDriver');
     const bestDriverMeta = document.getElementById('analyticsBestDriverMeta');
     if (bestTruckEl) bestTruckEl.textContent = bestTruck ? bestTruck.name : '—';
-    if (bestTruckMeta) bestTruckMeta.textContent = bestTruck
-        ? `${tf('analytics.tripsCount', bestTruck.trips)}${showMoney ? ' · ' + formatMoney(bestTruck.revenue) : ''}`
-        : t('analytics.noData');
+    if (bestTruckMeta) bestTruckMeta.innerHTML = bestTruck
+        ? `${escapeHtml(tf('analytics.tripsCount', bestTruck.trips))}${showMoney ? ' · ' + formatSAR(bestTruck.revenue) : ''}`
+        : escapeHtml(t('analytics.noData'));
     if (bestDriverEl) bestDriverEl.textContent = bestDriver ? bestDriver.name : '—';
-    if (bestDriverMeta) bestDriverMeta.textContent = bestDriver
-        ? `${tf('analytics.tripsCount', bestDriver.trips)}${showMoney ? ' · ' + formatMoney(bestDriver.commission) : ''}`
-        : t('analytics.noData');
+    if (bestDriverMeta) bestDriverMeta.innerHTML = bestDriver
+        ? `${escapeHtml(tf('analytics.tripsCount', bestDriver.trips))}${showMoney ? ' · ' + formatSAR(bestDriver.commission) : ''}`
+        : escapeHtml(t('analytics.noData'));
 
     const truckTripBars = document.getElementById('analyticsTruckTripBars');
     const truckRevBars = document.getElementById('analyticsTruckRevenueBars');
     const driverTripBars = document.getElementById('analyticsDriverTripBars');
     const driverCommBars = document.getElementById('analyticsDriverCommBars');
     if (truckTripBars) truckTripBars.innerHTML = analyticsBarHtml(truckList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#c4a35a');
-    if (truckRevBars) truckRevBars.innerHTML = analyticsBarHtml([...truckList].sort((a, b) => b.revenue - a.revenue), x => x.revenue, x => x.name, x => formatMoney(x.revenue), '#0b2a4a');
+    if (truckRevBars) truckRevBars.innerHTML = analyticsBarHtml([...truckList].sort((a, b) => b.revenue - a.revenue), x => x.revenue, x => x.name, x => formatSAR(x.revenue), '#0b2a4a');
     if (driverTripBars) driverTripBars.innerHTML = analyticsBarHtml(driverList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#2563eb');
-    if (driverCommBars) driverCommBars.innerHTML = analyticsBarHtml([...driverList].sort((a, b) => b.commission - a.commission), x => x.commission, x => x.name, x => formatMoney(x.commission), '#059669');
+    if (driverCommBars) driverCommBars.innerHTML = analyticsBarHtml([...driverList].sort((a, b) => b.commission - a.commission), x => x.commission, x => x.name, x => formatSAR(x.commission), '#059669');
 }
 
                async function generateReport() {
