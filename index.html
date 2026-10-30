@@ -1919,11 +1919,12 @@
     <div id="payoutModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> سداد عمولة</h3>
+                <h3 id="payoutModalTitle" class="font-bold text-sm flex items-center"><i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> سداد عمولة</h3>
                 <button type="button" onclick="closePayoutModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-500 mb-4">يُخصم المبلغ من متبقي السائق ويظهر في سجل المدفوعات.</p>
             <form onsubmit="saveCommissionPayout(event)" class="space-y-3.5">
+                <input type="hidden" id="payoutId">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
                     <select id="payoutDriver" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -1943,7 +1944,7 @@
                     <input type="text" id="payoutNote" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اختياري">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">تسجيل الدفعة</button>
+                    <button type="submit" id="payoutSubmitBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">تسجيل الدفعة</button>
                     <button type="button" onclick="closePayoutModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                 </div>
             </form>
@@ -2379,20 +2380,67 @@ async function openCommissionPayoutTab() {
     focusActivePage();
 }
 
+let editingPayout = null;
+
+function setPayoutModalMode(edit) {
+    const title = document.getElementById('payoutModalTitle');
+    const submit = document.getElementById('payoutSubmitBtn');
+    const ar = currentLang !== 'en';
+    if (title) title.innerHTML = edit
+        ? `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${ar ? 'تعديل سداد عمولة' : 'Edit commission payout'}`
+        : `<i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> ${ar ? 'سداد عمولة' : 'Pay commission'}`;
+    if (submit) submit.textContent = edit ? (ar ? 'حفظ التعديل' : 'Save changes') : (ar ? 'تسجيل الدفعة' : 'Record payout');
+}
+
 function openPayoutModal() {
+    editingPayout = null;
+    const idInput = document.getElementById('payoutId');
     const driverSelect = document.getElementById('payoutDriver');
     const amountInput = document.getElementById('payoutAmount');
     const payoutDate = document.getElementById('payoutDate');
     const noteInput = document.getElementById('payoutNote');
-    const now = new Date();
+    if (idInput) idInput.value = '';
     if (driverSelect) driverSelect.value = '';
     if (amountInput) amountInput.value = '';
     if (noteInput) noteInput.value = '';
-    if (payoutDate) payoutDate.value = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    if (payoutDate) payoutDate.value = todayDateInput();
+    setPayoutModalMode(false);
+    document.getElementById('payoutModal')?.classList.remove('hidden');
+}
+
+async function openEditPayoutModal(id) {
+    const payoutId = Number(id);
+    if (!payoutId) return;
+    await populateCommissionFilters();
+    const { data, error } = await client.from('trips').select('*').eq('id', payoutId).eq('status', 'صرف عمولة').maybeSingle();
+    if (error || !data) {
+        alert(currentLang === 'en' ? 'Could not load this payout.' : 'تعذر العثور على هذه الدفعة.');
+        return;
+    }
+    editingPayout = data;
+    const idInput = document.getElementById('payoutId');
+    const driverSelect = document.getElementById('payoutDriver');
+    const amountInput = document.getElementById('payoutAmount');
+    const payoutDate = document.getElementById('payoutDate');
+    const noteInput = document.getElementById('payoutNote');
+    if (idInput) idInput.value = String(data.id);
+    if (driverSelect) {
+        if (![...driverSelect.options].some(opt => opt.value === data.driver_name)) {
+            driverSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(data.driver_name || '')}">${escapeHtml(data.driver_name || '')}</option>`);
+        }
+        driverSelect.value = data.driver_name || '';
+    }
+    if (amountInput) amountInput.value = commissionAmount(data);
+    if (payoutDate) payoutDate.value = dateOnly(data.departure_date) || todayDateInput();
+    if (noteInput) noteInput.value = data.payment_method || '';
+    setPayoutModalMode(true);
     document.getElementById('payoutModal')?.classList.remove('hidden');
 }
 
 function closePayoutModal() {
+    editingPayout = null;
+    const idInput = document.getElementById('payoutId');
+    if (idInput) idInput.value = '';
     document.getElementById('payoutModal')?.classList.add('hidden');
 }
 
@@ -2472,7 +2520,10 @@ async function generateCommissionSettlement() {
                     <td class="p-3.5 font-bold text-slate-900">${escapeHtml(payout.driver_name || 'غير محدد')}</td>
                     <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
                     <td class="p-3.5 text-slate-600">${escapeHtml(payout.payment_method || '—')}</td>
-                    <td class="p-3.5 text-center no-print">
+                    <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
+                        <button type="button" onclick="openEditPayoutModal(${Number(payout.id)})" class="text-amber-600 hover:text-amber-800 font-bold" title="${t('ui.edit')}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
                         <button type="button" onclick="deleteCommissionPayout(${Number(payout.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="حذف الدفعة">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
@@ -2508,8 +2559,9 @@ async function generatePayoutNo() {
 
 async function saveCommissionPayout(e) {
     if (e) e.preventDefault();
+    const payoutId = Number(document.getElementById('payoutId')?.value || editingPayout?.id || 0);
     const driverName = document.getElementById('payoutDriver')?.value || '';
-    const amount = parseFloat(document.getElementById('payoutAmount')?.value);
+    const amount = roundMoney(parseFloat(document.getElementById('payoutAmount')?.value));
     const payoutDate = document.getElementById('payoutDate')?.value || '';
     const note = document.getElementById('payoutNote')?.value.trim() || '';
 
@@ -2519,41 +2571,53 @@ async function saveCommissionPayout(e) {
     }
 
     try {
-        const remaining = await driverCommissionBalance(driverName);
+        let remaining = await driverCommissionBalance(driverName);
+        if (payoutId && editingPayout && String(editingPayout.driver_name || '') === driverName) {
+            remaining = roundMoney(remaining + commissionAmount(editingPayout));
+        }
         if (amount - remaining > 0.009) {
             alert('المبلغ أكبر من المتبقي في عمولة السائق. المتبقي: ' + formatMoney(remaining));
             return;
         }
 
-        const trip_no = await generatePayoutNo();
-        const { error } = await client.from('trips').insert([{
-            trip_no,
-            client_name: 'صرف عمولة',
-            from_city: '-',
-            to_city: '-',
-            trip_type: 'صرف عمولة',
-            departure_date: payoutDate,
-            truck_plate: '-',
-            driver_name: driverName,
-            driver_commission: amount,
-            total_amount: 0,
-            paid_amount: 0,
-            remaining_amount: 0,
-            status: 'صرف عمولة',
-            payment_status: 'مصروف',
-            payment_method: note || null
-        }]);
-        if (error) throw error;
-
-        document.getElementById('payoutAmount').value = '';
-        document.getElementById('payoutNote').value = '';
-        closePayoutModal();
-        alert('تم تسجيل المبلغ وخصمه من عمولة السائق.');
+        if (payoutId) {
+            const { error } = await client.from('trips').update({
+                driver_name: driverName,
+                driver_commission: amount,
+                departure_date: payoutDate,
+                payment_method: note || null
+            }).eq('id', payoutId).eq('status', 'صرف عمولة');
+            if (error) throw error;
+            closePayoutModal();
+            alert(currentLang === 'en' ? 'Payout updated.' : 'تم تعديل الدفعة.');
+        } else {
+            const trip_no = await generatePayoutNo();
+            const { error } = await client.from('trips').insert([{
+                trip_no,
+                client_name: 'صرف عمولة',
+                from_city: '-',
+                to_city: '-',
+                trip_type: 'صرف عمولة',
+                departure_date: payoutDate,
+                truck_plate: '-',
+                driver_name: driverName,
+                driver_commission: amount,
+                total_amount: 0,
+                paid_amount: 0,
+                remaining_amount: 0,
+                status: 'صرف عمولة',
+                payment_status: 'مصروف',
+                payment_method: note || null
+            }]);
+            if (error) throw error;
+            closePayoutModal();
+            alert('تم تسجيل المبلغ وخصمه من عمولة السائق.');
+        }
         await generateCommissionReport();
         await generateCommissionSettlement();
     } catch (err) {
         console.error(err);
-        alert('تعذر تسجيل الدفعة: ' + (err.message || 'خطأ غير متوقع'));
+        alert('تعذر حفظ الدفعة: ' + (err.message || 'خطأ غير متوقع'));
     }
 }
 
