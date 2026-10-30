@@ -31,7 +31,12 @@
         .ops-driver-report { table-layout: fixed; width: 100%; }
         .ops-driver-report th, .ops-driver-report td { vertical-align: top; }
         .ops-driver-report th:nth-child(1), .ops-driver-report td.ops-identity { width: 16%; }
-        .ops-driver-report th:nth-child(2), .ops-driver-report td.ops-count { width: 8%; text-align: center; }
+        .ops-driver-report th:nth-child(2), .ops-driver-report td.ops-count { width: 8%; }
+        .ops-driver-report td.ops-identity,
+        .ops-driver-report td.ops-count {
+            vertical-align: middle;
+            text-align: center;
+        }
         .ops-driver-report th:nth-child(3), .ops-driver-report td.ops-tripno { width: 12%; }
         .ops-driver-report th:nth-child(4), .ops-driver-report td.ops-plate { width: 12%; }
         .ops-driver-report th:nth-child(5), .ops-driver-report td.ops-client { width: 16%; }
