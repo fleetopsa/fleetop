@@ -1922,7 +1922,9 @@
                 <h3 id="payoutModalTitle" class="font-bold text-sm flex items-center"><i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> سداد عمولة</h3>
                 <button type="button" onclick="closePayoutModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">يُخصم المبلغ من متبقي السائق ويظهر في سجل المدفوعات.</p>
+            <p class="text-xs text-slate-500 mb-4">يُخصم المبلغ من متبقي السائق ويظهر في سجل المدفوعات. إذا زاد عن المستحق يُحفظ الفرق رصيداً ويُخصم من العمولة التالية.</p>
+            <p id="payoutFormError" class="hidden text-xs font-bold text-rose-600 mb-3"></p>
+            <p id="payoutBalanceHint" class="hidden text-xs font-bold text-slate-600 mb-3"></p>
             <form onsubmit="saveCommissionPayout(event)" class="space-y-3.5">
                 <input type="hidden" id="payoutId">
                 <div>
@@ -2072,6 +2074,12 @@ function formatMoney(amount) {
 
 function formatSAR(amount) {
     return `<span class="money" dir="ltr">${riyalMark()}${formatMoney(amount)}</span>`;
+}
+
+function formatCommissionNet(amount) {
+    const value = roundMoney(amount);
+    if (value < -0.009) return formatSAR(Math.abs(value));
+    return formatSAR(Math.max(0, value));
 }
 
 function fillSelectOptions(selectId, items, allLabel) {
@@ -2414,6 +2422,9 @@ function openPayoutModal() {
     if (noteInput) noteInput.value = '';
     if (payoutDate) payoutDate.value = todayDateInput();
     setPayoutModalMode(false);
+    showPayoutError('');
+    bindPayoutBalanceHint();
+    refreshPayoutBalanceHint();
     document.getElementById('payoutModal')?.classList.remove('hidden');
 }
 
@@ -2443,6 +2454,9 @@ async function openEditPayoutModal(id) {
     if (payoutDate) payoutDate.value = dateOnly(data.departure_date) || todayDateInput();
     if (noteInput) noteInput.value = data.payment_method || '';
     setPayoutModalMode(true);
+    showPayoutError('');
+    bindPayoutBalanceHint();
+    refreshPayoutBalanceHint();
     document.getElementById('payoutModal')?.classList.remove('hidden');
 }
 
@@ -2477,7 +2491,7 @@ async function generateCommissionSettlement() {
         const remainingEl = document.getElementById('settleRemainingDisplay');
         if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
         if (paidEl) paidEl.innerHTML = formatSAR(paid);
-        if (remainingEl) remainingEl.innerHTML = formatSAR(earned - paid);
+        if (remainingEl) remainingEl.innerHTML = formatCommissionNet(earned - paid);
 
         const groups = new Map();
         const ensure = (name) => {
@@ -2504,8 +2518,8 @@ async function generateCommissionSettlement() {
                         <div class="font-black font-mono text-slate-900">${formatSAR(group.earned)}</div>
                         <div class="text-[10px] font-bold text-rose-600 mt-2">${t('ui.paid')}</div>
                         <div class="font-black font-mono text-rose-600">${formatSAR(group.paid)}</div>
-                        <div class="text-[10px] font-bold text-emerald-700 mt-2">${t('ui.remaining')}</div>
-                        <div class="font-black font-mono text-emerald-700">${formatSAR(group.earned - group.paid)}</div>
+                        <div class="text-[10px] font-bold ${roundMoney(group.earned - group.paid) < -0.009 ? 'text-amber-700' : 'text-emerald-700'} mt-2">${roundMoney(group.earned - group.paid) < -0.009 ? (currentLang === 'en' ? 'Credit' : 'رصيد للسائق') : t('ui.remaining')}</div>
+                        <div class="font-black font-mono ${roundMoney(group.earned - group.paid) < -0.009 ? 'text-amber-700' : 'text-emerald-700'}">${formatCommissionNet(group.earned - group.paid)}</div>
                     </td>`;
                 const gap = driverIndex === 0 ? '' : `<tr class="driver-gap"><td colspan="6"></td></tr>`;
                 return gap + trips.map((trip, index) => `
@@ -2575,27 +2589,85 @@ async function generatePayoutNo() {
     return 'PAY-' + ((nums.length ? Math.max(...nums) : 1000) + 1);
 }
 
+function showPayoutError(message) {
+    const el = document.getElementById('payoutFormError');
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('hidden', !message);
+}
+
+async function refreshPayoutBalanceHint() {
+    const hint = document.getElementById('payoutBalanceHint');
+    const driverName = document.getElementById('payoutDriver')?.value || '';
+    if (!hint) return;
+    if (!driverName) {
+        hint.classList.add('hidden');
+        hint.textContent = '';
+        return;
+    }
+    try {
+        let remaining = await driverCommissionBalance(driverName);
+        const payoutId = Number(document.getElementById('payoutId')?.value || editingPayout?.id || 0);
+        if (payoutId && editingPayout && String(editingPayout.driver_name || '') === driverName) {
+            remaining = roundMoney(remaining + commissionAmount(editingPayout));
+        }
+        hint.classList.remove('hidden');
+        if (remaining < -0.009) {
+            hint.textContent = (currentLang === 'en' ? 'Current driver credit: ' : 'الرصيد الحالي للسائق: ') + formatMoney(Math.abs(remaining));
+            hint.className = 'text-xs font-bold text-amber-700 mb-3';
+        } else {
+            hint.textContent = (currentLang === 'en' ? 'Commission due: ' : 'العمولة المستحقة: ') + formatMoney(Math.max(0, remaining));
+            hint.className = 'text-xs font-bold text-slate-600 mb-3';
+        }
+    } catch (err) {
+        console.error(err);
+        hint.classList.add('hidden');
+    }
+}
+
+function bindPayoutBalanceHint() {
+    const driverSelect = document.getElementById('payoutDriver');
+    if (!driverSelect || driverSelect.dataset.balanceBound) return;
+    driverSelect.dataset.balanceBound = '1';
+    driverSelect.addEventListener('change', refreshPayoutBalanceHint);
+}
+
+let payoutSaveBusy = false;
+
 async function saveCommissionPayout(e) {
     if (e) e.preventDefault();
+    if (payoutSaveBusy) return;
     const payoutId = Number(document.getElementById('payoutId')?.value || editingPayout?.id || 0);
     const driverName = document.getElementById('payoutDriver')?.value || '';
     const amount = roundMoney(parseFloat(document.getElementById('payoutAmount')?.value));
     const payoutDate = document.getElementById('payoutDate')?.value || '';
-    const note = document.getElementById('payoutNote')?.value.trim() || '';
+    let note = document.getElementById('payoutNote')?.value.trim() || '';
+    showPayoutError('');
 
     if (!driverName || !(amount > 0) || !payoutDate) {
-        alert('اختر السائق، وأدخل المبلغ وتاريخ الصرف.');
+        showPayoutError(currentLang === 'en' ? 'Choose the driver, amount and payout date.' : 'اختر السائق، وأدخل المبلغ وتاريخ الصرف.');
         return;
     }
 
+    payoutSaveBusy = true;
+    const submitBtn = document.getElementById('payoutSubmitBtn');
+    if (submitBtn) submitBtn.disabled = true;
     try {
         let remaining = await driverCommissionBalance(driverName);
         if (payoutId && editingPayout && String(editingPayout.driver_name || '') === driverName) {
             remaining = roundMoney(remaining + commissionAmount(editingPayout));
         }
-        if (amount - remaining > 0.009) {
-            alert('المبلغ أكبر من المتبقي في عمولة السائق. المتبقي: ' + formatMoney(remaining));
-            return;
+        const due = Math.max(0, remaining);
+        const extra = roundMoney(amount - due);
+        if (extra > 0.009) {
+            const ok = await appConfirm(
+                currentLang === 'en'
+                    ? `The amount is ${formatMoney(extra)} more than the commission due (${formatMoney(due)}).\nIf you continue, the extra will be kept as driver credit and deducted from the next earned commission.`
+                    : `المبلغ أكبر من المستحق بمقدار ${formatMoney(extra)}.\nالمستحق حالياً: ${formatMoney(due)}.\nإذا اخترت الاستمرار سيُسجَّل الفرق رصيداً للسائق ويُخصم تلقائياً من أول عمولة تنزل له.`,
+                { okLabel: currentLang === 'en' ? 'Continue' : 'استمرار', cancelLabel: currentLang === 'en' ? 'Cancel' : 'إلغاء' }
+            );
+            if (!ok) return;
+            if (!note) note = (currentLang === 'en' ? 'Advance credit ' : 'رصيد مقدم ') + formatMoney(extra);
         }
 
         if (payoutId) {
@@ -2606,8 +2678,6 @@ async function saveCommissionPayout(e) {
                 payment_method: note || null
             }).eq('id', payoutId).eq('status', 'صرف عمولة');
             if (error) throw error;
-            closePayoutModal();
-            alert(currentLang === 'en' ? 'Payout updated.' : 'تم تعديل الدفعة.');
         } else {
             const trip_no = await generatePayoutNo();
             const { error } = await client.from('trips').insert([{
@@ -2624,22 +2694,24 @@ async function saveCommissionPayout(e) {
                 paid_amount: 0,
                 remaining_amount: 0,
                 status: 'صرف عمولة',
-                payment_status: 'مصروف',
+                payment_status: extra > 0.009 ? 'رصيد مقدم' : 'مصروف',
                 payment_method: note || null
             }]);
             if (error) throw error;
-            closePayoutModal();
-            alert('تم تسجيل المبلغ وخصمه من عمولة السائق.');
         }
-        await generateCommissionReport();
+        closePayoutModal();
+        try { await generateCommissionReport(); } catch (err) { console.error(err); }
         await generateCommissionSettlement();
     } catch (err) {
         console.error(err);
-        alert('تعذر حفظ الدفعة: ' + (err.message || 'خطأ غير متوقع'));
+        showPayoutError((currentLang === 'en' ? 'Could not save the payout: ' : 'تعذر حفظ الدفعة: ') + (err.message || ''));
+    } finally {
+        payoutSaveBusy = false;
+        if (submitBtn) submitBtn.disabled = false;
     }
 }
 
-function appConfirm(message) {
+function appConfirm(message, options = {}) {
     return new Promise(resolve => {
         const modal = document.getElementById('appConfirmModal');
         const text = document.getElementById('appConfirmMessage');
@@ -2651,13 +2723,15 @@ function appConfirm(message) {
         }
         const finish = (ok) => {
             modal.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
             okBtn.onclick = null;
             cancelBtn.onclick = null;
             resolve(ok);
         };
         if (text) text.textContent = message;
-        okBtn.textContent = currentLang === 'en' ? 'OK' : 'موافق';
-        cancelBtn.textContent = currentLang === 'en' ? 'Cancel' : 'إلغاء';
+        okBtn.textContent = options.okLabel || (currentLang === 'en' ? 'OK' : 'موافق');
+        cancelBtn.textContent = options.cancelLabel || (currentLang === 'en' ? 'Cancel' : 'إلغاء');
+        cancelBtn.classList.toggle('hidden', !!options.alertOnly);
         okBtn.onclick = () => finish(true);
         cancelBtn.onclick = () => finish(false);
         modal.classList.remove('hidden');
