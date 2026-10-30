@@ -753,11 +753,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
-                <input type="date" id="analyticsStartDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                <input type="date" id="analyticsStartDate" onchange="onAnalyticsDatesChanged()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
-                <input type="date" id="analyticsEndDate" onchange="renderAnalyticsDashboard()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                <input type="date" id="analyticsEndDate" onchange="onAnalyticsDatesChanged()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="analytics.period">الفترة</label>
@@ -5340,14 +5340,20 @@ function currentAnalyticsPreset() {
     return 'custom';
 }
 
-function updateAnalyticsRangeButtons() {
+function setAnalyticsPeriodSelect(mode) {
     const sel = document.getElementById('analyticsPeriodPreset');
-    if (sel) sel.value = currentAnalyticsPreset();
+    if (sel) sel.value = mode || 'all';
+}
+
+function onAnalyticsDatesChanged() {
+    setAnalyticsPeriodSelect(currentAnalyticsPreset());
+    renderAnalyticsDashboard();
 }
 
 function setAnalyticsDateRange(mode) {
     const startEl = document.getElementById('analyticsStartDate');
     const endEl = document.getElementById('analyticsEndDate');
+    setAnalyticsPeriodSelect(mode);
     if (mode === 'this') {
         const range = analyticsMonthBounds(0);
         if (startEl) startEl.value = range.start;
@@ -5356,9 +5362,11 @@ function setAnalyticsDateRange(mode) {
         const range = analyticsMonthBounds(-1);
         if (startEl) startEl.value = range.start;
         if (endEl) endEl.value = range.end;
-    } else if (mode !== 'custom') {
+    } else if (mode === 'all') {
         if (startEl) startEl.value = '';
         if (endEl) endEl.value = '';
+    } else if (startEl) {
+        startEl.focus();
     }
     renderAnalyticsDashboard();
 }
@@ -5392,7 +5400,6 @@ async function renderAnalyticsDashboard() {
     const endEl = document.getElementById('analyticsEndDate');
     const startDate = startEl?.value || '';
     const endDate = endEl?.value || '';
-    updateAnalyticsRangeButtons();
     const showMoney = typeof canViewCommissionReports === 'function' && canViewCommissionReports();
     document.querySelectorAll('.analytics-money').forEach(el => el.classList.toggle('hidden', !showMoney));
 
