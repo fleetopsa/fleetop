@@ -3191,8 +3191,16 @@ function parseTripSerial(tripNo) {
     return null;
 }
 
+function usesYearCodedTripNo(date = new Date()) {
+    return date.getFullYear() >= 2027;
+}
+
 function formatTripNo(yearCode, serial) {
     return 'TRP-' + yearCode + '-' + serial;
+}
+
+function formatLegacyTripNo(serial) {
+    return 'TRIP-' + serial;
 }
 
 function tripNoValue(trip) {
@@ -5648,14 +5656,17 @@ async function renderAnalyticsDashboard() {
                 availableDrivers.map(d => `<option value="${d.name}">${d.name} (${d.phone})</option>`).join('');
         }
         async function generateTripNo() {
-            const year = tripYearCode();
             const { data: trips } = await client.from('trips').select('trip_no');
-            const nums = (trips || [])
-                .map(row => parseTripSerial(row.trip_no))
-                .filter(parsed => parsed && parsed.year === year && Number.isFinite(parsed.serial))
-                .map(parsed => parsed.serial);
+            const parsedRows = (trips || []).map(row => parseTripSerial(row.trip_no)).filter(parsed => parsed && Number.isFinite(parsed.serial));
+            if (usesYearCodedTripNo()) {
+                const year = tripYearCode();
+                const nums = parsedRows.filter(parsed => parsed.year === year).map(parsed => parsed.serial);
+                const nextNum = (nums.length ? Math.max(...nums) : 1000) + 1;
+                return formatTripNo(year, nextNum);
+            }
+            const nums = parsedRows.filter(parsed => !parsed.year).map(parsed => parsed.serial);
             const nextNum = (nums.length ? Math.max(...nums) : 1000) + 1;
-            return formatTripNo(year, nextNum);
+            return formatLegacyTripNo(nextNum);
         }
 
       // متغير عالمي لحفظ الرحلات مؤقتاً لغرض الفلترة الفورية
