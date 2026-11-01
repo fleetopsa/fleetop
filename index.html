@@ -2991,11 +2991,18 @@ function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmou
     
     const modalCollectionDate = document.getElementById('modalCollectionDate');
     if (modalCollectionDate) modalCollectionDate.value = '';
-    const modalCompletionDate = document.getElementById('modalCompletionDate');
-    if (modalCompletionDate) modalCompletionDate.value = todayDateInput();
-
     const priorBox = document.getElementById('priorPaymentsBox');
     const trip = allTripsCache.find(item => String(item.trip_no) === String(tripNo));
+    const modalCompletionDate = document.getElementById('modalCompletionDate');
+    if (modalCompletionDate) {
+        const alreadyClosed = trip && isCompletedTrip(trip);
+        const keptDate = alreadyClosed
+            ? (dateOnly(trip.completion_date) || dateOnly(trip.departure_date) || todayDateInput())
+            : todayDateInput();
+        modalCompletionDate.value = keptDate;
+        modalCompletionDate.readOnly = Boolean(alreadyClosed);
+        modalCompletionDate.classList.toggle('bg-slate-100', Boolean(alreadyClosed));
+    }
     const lines = trip ? paymentLineItems(trip) : [];
     if (priorBox) {
         if (lines.length) {
@@ -3154,7 +3161,7 @@ function todayDateInput() {
 
 function tripCompletionDate(trip) {
     if (isOpeningBalance(trip)) return dateOnly(trip.departure_date);
-    return dateOnly(trip.completion_date) || dateOnly(trip.collection_date) || dateOnly(trip.departure_date);
+    return dateOnly(trip.completion_date) || dateOnly(trip.departure_date);
 }
 
 function tripInDateRange(when, startDate, endDate) {
@@ -3570,13 +3577,13 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             paid_amount: newPaidAmount,
             remaining_amount: newRemainingAmount,
             payment_status: paymentStatus,
-            driver_commission: driverCommission,
-            payment_method: paymentMethodVal ? paymentMethodVal.trim() : null,
-            collection_date: collectionDateVal ? collectionDateVal.trim() : null
+            driver_commission: driverCommission
         };
         if (endingActiveTrip) {
             updateData.status = 'مكتملة';
             updateData.completion_date = completionDateVal;
+            updateData.payment_method = paymentMethodVal ? paymentMethodVal.trim() : null;
+            updateData.collection_date = collectionDateVal ? collectionDateVal.trim() : null;
         }
         Object.keys(updateData).forEach(key => {
             if (updateData[key] === "" || updateData[key] === "mm / dd / yyyy" || updateData[key] === undefined) {
