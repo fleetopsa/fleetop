@@ -1841,18 +1841,22 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
-                        <select id="editPaymentMethod" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                            <option value="" data-i18n="ui.none">بدون</option>
-                            <option value="نقدي" data-i18n="ui.cash">نقدي</option>
-                            <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
-                            <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
-                        </select>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.completionDate">تاريخ إنهاء الرحلة</label>
+                        <input type="date" id="editCompletionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل</label>
                         <input type="date" id="editCollectionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
+                    <select id="editPaymentMethod" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="" data-i18n="ui.none">بدون</option>
+                        <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                        <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
+                        <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
+                    </select>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ التعديل</button>
@@ -2995,10 +2999,11 @@ function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmou
     if (modalCompletionDate) {
         const alreadyClosed = trip && isCompletedTrip(trip);
         const keptDate = alreadyClosed
-            ? (dateOnly(trip.completion_date) || dateOnly(trip.departure_date) || todayDateInput())
+            ? (dateOnly(trip.completion_date) || '')
             : todayDateInput();
         modalCompletionDate.value = keptDate;
         modalCompletionDate.readOnly = Boolean(alreadyClosed);
+        modalCompletionDate.required = !alreadyClosed;
         modalCompletionDate.classList.toggle('bg-slate-100', Boolean(alreadyClosed));
     }
     const lines = trip ? paymentLineItems(trip) : [];
@@ -3159,7 +3164,7 @@ function todayDateInput() {
 
 function tripCompletionDate(trip) {
     if (isOpeningBalance(trip)) return dateOnly(trip.departure_date);
-    return dateOnly(trip.completion_date) || dateOnly(trip.departure_date);
+    return dateOnly(trip.completion_date);
 }
 
 function tripInDateRange(when, startDate, endDate) {
@@ -6285,6 +6290,11 @@ async function openEditTripModal(tripNo) {
     }
     method.value = trip.payment_method || '';
     document.getElementById('editCollectionDate').value = dateInputValue(trip.collection_date);
+    const editCompletionDate = document.getElementById('editCompletionDate');
+    if (editCompletionDate) {
+        editCompletionDate.value = dateInputValue(trip.completion_date);
+        editCompletionDate.closest('div').classList.toggle('hidden', String(trip.status || '').trim() === 'جارية');
+    }
     await fillEditFleetOptions(trip);
     calculateEditRemaining();
     loadTripSuggestions();
@@ -6321,6 +6331,7 @@ async function saveEditTrip(e) {
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
     const payment_method = document.getElementById('editPaymentMethod').value.trim() || null;
     const collection_date = document.getElementById('editCollectionDate').value || null;
+    const completion_date = document.getElementById('editCompletionDate')?.value || null;
 
     if (trip.status === 'جارية') {
         let activeTrips = [];
@@ -6341,11 +6352,19 @@ async function saveEditTrip(e) {
         }
     }
 
-    const { error } = await client.from('trips').update({
+    const editPayload = {
         client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name,
         driver_commission, total_amount, paid_amount, remaining_amount, payment_status,
         payment_method, collection_date
-    }).eq('trip_no', trip.trip_no);
+    };
+    if (String(trip.status || '').trim() !== 'جارية') editPayload.completion_date = completion_date;
+
+    let { error } = await client.from('trips').update(editPayload).eq('trip_no', trip.trip_no);
+    if (error && /completion_date/i.test(error.message || '')) {
+        delete editPayload.completion_date;
+        const retry = await client.from('trips').update(editPayload).eq('trip_no', trip.trip_no);
+        error = retry.error;
+    }
 
     if (error) {
         alert('تعذر حفظ التعديل: ' + error.message);
