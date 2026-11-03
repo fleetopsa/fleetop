@@ -1616,6 +1616,7 @@
             </main>
             <main id="activityLogSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3">
                 <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
+                    <p class="text-[11px] text-slate-500 font-bold mb-3" data-i18n="log.hint">يُسجَّل النشاط من بعد تفعيل السجل فقط، ولا يظهر ما قبل ذلك.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
@@ -1627,7 +1628,9 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.username">اسم المستخدم</label>
-                            <input type="text" id="activityLogUser" oninput="loadActivityLog()" autocomplete="off" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="log.searchUser" placeholder="ابحث بالمستخدم">
+                            <select id="activityLogUser" onchange="loadActivityLog()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.allUsers">كل المستخدمين</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -2098,6 +2101,25 @@
             }
         }
 
+        async function fillActivityLogUserOptions() {
+            const select = document.getElementById('activityLogUser');
+            if (!select) return;
+            const current = select.value;
+            try {
+                const { data } = await client.from('app_users').select('username, employee_name').order('employee_name');
+                const options = (data || []).map(user => {
+                    const username = String(user.username || '').trim();
+                    const name = String(user.employee_name || '').trim();
+                    const label = name && username ? `${name} (${username})` : (name || username);
+                    return `<option value="${escapeHtml(username)}">${escapeHtml(label)}</option>`;
+                }).join('');
+                select.innerHTML = `<option value="">${t('ui.allUsers')}</option>` + options;
+                if (current && [...select.options].some(option => option.value === current)) select.value = current;
+            } catch (err) {
+                console.warn(err);
+            }
+        }
+
         async function loadActivityLog() {
             const tbody = document.getElementById('activityLogTable');
             if (!tbody) return;
@@ -2105,9 +2127,10 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
                 return;
             }
+            await fillActivityLogUserOptions();
             const start = document.getElementById('activityLogStart')?.value || '';
             const end = document.getElementById('activityLogEnd')?.value || '';
-            const userQ = String(document.getElementById('activityLogUser')?.value || '').trim().toLowerCase();
+            const userQ = String(document.getElementById('activityLogUser')?.value || '').trim();
             try {
                 let query = client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(400);
                 if (start) query = query.gte('created_at', start + 'T00:00:00');
@@ -2119,10 +2142,7 @@
                 }
                 let rows = data || [];
                 if (userQ) {
-                    rows = rows.filter(row =>
-                        String(row.username || '').toLowerCase().includes(userQ) ||
-                        String(row.employee_name || '').toLowerCase().includes(userQ)
-                    );
+                    rows = rows.filter(row => String(row.username || '') === userQ);
                 }
                 if (!rows.length) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('log.empty')}</td></tr>`;
@@ -4518,7 +4538,9 @@ const I18N = {
         'log.record': 'السجل',
         'log.details': 'التفاصيل',
         'log.searchUser': 'ابحث بالمستخدم',
-        'log.empty': 'لا توجد عمليات في هذه الفترة',
+        'log.empty': 'لا توجد عمليات بعد تفعيل السجل في هذه الفترة',
+        'log.hint': 'يُسجَّل النشاط من بعد تفعيل السجل فقط، ولا يظهر ما قبل ذلك.',
+        'ui.allUsers': 'كل المستخدمين',
         'log.missingTable': 'جدول سجل النشاط غير موجود. نفّذ ملف add-activity-log.sql في Supabase.',
         'log.login': 'تسجيل دخول',
         'log.logout': 'تسجيل خروج',
@@ -4890,7 +4912,9 @@ const I18N = {
         'log.record': 'Record',
         'log.details': 'Details',
         'log.searchUser': 'Search by user',
-        'log.empty': 'No activity in this period',
+        'log.empty': 'No activity after the log was enabled for this period',
+        'log.hint': 'Activity is recorded only after the log is enabled. Older actions are not shown.',
+        'ui.allUsers': 'All users',
         'log.missingTable': 'Activity log table is missing. Run add-activity-log.sql in Supabase.',
         'log.login': 'Sign in',
         'log.logout': 'Sign out',
