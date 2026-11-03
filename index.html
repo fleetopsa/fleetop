@@ -2311,6 +2311,9 @@ function clearAllPageFilters() {
     setFilterValue('analyticsStartDate', '');
     setFilterValue('analyticsEndDate', '');
     setFilterValue('analyticsPeriodPreset', 'all');
+    setFilterValue('activityLogStart', '');
+    setFilterValue('activityLogEnd', '');
+    setFilterValue('activityLogUser', '');
 }
 
 function resetFiltersForScreen(tabId) {
@@ -2357,6 +2360,12 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('analyticsStartDate', '');
         setFilterValue('analyticsEndDate', '');
         setFilterValue('analyticsPeriodPreset', 'all');
+        return;
+    }
+    if (id === 'activityLog' || id === 'activityLogSection') {
+        setFilterValue('activityLogStart', '');
+        setFilterValue('activityLogEnd', '');
+        setFilterValue('activityLogUser', '');
     }
 }
 
