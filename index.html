@@ -2326,7 +2326,7 @@
         async function logActivity(action, entity, entityNo, details) {
             try {
                 const user = currentLoggedInUser || {};
-                const { error } = await client.from('activity_log').insert([{
+                const payload = [{
                     user_id: user.id != null ? String(user.id) : null,
                     username: user.username || '',
                     employee_name: user.employee_name || '',
@@ -2335,11 +2335,39 @@
                     entity: entity || '',
                     entity_no: entityNo != null ? String(entityNo) : '',
                     details: details || ''
-                }]);
+                }];
+                let { error } = await client.from('activity_log').insert(payload);
+                if (error && /jwt|session|expired|not authenticated/i.test(error.message || '')) {
+                    await client.auth.refreshSession();
+                    ({ error } = await client.from('activity_log').insert(payload));
+                }
                 if (error) console.warn('تعذر حفظ سجل النشاط:', error.message);
             } catch (err) {
                 console.warn('تعذر حفظ سجل النشاط:', err);
             }
+        }
+
+        function activityLogDayBound(dateStr, endOfDay) {
+            if (!dateStr) return '';
+            return endOfDay ? `${dateStr}T23:59:59.999+03:00` : `${dateStr}T00:00:00+03:00`;
+        }
+
+        function formatActivityLogTime(value) {
+            if (!value) return '—';
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return String(value).replace('T', ' ').slice(0, 19);
+            const parts = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Riyadh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).formatToParts(date);
+            const get = (type) => parts.find(part => part.type === type)?.value || '';
+            return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}`;
         }
 
         async function fillActivityLogUserOptions() {
@@ -2376,8 +2404,8 @@
             const userQ = String(document.getElementById('activityLogUser')?.value || '').trim();
             try {
                 let query = client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(400);
-                if (start) query = query.gte('created_at', start + 'T00:00:00');
-                if (end) query = query.lte('created_at', end + 'T23:59:59.999');
+                if (start) query = query.gte('created_at', activityLogDayBound(start, false));
+                if (end) query = query.lte('created_at', activityLogDayBound(end, true));
                 const { data, error } = await query;
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
@@ -2392,7 +2420,7 @@
                     return;
                 }
                 tbody.innerHTML = rows.map(row => {
-                    const when = String(row.created_at || '').replace('T', ' ').slice(0, 19);
+                    const when = formatActivityLogTime(row.created_at);
                     const record = [row.entity, row.entity_no].filter(Boolean).join(' · ');
                     return `
                         <tr class="hover:bg-slate-50">
