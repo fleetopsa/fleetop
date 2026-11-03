@@ -4660,7 +4660,7 @@ function renderMaintenanceReport() {
         const actions = admin
             ? `<td class="p-3 text-center no-print">
                     <div class="flex items-center justify-center gap-2">
-                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-slate-800 hover:text-amber-600 font-bold">${escapeHtml(t('ui.edit'))}</button>
+                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>
                     </div>
                </td>`
