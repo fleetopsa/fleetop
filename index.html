@@ -225,14 +225,18 @@
         #appSidebar #tabFacilityBtn,
         #appSidebar #tabFinancialBtn,
         #appSidebar #tabVehiclesBtn,
-        #appSidebar #tabStaffBtn {
+        #appSidebar #tabStaffBtn,
+        #appSidebar #tabReportsGroupBtn,
+        #appSidebar #tabSystemGroupBtn {
             color: #d6c9a8;
         }
         #appSidebar [data-nav]:hover,
         #appSidebar #tabFacilityBtn:hover,
         #appSidebar #tabFinancialBtn:hover,
         #appSidebar #tabVehiclesBtn:hover,
-        #appSidebar #tabStaffBtn:hover {
+        #appSidebar #tabStaffBtn:hover,
+        #appSidebar #tabReportsGroupBtn:hover,
+        #appSidebar #tabSystemGroupBtn:hover {
             background: rgba(196, 163, 90, 0.14);
             color: #fff8ea;
         }
@@ -376,16 +380,71 @@
         }
         #settleDriversTable tr.driver-block-start td { border-top: 3px solid #0f172a; }
         .maint-action-grid {
-            display: inline-grid;
+            display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.5rem;
-            width: max-content;
+            width: 100%;
             max-width: 100%;
+        }
+        .maint-action-grid > button,
+        .maint-action-grid > div {
+            min-width: 0;
+        }
+        .maint-action-grid > button {
+            white-space: normal;
+            line-height: 1.25;
         }
         .maint-col-tight {
             width: 1%;
             white-space: nowrap;
             text-align: center;
+        }
+        .maint-details-cell {
+            min-width: 9rem;
+            max-width: 22rem;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        #appContent > main {
+            min-width: 0;
+            max-width: 100%;
+        }
+        #appContent .overflow-x-auto {
+            min-width: 0;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        #appContent table { min-width: 40rem; }
+        #maintenanceSection table,
+        #activityLogSection table {
+            min-width: 48rem;
+        }
+        @media (max-width: 767px) {
+            #appContent > main {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            #maintenanceModal > div,
+            #payoutModal > div,
+            #changePasswordModal > div,
+            #resetPasswordModal > div {
+                width: calc(100vw - 1.25rem);
+                max-width: calc(100vw - 1.25rem);
+                max-height: min(92dvh, 100%);
+            }
+        }
+        @media (min-width: 768px) {
+            .maint-action-grid { width: 20rem; }
+        }
+        @media (min-width: 1600px) {
+            #appSidebar { width: 17.5rem; }
+            .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+        }
+        @media (min-width: 1920px) {
+            #appContent table,
+            #maintenanceSection table,
+            #activityLogSection table { min-width: 0; }
+            .maint-col-tight { white-space: normal; }
         }
         .riyal-symbol {
             height: 0.9em;
@@ -535,7 +594,7 @@
                         </button>
                         <div id="facilitySubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
                             <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">بيانات المنشأة</span>
+                                <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">التراخيص والاشتراكات</span>
                             </button>
                             <div>
                                 <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
@@ -572,36 +631,54 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-chart-line text-base"></i> <span data-i18n="nav.reports">التقارير التشغيلية</span>
-                    </button>
-                    <div id="financialMenu" class="hidden">
-                        <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                            <i class="fa-solid fa-coins text-base"></i>
-                            <span class="flex-1 text-start" data-i18n="nav.financial">التقارير المالية</span>
-                            <i id="financialMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                    <div>
+                        <button type="button" onclick="toggleReportsMenu()" id="tabReportsGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                            <i class="fa-solid fa-chart-line text-base"></i>
+                            <span class="flex-1 text-start" data-i18n="nav.reportsGroup">التقارير</span>
+                            <i id="reportsMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="financialSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
+                        <div id="reportsSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-clipboard-check ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.reports">التقارير التشغيلية</span>
                             </button>
-                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
-                            </button>
-                            <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-money-bill-wave ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
-                            </button>
+                            <div id="financialMenu" class="hidden">
+                                <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
+                                    <i class="fa-solid fa-coins" style="color:#c4a35a"></i>
+                                    <span class="flex-1 text-start" data-i18n="nav.financial">التقارير المالية</span>
+                                    <i id="financialMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                                </button>
+                                <div id="financialSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
+                                    </button>
+                                    <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
+                                    </button>
+                                    <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-money-bill-wave ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-user-shield text-base"></i> <span data-i18n="nav.users">المستخدمين</span>
                     </button>
-                    <button onclick="switchTab('activityLog')" id="tabActivityLogBtn" data-nav="activityLog" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-clipboard-list text-base"></i> <span data-i18n="nav.activityLog">سجل النشاط</span>
-                    </button>
-                    <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-gear text-base"></i> <span data-i18n="nav.settings">إعدادات النظام</span>
-                    </button>
+                    <div id="systemMenu" class="hidden">
+                        <button type="button" onclick="toggleSystemMenu()" id="tabSystemGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                            <i class="fa-solid fa-gear text-base"></i>
+                            <span class="flex-1 text-start" data-i18n="nav.settings">إعدادات النظام</span>
+                            <i id="systemMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                        </button>
+                        <div id="systemSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
+                            <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-building-flag ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.companySettings">البيانات الأساسية للمنشأة</span>
+                            </button>
+                            <button onclick="switchTab('activityLog')" id="tabActivityLogBtn" data-nav="activityLog" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-clipboard-list ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.activityLog">سجل النشاط</span>
+                            </button>
+                        </div>
+                    </div>
                 </nav>
             </div>
             <div class="pt-6 space-y-2" style="border-top:1px solid rgba(196,163,90,0.28)">
@@ -615,7 +692,7 @@
         </aside>
 
         <!-- المحتوى الرئيسي الواسع -->
-        <div id="appContent" class="flex-grow flex flex-col overflow-hidden">
+        <div id="appContent" class="flex-grow flex flex-col overflow-hidden min-w-0">
             <header class="bg-white px-4 xl:px-8 py-3 xl:py-4 flex justify-between items-center gap-3 text-slate-900 shadow-sm" style="border-bottom:1px solid rgba(196,163,90,0.22)">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <button type="button" id="menuToggleBtn" onclick="toggleMobileNav()" class="w-10 h-10 shrink-0 items-center justify-center rounded-xl" aria-label="فتح القائمة">
@@ -639,7 +716,7 @@
             </header>
 
           <!-- قسم لوحة التحكم -->
-    <main id="dashboardSection" class="p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6">
+    <main id="dashboardSection" class="p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto space-y-6 min-w-0">
         <div class="stat-grid-wrap">
         <div id="dashboardStatGrid" class="stat-grid">
         <!-- البطاقات المالية (تظهر للأدمن والمحاسب فقط، وتختفي عن المستخدم العادي) -->
@@ -742,7 +819,7 @@
                         <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-bell text-rose-500 ml-2"></i> <span data-i18n="ui.expiryAlerts">تنبيهات الوثائق القريبة من الانتهاء</span></h4>
                         <p class="text-[11px] text-slate-400 mt-1" data-i18n="ui.expiryHint">اضغط التنبيه لفتح شاشة السجل المرتبط به</p>
                     </div>
-                    <div id="dashExpiryAlerts" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-xs text-slate-500" data-i18n="ui.checkingDates">جاري فحص التواريخ...</div>
+                    <div id="dashExpiryAlerts" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-xs text-slate-500">جاري فحص التواريخ...</div>
                 </div>
                 </div>
 
@@ -768,7 +845,7 @@
                     </div>
                 </div>
             </main>
-<main id="analyticsSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3">
+<main id="analyticsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
     <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
             <div>
@@ -836,7 +913,7 @@
     </div>
 </main>
        <!-- قسم الرحلات -->
-<main id="tripsSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto">
+<main id="tripsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 mb-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 items-end">
             <div class="flex flex-col">
@@ -912,7 +989,7 @@
     </div>
 </main>
         <!-- قسم التقارير -->
-<main id="reportsSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto">
+<main id="reportsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div id="printableReport" class="flex flex-col flex-grow">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-4">
             <div class="flex flex-col xl:flex-row xl:items-stretch gap-4">
@@ -997,7 +1074,7 @@
 </main>
 
 <!-- ================= قسم الملخص المالي العام ================= -->
-<main id="financialOverviewSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto">
+<main id="financialOverviewSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
@@ -1087,7 +1164,7 @@
 </main>
 
 <!-- ================= قسم تقرير العمولات والإيرادات (الشاحنات والسائقين) ================= -->
-<main id="financialDetailsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+<main id="financialDetailsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div class="mb-6 flex justify-end">
         <button onclick="printCurrentReport()" class="px-4 py-2 rounded-xl text-xs font-bold transition no-print" style="background:#0b2a4a;color:#c4a35a">
             <i class="fa-solid fa-print ml-1"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
@@ -1130,7 +1207,7 @@
     </div>
 </main>
 
-            <main id="facilitySection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+            <main id="facilitySection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div id="facilityExpiryBox" class="mb-6 bg-rose-50 border border-rose-100 rounded-2xl p-4 hidden">
                     <h3 class="text-xs font-bold text-rose-700 mb-2"><i class="fa-solid fa-bell ml-1"></i> <span data-i18n="ui.docsExpiring">وثائق قاربت على الانتهاء أو انتهت</span></h3>
                     <div id="facilityExpiryList" class="space-y-1 text-xs"></div>
@@ -1182,7 +1259,7 @@
                     </div>
                     <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                            <i class="fa-solid fa-folder-open text-amber-500 ml-2"></i> <span data-i18n="ui.facilityDocs">سجلات وتراخيص المنشأة</span>
+                            <i class="fa-solid fa-folder-open text-amber-500 ml-2"></i> <span data-i18n="ui.facilityDocs">التراخيص والاشتراكات</span>
                         </h3>
                         <div class="overflow-x-auto">
                             <table class="w-full text-right text-xs">
@@ -1204,7 +1281,7 @@
                 </div>
             </main>
             <!-- قسم الشاحنات -->
-            <main id="trucksSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+            <main id="trucksSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="truckFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1281,13 +1358,13 @@
                 </div>
             </main>
 
-            <main id="maintenanceSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex flex-wrap items-end justify-between gap-3">
-                        <div class="min-w-0 flex-1">
+            <main id="maintenanceSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 min-w-0">
+                    <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-3 min-w-0">
+                        <div class="min-w-0 w-full flex-1">
                             <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenance">الصيانة العامة</h2>
                             <p class="text-xs text-slate-500 mb-3" data-i18n="page.maintenanceSub">تقرير صيانة الشاحنات والمركبات الأخرى</p>
-                            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 w-full no-print">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 w-full no-print">
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                                     <input type="date" id="maintStartDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -1310,7 +1387,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="maint-action-grid shrink-0">
+                        <div class="maint-action-grid shrink-0 xl:ms-2">
                             <button type="button" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 no-print">
                                 <i class="fa-solid fa-plus"></i> <span data-i18n="maint.add">إضافة صيانة</span>
                             </button>
@@ -1328,8 +1405,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
-                    <div class="overflow-x-auto flex-grow">
+                <div class="bg-white p-3 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <div class="overflow-x-auto flex-grow min-w-0">
                         <table class="w-full text-center text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
@@ -1352,7 +1429,7 @@
             </main>
 
             <!-- قسم السائقين -->
-            <main id="driversSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+            <main id="driversSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="driverFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1469,7 +1546,7 @@
                 </div>
             </main>
 <!-- صفحة تقرير العمولات التفصيلي -->
-    <main id="commissionReportSection" class="page-section hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4">
+    <main id="commissionReportSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 no-print">
                 <div>
@@ -1548,7 +1625,7 @@
         </div>
     </main>
 
-    <main id="commissionPayoutSection" class="page-section hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4">
+    <main id="commissionPayoutSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 no-print">
                 <div>
@@ -1634,7 +1711,7 @@
         </div>
     </main>
             <!-- قسم المستخدمين -->
-            <main id="usersSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+            <main id="usersSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="userFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
@@ -1699,9 +1776,9 @@
                 </div>
                 </div>
             </main>
-            <main id="activityLogSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3">
-                <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <main id="activityLogSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
+                <div class="bg-white px-3 sm:px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print min-w-0">
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-2 mb-3">
                         <p class="text-[11px] text-slate-500 font-bold" data-i18n="log.hint">يُسجَّل النشاط من بعد تفعيل السجل فقط، ولا يظهر ما قبل ذلك.</p>
                         <button type="button" id="clearActivityLogBtn" onclick="clearActivityLog()" class="hidden bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
                             <i class="fa-solid fa-trash-can"></i> <span data-i18n="log.clear">مسح السجل</span>
@@ -1724,8 +1801,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
-                    <div class="overflow-x-auto flex-grow">
+                <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <div class="overflow-x-auto flex-grow min-w-0">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
@@ -1744,12 +1821,12 @@
                     </div>
                 </div>
             </main>
-            <main id="settingsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
+            <main id="settingsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div class="max-w-3xl">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
                             <i class="fa-solid fa-building text-amber-500 ml-2"></i>
-                            <span data-i18n="settings.title">بيانات الشركة المستخدمة للمنصة</span>
+                            <span data-i18n="settings.title">البيانات الأساسية للمنشأة</span>
                         </h3>
                         <p class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
                         <form onsubmit="saveCompanySettings(event)" class="space-y-3.5">
@@ -2111,7 +2188,7 @@
         </div>
     </div>
     <div id="maintenanceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92vh] overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92dvh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-screwdriver-wrench text-amber-500 ml-2"></i> <span id="maintModalTitle" data-i18n="maint.add">إضافة صيانة</span></h3>
                 <button type="button" onclick="closeMaintenanceModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
@@ -4035,11 +4112,57 @@ async function initReportFilters() {
         console.error("Error loading filter options:", err);
     }
 }
+        let dashboardExpiryCache = { docs: [], trucks: [], drivers: [], loaded: false };
+        let dashboardLoadSeq = 0;
+
+        function paintDashboardExpiryAlerts() {
+            const box = document.getElementById('dashExpiryAlerts');
+            if (!box) return;
+            if (!dashboardExpiryCache.loaded) {
+                box.textContent = t('ui.checkingDates');
+                return;
+            }
+            renderExpiryAlerts(
+                'dashExpiryAlerts',
+                collectExpiryAlerts(dashboardExpiryCache.docs, dashboardExpiryCache.trucks, dashboardExpiryCache.drivers),
+                t('ui.checkingExpiryEmpty')
+            );
+        }
+
+        function applyDashboardExpiryCache(trucks, drivers, docs, markLoaded) {
+            if (Array.isArray(trucks)) dashboardExpiryCache.trucks = trucks;
+            if (Array.isArray(drivers)) dashboardExpiryCache.drivers = drivers;
+            if (Array.isArray(docs)) dashboardExpiryCache.docs = docs;
+            if (markLoaded) dashboardExpiryCache.loaded = true;
+            paintDashboardExpiryAlerts();
+        }
+
         async function loadDashboardData() {
+            const seq = ++dashboardLoadSeq;
+            const tripsReq = client.from('trips').select('*');
+            const trucksReq = client.from('trucks').select('*');
+            const driversReq = client.from('drivers').select('*');
+            const docsReq = client.from('facility_documents').select('*');
+
+            Promise.all([trucksReq, driversReq, docsReq]).then(([trucksRes, driversRes, docsRes]) => {
+                if (seq !== dashboardLoadSeq) return;
+                applyDashboardExpiryCache(
+                    trucksRes.error ? dashboardExpiryCache.trucks : (trucksRes.data || []),
+                    driversRes.error ? dashboardExpiryCache.drivers : (driversRes.data || []),
+                    docsRes.error ? dashboardExpiryCache.docs : (docsRes.data || []),
+                    true
+                );
+            }).catch(err => console.error(err));
+
             try {
-                const { data: trips } = await client.from('trips').select('*');
-                const { data: trucks } = await client.from('trucks').select('*');
-                const { data: drivers } = await client.from('drivers').select('*');
+                const [tripsRes, trucksRes, driversRes] = await Promise.all([tripsReq, trucksReq, driversReq]);
+                if (seq !== dashboardLoadSeq) return;
+                const trips = tripsRes.data;
+                const trucks = trucksRes.error ? dashboardExpiryCache.trucks : (trucksRes.data || []);
+                const drivers = driversRes.error ? dashboardExpiryCache.drivers : (driversRes.data || []);
+                if (!trucksRes.error) dashboardExpiryCache.trucks = trucks;
+                if (!driversRes.error) dashboardExpiryCache.drivers = drivers;
+                if (dashboardExpiryCache.loaded) paintDashboardExpiryAlerts();
 
                 let totalRev = 0;
                 let collected = 0;
@@ -4067,44 +4190,49 @@ async function initReportFilters() {
                     activeTripsList = sortTripsByNoDesc(activeTripsList);
                 }
 
-                document.getElementById('dashTotalRevenue').innerHTML = formatSAR(totalRev);
-                document.getElementById('dashCollectedAmount').innerHTML = formatSAR(collected);
-                document.getElementById('dashRemainingAmount').innerHTML = formatSAR(remaining);
-                document.getElementById('dashTotalTrips').innerText = trips ? trips.filter(isCompletedTrip).length : 0;
+                const setText = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = value;
+                };
+                const setHtml = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = value;
+                };
 
-                const fleetTrucks = trucks ? trucks.filter(isCargoTruck) : [];
+                setHtml('dashTotalRevenue', formatSAR(totalRev));
+                setHtml('dashCollectedAmount', formatSAR(collected));
+                setHtml('dashRemainingAmount', formatSAR(remaining));
+                setText('dashTotalTrips', trips ? trips.filter(isCompletedTrip).length : 0);
+
+                const fleetTrucks = (trucks || []).filter(isCargoTruck);
                 const totalTrucks = fleetTrucks.length;
                 const readyTrucks = fleetTrucks.filter(t => t.status === 'جاهزة للعمل').length;
                 const busyTrucks = fleetTrucks.filter(t => t.status === 'في رحلة').length;
                 const maintTrucks = fleetTrucks.filter(t => t.status === 'صيانة دورية' || t.status === 'في الصيانة').length;
                 const brokenTrucks = fleetTrucks.filter(t => t.status === 'عطلانة').length;
 
-                document.getElementById('dashTotalTrucksBadge').innerText = tf('dash.totalPrefix', totalTrucks);
-                document.getElementById('dashReadyTrucks').innerText = readyTrucks;
-                document.getElementById('dashBusyTrucks').innerText = busyTrucks;
-                document.getElementById('dashMaintTrucks').innerText = maintTrucks;
-                document.getElementById('dashBrokenTrucks').innerText = brokenTrucks;
+                setText('dashTotalTrucksBadge', tf('dash.totalPrefix', totalTrucks));
+                setText('dashReadyTrucks', readyTrucks);
+                setText('dashBusyTrucks', busyTrucks);
+                setText('dashMaintTrucks', maintTrucks);
+                setText('dashBrokenTrucks', brokenTrucks);
 
-                const fleetDrivers = drivers ? drivers.filter(isTripDriver) : [];
+                const fleetDrivers = (drivers || []).filter(isTripDriver);
                 const totalDrivers = fleetDrivers.length;
                 const readyDrivers = fleetDrivers.filter(d => d.status === 'متوفر').length;
                 const busyDrivers = fleetDrivers.filter(d => d.status === 'في رحلة').length;
                 const leaveDrivers = fleetDrivers.filter(d => d.status === 'إجازة' || d.status === 'في إجازة').length;
                 const suspendedDrivers = fleetDrivers.filter(d => d.status === 'موقوف').length;
 
-                document.getElementById('dashTotalDriversBadge').innerText = tf('dash.totalPrefix', totalDrivers);
-                document.getElementById('dashReadyDrivers').innerText = readyDrivers;
-                document.getElementById('dashBusyDrivers').innerText = busyDrivers;
-                document.getElementById('dashLeaveDrivers').innerText = leaveDrivers;
-                document.getElementById('dashSuspendedDrivers').innerText = suspendedDrivers;
+                setText('dashTotalDriversBadge', tf('dash.totalPrefix', totalDrivers));
+                setText('dashReadyDrivers', readyDrivers);
+                setText('dashBusyDrivers', busyDrivers);
+                setText('dashLeaveDrivers', leaveDrivers);
+                setText('dashSuspendedDrivers', suspendedDrivers);
 
-                let facilityDocs = [];
-                const { data: docs, error: docsErr } = await client.from('facility_documents').select('*');
-                if (!docsErr) facilityDocs = docs || [];
-                renderExpiryAlerts('dashExpiryAlerts', collectExpiryAlerts(facilityDocs, trucks, drivers), t('ui.checkingExpiryEmpty'));
-
-                if (activeTripsList.length > 0) {
-                    activeTable.innerHTML = activeTripsList.map(tr => `
+                if (activeTable) {
+                    if (activeTripsList.length > 0) {
+                        activeTable.innerHTML = activeTripsList.map(tr => `
                         <tr class="hover:bg-slate-50 transition">
                             <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || '—'}</td>
                             <td class="p-3.5">
@@ -4119,8 +4247,9 @@ async function initReportFilters() {
                             <td class="p-3.5"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${tv('جارية')}</span></td>
                         </tr>
                     `).join('');
-                } else {
-                    activeTable.innerHTML = `<tr><td colspan="5" class="text-center p-6 text-slate-400">${t('ui.noActiveTrips')}</td></tr>`;
+                    } else {
+                        activeTable.innerHTML = `<tr><td colspan="5" class="text-center p-6 text-slate-400">${t('ui.noActiveTrips')}</td></tr>`;
+                    }
                 }
 
             } catch (err) {
@@ -4269,9 +4398,18 @@ function toggleSidebarSubmenu(subId, chevronId, forceOpen) {
     if (chevron) chevron.classList.toggle('rotate-180', open);
 }
 
+function toggleReportsMenu(forceOpen) {
+    toggleSidebarSubmenu('reportsSubMenu', 'reportsMenuChevron', forceOpen);
+}
+
+function toggleSystemMenu(forceOpen) {
+    toggleSidebarSubmenu('systemSubMenu', 'systemMenuChevron', forceOpen);
+}
+
 function toggleFinancialMenu(forceOpen) {
     const wrap = document.getElementById('financialMenu');
     if (wrap && wrap.classList.contains('hidden')) return;
+    if (forceOpen !== false) toggleReportsMenu(true);
     toggleSidebarSubmenu('financialSubMenu', 'financialMenuChevron', forceOpen);
 }
 
@@ -4678,7 +4816,7 @@ function renderMaintenanceReport() {
                 <td class="maint-col-tight p-3 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(maintenanceVehicleLabel(row.vehicle_kind, row.vehicle_plate))}</td>
                 <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
-                <td class="p-3 text-center text-slate-600 whitespace-pre-wrap">${escapeHtml(row.details || '—')}</td>
+                <td class="p-3 text-center text-slate-600 maint-details-cell">${escapeHtml(row.details || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
                 ${invoiceCell}
                 ${actions}
@@ -5004,6 +5142,9 @@ async function loadFacilityDocuments() {
         return;
     }
     allFacilityDocs = data || [];
+    if (typeof applyDashboardExpiryCache === 'function') {
+        applyDashboardExpiryCache(undefined, undefined, allFacilityDocs, true);
+    }
     const alerts = collectExpiryAlerts(allFacilityDocs, [], []);
     if (box) {
         box.classList.toggle('hidden', alerts.length === 0);
@@ -5196,7 +5337,7 @@ const I18N = {
         'nav.analytics': 'المتابعة والرسوم',
         'nav.trips': 'إدارة الرحلات',
         'nav.facility': 'إدارة المنشأة',
-        'nav.facilityDocs': 'بيانات المنشأة',
+        'nav.facilityDocs': 'التراخيص والاشتراكات',
         'nav.vehicles': 'المركبات',
         'nav.trucks': 'الشاحنات',
         'nav.otherVehicles': 'المركبات الأخرى',
@@ -5204,6 +5345,7 @@ const I18N = {
         'nav.staff': 'الموظفين',
         'nav.drivers': 'السائقين',
         'nav.employees': 'الموظفين الإداريين',
+        'nav.reportsGroup': 'التقارير',
         'nav.reports': 'التقارير التشغيلية',
         'nav.financial': 'التقارير المالية',
         'nav.revenue': 'تقرير الإيرادات',
@@ -5212,6 +5354,7 @@ const I18N = {
         'nav.users': 'المستخدمين',
         'nav.activityLog': 'سجل النشاط',
         'nav.settings': 'إعدادات النظام',
+        'nav.companySettings': 'البيانات الأساسية للمنشأة',
         'nav.password': 'تغيير كلمة المرور',
         'nav.logout': 'تسجيل الخروج',
         'header.refresh': 'تحديث البيانات',
@@ -5245,7 +5388,7 @@ const I18N = {
         'page.commissionsSub': 'عرض وتصفية عمولات السائقين التفصيلية',
         'page.payouts': 'سداد العمولات',
         'page.payoutsSub': 'عمولة كل سائق، وما تم صرفه، والمتبقي له',
-        'page.facility': 'بيانات المنشأة',
+        'page.facility': 'التراخيص والاشتراكات',
         'page.facilitySub': 'السجلات والتراخيص وتواريخ انتهائها',
         'page.trucks': 'الشاحنات',
         'page.trucksSub': 'شاحنات النقل المستخدمة في الرحلات اليومية',
@@ -5294,9 +5437,9 @@ const I18N = {
         'log.staff.delete': 'حذف موظف',
         'log.password.change': 'تغيير كلمة المرور',
         'log.settings.save': 'حفظ إعدادات الشركة',
-        'page.settings': 'إعدادات النظام',
-        'page.settingsSub': 'بيانات الشركة وشعارها في التقارير والسجلات',
-        'settings.title': 'بيانات الشركة المستخدمة للمنصة',
+        'page.settings': 'البيانات الأساسية للمنشأة',
+        'page.settingsSub': 'اسم المنشأة وشعارها في التقارير والسجلات',
+        'settings.title': 'البيانات الأساسية للمنشأة',
         'settings.hint': 'شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.',
         'settings.nameAr': 'اسم الشركة بالعربية',
         'settings.nameEn': 'اسم الشركة بالإنجليزية',
@@ -5437,7 +5580,7 @@ const I18N = {
         'maint.invoiceType': 'يُقبل صورة (JPG/PNG) أو ملف PDF فقط.',
         'maint.invoiceUploadFailed': 'تعذر عرض المرفق.',
         'maint.missingInvoice': 'مرفقات الصيانة غير جاهزة. نفّذ ملف add-maintenance-invoice.sql في Supabase مرة واحدة.',
-        'ui.facilityDocs': 'سجلات وتراخيص المنشأة',
+        'ui.facilityDocs': 'التراخيص والاشتراكات',
         'ui.addTruck': 'إضافة شاحنة جديدة',
         'ui.plateNo': 'رقم اللوحة',
         'ui.model': 'الموديل / النوع',
@@ -5626,7 +5769,7 @@ const I18N = {
         'nav.analytics': 'Analytics',
         'nav.trips': 'Trips',
         'nav.facility': 'Organization',
-        'nav.facilityDocs': 'Company documents',
+        'nav.facilityDocs': 'Licenses and subscriptions',
         'nav.vehicles': 'Vehicles',
         'nav.trucks': 'Trucks',
         'nav.otherVehicles': 'Other vehicles',
@@ -5634,6 +5777,7 @@ const I18N = {
         'nav.staff': 'Staff',
         'nav.drivers': 'Drivers',
         'nav.employees': 'Office staff',
+        'nav.reportsGroup': 'Reports',
         'nav.reports': 'Operations reports',
         'nav.financial': 'Financial reports',
         'nav.revenue': 'Revenue report',
@@ -5642,6 +5786,7 @@ const I18N = {
         'nav.users': 'Users',
         'nav.activityLog': 'Activity log',
         'nav.settings': 'System settings',
+        'nav.companySettings': 'Organization basic details',
         'nav.password': 'Change password',
         'nav.logout': 'Sign out',
         'header.refresh': 'Refresh',
@@ -5675,7 +5820,7 @@ const I18N = {
         'page.commissionsSub': 'Filter and review driver commissions',
         'page.payouts': 'Commission payouts',
         'page.payoutsSub': 'Earned, paid and remaining commission by driver',
-        'page.facility': 'Company documents',
+        'page.facility': 'Licenses and subscriptions',
         'page.facilitySub': 'Licenses, records and expiry dates',
         'page.trucks': 'Trucks',
         'page.trucksSub': 'Transport trucks used for daily trips',
@@ -5724,9 +5869,9 @@ const I18N = {
         'log.staff.delete': 'Delete staff',
         'log.password.change': 'Change password',
         'log.settings.save': 'Save company settings',
-        'page.settings': 'System settings',
-        'page.settingsSub': 'Your company details and logo for reports and records',
-        'settings.title': 'Company profile on FleetOp',
+        'page.settings': 'Organization basic details',
+        'page.settingsSub': 'Organization name and logo for reports and records',
+        'settings.title': 'Organization basic details',
         'settings.hint': 'The FleetOp logo is the platform brand. Enter your company name and logo to show on your reports and records.',
         'settings.nameAr': 'Company name in Arabic',
         'settings.nameEn': 'Company name in English',
@@ -5867,7 +6012,7 @@ const I18N = {
         'maint.invoiceType': 'Only an image (JPG/PNG) or a PDF is accepted.',
         'maint.invoiceUploadFailed': 'Could not open the attachment.',
         'maint.missingInvoice': 'Maintenance attachments are not ready. Run add-maintenance-invoice.sql in Supabase once.',
-        'ui.facilityDocs': 'Company records and licenses',
+        'ui.facilityDocs': 'Licenses and subscriptions',
         'ui.addTruck': 'Add truck',
         'ui.plateNo': 'Plate number',
         'ui.model': 'Model / type',
@@ -6092,6 +6237,7 @@ function tf(key, n) {
 function applyI18n() {
     const scope = (currentLoggedInUser ? document : document.getElementById('loginSection')) || document;
     scope.querySelectorAll('[data-i18n]').forEach(el => {
+        if (el.id === 'dashExpiryAlerts') return;
         el.textContent = t(el.dataset.i18n);
     });
     scope.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -6117,6 +6263,7 @@ function setAppLang(lang) {
     document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
     applyI18n();
+    if (typeof paintDashboardExpiryAlerts === 'function') paintDashboardExpiryAlerts();
     setPageHeader(currentNavTab);
     applyCompanyBranding();
     if (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) {
@@ -6258,6 +6405,9 @@ function setActiveNav(tabId) {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
     const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId);
+    const reportsOpen = tabId === 'reports' || financialOpen;
+    const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
+    if (reportsGroupBtn) reportsGroupBtn.classList.toggle('nav-open', reportsOpen);
     const financialBtn = document.getElementById('tabFinancialBtn');
     if (financialBtn) financialBtn.classList.toggle('nav-open', financialOpen);
     const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance' || tabId === 'drivers' || tabId === 'employees';
@@ -6267,6 +6417,8 @@ function setActiveNav(tabId) {
     if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance');
     const staffBtn = document.getElementById('tabStaffBtn');
     if (staffBtn) staffBtn.classList.toggle('nav-open', tabId === 'drivers' || tabId === 'employees');
+    const systemBtn = document.getElementById('tabSystemGroupBtn');
+    if (systemBtn) systemBtn.classList.toggle('nav-open', tabId === 'settings' || tabId === 'activityLog');
 }
 
 function switchTab(tabId) {
@@ -6302,6 +6454,7 @@ function switchTab(tabId) {
     }
 
     if (tabId === 'settings') {
+        toggleSystemMenu(true);
         const section = document.getElementById('settingsSection');
         if (section) {
             section.classList.remove('hidden');
@@ -6369,14 +6522,20 @@ function switchTab(tabId) {
             if (typeof renderAdminControls === 'function') renderAdminControls();
             if (typeof filterAndRenderTrips === 'function') filterAndRenderTrips();
         }
-        if ((tabId === 'reports' || tabId === 'reportsSection') && typeof generateReport === 'function') {
-            generateReport();
+        if (tabId === 'reports' || tabId === 'reportsSection') {
+            toggleReportsMenu(true);
+            if (typeof generateReport === 'function') generateReport();
         }
         if ((tabId === 'analytics' || tabId === 'analyticsSection') && typeof renderAnalyticsDashboard === 'function') {
             renderAnalyticsDashboard();
         }
-        if ((tabId === 'activityLog' || tabId === 'activityLogSection') && typeof loadActivityLog === 'function') {
-            loadActivityLog();
+        if (tabId === 'dashboard' || tabId === 'dashboardSection') {
+            if (typeof paintDashboardExpiryAlerts === 'function') paintDashboardExpiryAlerts();
+            if (typeof loadDashboardData === 'function') loadDashboardData();
+        }
+        if (tabId === 'activityLog' || tabId === 'activityLogSection') {
+            toggleSystemMenu(true);
+            if (typeof loadActivityLog === 'function') loadActivityLog();
         }
     } else {
         console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
@@ -8083,10 +8242,9 @@ async function loadUsers() {
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
-            const tabActivityLogBtn = document.getElementById('tabActivityLogBtn');
-            if (tabActivityLogBtn) tabActivityLogBtn.classList.toggle('hidden', user.role !== 'admin');
-            const tabSettingsBtn = document.getElementById('tabSettingsBtn');
-            if (tabSettingsBtn) tabSettingsBtn.classList.toggle('hidden', user.role !== 'admin');
+            const systemMenu = document.getElementById('systemMenu');
+            if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
+            toggleSystemMenu(false);
             setAppLang(currentLang);
             if (typeof loadAllData === 'function') loadAllData();
         }
