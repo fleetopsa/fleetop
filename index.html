@@ -581,6 +581,9 @@
                     <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-user-shield text-base"></i> <span data-i18n="nav.users">المستخدمين</span>
                     </button>
+                    <button onclick="switchTab('activityLog')" id="tabActivityLogBtn" data-nav="activityLog" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-clipboard-list text-base"></i> <span data-i18n="nav.activityLog">سجل النشاط</span>
+                    </button>
                     <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-gear text-base"></i> <span data-i18n="nav.settings">إعدادات النظام</span>
                     </button>
@@ -1611,6 +1614,43 @@
                 </div>
                 </div>
             </main>
+            <main id="activityLogSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3">
+                <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                            <input type="date" id="activityLogStart" onchange="loadActivityLog()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                            <input type="date" id="activityLogEnd" onchange="loadActivityLog()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.username">اسم المستخدم</label>
+                            <input type="text" id="activityLogUser" oninput="loadActivityLog()" autocomplete="off" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="log.searchUser" placeholder="ابحث بالمستخدم">
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-right text-xs text-slate-700">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.date">التاريخ</th>
+                                    <th class="p-3.5" data-i18n="ui.employeeName">اسم الموظف</th>
+                                    <th class="p-3.5" data-i18n="th.username">اسم المستخدم</th>
+                                    <th class="p-3.5" data-i18n="log.action">العملية</th>
+                                    <th class="p-3.5" data-i18n="log.record">السجل</th>
+                                    <th class="p-3.5 rounded-l-xl" data-i18n="log.details">التفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityLogTable" class="divide-y divide-slate-100">
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
             <main id="settingsSection" class="hidden p-6 md:p-8 flex flex-col flex-grow overflow-y-auto">
                 <div class="max-w-3xl">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -2039,6 +2079,74 @@
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
         });
 
+        async function logActivity(action, entity, entityNo, details) {
+            try {
+                const user = currentLoggedInUser || {};
+                const { error } = await client.from('activity_log').insert([{
+                    user_id: user.id != null ? String(user.id) : null,
+                    username: user.username || '',
+                    employee_name: user.employee_name || '',
+                    role: user.role || '',
+                    action: String(action || ''),
+                    entity: entity || '',
+                    entity_no: entityNo != null ? String(entityNo) : '',
+                    details: details || ''
+                }]);
+                if (error) console.warn('تعذر حفظ سجل النشاط:', error.message);
+            } catch (err) {
+                console.warn('تعذر حفظ سجل النشاط:', err);
+            }
+        }
+
+        async function loadActivityLog() {
+            const tbody = document.getElementById('activityLogTable');
+            if (!tbody) return;
+            if (!isAdminUser()) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+                return;
+            }
+            const start = document.getElementById('activityLogStart')?.value || '';
+            const end = document.getElementById('activityLogEnd')?.value || '';
+            const userQ = String(document.getElementById('activityLogUser')?.value || '').trim().toLowerCase();
+            try {
+                let query = client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(400);
+                if (start) query = query.gte('created_at', start + 'T00:00:00');
+                if (end) query = query.lte('created_at', end + 'T23:59:59.999');
+                const { data, error } = await query;
+                if (error) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+                    return;
+                }
+                let rows = data || [];
+                if (userQ) {
+                    rows = rows.filter(row =>
+                        String(row.username || '').toLowerCase().includes(userQ) ||
+                        String(row.employee_name || '').toLowerCase().includes(userQ)
+                    );
+                }
+                if (!rows.length) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('log.empty')}</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = rows.map(row => {
+                    const when = String(row.created_at || '').replace('T', ' ').slice(0, 19);
+                    const record = [row.entity, row.entity_no].filter(Boolean).join(' · ');
+                    return `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3.5 font-mono text-slate-600 whitespace-nowrap">${escapeHtml(when)}</td>
+                            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(row.employee_name || '—')}</td>
+                            <td class="p-3.5 font-mono">${escapeHtml(row.username || '—')}</td>
+                            <td class="p-3.5 font-bold text-amber-700">${escapeHtml(t('log.' + row.action))}</td>
+                            <td class="p-3.5 font-mono text-slate-700">${escapeHtml(record || '—')}</td>
+                            <td class="p-3.5 text-slate-600">${escapeHtml(row.details || '—')}</td>
+                        </tr>`;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+            }
+        }
+
         let currentLoggedInUser = null;
         let loginBusy = false;
         let appUsersById = {};
@@ -2114,6 +2222,7 @@ async function loadAppProfile(authId) {
             return;
         }
         openSession(profile);
+        logActivity('login', 'session', profile.username, profile.employee_name || '');
     } catch (err) {
         console.error("Login error:", err);
         showLoginError('حدث خطأ في الاتصال، حاول مرة أخرى.');
@@ -2768,6 +2877,7 @@ async function saveCommissionPayout(e) {
             if (error) throw error;
         }
         closePayoutModal();
+        logActivity(payoutId ? 'payout.edit' : 'payout.create', 'عمولة', driverName, `${formatMoney(amount)} · ${payoutDate}${note ? ' · ' + note : ''}`);
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
         await generateCommissionSettlement();
     } catch (err) {
@@ -2825,6 +2935,8 @@ async function deleteCommissionPayout(id) {
         if (error) throw error;
         if (!data || !data.length) {
             alert(currentLang === 'en' ? 'This payout was already deleted.' : 'هذه الدفعة محذوفة مسبقاً.');
+        } else {
+            logActivity('payout.delete', 'عمولة', payoutId, '');
         }
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
         await generateCommissionSettlement();
@@ -3614,6 +3726,12 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         }
 
         closeCompleteModal();
+        logActivity(
+            endingActiveTrip ? 'trip.complete' : 'trip.settle',
+            'رحلة',
+            tripId,
+            `سداد ${formatMoney(additionalPayment)} · متبقي ${formatMoney(newRemainingAmount)} · إنهاء ${completionDateVal || '—'}`
+        );
         if (endingActiveTrip) {
             const { truckBusy, driverBusy } = await releaseFleetIfIdle(currentTrip, tripId);
             if (truckBusy || driverBusy) {
@@ -3894,6 +4012,7 @@ async function resetTripCounter() {
 
         const activeCount = kept.filter(isActiveOperationalTrip).length;
         const unpaidCount = kept.filter(isOpenReceivableTrip).length;
+        logActivity('year.reset', 'نظام', '', `جارية ${activeCount} · غير مسددة ${unpaidCount} · أرصدة افتتاحية ${carried}`);
         alert(ar
             ? `تم إغلاق العام.\nرحلات جارية متبقية: ${activeCount}\nرحلات غير مسددة متبقية: ${unpaidCount}\nعمولات مرحلة كرصيد افتتاحي: ${carried} سائق\nالرحلات الجديدة تأخذ رقم السنة، مثل TRP-27-1001 في عام 2027.`
             : `Year closed.\nActive trips kept: ${activeCount}\nUnpaid completed trips kept: ${unpaidCount}\nOpening commission balances: ${carried} drivers\nNew trips use a year code, e.g. TRP-27-1001 in 2027.`);
@@ -4346,6 +4465,7 @@ const I18N = {
         'nav.commissions': 'تقرير العمولات',
         'nav.payouts': 'سداد العمولات',
         'nav.users': 'المستخدمين',
+        'nav.activityLog': 'سجل النشاط',
         'nav.settings': 'إعدادات النظام',
         'nav.password': 'تغيير كلمة المرور',
         'nav.logout': 'تسجيل الخروج',
@@ -4392,6 +4512,33 @@ const I18N = {
         'page.employeesSub': 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية',
         'page.users': 'المستخدمين',
         'page.usersSub': 'حسابات الدخول والصلاحيات',
+        'page.activityLog': 'سجل نشاط المستخدمين',
+        'page.activityLogSub': 'الدخول والخروج والعمليات والحذف حسب المستخدم والوقت',
+        'log.action': 'العملية',
+        'log.record': 'السجل',
+        'log.details': 'التفاصيل',
+        'log.searchUser': 'ابحث بالمستخدم',
+        'log.empty': 'لا توجد عمليات في هذه الفترة',
+        'log.missingTable': 'جدول سجل النشاط غير موجود. نفّذ ملف add-activity-log.sql في Supabase.',
+        'log.login': 'تسجيل دخول',
+        'log.logout': 'تسجيل خروج',
+        'log.trip.create': 'إضافة رحلة',
+        'log.trip.edit': 'تعديل رحلة',
+        'log.trip.complete': 'إنهاء رحلة',
+        'log.trip.settle': 'تسوية متبقي رحلة',
+        'log.trip.cancel': 'إلغاء رحلة',
+        'log.payout.create': 'صرف عمولة',
+        'log.payout.edit': 'تعديل صرف عمولة',
+        'log.payout.delete': 'حذف صرف عمولة',
+        'log.year.reset': 'تصفير نهاية العام',
+        'log.user.save': 'حفظ مستخدم',
+        'log.user.delete': 'حذف مستخدم',
+        'log.truck.save': 'حفظ مركبة',
+        'log.truck.delete': 'حذف مركبة',
+        'log.staff.save': 'حفظ موظف',
+        'log.staff.delete': 'حذف موظف',
+        'log.password.change': 'تغيير كلمة المرور',
+        'log.settings.save': 'حفظ إعدادات الشركة',
         'page.settings': 'إعدادات النظام',
         'page.settingsSub': 'بيانات الشركة وشعارها في التقارير والسجلات',
         'settings.title': 'بيانات الشركة المستخدمة للمنصة',
@@ -4690,6 +4837,7 @@ const I18N = {
         'nav.commissions': 'Commission report',
         'nav.payouts': 'Commission payouts',
         'nav.users': 'Users',
+        'nav.activityLog': 'Activity log',
         'nav.settings': 'System settings',
         'nav.password': 'Change password',
         'nav.logout': 'Sign out',
@@ -4736,6 +4884,33 @@ const I18N = {
         'page.employeesSub': 'Operations, maintenance, accounting and admin roles',
         'page.users': 'Users',
         'page.usersSub': 'Login accounts and permissions',
+        'page.activityLog': 'User activity log',
+        'page.activityLogSub': 'Sign-in, sign-out, changes and deletions by user and time',
+        'log.action': 'Action',
+        'log.record': 'Record',
+        'log.details': 'Details',
+        'log.searchUser': 'Search by user',
+        'log.empty': 'No activity in this period',
+        'log.missingTable': 'Activity log table is missing. Run add-activity-log.sql in Supabase.',
+        'log.login': 'Sign in',
+        'log.logout': 'Sign out',
+        'log.trip.create': 'Add trip',
+        'log.trip.edit': 'Edit trip',
+        'log.trip.complete': 'Complete trip',
+        'log.trip.settle': 'Settle remaining',
+        'log.trip.cancel': 'Cancel trip',
+        'log.payout.create': 'Pay commission',
+        'log.payout.edit': 'Edit commission payout',
+        'log.payout.delete': 'Delete commission payout',
+        'log.year.reset': 'Year-end reset',
+        'log.user.save': 'Save user',
+        'log.user.delete': 'Delete user',
+        'log.truck.save': 'Save vehicle',
+        'log.truck.delete': 'Delete vehicle',
+        'log.staff.save': 'Save staff',
+        'log.staff.delete': 'Delete staff',
+        'log.password.change': 'Change password',
+        'log.settings.save': 'Save company settings',
         'page.settings': 'System settings',
         'page.settingsSub': 'Your company details and logo for reports and records',
         'settings.title': 'Company profile on FleetOp',
@@ -5031,6 +5206,8 @@ const PAGE_HEADER_KEYS = {
     employees: ['page.employees', 'page.employeesSub'],
     users: ['page.users', 'page.usersSub'],
     usersSection: ['page.users', 'page.usersSub'],
+    activityLog: ['page.activityLog', 'page.activityLogSub'],
+    activityLogSection: ['page.activityLog', 'page.activityLogSub'],
     settings: ['page.settings', 'page.settingsSub']
 };
 
@@ -5205,6 +5382,7 @@ async function saveCompanySettings(e) {
     }
     localStorage.setItem('fleetop_company', JSON.stringify(payload));
     await loadCompanySettings();
+    logActivity('settings.save', 'إعدادات', '', payload.company_name_ar || payload.company_name_en || '');
     alert(t('settings.saved'));
 }
 
@@ -5318,6 +5496,9 @@ function switchTab(tabId) {
         }
         if ((tabId === 'analytics' || tabId === 'analyticsSection') && typeof renderAnalyticsDashboard === 'function') {
             renderAnalyticsDashboard();
+        }
+        if ((tabId === 'activityLog' || tabId === 'activityLogSection') && typeof loadActivityLog === 'function') {
+            loadActivityLog();
         }
     } else {
         console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
@@ -6177,6 +6358,7 @@ function closeAddTripModal() {
         if (driverUpdate.error) console.error("خطأ في تحديث السائق:", driverUpdate.error);
 
         closeAddTripModal();
+        logActivity('trip.create', 'رحلة', trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
         alert('تم حفظ الرحلة برقم ' + trip_no + ' بنجاح!');
         if (typeof loadAllData === 'function') loadAllData();
     } else {
@@ -6388,6 +6570,7 @@ async function saveEditTrip(e) {
     revealSuggestion('city', from_city);
     revealSuggestion('city', to_city);
     closeEditTripModal();
+    logActivity('trip.edit', 'رحلة', trip.trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
     alert('تم حفظ تعديل الرحلة ' + trip.trip_no);
     if (typeof loadAllData === 'function') loadAllData();
 }
@@ -6474,6 +6657,7 @@ async function cancelTrip(tripNo) {
         if (driverError) console.error('خطأ في تحرير السائق:', driverError);
     }
 
+    logActivity('trip.cancel', 'رحلة', tripNo, `${tripData.client_name || ''} · ${tripData.truck_plate || ''} · ${tripData.driver_name || ''}`);
     alert('تم إلغاء الرحلة وتحرير الشاحنة والسائق. سقط مبلغ الرحلة من الإيرادات، وسقطت عمولة السائق.');
     if (typeof loadAllData === 'function') loadAllData();
 }       
@@ -6500,7 +6684,12 @@ async function cancelTrip(tripNo) {
                 ? client.from('trucks').update(data).eq('id', id)
                 : client.from('trucks').insert([data]);
             let { error } = await writeIgnoringUnknownColumns(write, payload);
-            if (!error) { alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!'); resetTruckForm(); loadAllData(); }
+            if (!error) {
+                logActivity('truck.save', 'مركبة', document.getElementById('truckPlate')?.value || id, id ? 'تعديل' : 'إضافة');
+                alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
+                resetTruckForm();
+                loadAllData();
+            }
             else alert('تعذر الحفظ: ' + error.message);
         }
 
@@ -6544,7 +6733,10 @@ async function cancelTrip(tripNo) {
         async function deleteTruck(id) {
             if (confirm('هل أنت متأكد من الحذف؟')) {
                 const { error } = await client.from('trucks').delete().eq('id', id);
-                if (!error) loadAllData();
+                if (!error) {
+                    logActivity('truck.delete', 'مركبة', id, '');
+                    loadAllData();
+                }
             }
         }
 
@@ -6641,7 +6833,12 @@ async function cancelTrip(tripNo) {
                 ? client.from('drivers').update(data).eq('id', id)
                 : client.from('drivers').insert([data]);
             let { error } = await writeIgnoringUnknownColumns(write, payload);
-            if (!error) { alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!'); resetDriverForm(); loadAllData(); }
+            if (!error) {
+                logActivity('staff.save', 'موظف', document.getElementById('driverName')?.value || id, id ? 'تعديل' : 'إضافة');
+                alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
+                resetDriverForm();
+                loadAllData();
+            }
             else alert('تعذر الحفظ: ' + error.message);
         }
 
@@ -6681,7 +6878,10 @@ async function cancelTrip(tripNo) {
         async function deleteDriver(id) {
             if (confirm('هل أنت متأكد من الحذف؟')) {
                 const { error } = await client.from('drivers').delete().eq('id', id);
-                if (!error) loadAllData();
+                if (!error) {
+                    logActivity('staff.delete', 'موظف', id, '');
+                    loadAllData();
+                }
             }
         }
 async function loadUsers() {
@@ -6763,6 +6963,7 @@ async function loadUsers() {
                 alert(error.message || 'تعذر حفظ المستخدم.');
                 return;
             }
+            logActivity('user.save', 'مستخدم', username, `${employee_name} · ${role} · ${status}${id ? ' · تعديل' : ' · إضافة'}${password ? ' · كلمة مرور' : ''}`);
             alert(id ? (password ? 'تم تحديث البيانات وكلمة المرور بنجاح!' : 'تم تحديث بيانات المستخدم بنجاح!') : 'تمت إضافة المستخدم بنجاح!');
             resetUserForm();
             loadUsers();
@@ -6806,6 +7007,7 @@ async function loadUsers() {
                 alert(error.message || 'تعذر حذف المستخدم.');
                 return;
             }
+            logActivity('user.delete', 'مستخدم', id, '');
             loadUsers();
         }
 
@@ -6884,6 +7086,7 @@ async function loadUsers() {
                 const { error } = await client.auth.updateUser({ password: newPassword });
                 if (error) throw error;
                 closeOwnPasswordModal();
+                logActivity('password.change', 'مستخدم', currentLoggedInUser.username || '', '');
                 alert('تم تغيير كلمة المرور بنجاح.');
             } catch (err) {
                 console.error('Password change error:', err);
@@ -7002,6 +7205,8 @@ async function loadUsers() {
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
+            const tabActivityLogBtn = document.getElementById('tabActivityLogBtn');
+            if (tabActivityLogBtn) tabActivityLogBtn.classList.toggle('hidden', user.role !== 'admin');
             const tabSettingsBtn = document.getElementById('tabSettingsBtn');
             if (tabSettingsBtn) tabSettingsBtn.classList.toggle('hidden', user.role !== 'admin');
             setAppLang(currentLang);
@@ -7034,6 +7239,7 @@ async function loadUsers() {
         }
 
         async function handleLogout() {
+            try { await logActivity('logout', 'session', currentLoggedInUser?.username || '', currentLoggedInUser?.employee_name || ''); } catch (err) {}
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
             currentLoggedInUser = null;
             if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
