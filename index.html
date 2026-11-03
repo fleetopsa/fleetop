@@ -375,6 +375,18 @@
             border: 0;
         }
         #settleDriversTable tr.driver-block-start td { border-top: 3px solid #0f172a; }
+        .maint-action-grid {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            width: max-content;
+            max-width: 100%;
+        }
+        .maint-col-tight {
+            width: 1%;
+            white-space: nowrap;
+            text-align: center;
+        }
         .riyal-symbol {
             height: 0.9em;
             width: auto;
@@ -537,6 +549,9 @@
                                     </button>
                                     <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-van-shuttle ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
+                                    </button>
+                                    <button onclick="switchTab('maintenance')" data-nav="maintenance" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-screwdriver-wrench ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.maintenance">الصيانة العامة</span>
                                     </button>
                                 </div>
                             </div>
@@ -1263,6 +1278,75 @@
                         </table>
                     </div>
                 </div>
+                </div>
+            </main>
+
+            <main id="maintenanceSection" class="hidden px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenance">الصيانة العامة</h2>
+                            <p class="text-xs text-slate-500 mb-3" data-i18n="page.maintenanceSub">تقرير صيانة الشاحنات والمركبات الأخرى</p>
+                            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 w-full no-print">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                                    <input type="date" id="maintStartDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                                    <input type="date" id="maintEndDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicle">المركبة</label>
+                                    <select id="maintVehicleFilter" onchange="renderMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                        <option value="" data-i18n="maint.allVehicles">جميع المركبات</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.type">نوع الصيانة</label>
+                                    <select id="maintTypeFilter" onchange="renderMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                        <option value="" data-i18n="maint.allTypes">جميع الأنواع</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="maint-action-grid shrink-0">
+                            <button type="button" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 no-print">
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="maint.add">إضافة صيانة</span>
+                            </button>
+                            <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 no-print" style="background:#0b2a4a;color:#c4a35a">
+                                <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                            </button>
+                            <div class="rounded-2xl border border-amber-200 bg-amber-50 flex flex-col items-center justify-center text-center px-3 py-2 min-h-[4.5rem]">
+                                <span class="text-[10px] font-bold text-amber-700 leading-tight" data-i18n="maint.totalCost">إجمالي التكاليف</span>
+                                <span id="maintTotalCost" class="text-sm font-black text-slate-900 font-mono leading-tight mt-1 whitespace-nowrap">0.00</span>
+                            </div>
+                            <div class="rounded-2xl border border-blue-200 bg-blue-50 flex flex-col items-center justify-center text-center px-3 py-2 min-h-[4.5rem]">
+                                <span class="text-[10px] font-bold text-blue-700 leading-tight" data-i18n="maint.count">عدد الصيانات</span>
+                                <span id="maintTotalCount" class="text-lg font-black text-blue-700 font-mono leading-none mt-1 whitespace-nowrap">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-center text-xs text-slate-700">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="maint-col-tight p-3 rounded-r-xl" data-i18n="maint.enteredAt">تاريخ الإدخال</th>
+                                    <th class="maint-col-tight p-3" data-i18n="maint.serviceDate">تاريخ الصيانة</th>
+                                    <th class="maint-col-tight p-3" data-i18n="maint.vehicle">المركبة</th>
+                                    <th class="maint-col-tight p-3" data-i18n="maint.type">نوع الصيانة</th>
+                                    <th class="p-3" data-i18n="maint.details">تفاصيل الإصلاح</th>
+                                    <th class="maint-col-tight p-3" data-i18n="maint.cost">التكلفة</th>
+                                    <th id="maintActionsHead" class="maint-col-tight p-3 rounded-l-xl hidden no-print" data-i18n="th.actions">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maintenanceTable">
+                                <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
 
@@ -2020,6 +2104,54 @@
             </form>
         </div>
     </div>
+    <div id="maintenanceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-screwdriver-wrench text-amber-500 ml-2"></i> <span data-i18n="maint.add">إضافة صيانة</span></h3>
+                <button type="button" onclick="closeMaintenanceModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p id="maintFormError" class="hidden text-xs font-bold text-rose-600 mb-3"></p>
+            <form onsubmit="saveMaintenance(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.serviceDate">تاريخ الصيانة</label>
+                    <input type="date" id="maintServiceDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <p class="text-[10px] text-slate-400 mt-1" data-i18n="maint.serviceDateHint">يمكن إدخال تاريخ سابق. تاريخ تسجيل العملية في النظام يُحفظ تلقائياً ولا يُعدَّل.</p>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.type">نوع الصيانة</label>
+                    <select id="maintType" required onchange="toggleMaintenanceTypeOther()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
+                    <input type="text" id="maintTypeOther" class="hidden mt-2 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="maint.typeOtherPh" placeholder="اكتب نوع الصيانة">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicleKind">نوع المركبة</label>
+                        <select id="maintVehicleKind" required onchange="fillMaintenanceVehicleOptions()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="شاحنة" data-i18n="nav.trucks">الشاحنات</option>
+                            <option value="أخرى" data-i18n="nav.otherVehicles">المركبات الأخرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicle">المركبة</label>
+                        <select id="maintVehiclePlate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="" data-i18n="maint.chooseVehicle">اختر المركبة</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1"><span data-i18n="maint.cost">تكلفة الصيانة</span> <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                    <input type="number" id="maintCost" required min="0" step="0.01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.details">تفاصيل الصيانة</label>
+                    <textarea id="maintDetails" rows="3" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="maint.detailsPh" placeholder="اكتب ما تم عمله"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="maintSubmitBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
+                    <button type="button" onclick="closeMaintenanceModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="payoutModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
@@ -2366,6 +2498,13 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('activityLogStart', '');
         setFilterValue('activityLogEnd', '');
         setFilterValue('activityLogUser', '');
+        return;
+    }
+    if (id === 'maintenance' || id === 'maintenanceSection') {
+        setFilterValue('maintStartDate', '');
+        setFilterValue('maintEndDate', '');
+        setFilterValue('maintVehicleFilter', '');
+        setFilterValue('maintTypeFilter', '');
     }
 }
 
@@ -3814,7 +3953,8 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => Promise.allSettled([
                 typeof generateCommissionReport === 'function' ? generateCommissionReport() : null,
                 typeof generateCommissionSettlement === 'function' ? generateCommissionSettlement() : null
-            ])) : null
+            ])) : null,
+            typeof loadMaintenanceReport === 'function' ? loadMaintenanceReport() : null
         ]).catch(err => console.error(err));
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
@@ -4105,6 +4245,261 @@ let currentStaffKind = 'سائق';
 
 function isCargoTruck(row) {
     return String(row?.vehicle_kind || 'شاحنة').trim() !== 'أخرى';
+}
+
+const MAINTENANCE_TYPES = ['ميكانيكا', 'كهرباء', 'هواء', 'غيار كفر جديد', 'بنشر', 'زيوت وفلاتر', 'فرامل', 'تكييف', 'سمكرة ودهان', 'أخرى'];
+let maintenanceCache = [];
+let maintenanceVehicles = [];
+
+function maintenanceTypeLabel(type) {
+    const value = String(type || '').trim();
+    if (!value) return '—';
+    return tv(value);
+}
+
+function maintenanceVehicleLabel(kind, plate) {
+    const kindLabel = String(kind || '').trim() === 'أخرى' ? t('maint.otherVehicle') : tv('شاحنة');
+    return `${kindLabel} · ${plate || '—'}`;
+}
+
+function fillMaintenanceTypeSelect(select, includeAll) {
+    if (!select) return;
+    const current = select.value;
+    const options = MAINTENANCE_TYPES.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(maintenanceTypeLabel(type))}</option>`).join('');
+    select.innerHTML = `<option value="">${escapeHtml(includeAll ? t('maint.allTypes') : t('maint.chooseType'))}</option>` + options;
+    if (current && [...select.options].some(option => option.value === current)) select.value = current;
+}
+
+function fillMaintenanceFilterVehicles() {
+    const select = document.getElementById('maintVehicleFilter');
+    if (!select) return;
+    const current = select.value;
+    const options = maintenanceVehicles.map(row => {
+        const plate = String(row.plate || '').trim();
+        const kind = isCargoTruck(row) ? 'شاحنة' : 'أخرى';
+        const value = `${kind}::${plate}`;
+        return `<option value="${escapeHtml(value)}">${escapeHtml(maintenanceVehicleLabel(kind, plate))}</option>`;
+    }).join('');
+    select.innerHTML = `<option value="">${escapeHtml(t('maint.allVehicles'))}</option>` + options;
+    if (current && [...select.options].some(option => option.value === current)) select.value = current;
+}
+
+function toggleMaintenanceTypeOther() {
+    const type = document.getElementById('maintType')?.value || '';
+    const other = document.getElementById('maintTypeOther');
+    if (!other) return;
+    const show = type === 'أخرى';
+    other.classList.toggle('hidden', !show);
+    other.required = show;
+    if (!show) other.value = '';
+}
+
+function showMaintenanceError(message) {
+    const box = document.getElementById('maintFormError');
+    if (!box) return;
+    box.textContent = message || '';
+    box.classList.toggle('hidden', !message);
+}
+
+async function fillMaintenanceVehicleOptions() {
+    const kind = document.getElementById('maintVehicleKind')?.value || 'شاحنة';
+    const select = document.getElementById('maintVehiclePlate');
+    if (!select) return;
+    const current = select.value;
+    if (!maintenanceVehicles.length) {
+        const { data } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
+        maintenanceVehicles = data || [];
+    }
+    const rows = maintenanceVehicles.filter(row => kind === 'أخرى' ? !isCargoTruck(row) : isCargoTruck(row));
+    select.innerHTML = `<option value="">${escapeHtml(t('maint.chooseVehicle'))}</option>` + rows.map(row => {
+        const plate = String(row.plate || '').trim();
+        const model = String(row.model || '').trim();
+        return `<option value="${escapeHtml(plate)}">${escapeHtml(model ? `${plate} · ${model}` : plate)}</option>`;
+    }).join('');
+    if (current && [...select.options].some(option => option.value === current)) select.value = current;
+}
+
+async function openMaintenanceModal() {
+    const modal = document.getElementById('maintenanceModal');
+    if (!modal) return;
+    showMaintenanceError('');
+    const dateInput = document.getElementById('maintServiceDate');
+    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+    const cost = document.getElementById('maintCost');
+    if (cost) cost.value = '';
+    const details = document.getElementById('maintDetails');
+    if (details) details.value = '';
+    const kind = document.getElementById('maintVehicleKind');
+    if (kind) kind.value = 'شاحنة';
+    fillMaintenanceTypeSelect(document.getElementById('maintType'), false);
+    const type = document.getElementById('maintType');
+    if (type) type.value = '';
+    toggleMaintenanceTypeOther();
+    maintenanceVehicles = [];
+    await fillMaintenanceVehicleOptions();
+    modal.classList.remove('hidden');
+}
+
+function closeMaintenanceModal() {
+    document.getElementById('maintenanceModal')?.classList.add('hidden');
+}
+
+function maintenanceRowsForView() {
+    const vehicle = document.getElementById('maintVehicleFilter')?.value || '';
+    const type = document.getElementById('maintTypeFilter')?.value || '';
+    return maintenanceCache.filter(row => {
+        if (vehicle) {
+            const kind = String(row.vehicle_kind || 'شاحنة').trim() === 'أخرى' ? 'أخرى' : 'شاحنة';
+            if (`${kind}::${row.vehicle_plate || ''}` !== vehicle) return false;
+        }
+        if (type) {
+            const rowType = String(row.maintenance_type || '').trim();
+            if (type === 'أخرى') {
+                if (MAINTENANCE_TYPES.includes(rowType) && rowType !== 'أخرى') return false;
+            } else if (rowType !== type) return false;
+        }
+        return true;
+    });
+}
+
+function renderMaintenanceReport() {
+    const tbody = document.getElementById('maintenanceTable');
+    const costEl = document.getElementById('maintTotalCost');
+    const countEl = document.getElementById('maintTotalCount');
+    const actionsHead = document.getElementById('maintActionsHead');
+    if (!tbody) return;
+    const admin = typeof isAdminUser === 'function' && isAdminUser();
+    if (actionsHead) actionsHead.classList.toggle('hidden', !admin);
+    const rows = maintenanceRowsForView();
+    const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
+    if (costEl) costEl.innerHTML = formatSAR(total);
+    if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = rows.map(row => {
+        const entered = row.created_at ? new Date(row.created_at).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
+            numberingSystem: 'latn',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : '—';
+        const remove = admin
+            ? `<td class="p-3 text-center no-print"><button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button></td>`
+            : '';
+        return `
+            <tr class="hover:bg-slate-50 align-top">
+                <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(entered)}</td>
+                <td class="maint-col-tight p-3 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
+                <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(maintenanceVehicleLabel(row.vehicle_kind, row.vehicle_plate))}</td>
+                <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
+                <td class="p-3 text-center text-slate-600 whitespace-pre-wrap">${escapeHtml(row.details || '—')}</td>
+                <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
+                ${remove}
+            </tr>`;
+    }).join('');
+}
+
+async function loadMaintenanceReport() {
+    const tbody = document.getElementById('maintenanceTable');
+    fillMaintenanceTypeSelect(document.getElementById('maintTypeFilter'), true);
+    try {
+        const { data: trucks } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
+        maintenanceVehicles = trucks || [];
+        fillMaintenanceFilterVehicles();
+        const start = document.getElementById('maintStartDate')?.value || '';
+        const end = document.getElementById('maintEndDate')?.value || '';
+        let query = client.from('vehicle_maintenance').select('*').order('service_date', { ascending: false }).order('created_at', { ascending: false });
+        if (start) query = query.gte('service_date', start);
+        if (end) query = query.lte('service_date', end);
+        const { data, error } = await query;
+        if (error) throw error;
+        maintenanceCache = data || [];
+        renderMaintenanceReport();
+    } catch (err) {
+        console.error(err);
+        maintenanceCache = [];
+        const missing = /vehicle_maintenance|schema cache|relation/i.test(err?.message || '');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'maint.missingTable' : 'maint.saveFailed'))}</td></tr>`;
+        const costEl = document.getElementById('maintTotalCost');
+        const countEl = document.getElementById('maintTotalCount');
+        if (costEl) costEl.innerHTML = formatSAR(0);
+        if (countEl) countEl.textContent = '0';
+    }
+}
+
+async function resetMaintenanceFilters() {
+    setFilterValue('maintStartDate', '');
+    setFilterValue('maintEndDate', '');
+    setFilterValue('maintVehicleFilter', '');
+    setFilterValue('maintTypeFilter', '');
+    await loadMaintenanceReport();
+}
+
+async function saveMaintenance(event) {
+    event.preventDefault();
+    showMaintenanceError('');
+    const serviceDate = document.getElementById('maintServiceDate')?.value || '';
+    let type = document.getElementById('maintType')?.value || '';
+    const customType = document.getElementById('maintTypeOther')?.value.trim() || '';
+    const kind = document.getElementById('maintVehicleKind')?.value || '';
+    const plate = document.getElementById('maintVehiclePlate')?.value || '';
+    const cost = Number(document.getElementById('maintCost')?.value);
+    const details = document.getElementById('maintDetails')?.value.trim() || '';
+    if (!serviceDate || !type || !kind || !plate || !Number.isFinite(cost) || cost < 0) {
+        showMaintenanceError(t('maint.required'));
+        return;
+    }
+    if (type === 'أخرى') {
+        if (!customType) {
+            showMaintenanceError(t('maint.typeOtherRequired'));
+            return;
+        }
+        type = customType;
+    }
+    const button = document.getElementById('maintSubmitBtn');
+    if (button) button.disabled = true;
+    try {
+        const { error } = await client.from('vehicle_maintenance').insert([{
+            service_date: serviceDate,
+            maintenance_type: type,
+            vehicle_kind: kind,
+            vehicle_plate: plate,
+            cost,
+            details: details || null,
+            entered_by: currentLoggedInUser?.employee_name || currentLoggedInUser?.username || ''
+        }]);
+        if (error) throw error;
+        logActivity('maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
+        closeMaintenanceModal();
+        await loadMaintenanceReport();
+    } catch (err) {
+        console.error(err);
+        const missing = /vehicle_maintenance|schema cache|relation/i.test(err?.message || '');
+        showMaintenanceError(t(missing ? 'maint.missingTable' : 'maint.saveFailed'));
+    } finally {
+        if (button) button.disabled = false;
+    }
+}
+
+async function deleteMaintenance(id) {
+    if (!isAdminUser()) return;
+    const ok = await appConfirm(t('maint.deleteConfirm'), {
+        okLabel: t('ui.delete'),
+        cancelLabel: t('ui.cancel')
+    });
+    if (!ok) return;
+    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    const { error } = await client.from('vehicle_maintenance').delete().eq('id', id);
+    if (error) {
+        alert(t('maint.saveFailed'));
+        return;
+    }
+    logActivity('maintenance.delete', 'صيانة', row?.vehicle_plate || '', row?.maintenance_type || '');
+    await loadMaintenanceReport();
 }
 
 function isTripDriver(row) {
@@ -4485,6 +4880,7 @@ const I18N = {
         'nav.vehicles': 'المركبات',
         'nav.trucks': 'الشاحنات',
         'nav.otherVehicles': 'المركبات الأخرى',
+        'nav.maintenance': 'الصيانة العامة',
         'nav.staff': 'الموظفين',
         'nav.drivers': 'السائقين',
         'nav.employees': 'الموظفين الإداريين',
@@ -4535,6 +4931,8 @@ const I18N = {
         'page.trucksSub': 'شاحنات النقل المستخدمة في الرحلات اليومية',
         'page.otherVehicles': 'المركبات الأخرى',
         'page.otherVehiclesSub': 'سيارات ومركبات الاستخدام اليومي',
+        'page.maintenance': 'الصيانة العامة',
+        'page.maintenanceSub': 'تقرير صيانة الشاحنات والمركبات الأخرى',
         'page.drivers': 'السائقين',
         'page.driversSub': 'إضافة السائقين ومتابعة توفرهم للرحلات',
         'page.employees': 'الموظفين الإداريين',
@@ -4566,6 +4964,8 @@ const I18N = {
         'log.user.delete': 'حذف مستخدم',
         'log.truck.save': 'حفظ مركبة',
         'log.truck.delete': 'حذف مركبة',
+        'log.maintenance.add': 'إضافة صيانة',
+        'log.maintenance.delete': 'حذف صيانة',
         'log.staff.save': 'حفظ موظف',
         'log.staff.delete': 'حذف موظف',
         'log.password.change': 'تغيير كلمة المرور',
@@ -4675,6 +5075,33 @@ const I18N = {
         'ui.note': 'ملاحظة',
         'ui.save': 'حفظ',
         'ui.cancel': 'إلغاء',
+        'ui.delete': 'حذف',
+        'maint.add': 'إضافة صيانة',
+        'maint.vehicle': 'المركبة',
+        'maint.allVehicles': 'جميع المركبات',
+        'maint.chooseVehicle': 'اختر المركبة',
+        'maint.period': 'الفترة',
+        'maint.chooseType': 'اختر نوع الصيانة',
+        'maint.vehicleKind': 'نوع المركبة',
+        'maint.otherVehicle': 'مركبة أخرى',
+        'maint.type': 'نوع الصيانة',
+        'maint.allTypes': 'جميع الأنواع',
+        'maint.typeOtherPh': 'اكتب نوع الصيانة',
+        'maint.typeOtherRequired': 'اكتب نوع الصيانة.',
+        'maint.serviceDate': 'تاريخ الصيانة',
+        'maint.serviceDateHint': 'يمكن إدخال تاريخ سابق. تاريخ تسجيل العملية في النظام يُحفظ تلقائياً ولا يُعدَّل.',
+        'maint.enteredAt': 'تاريخ الإدخال',
+        'maint.details': 'تفاصيل الإصلاح',
+        'maint.detailsPh': 'اكتب ما تم عمله',
+        'maint.cost': 'التكلفة',
+        'maint.totalCost': 'إجمالي التكاليف',
+        'maint.count': 'عدد الصيانات',
+        'maint.loading': 'جاري تحميل الصيانات...',
+        'maint.empty': 'لا توجد صيانات مطابقة للفلتر',
+        'maint.required': 'أكمل التاريخ ونوع الصيانة والمركبة والتكلفة.',
+        'maint.saveFailed': 'تعذر حفظ الصيانة. حاول مرة أخرى.',
+        'maint.missingTable': 'جدول الصيانة غير جاهز. نفّذ ملف add-vehicle-maintenance.sql في Supabase مرة واحدة.',
+        'maint.deleteConfirm': 'حذف سجل الصيانة هذا؟',
         'ui.facilityDocs': 'سجلات وتراخيص المنشأة',
         'ui.addTruck': 'إضافة شاحنة جديدة',
         'ui.plateNo': 'رقم اللوحة',
@@ -4775,6 +5202,15 @@ const I18N = {
         'v.اشتراك غرفة': 'اشتراك غرفة',
         'v.المنشأة': 'المنشأة',
         'v.شاحنة': 'شاحنة',
+        'v.ميكانيكا': 'ميكانيكا',
+        'v.كهرباء': 'كهرباء',
+        'v.هواء': 'هواء',
+        'v.غيار كفر جديد': 'غيار كفر جديد',
+        'v.بنشر': 'بنشر',
+        'v.زيوت وفلاتر': 'زيوت وفلاتر',
+        'v.فرامل': 'فرامل',
+        'v.تكييف': 'تكييف',
+        'v.سمكرة ودهان': 'سمكرة ودهان',
         'v.مركبة': 'مركبة',
         'v.سائق': 'سائق',
         'v.موظف': 'موظف',
@@ -4859,6 +5295,7 @@ const I18N = {
         'nav.vehicles': 'Vehicles',
         'nav.trucks': 'Trucks',
         'nav.otherVehicles': 'Other vehicles',
+        'nav.maintenance': 'General maintenance',
         'nav.staff': 'Staff',
         'nav.drivers': 'Drivers',
         'nav.employees': 'Office staff',
@@ -4909,6 +5346,8 @@ const I18N = {
         'page.trucksSub': 'Transport trucks used for daily trips',
         'page.otherVehicles': 'Other vehicles',
         'page.otherVehiclesSub': 'Cars and vehicles for daily use',
+        'page.maintenance': 'General maintenance',
+        'page.maintenanceSub': 'Maintenance report for trucks and other vehicles',
         'page.drivers': 'Drivers',
         'page.driversSub': 'Add drivers and track trip availability',
         'page.employees': 'Office staff',
@@ -4940,6 +5379,8 @@ const I18N = {
         'log.user.delete': 'Delete user',
         'log.truck.save': 'Save vehicle',
         'log.truck.delete': 'Delete vehicle',
+        'log.maintenance.add': 'Add maintenance',
+        'log.maintenance.delete': 'Delete maintenance',
         'log.staff.save': 'Save staff',
         'log.staff.delete': 'Delete staff',
         'log.password.change': 'Change password',
@@ -5049,6 +5490,33 @@ const I18N = {
         'ui.note': 'Note',
         'ui.save': 'Save',
         'ui.cancel': 'Cancel',
+        'ui.delete': 'Delete',
+        'maint.add': 'Add maintenance',
+        'maint.vehicle': 'Vehicle',
+        'maint.allVehicles': 'All vehicles',
+        'maint.chooseVehicle': 'Choose a vehicle',
+        'maint.period': 'Period',
+        'maint.chooseType': 'Choose the maintenance type',
+        'maint.vehicleKind': 'Vehicle group',
+        'maint.otherVehicle': 'Other vehicle',
+        'maint.type': 'Maintenance type',
+        'maint.allTypes': 'All types',
+        'maint.typeOtherPh': 'Type the maintenance name',
+        'maint.typeOtherRequired': 'Type the maintenance name.',
+        'maint.serviceDate': 'Maintenance date',
+        'maint.serviceDateHint': 'A past date is allowed. The system entry time is saved automatically and cannot be changed.',
+        'maint.enteredAt': 'Entry date',
+        'maint.details': 'Repair details',
+        'maint.detailsPh': 'Write what was done',
+        'maint.cost': 'Cost',
+        'maint.totalCost': 'Total cost',
+        'maint.count': 'Maintenance count',
+        'maint.loading': 'Loading maintenance...',
+        'maint.empty': 'No maintenance matches this filter',
+        'maint.required': 'Complete the date, type, vehicle and cost.',
+        'maint.saveFailed': 'Could not save maintenance. Try again.',
+        'maint.missingTable': 'The maintenance table is not ready. Run add-vehicle-maintenance.sql in Supabase once.',
+        'maint.deleteConfirm': 'Delete this maintenance record?',
         'ui.facilityDocs': 'Company records and licenses',
         'ui.addTruck': 'Add truck',
         'ui.plateNo': 'Plate number',
@@ -5156,6 +5624,15 @@ const I18N = {
         'v.اشتراك غرفة': 'Chamber membership',
         'v.المنشأة': 'Company',
         'v.شاحنة': 'Truck',
+        'v.ميكانيكا': 'Mechanical',
+        'v.كهرباء': 'Electrical',
+        'v.هواء': 'Air',
+        'v.غيار كفر جديد': 'New tire',
+        'v.بنشر': 'Tire repair',
+        'v.زيوت وفلاتر': 'Oil and filters',
+        'v.فرامل': 'Brakes',
+        'v.تكييف': 'Air conditioning',
+        'v.سمكرة ودهان': 'Body and paint',
         'v.مركبة': 'Vehicle',
         'v.سائق': 'Driver',
         'v.موظف': 'Staff',
@@ -5235,6 +5712,8 @@ const PAGE_HEADER_KEYS = {
     facility: ['page.facility', 'page.facilitySub'],
     trucks: ['page.trucks', 'page.trucksSub'],
     otherVehicles: ['page.otherVehicles', 'page.otherVehiclesSub'],
+    maintenance: ['page.maintenance', 'page.maintenanceSub'],
+    maintenanceSection: ['page.maintenance', 'page.maintenanceSub'],
     drivers: ['page.drivers', 'page.driversSub'],
     employees: ['page.employees', 'page.employeesSub'],
     users: ['page.users', 'page.usersSub'],
@@ -5299,6 +5778,11 @@ function setAppLang(lang) {
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
         if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
         if (typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
+        if (typeof fillMaintenanceTypeSelect === 'function') {
+            fillMaintenanceTypeSelect(document.getElementById('maintTypeFilter'), true);
+            fillMaintenanceFilterVehicles();
+            renderMaintenanceReport();
+        }
     }
 }
 
@@ -5426,11 +5910,11 @@ function setActiveNav(tabId) {
     const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId);
     const financialBtn = document.getElementById('tabFinancialBtn');
     if (financialBtn) financialBtn.classList.toggle('nav-open', financialOpen);
-    const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'drivers' || tabId === 'employees';
+    const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance' || tabId === 'drivers' || tabId === 'employees';
     const facilityBtn = document.getElementById('tabFacilityBtn');
     if (facilityBtn) facilityBtn.classList.toggle('nav-open', facilityOpen);
     const vehiclesBtn = document.getElementById('tabVehiclesBtn');
-    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles');
+    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance');
     const staffBtn = document.getElementById('tabStaffBtn');
     if (staffBtn) staffBtn.classList.toggle('nav-open', tabId === 'drivers' || tabId === 'employees');
 }
@@ -5485,6 +5969,17 @@ function switchTab(tabId) {
             section.scrollTop = 0;
         }
         if (typeof loadFacilityDocuments === 'function') loadFacilityDocuments();
+        return;
+    }
+
+    if (tabId === 'maintenance') {
+        toggleVehiclesMenu(true);
+        const section = document.getElementById('maintenanceSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadMaintenanceReport === 'function') loadMaintenanceReport();
         return;
     }
 
