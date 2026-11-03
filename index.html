@@ -2112,11 +2112,12 @@
     <div id="maintenanceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-screwdriver-wrench text-amber-500 ml-2"></i> <span data-i18n="maint.add">إضافة صيانة</span></h3>
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-screwdriver-wrench text-amber-500 ml-2"></i> <span id="maintModalTitle" data-i18n="maint.add">إضافة صيانة</span></h3>
                 <button type="button" onclick="closeMaintenanceModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p id="maintFormError" class="hidden text-xs font-bold text-rose-600 mb-3"></p>
             <form onsubmit="saveMaintenance(event)" class="space-y-3.5">
+                <input type="hidden" id="maintId">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.serviceDate">تاريخ الصيانة</label>
                     <input type="date" id="maintServiceDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -4341,28 +4342,52 @@ async function fillMaintenanceVehicleOptions() {
     if (current && [...select.options].some(option => option.value === current)) select.value = current;
 }
 
-async function openMaintenanceModal() {
+async function openMaintenanceModal(id) {
     const modal = document.getElementById('maintenanceModal');
     if (!modal) return;
     showMaintenanceError('');
+    const row = id ? maintenanceCache.find(item => Number(item.id) === Number(id)) : null;
+    const editing = Boolean(row);
+    if (editing && !isAdminUser()) return;
+    const title = document.getElementById('maintModalTitle');
+    if (title) title.textContent = t(editing ? 'maint.edit' : 'maint.add');
+    const idInput = document.getElementById('maintId');
+    if (idInput) idInput.value = editing ? String(row.id) : '';
     const dateInput = document.getElementById('maintServiceDate');
-    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+    if (dateInput) dateInput.value = editing ? dateOnly(row.service_date) : todayDateInput();
     const cost = document.getElementById('maintCost');
-    if (cost) cost.value = '';
+    if (cost) cost.value = editing ? (row.cost ?? '') : '';
     const details = document.getElementById('maintDetails');
-    if (details) details.value = '';
+    if (details) details.value = editing ? (row.details || '') : '';
     const kind = document.getElementById('maintVehicleKind');
-    if (kind) kind.value = 'شاحنة';
+    if (kind) kind.value = String(row?.vehicle_kind || '').trim() === 'أخرى' ? 'أخرى' : 'شاحنة';
     fillMaintenanceTypeSelect(document.getElementById('maintType'), false);
-    const type = document.getElementById('maintType');
-    if (type) type.value = '';
+    const typeSelect = document.getElementById('maintType');
+    const other = document.getElementById('maintTypeOther');
+    const savedType = String(row?.maintenance_type || '').trim();
+    if (editing && savedType && !MAINTENANCE_TYPES.includes(savedType)) {
+        if (typeSelect) typeSelect.value = 'أخرى';
+        if (other) other.value = savedType;
+    } else {
+        if (typeSelect) typeSelect.value = editing ? savedType : '';
+        if (other) other.value = '';
+    }
     toggleMaintenanceTypeOther();
+    if (editing && savedType && !MAINTENANCE_TYPES.includes(savedType) && other) {
+        other.classList.remove('hidden');
+        other.required = true;
+        other.value = savedType;
+    }
     maintenanceVehicles = [];
     await fillMaintenanceVehicleOptions();
+    const plate = document.getElementById('maintVehiclePlate');
+    if (plate && editing) plate.value = row.vehicle_plate || '';
     modal.classList.remove('hidden');
 }
 
 function closeMaintenanceModal() {
+    const idInput = document.getElementById('maintId');
+    if (idInput) idInput.value = '';
     document.getElementById('maintenanceModal')?.classList.add('hidden');
 }
 
@@ -4409,8 +4434,13 @@ function renderMaintenanceReport() {
             hour: '2-digit',
             minute: '2-digit'
         }) : '—';
-        const remove = admin
-            ? `<td class="p-3 text-center no-print"><button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button></td>`
+        const actions = admin
+            ? `<td class="p-3 text-center no-print">
+                    <div class="flex items-center justify-center gap-2">
+                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-slate-800 hover:text-amber-600 font-bold">${escapeHtml(t('ui.edit'))}</button>
+                        <button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>
+                    </div>
+               </td>`
             : '';
         return `
             <tr class="hover:bg-slate-50 align-top">
@@ -4420,7 +4450,7 @@ function renderMaintenanceReport() {
                 <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
                 <td class="p-3 text-center text-slate-600 whitespace-pre-wrap">${escapeHtml(row.details || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
-                ${remove}
+                ${actions}
             </tr>`;
     }).join('');
 }
@@ -4464,6 +4494,8 @@ async function resetMaintenanceFilters() {
 async function saveMaintenance(event) {
     event.preventDefault();
     showMaintenanceError('');
+    const editId = Number(document.getElementById('maintId')?.value || 0);
+    if (editId && !isAdminUser()) return;
     const serviceDate = document.getElementById('maintServiceDate')?.value || '';
     let type = document.getElementById('maintType')?.value || '';
     const customType = document.getElementById('maintTypeOther')?.value.trim() || '';
@@ -4485,17 +4517,24 @@ async function saveMaintenance(event) {
     const button = document.getElementById('maintSubmitBtn');
     if (button) button.disabled = true;
     try {
-        const { error } = await client.from('vehicle_maintenance').insert([{
+        const payload = {
             service_date: serviceDate,
             maintenance_type: type,
             vehicle_kind: kind,
             vehicle_plate: plate,
             cost,
-            details: details || null,
-            entered_by: currentLoggedInUser?.employee_name || currentLoggedInUser?.username || ''
-        }]);
-        if (error) throw error;
-        logActivity('maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
+            details: details || null
+        };
+        if (editId) {
+            const { error } = await client.from('vehicle_maintenance').update(payload).eq('id', editId);
+            if (error) throw error;
+            logActivity('maintenance.edit', 'صيانة', plate, `${type} · ${serviceDate}`);
+        } else {
+            payload.entered_by = currentLoggedInUser?.employee_name || currentLoggedInUser?.username || '';
+            const { error } = await client.from('vehicle_maintenance').insert([payload]);
+            if (error) throw error;
+            logActivity('maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
+        }
         closeMaintenanceModal();
         await loadMaintenanceReport();
     } catch (err) {
@@ -4990,6 +5029,7 @@ const I18N = {
         'log.truck.save': 'حفظ مركبة',
         'log.truck.delete': 'حذف مركبة',
         'log.maintenance.add': 'إضافة صيانة',
+        'log.maintenance.edit': 'تعديل صيانة',
         'log.maintenance.delete': 'حذف صيانة',
         'log.staff.save': 'حفظ موظف',
         'log.staff.delete': 'حذف موظف',
@@ -5102,6 +5142,7 @@ const I18N = {
         'ui.cancel': 'إلغاء',
         'ui.delete': 'حذف',
         'maint.add': 'إضافة صيانة',
+        'maint.edit': 'تعديل صيانة',
         'maint.vehicle': 'المركبة',
         'maint.allVehicles': 'جميع المركبات',
         'maint.chooseVehicle': 'اختر المركبة',
@@ -5408,6 +5449,7 @@ const I18N = {
         'log.truck.save': 'Save vehicle',
         'log.truck.delete': 'Delete vehicle',
         'log.maintenance.add': 'Add maintenance',
+        'log.maintenance.edit': 'Edit maintenance',
         'log.maintenance.delete': 'Delete maintenance',
         'log.staff.save': 'Save staff',
         'log.staff.delete': 'Delete staff',
@@ -5520,6 +5562,7 @@ const I18N = {
         'ui.cancel': 'Cancel',
         'ui.delete': 'Delete',
         'maint.add': 'Add maintenance',
+        'maint.edit': 'Edit maintenance',
         'maint.vehicle': 'Vehicle',
         'maint.allVehicles': 'All vehicles',
         'maint.chooseVehicle': 'Choose a vehicle',
