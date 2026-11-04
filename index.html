@@ -1416,7 +1416,7 @@
                                     <th class="maint-col-tight p-3" data-i18n="maint.type">نوع الصيانة</th>
                                     <th class="p-3" data-i18n="maint.details">تفاصيل الإصلاح</th>
                                     <th class="maint-col-tight p-3" data-i18n="maint.cost">التكلفة</th>
-                                    <th class="maint-col-tight p-3" data-i18n="maint.invoice">الفاتورة</th>
+                                    <th class="maint-col-tight p-3" data-i18n="maint.attachments">المرفقات</th>
                                     <th id="maintActionsHead" class="maint-col-tight p-3 rounded-l-xl hidden no-print" data-i18n="th.actions">إجراءات</th>
                                 </tr>
                             </thead>
@@ -4834,8 +4834,7 @@ function renderMaintenanceReport() {
         const hasInvoice = Boolean(String(row.invoice_path || '').trim());
         const invoiceCell = hasInvoice
             ? `<td class="maint-col-tight p-3">
-                    <span class="font-bold text-amber-800">${escapeHtml(t('maint.invoiceAttached'))}</span>
-                    <button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="block mx-auto mt-1 text-amber-700 hover:text-amber-800 font-bold no-print">${escapeHtml(t('maint.invoiceView'))}</button>
+                    <button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>
                </td>`
             : `<td class="maint-col-tight p-3 text-slate-300">—</td>`;
         return `
@@ -5598,6 +5597,7 @@ const I18N = {
         'maint.saveFailed': 'تعذر حفظ الصيانة. حاول مرة أخرى.',
         'maint.missingTable': 'جدول الصيانة غير جاهز. نفّذ ملف add-vehicle-maintenance.sql في Supabase مرة واحدة.',
         'maint.deleteConfirm': 'حذف سجل الصيانة هذا؟',
+        'maint.attachments': 'المرفقات',
         'maint.invoice': 'فاتورة / صورة',
         'maint.invoiceHint': 'اختياري. صورة أو PDF حتى 8 ميجا، مثل فاتورة الورشة.',
         'maint.invoiceChoose': 'اضغط لتحميل فاتورة أو صورة',
@@ -6030,6 +6030,7 @@ const I18N = {
         'maint.saveFailed': 'Could not save maintenance. Try again.',
         'maint.missingTable': 'The maintenance table is not ready. Run add-vehicle-maintenance.sql in Supabase once.',
         'maint.deleteConfirm': 'Delete this maintenance record?',
+        'maint.attachments': 'Attachments',
         'maint.invoice': 'Invoice / photo',
         'maint.invoiceHint': 'Optional. Image or PDF up to 8 MB, such as a workshop invoice.',
         'maint.invoiceChoose': 'Tap to upload an invoice or photo',
