@@ -4841,7 +4841,7 @@ function renderMaintenanceReport() {
             <tr class="hover:bg-slate-50 align-top">
                 <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(entered)}</td>
                 <td class="maint-col-tight p-3 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
-                <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(maintenanceVehicleLabel(row.vehicle_kind, row.vehicle_plate))}</td>
+                <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(row.vehicle_plate || '—')}</td>
                 <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
                 <td class="p-3 text-center text-slate-600 maint-details-cell">${escapeHtml(row.details || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
