@@ -3483,16 +3483,19 @@ async function generateFinancialReport() {
             return;
         }
 
-        tbody.innerHTML = activeTrips.map(tr => `
+        tbody.innerHTML = activeTrips.map(tr => {
+            const cells = formatRevenuePaymentCells(tr);
+            return `
             <tr class="hover:bg-slate-50 transition">
-                <td class="p-3.5 font-black text-amber-600 font-mono">${tr.trip_no || tr.id || '---'}</td>
-                <td class="p-3.5 text-slate-600 font-mono">${tr.departure_date || '---'}</td>
-                <td class="p-3.5 font-bold text-slate-900">${tr.client_name || '---'}</td>
-                <td class="p-3.5 font-bold text-slate-900 font-mono">${formatSAR(tr.total_amount || 0)}</td>
-                <td class="p-3.5 text-slate-700">${formatPaymentLines(tr)}</td>
-                <td class="p-3.5 text-slate-600 font-mono">${paymentLineItems(tr).map(line => escapeHtml(line.collection_date || '—')).join('<br>') || '---'}</td>
+                <td class="p-3.5 font-black text-amber-600 font-mono align-top">${tr.trip_no || tr.id || '---'}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${tr.departure_date || '---'}</td>
+                <td class="p-3.5 font-bold text-slate-900 align-top">${tr.client_name || '---'}</td>
+                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${cells.amount}</td>
+                <td class="p-3.5 text-slate-700 align-top">${cells.method}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${cells.date}</td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     } catch (err) {
         console.error('Error generating financial report:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل التقرير المالي</td></tr>`;
@@ -3820,6 +3823,30 @@ function formatPaymentLines(trip) {
         const date = line.collection_date || t('ui.noDate');
         return `<div>${index + 1}. ${formatSAR(line.paid_amount)} — ${escapeHtml(method)} — ${escapeHtml(date)}</div>`;
     }).join('');
+}
+
+function stackReportCell(items) {
+    if (!items.length) return '—';
+    if (items.length === 1) return items[0];
+    return `<div class="flex flex-col gap-1">${items.map(item => `<div>${item}</div>`).join('')}</div>`;
+}
+
+function formatRevenuePaymentCells(trip) {
+    const lines = paymentLineItems(trip);
+    if (!lines.length) {
+        return {
+            amount: formatSAR(trip.total_amount || 0),
+            method: '—',
+            date: '---'
+        };
+    }
+    return {
+        amount: lines.length > 1
+            ? stackReportCell(lines.map(line => formatSAR(line.paid_amount)))
+            : formatSAR(trip.total_amount || 0),
+        method: stackReportCell(lines.map(line => escapeHtml(tv(line.payment_method || 'بدون طريقة')))),
+        date: stackReportCell(lines.map(line => escapeHtml(line.collection_date || '—')))
+    };
 }
 
 async function generateSettlementNo() {
