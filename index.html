@@ -407,10 +407,7 @@
             }
             #mainDashboard.sidebar-pinned #appSidebar::before { display: none; }
             #mainDashboard.sidebar-pinned #sidebarUnpinBtn { display: inline-flex; }
-            #menuToggleBtn.is-pinned {
-                background: #c4a35a;
-                color: #0b2a4a;
-            }
+            #mainDashboard.sidebar-pinned #menuToggleBtn { display: none; }
             #appContent {
                 width: 100%;
                 flex: 1;
@@ -4854,12 +4851,10 @@ function syncSidebarToggleBtn() {
     const pinned = desktop && dash.classList.contains('sidebar-pinned');
     if (!desktop) dash.classList.remove('sidebar-pinned');
     if (btn) {
-        btn.classList.toggle('is-pinned', pinned);
-        btn.setAttribute('aria-label', pinned
-            ? (currentLang === 'en' ? 'Unpin sidebar' : 'إلغاء تثبيت القائمة')
-            : (currentLang === 'en' ? 'Open menu' : 'فتح القائمة'));
+        btn.classList.remove('is-pinned');
+        btn.setAttribute('aria-label', currentLang === 'en' ? 'Open menu' : 'فتح القائمة');
         const icon = btn.querySelector('i');
-        if (icon) icon.className = pinned ? 'fa-solid fa-thumbtack' : 'fa-solid fa-bars';
+        if (icon) icon.className = 'fa-solid fa-bars';
     }
     if (unpin) {
         unpin.classList.toggle('hidden', !pinned);
