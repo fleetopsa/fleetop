@@ -1191,12 +1191,12 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
-                <select id="recvPayStatusFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="" data-i18n="ui.allPay">جميع حالات السداد</option>
-                    <option value="unpaid" data-i18n="ui.unpaid">غير مسدد</option>
-                    <option value="partial" data-i18n="ui.partial">سداد جزئي</option>
-                    <option value="paid" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
+                <select id="recvPayMethodFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
+                    <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
+                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
                 </select>
             </div>
             <div>
@@ -2699,7 +2699,7 @@ function clearAllPageFilters() {
     setFilterValue('recvStartDate', '');
     setFilterValue('recvEndDate', '');
     setFilterValue('recvClientFilter', '');
-    setFilterValue('recvPayStatusFilter', '');
+    setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
     setFilterValue('commStartDate', '');
@@ -2742,7 +2742,7 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('recvStartDate', '');
         setFilterValue('recvEndDate', '');
         setFilterValue('recvClientFilter', '');
-        setFilterValue('recvPayStatusFilter', '');
+        setFilterValue('recvPayMethodFilter', '');
         setFilterValue('recvTruckFilter', '');
         setFilterValue('recvDriverFilter', '');
         return;
@@ -3660,12 +3660,39 @@ function isOverdueReceivable(trip) {
     return !!day && day < todayDateInput();
 }
 
-function tripCollectionDatesHtml(trip) {
+function tripCollectionDateList(trip) {
     const dates = paymentLineItems(trip)
         .map(line => dateOnly(line.collection_date))
         .filter(Boolean);
+    const own = dateOnly(trip?.collection_date);
+    if (own && !dates.includes(own)) dates.push(own);
+    return dates;
+}
+
+function tripHasCollectionInPeriod(trip, startDate, endDate) {
+    if (!startDate && !endDate) return true;
+    return tripCollectionDateList(trip).some(day => tripInDateRange(day, startDate, endDate));
+}
+
+function tripCollectionDatesHtml(trip) {
+    const dates = tripCollectionDateList(trip);
     if (!dates.length) return '—';
     return stackReportCell(dates.map(date => escapeHtml(date)));
+}
+
+function tripFromToText(trip) {
+    const from = String(trip?.from_city || '').trim() || '---';
+    const to = String(trip?.to_city || '').trim() || '---';
+    return `${from} - ${to}`;
+}
+
+function tripPaymentMethods(trip) {
+    const methods = paymentLineItems(trip)
+        .map(line => String(line.payment_method || '').trim())
+        .filter(Boolean);
+    const own = String(trip?.payment_method || '').trim();
+    if (own && !methods.includes(own)) methods.push(own);
+    return methods;
 }
 
 function receivablesPayBadge(trip) {
@@ -3687,6 +3714,14 @@ async function populateReceivablesFilters(trips) {
             .map(trip => String(trip.client_name || '').trim())
             .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
         fillSelectOptions('recvClientFilter', clients, t('ui.allClients'));
+        const methodSelect = document.getElementById('recvPayMethodFilter');
+        if (methodSelect) {
+            const current = methodSelect.value;
+            const defaultMethods = ['نقدي', 'تحويل على الراجحي', 'تحويل على الأهلي'];
+            methodSelect.innerHTML = `<option value="">${t('ui.allMethods')}</option>` +
+                defaultMethods.map(method => `<option value="${method}">${tv(method)}</option>`).join('');
+            if (current) methodSelect.value = current;
+        }
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر المستحقات:', err);
     }
@@ -3698,7 +3733,7 @@ async function generateReceivablesReport() {
         const startDate = document.getElementById('recvStartDate')?.value || '';
         const endDate = document.getElementById('recvEndDate')?.value || '';
         const selectedClient = document.getElementById('recvClientFilter')?.value || '';
-        const selectedStatus = document.getElementById('recvPayStatusFilter')?.value || '';
+        const selectedMethod = document.getElementById('recvPayMethodFilter')?.value || '';
         const selectedTruck = document.getElementById('recvTruckFilter')?.value || '';
         const selectedDriver = document.getElementById('recvDriverFilter')?.value || '';
 
@@ -3713,9 +3748,10 @@ async function generateReceivablesReport() {
         indexSettlements(settlementRows);
         await populateReceivablesFilters(trips);
 
-        let rows = filterCompletedTripsForPeriod(trips, startDate, endDate);
+        let rows = (trips || []).filter(isCompletedTrip);
+        if (startDate || endDate) rows = rows.filter(trip => tripHasCollectionInPeriod(trip, startDate, endDate));
         if (selectedClient) rows = rows.filter(trip => String(trip.client_name || '').trim() === selectedClient);
-        if (selectedStatus) rows = rows.filter(trip => tripPayStatusCode(trip) === selectedStatus);
+        if (selectedMethod) rows = rows.filter(trip => tripPaymentMethods(trip).includes(selectedMethod));
         rows = sortTripsByCompletionDesc(rows);
 
         const money = summarizeTripMoney(rows);
@@ -3739,7 +3775,7 @@ async function generateReceivablesReport() {
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
                 <td class="p-3.5 text-slate-600 font-mono align-top">${tripCollectionDatesHtml(tr)}</td>
                 <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
-                <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripDestinationText(tr))}</td>
+                <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripFromToText(tr))}</td>
                 <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
                 <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${formatSAR(tripMoneyParts(tr).total)}</td>
@@ -3756,7 +3792,7 @@ async function resetReceivablesFilters() {
     setFilterValue('recvStartDate', '');
     setFilterValue('recvEndDate', '');
     setFilterValue('recvClientFilter', '');
-    setFilterValue('recvPayStatusFilter', '');
+    setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
     await generateReceivablesReport();
@@ -5732,7 +5768,7 @@ const I18N = {
         'page.revenue': 'تقرير الإيرادات',
         'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
         'page.receivables': 'تقرير المستحقات والتحصيل',
-        'page.receivablesSub': 'المستحقات والمحصل والمتبقي والمتأخرات حسب العميل وحالة السداد',
+        'page.receivablesSub': 'المستحقات والمحصل والمتبقي والمتأخرات حسب العميل وطريقة السداد',
         'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
         'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
         'page.commissions': 'تقرير العمولات',
@@ -6186,7 +6222,7 @@ const I18N = {
         'page.revenue': 'Revenue report',
         'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
         'page.receivables': 'Receivables and collections',
-        'page.receivablesSub': 'Due, collected, remaining and overdue amounts by client and payment status',
+        'page.receivablesSub': 'Due, collected, remaining and overdue amounts by client and payment method',
         'page.fleetFinance': 'Commissions and fleet revenue',
         'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
         'page.commissions': 'Commission report',
