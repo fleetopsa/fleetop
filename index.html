@@ -1234,8 +1234,9 @@
                                 <input type="text" id="facilityDocTitle" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="مثل: السجل التجاري">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.type">النوع</label>
-                                <select id="facilityDocType" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.docType">نوع الوثيقة</label>
+                                <select id="facilityDocType" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    <option value="" data-i18n="ui.chooseDocType">اختر نوع الوثيقة</option>
                                     <option value="سجل تجاري" data-i18n="ui.crType">سجل تجاري</option>
                                     <option value="ترخيص نقل" data-i18n="ui.transportLic">ترخيص نقل</option>
                                     <option value="رخصة بلدية" data-i18n="ui.municipality">رخصة بلدية</option>
@@ -1276,7 +1277,7 @@
                                 <thead class="bg-slate-100 text-slate-700">
                                     <tr>
                                         <th class="p-3.5 rounded-r-xl" data-i18n="th.name">الاسم</th>
-                                        <th class="p-3.5" data-i18n="ui.type">النوع</th>
+                                        <th class="p-3.5" data-i18n="ui.docType">نوع الوثيقة</th>
                                         <th class="p-3.5" data-i18n="th.number">الرقم</th>
                                         <th class="p-3.5" data-i18n="th.expiry">الانتهاء</th>
                                         <th class="p-3.5 rounded-l-xl text-center" data-i18n="th.actions">إجراءات</th>
@@ -5412,6 +5413,10 @@ async function saveFacilityDocument(e) {
         expiry_date: dateField('facilityDocExpiry'),
         notes: emptyToNull(document.getElementById('facilityDocNotes').value)
     };
+    if (!payload.doc_type) {
+        alert(t('ui.chooseDocType'));
+        return;
+    }
     const write = (data) => id
         ? client.from('facility_documents').update(data).eq('id', id)
         : client.from('facility_documents').insert([data]);
@@ -5442,6 +5447,7 @@ function editFacilityDocument(id) {
 function resetFacilityDocForm() {
     document.getElementById('facilityDocId').value = '';
     document.querySelector('#facilitySection form')?.reset();
+    document.getElementById('facilityDocType').value = '';
     document.getElementById('facilityFormTitle').innerHTML = '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة سجل أو ترخيص';
     document.getElementById('saveFacilityDocBtn').innerText = 'حفظ';
 }
@@ -5772,6 +5778,8 @@ const I18N = {
         'ui.addLicense': 'إضافة سجل أو ترخيص',
         'ui.docName': 'اسم السجل / الترخيص',
         'ui.type': 'النوع',
+        'ui.docType': 'نوع الوثيقة',
+        'ui.chooseDocType': 'اختر نوع الوثيقة',
         'ui.docNo': 'رقم الوثيقة',
         'ui.issueDate': 'تاريخ الإصدار',
         'ui.expiryDate': 'تاريخ الانتهاء',
@@ -6215,6 +6223,8 @@ const I18N = {
         'ui.addLicense': 'Add record or license',
         'ui.docName': 'Record / license name',
         'ui.type': 'Type',
+        'ui.docType': 'Document type',
+        'ui.chooseDocType': 'Choose the document type',
         'ui.docNo': 'Document number',
         'ui.issueDate': 'Issue date',
         'ui.expiryDate': 'Expiry date',
