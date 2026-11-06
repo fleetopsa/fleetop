@@ -2463,12 +2463,24 @@
 
         async function clearActivityLog() {
             if (!isAdminUser()) return;
-            const ok = await appConfirm(t('log.clearConfirm'), {
+            const start = document.getElementById('activityLogStart')?.value || '';
+            const end = document.getElementById('activityLogEnd')?.value || '';
+            const userQ = String(document.getElementById('activityLogUser')?.value || '').trim();
+            const filtered = Boolean(start || end || userQ);
+            const message = userQ && !start && !end
+                ? t('log.clearConfirmUser').replace('{n}', userQ)
+                : (filtered ? t('log.clearConfirmFiltered') : t('log.clearConfirm'));
+            const ok = await appConfirm(message, {
                 okLabel: t('log.clear'),
                 cancelLabel: t('ui.cancel')
             });
             if (!ok) return;
-            const { error } = await client.from('activity_log').delete().gte('id', 0);
+            let query = client.from('activity_log').delete();
+            if (userQ) query = query.eq('username', userQ);
+            if (start) query = query.gte('created_at', activityLogDayBound(start, false));
+            if (end) query = query.lte('created_at', activityLogDayBound(end, true));
+            if (!filtered) query = query.gte('id', 0);
+            const { error } = await query;
             if (error) {
                 alert(t('log.clearFailed'));
                 return;
@@ -5630,6 +5642,8 @@ const I18N = {
         'log.empty': 'لا توجد عمليات بعد تفعيل السجل في هذه الفترة',
         'log.clear': 'مسح السجل',
         'log.clearConfirm': 'مسح سجل النشاط بالكامل؟ لا يمكن استرجاع العمليات بعد المسح.',
+        'log.clearConfirmUser': 'مسح سجل النشاط للمستخدم {n} فقط؟ لن يُحذف سجل بقية المستخدمين.',
+        'log.clearConfirmFiltered': 'مسح السجلات الظاهرة حسب الفلتر الحالي فقط؟ لن يُحذف باقي السجل.',
         'log.clearFailed': 'تعذر مسح السجل. نفّذ صلاحية الحذف في Supabase مرة واحدة.',
         'log.hint': 'يُسجَّل النشاط من بعد تفعيل السجل فقط، ولا يظهر ما قبل ذلك.',
         'ui.allUsers': 'كل المستخدمين',
@@ -6069,6 +6083,8 @@ const I18N = {
         'log.empty': 'No activity after the log was enabled for this period',
         'log.clear': 'Clear log',
         'log.clearConfirm': 'Clear the entire activity log? Deleted entries cannot be restored.',
+        'log.clearConfirmUser': 'Clear the activity log for {n} only? Other users’ logs will stay.',
+        'log.clearConfirmFiltered': 'Clear only the log entries matching the current filter? The rest of the log will stay.',
         'log.clearFailed': 'Could not clear the log. Grant delete permission in Supabase once.',
         'log.hint': 'Activity is recorded only after the log is enabled. Older actions are not shown.',
         'ui.allUsers': 'All users',
