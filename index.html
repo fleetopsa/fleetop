@@ -461,6 +461,16 @@
             direction: ltr;
             unicode-bidi: isolate;
         }
+        .presence-dot {
+            display: inline-block;
+            width: 0.55rem;
+            height: 0.55rem;
+            border-radius: 999px;
+            flex: none;
+            box-shadow: 0 0 0 2px #fff;
+        }
+        .presence-dot.is-online { background: #10b981; }
+        .presence-dot.is-offline { background: #f43f5e; }
     </style>
 <script>
         (function () {
@@ -2470,6 +2480,48 @@
         let loginBusy = false;
         let appUsersById = {};
         const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
+        const PRESENCE_ONLINE_MS = 120000;
+        const PRESENCE_BEAT_MS = 40000;
+        let presenceTimer = null;
+        let presenceByUserId = {};
+
+        function isUserOnline(userId) {
+            if (userId != null && Number(userId) === Number(currentLoggedInUser?.id)) return true;
+            const seen = presenceByUserId[userId];
+            if (!seen) return false;
+            const at = new Date(seen).getTime();
+            return Number.isFinite(at) && (Date.now() - at) < PRESENCE_ONLINE_MS;
+        }
+
+        function presenceDotHtml(userId) {
+            const online = isUserOnline(userId);
+            const label = online ? t('ui.online') : t('ui.offline');
+            return `<span class="presence-dot ${online ? 'is-online' : 'is-offline'}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
+        }
+
+        async function touchUserPresence(offline) {
+            const id = Number(currentLoggedInUser?.id || 0);
+            if (!id) return;
+            const last_seen_at = new Date(offline ? Date.now() - PRESENCE_ONLINE_MS * 2 : Date.now()).toISOString();
+            const { error } = await client.from('user_presence').upsert({ user_id: id, last_seen_at }, { onConflict: 'user_id' });
+            if (error) console.warn('تعذر تحديث حالة الدخول:', error.message);
+        }
+
+        function startUserPresence() {
+            stopUserPresence();
+            touchUserPresence(false);
+            presenceTimer = setInterval(() => {
+                touchUserPresence(false);
+                if (currentNavTab === 'users' || currentNavTab === 'usersSection') loadUsers();
+            }, PRESENCE_BEAT_MS);
+        }
+
+        function stopUserPresence() {
+            if (presenceTimer) {
+                clearInterval(presenceTimer);
+                presenceTimer = null;
+            }
+        }
 
         function setLoginBusy(busy) {
             loginBusy = !!busy;
@@ -5804,6 +5856,8 @@ const I18N = {
         'ui.accountStatus': 'حالة الحساب',
         'ui.saveUser': 'حفظ المستخدم',
         'ui.usersList': 'قائمة مستخدمي النظام والصلاحيات',
+        'ui.online': 'داخل النظام',
+        'ui.offline': 'خارج النظام',
         'th.username': 'اسم المستخدم',
         'th.permission': 'الصلاحية',
         'ui.crType': 'سجل تجاري',
@@ -6241,6 +6295,8 @@ const I18N = {
         'ui.accountStatus': 'Account status',
         'ui.saveUser': 'Save user',
         'ui.usersList': 'System users and permissions',
+        'ui.online': 'Online',
+        'ui.offline': 'Offline',
         'th.username': 'Username',
         'th.permission': 'Permission',
         'ui.crType': 'Commercial registration',
@@ -6698,6 +6754,9 @@ function switchTab(tabId) {
         if (tabId === 'trips' || tabId === 'tripsSection') {
             if (typeof renderAdminControls === 'function') renderAdminControls();
             if (typeof filterAndRenderTrips === 'function') filterAndRenderTrips();
+        }
+        if (tabId === 'users' || tabId === 'usersSection') {
+            if (typeof loadUsers === 'function') loadUsers();
         }
         if (tabId === 'reports' || tabId === 'reportsSection') {
             toggleReportsMenu(true);
@@ -8104,6 +8163,17 @@ async function loadUsers() {
             try {
                 const { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
                 if (error) throw error;
+                presenceByUserId = {};
+                try {
+                    const { data: presence, error: presenceError } = await client.from('user_presence').select('user_id, last_seen_at');
+                    if (!presenceError) {
+                        (presence || []).forEach(row => {
+                            presenceByUserId[row.user_id] = row.last_seen_at;
+                        });
+                    }
+                } catch (err) {
+                    console.warn(err);
+                }
 
                 appUsersById = {};
                 if (users && users.length > 0) {
@@ -8126,8 +8196,10 @@ async function loadUsers() {
 
                         return `
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="p-3.5 font-black text-slate-900">${usr.username}</td>
-                                <td class="p-3.5 text-slate-700">${usr.employee_name}</td>
+                                <td class="p-3.5 font-black text-slate-900">${escapeHtml(usr.username || '')}</td>
+                                <td class="p-3.5 text-slate-700">
+                                    <span class="inline-flex items-center gap-2">${presenceDotHtml(usr.id)}${escapeHtml(usr.employee_name || '')}</span>
+                                </td>
                                 <td class="p-3.5"><span class="${roleBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${roleText}</span></td>
                                 <td class="p-3.5"><span class="${statusBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${tv(usr.status || 'نشط')}</span></td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
@@ -8423,6 +8495,7 @@ async function loadUsers() {
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
             toggleSystemMenu(false);
             setAppLang(currentLang);
+            startUserPresence();
             if (typeof loadAllData === 'function') loadAllData();
         }
 
@@ -8453,6 +8526,8 @@ async function loadUsers() {
 
         async function handleLogout() {
             try { await logActivity('logout', 'session', currentLoggedInUser?.username || '', currentLoggedInUser?.employee_name || ''); } catch (err) {}
+            stopUserPresence();
+            try { await touchUserPresence(true); } catch (err) {}
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
             currentLoggedInUser = null;
             if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
