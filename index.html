@@ -2493,13 +2493,19 @@
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
         });
 
-        async function logActivity(action, entity, entityNo, details) {
+        function activitySessionFlag(userId) {
+            return `fleetop_activity_login_${userId || ''}`;
+        }
+
+        async function logActivity(action, entity, entityNo, details, userOverride) {
             try {
-                const user = currentLoggedInUser || {};
+                const user = userOverride || currentLoggedInUser || {};
+                const username = String(user.username || '').trim();
+                if (!action) return false;
                 const payload = [{
                     user_id: user.id != null ? String(user.id) : null,
-                    username: user.username || '',
-                    employee_name: user.employee_name || '',
+                    username,
+                    employee_name: String(user.employee_name || '').trim(),
                     role: user.role || '',
                     action: String(action || ''),
                     entity: entity || '',
@@ -2511,10 +2517,23 @@
                     await client.auth.refreshSession();
                     ({ error } = await client.from('activity_log').insert(payload));
                 }
-                if (error) console.warn('تعذر حفظ سجل النشاط:', error.message);
+                if (error) {
+                    console.warn('تعذر حفظ سجل النشاط:', error.message);
+                    return false;
+                }
+                return true;
             } catch (err) {
                 console.warn('تعذر حفظ سجل النشاط:', err);
+                return false;
             }
+        }
+
+        async function logLoginActivity(user, source) {
+            if (!user) return;
+            const flag = activitySessionFlag(user.id);
+            if (source === 'restore' && sessionStorage.getItem(flag) === '1') return;
+            const ok = await logActivity('login', 'session', user.username, user.employee_name || '', user);
+            if (ok || source === 'restore') sessionStorage.setItem(flag, '1');
         }
 
         function activityLogDayBound(dateStr, endOfDay) {
@@ -2573,18 +2592,16 @@
             const end = document.getElementById('activityLogEnd')?.value || '';
             const userQ = String(document.getElementById('activityLogUser')?.value || '').trim();
             try {
-                let query = client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(400);
+                let query = client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(1000);
                 if (start) query = query.gte('created_at', activityLogDayBound(start, false));
                 if (end) query = query.lte('created_at', activityLogDayBound(end, true));
+                if (userQ) query = query.ilike('username', userQ);
                 const { data, error } = await query;
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
                     return;
                 }
-                let rows = data || [];
-                if (userQ) {
-                    rows = rows.filter(row => String(row.username || '') === userQ);
-                }
+                const rows = data || [];
                 if (!rows.length) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('log.empty')}</td></tr>`;
                     return;
@@ -2623,7 +2640,7 @@
             });
             if (!ok) return;
             let query = client.from('activity_log').delete();
-            if (userQ) query = query.eq('username', userQ);
+            if (userQ) query = query.ilike('username', userQ);
             if (start) query = query.gte('created_at', activityLogDayBound(start, false));
             if (end) query = query.lte('created_at', activityLogDayBound(end, true));
             if (!filtered) query = query.gte('id', 0);
@@ -2752,7 +2769,7 @@ async function loadAppProfile(authId) {
             return;
         }
         openSession(profile);
-        logActivity('login', 'session', profile.username, profile.employee_name || '');
+        await logLoginActivity(profile, 'login');
     } catch (err) {
         console.error("Login error:", err);
         showLoginError('حدث خطأ في الاتصال، حاول مرة أخرى.');
@@ -8985,6 +9002,7 @@ async function loadUsers() {
                     return;
                 }
                 openSession(profile);
+                await logLoginActivity(profile, 'restore');
             } catch (err) {
                 console.error('Session restore error:', err);
                 document.documentElement.classList.remove('session-restoring');
@@ -8993,7 +9011,9 @@ async function loadUsers() {
         }
 
         async function handleLogout() {
-            try { await logActivity('logout', 'session', currentLoggedInUser?.username || '', currentLoggedInUser?.employee_name || ''); } catch (err) {}
+            const loggingOutUser = currentLoggedInUser;
+            try { await logActivity('logout', 'session', loggingOutUser?.username || '', loggingOutUser?.employee_name || '', loggingOutUser); } catch (err) {}
+            try { sessionStorage.removeItem(activitySessionFlag(loggingOutUser?.id)); } catch (err) {}
             stopUserPresence();
             try { await touchUserPresence(true); } catch (err) {}
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
