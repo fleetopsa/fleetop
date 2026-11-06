@@ -3621,10 +3621,15 @@ async function generateFinancialReport() {
         indexSettlements(settlementRows);
 
         let activeTrips = filterCompletedTripsForPeriod(trips, startDate, endDate);
-        if (selectedMethod) {
-            activeTrips = activeTrips.filter(trip => paymentLineItems(trip).some(line => line.payment_method === selectedMethod));
-        }
-        const money = summarizeTripMoney(activeTrips);
+        const paymentRows = expandTripsByPaymentLines(activeTrips, { method: selectedMethod });
+        const tripsInView = [...new Map(paymentRows.map(row => [row.trip.id || row.trip.trip_no, row.trip])).values()];
+        const money = selectedMethod
+            ? {
+                total: paymentRows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                collected: paymentRows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                remaining: 0
+            }
+            : summarizeTripMoney(tripsInView);
         const totalEl = document.getElementById('finTotalRevenue');
         const collectedEl = document.getElementById('finCollectedAmount');
         const pendingEl = document.getElementById('finPendingAmount');
@@ -3632,24 +3637,26 @@ async function generateFinancialReport() {
         if (totalEl) totalEl.innerHTML = formatSAR(money.total);
         if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
         if (pendingEl) pendingEl.innerHTML = formatSAR(money.remaining);
-        if (tripsEl) tripsEl.innerText = activeTrips.length.toLocaleString('en-US');
+        if (tripsEl) tripsEl.innerText = tripsInView.length.toLocaleString('en-US');
 
         if (!tbody) return;
-        if (!activeTrips.length) {
+        if (!paymentRows.length) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = activeTrips.map(tr => {
-            const cells = formatRevenuePaymentCells(tr);
+        tbody.innerHTML = paymentRows.map(({ trip: tr, line }) => {
+            const amount = line ? formatSAR(line.paid_amount || 0) : formatSAR(tr.total_amount || 0);
+            const method = line ? escapeHtml(tv(line.payment_method || 'بدون طريقة')) : '—';
+            const collectDate = line ? escapeHtml(dateOnly(line.collection_date) || '—') : '---';
             return `
             <tr class="hover:bg-slate-50 transition">
-                <td class="p-3.5 font-black text-amber-600 font-mono align-top">${tr.trip_no || tr.id || '---'}</td>
-                <td class="p-3.5 text-slate-600 font-mono align-top">${tr.departure_date || '---'}</td>
-                <td class="p-3.5 font-bold text-slate-900 align-top">${tr.client_name || '---'}</td>
-                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${cells.amount}</td>
-                <td class="p-3.5 text-slate-700 align-top">${cells.method}</td>
-                <td class="p-3.5 text-slate-600 font-mono align-top">${cells.date}</td>
+                <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${escapeHtml(tr.departure_date || '---')}</td>
+                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
+                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
+                <td class="p-3.5 text-slate-700 align-top">${method}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${collectDate}</td>
             </tr>
             `;
         }).join('');
@@ -3740,18 +3747,6 @@ function tripHasCollectionInPeriod(trip, startDate, endDate) {
     return tripInDateRange(tripCompletionDate(trip) || dateOnly(trip.departure_date), startDate, endDate);
 }
 
-function tripPaymentMethodsHtml(trip) {
-    const methods = tripPaymentMethods(trip);
-    if (!methods.length) return '—';
-    return stackReportCell(methods.map(method => escapeHtml(tv(method))));
-}
-
-function tripCollectionDatesHtml(trip) {
-    const dates = tripCollectionDateList(trip);
-    if (!dates.length) return '—';
-    return stackReportCell(dates.map(date => escapeHtml(date)));
-}
-
 function tripFromToText(trip) {
     const from = String(trip?.from_city || '').trim() || '---';
     const to = String(trip?.to_city || '').trim() || '---';
@@ -3765,6 +3760,50 @@ function tripPaymentMethods(trip) {
     const own = String(trip?.payment_method || '').trim();
     if (own && !methods.includes(own)) methods.push(own);
     return methods;
+}
+
+function paymentLinesForMethod(trip, selectedMethod) {
+    const lines = paymentLineItems(trip);
+    if (!selectedMethod) return lines;
+    return lines.filter(line => String(line.payment_method || '').trim() === selectedMethod);
+}
+
+function expandTripsByPaymentLines(trips, options = {}) {
+    const selectedMethod = options.method || '';
+    const startDate = options.startDate || '';
+    const endDate = options.endDate || '';
+    const periodByCollection = !!options.periodByCollection;
+    const rows = [];
+    (trips || []).forEach(trip => {
+        const lines = paymentLinesForMethod(trip, selectedMethod);
+        if (selectedMethod && !lines.length) return;
+        if (!lines.length) {
+            if (periodByCollection && (startDate || endDate) && !tripHasCollectionInPeriod(trip, startDate, endDate)) return;
+            rows.push({ trip, line: null });
+            return;
+        }
+        lines.forEach(line => {
+            if (periodByCollection && (startDate || endDate)) {
+                const day = dateOnly(line.collection_date);
+                if (!tripInDateRange(day, startDate, endDate)) return;
+            }
+            rows.push({ trip, line });
+        });
+    });
+    return rows;
+}
+
+function sortPaymentRowsByCollectionDesc(rows) {
+    return [...(rows || [])].sort((a, b) => {
+        const da = dateOnly(a.line?.collection_date) || latestCollectionDate(a.trip) || '';
+        const db = dateOnly(b.line?.collection_date) || latestCollectionDate(b.trip) || '';
+        if (!da && !db) return tripNoValue(b.trip) - tripNoValue(a.trip);
+        if (!da) return 1;
+        if (!db) return -1;
+        const diff = db.localeCompare(da);
+        if (diff) return diff;
+        return tripNoValue(b.trip) - tripNoValue(a.trip);
+    });
 }
 
 function receivablesPayBadge(trip) {
@@ -3822,14 +3861,25 @@ async function generateReceivablesReport() {
         indexSettlements(settlementRows);
         await populateReceivablesFilters(trips);
 
-        let rows = (trips || []).filter(isCompletedTrip);
-        if (startDate || endDate) rows = rows.filter(trip => tripHasCollectionInPeriod(trip, startDate, endDate));
-        if (selectedClient) rows = rows.filter(trip => String(trip.client_name || '').trim() === selectedClient);
-        if (selectedStatus) rows = rows.filter(trip => tripPayStatusCode(trip) === selectedStatus);
-        if (selectedMethod) rows = rows.filter(trip => tripPaymentMethods(trip).includes(selectedMethod));
-        rows = sortTripsByCollectionDesc(rows);
+        let tripsFiltered = (trips || []).filter(isCompletedTrip);
+        if (selectedClient) tripsFiltered = tripsFiltered.filter(trip => String(trip.client_name || '').trim() === selectedClient);
+        if (selectedStatus) tripsFiltered = tripsFiltered.filter(trip => tripPayStatusCode(trip) === selectedStatus);
+        let rows = expandTripsByPaymentLines(tripsFiltered, {
+            method: selectedMethod,
+            startDate,
+            endDate,
+            periodByCollection: true
+        });
+        rows = sortPaymentRowsByCollectionDesc(rows);
 
-        const money = summarizeTripMoney(rows);
+        const tripsInView = [...new Map(rows.map(row => [row.trip.id || row.trip.trip_no, row.trip])).values()];
+        const money = selectedMethod
+            ? {
+                total: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                collected: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                remaining: 0
+            }
+            : summarizeTripMoney(tripsInView);
         const totalEl = document.getElementById('recvTotalDue');
         const collectedEl = document.getElementById('recvCollected');
         const remainingEl = document.getElementById('recvRemaining');
@@ -3842,19 +3892,30 @@ async function generateReceivablesReport() {
             tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
             return;
         }
-        tbody.innerHTML = rows.map(tr => `
+        tbody.innerHTML = rows.map(({ trip: tr, line }) => {
+            const collectDate = line
+                ? escapeHtml(dateOnly(line.collection_date) || '—')
+                : '—';
+            const method = line
+                ? escapeHtml(tv(line.payment_method || 'بدون طريقة'))
+                : '—';
+            const amount = line
+                ? formatSAR(line.paid_amount || 0)
+                : formatSAR(tripMoneyParts(tr).total);
+            return `
             <tr class="hover:bg-slate-50 transition">
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
-                <td class="p-3.5 text-slate-600 font-mono align-top">${tripCollectionDatesHtml(tr)}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${collectDate}</td>
                 <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
                 <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripFromToText(tr))}</td>
                 <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
                 <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
-                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${formatSAR(tripMoneyParts(tr).total)}</td>
-                <td class="p-3.5 text-slate-700 align-top">${tripPaymentMethodsHtml(tr)}</td>
+                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
+                <td class="p-3.5 text-slate-700 align-top">${method}</td>
                 <td class="p-3.5 align-top">${receivablesPayBadge(tr)}</td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     } catch (err) {
         console.error('خطأ في تقرير المستحقات:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
