@@ -357,6 +357,10 @@
                 position: relative;
             }
             #menuToggleBtn { display: inline-flex; }
+            #appContent > header {
+                position: relative;
+                z-index: 40;
+            }
             #appSidebar {
                 position: absolute;
                 top: 0;
@@ -383,16 +387,26 @@
                 background: rgba(196, 163, 90, 0.85);
                 pointer-events: none;
             }
-            #mainDashboard.sidebar-pinned #appSidebar,
+            #sidebarUnpinBtn { display: none; }
             #appSidebar.is-open,
             #appSidebar:hover {
                 transform: translateX(0);
                 box-shadow: -14px 0 30px rgba(11, 42, 74, 0.22);
             }
-            #mainDashboard.sidebar-pinned #appSidebar::before { display: none; }
-            #mainDashboard.sidebar-pinned #appContent {
-                padding-inline-end: 16rem;
+            #mainDashboard.sidebar-pinned {
+                flex-direction: row;
             }
+            #mainDashboard.sidebar-pinned #appSidebar {
+                position: relative;
+                top: auto;
+                bottom: auto;
+                right: auto;
+                transform: none !important;
+                box-shadow: none;
+                align-self: stretch;
+            }
+            #mainDashboard.sidebar-pinned #appSidebar::before { display: none; }
+            #mainDashboard.sidebar-pinned #sidebarUnpinBtn { display: inline-flex; }
             #menuToggleBtn.is-pinned {
                 background: #c4a35a;
                 color: #0b2a4a;
@@ -401,7 +415,6 @@
                 width: 100%;
                 flex: 1;
                 min-width: 0;
-                transition: padding-inline-end 0.22s ease;
             }
         }
         body.is-printing #sidebarBackdrop,
@@ -528,7 +541,6 @@
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
-            #mainDashboard.sidebar-pinned #appContent { padding-inline-end: 17.5rem; }
             .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
         }
         @media (min-width: 1280px) and (max-width: 1599px) {
@@ -662,10 +674,15 @@
         <!-- الشريط الجانبي الأيمن -->
         <aside id="appSidebar" class="text-white border-l p-6 flex flex-col justify-between shrink-0">
             <div>
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="fleetop-logo.png" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain">
-                    <div class="min-w-0">
-                        <h1 class="font-black text-xs" style="color:#f5ead0">FleetOp · فليتوب</h1>
+                <div class="flex items-start gap-3 mb-6">
+                    <img src="fleetop-logo.png" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain shrink-0">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-start justify-between gap-2">
+                            <h1 class="font-black text-xs" style="color:#f5ead0">FleetOp · فليتوب</h1>
+                            <button type="button" id="sidebarUnpinBtn" onclick="toggleMobileNav(false)" class="hidden w-8 h-8 items-center justify-center rounded-lg shrink-0 transition" style="background:rgba(196,163,90,0.18);color:#c4a35a" title="إلغاء تثبيت القائمة" aria-label="إلغاء تثبيت القائمة">
+                                <i class="fa-solid fa-thumbtack"></i>
+                            </button>
+                        </div>
                         <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
                         <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3">محمد القحطاني (مدير)</p>
                         <script>
@@ -4830,18 +4847,25 @@ function isDesktopSidebarLayout() {
 
 function syncSidebarToggleBtn() {
     const btn = document.getElementById('menuToggleBtn');
+    const unpin = document.getElementById('sidebarUnpinBtn');
     const dash = document.getElementById('mainDashboard');
-    if (!btn || !dash) return;
-    const pinned = dash.classList.contains('sidebar-pinned');
-    btn.classList.toggle('is-pinned', isDesktopSidebarLayout() && pinned);
-    btn.setAttribute('aria-label', pinned
-        ? (currentLang === 'en' ? 'Unpin sidebar' : 'إلغاء تثبيت القائمة')
-        : (currentLang === 'en' ? 'Open menu' : 'فتح القائمة'));
-    const icon = btn.querySelector('i');
-    if (icon) {
-        icon.className = isDesktopSidebarLayout() && pinned
-            ? 'fa-solid fa-thumbtack'
-            : 'fa-solid fa-bars';
+    if (!dash) return;
+    const desktop = isDesktopSidebarLayout();
+    const pinned = desktop && dash.classList.contains('sidebar-pinned');
+    if (!desktop) dash.classList.remove('sidebar-pinned');
+    if (btn) {
+        btn.classList.toggle('is-pinned', pinned);
+        btn.setAttribute('aria-label', pinned
+            ? (currentLang === 'en' ? 'Unpin sidebar' : 'إلغاء تثبيت القائمة')
+            : (currentLang === 'en' ? 'Open menu' : 'فتح القائمة'));
+        const icon = btn.querySelector('i');
+        if (icon) icon.className = pinned ? 'fa-solid fa-thumbtack' : 'fa-solid fa-bars';
+    }
+    if (unpin) {
+        unpin.classList.toggle('hidden', !pinned);
+        unpin.classList.toggle('inline-flex', pinned);
+        unpin.title = currentLang === 'en' ? 'Unpin sidebar' : 'إلغاء تثبيت القائمة';
+        unpin.setAttribute('aria-label', unpin.title);
     }
 }
 
