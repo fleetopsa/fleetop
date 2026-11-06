@@ -1211,6 +1211,15 @@
                 </select>
             </div>
             <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
+                <select id="recvPayStatusFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allPay">جميع حالات السداد</option>
+                    <option value="unpaid" data-i18n="ui.unpaid">غير مسدد</option>
+                    <option value="partial" data-i18n="ui.partial">سداد جزئي</option>
+                    <option value="paid" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
+                </select>
+            </div>
+            <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
                 <select id="recvPayMethodFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
@@ -1270,11 +1279,12 @@
                         <th class="p-3.5" data-i18n="ui.truck">الشاحنة</th>
                         <th class="p-3.5" data-i18n="ui.driver">السائق</th>
                         <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
+                        <th class="p-3.5" data-i18n="ui.payMethod">طريقة السداد</th>
                         <th class="p-3.5 rounded-l-xl" data-i18n="ui.payStatus">حالة السداد</th>
                     </tr>
                 </thead>
                 <tbody id="receivablesReportTable" class="divide-y divide-slate-100">
-                    <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
+                    <tr><td colspan="9" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -2715,6 +2725,7 @@ function clearAllPageFilters() {
     setFilterValue('recvStartDate', '');
     setFilterValue('recvEndDate', '');
     setFilterValue('recvClientFilter', '');
+    setFilterValue('recvPayStatusFilter', '');
     setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
@@ -2758,6 +2769,7 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('recvStartDate', '');
         setFilterValue('recvEndDate', '');
         setFilterValue('recvClientFilter', '');
+        setFilterValue('recvPayStatusFilter', '');
         setFilterValue('recvPayMethodFilter', '');
         setFilterValue('recvTruckFilter', '');
         setFilterValue('recvDriverFilter', '');
@@ -3681,7 +3693,16 @@ function tripCollectionDateList(trip) {
 
 function tripHasCollectionInPeriod(trip, startDate, endDate) {
     if (!startDate && !endDate) return true;
-    return tripCollectionDateList(trip).some(day => tripInDateRange(day, startDate, endDate));
+    const dates = tripCollectionDateList(trip);
+    if (dates.some(day => tripInDateRange(day, startDate, endDate))) return true;
+    if (dates.length) return false;
+    return tripInDateRange(tripCompletionDate(trip) || dateOnly(trip.departure_date), startDate, endDate);
+}
+
+function tripPaymentMethodsHtml(trip) {
+    const methods = tripPaymentMethods(trip);
+    if (!methods.length) return '—';
+    return stackReportCell(methods.map(method => escapeHtml(tv(method))));
 }
 
 function tripCollectionDatesHtml(trip) {
@@ -3743,6 +3764,7 @@ async function generateReceivablesReport() {
         const startDate = document.getElementById('recvStartDate')?.value || '';
         const endDate = document.getElementById('recvEndDate')?.value || '';
         const selectedClient = document.getElementById('recvClientFilter')?.value || '';
+        const selectedStatus = document.getElementById('recvPayStatusFilter')?.value || '';
         const selectedMethod = document.getElementById('recvPayMethodFilter')?.value || '';
         const selectedTruck = document.getElementById('recvTruckFilter')?.value || '';
         const selectedDriver = document.getElementById('recvDriverFilter')?.value || '';
@@ -3761,6 +3783,7 @@ async function generateReceivablesReport() {
         let rows = (trips || []).filter(isCompletedTrip);
         if (startDate || endDate) rows = rows.filter(trip => tripHasCollectionInPeriod(trip, startDate, endDate));
         if (selectedClient) rows = rows.filter(trip => String(trip.client_name || '').trim() === selectedClient);
+        if (selectedStatus) rows = rows.filter(trip => tripPayStatusCode(trip) === selectedStatus);
         if (selectedMethod) rows = rows.filter(trip => tripPaymentMethods(trip).includes(selectedMethod));
         rows = sortTripsByCollectionDesc(rows);
 
@@ -3774,7 +3797,7 @@ async function generateReceivablesReport() {
 
         if (!tbody) return;
         if (!rows.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
             return;
         }
         tbody.innerHTML = rows.map(tr => `
@@ -3786,12 +3809,13 @@ async function generateReceivablesReport() {
                 <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
                 <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${formatSAR(tripMoneyParts(tr).total)}</td>
+                <td class="p-3.5 text-slate-700 align-top">${tripPaymentMethodsHtml(tr)}</td>
                 <td class="p-3.5 align-top">${receivablesPayBadge(tr)}</td>
             </tr>
         `).join('');
     } catch (err) {
         console.error('خطأ في تقرير المستحقات:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
     }
 }
 
@@ -3799,6 +3823,7 @@ async function resetReceivablesFilters() {
     setFilterValue('recvStartDate', '');
     setFilterValue('recvEndDate', '');
     setFilterValue('recvClientFilter', '');
+    setFilterValue('recvPayStatusFilter', '');
     setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
