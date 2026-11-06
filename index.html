@@ -2658,8 +2658,15 @@
         const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
         const PRESENCE_ONLINE_MS = 120000;
         const PRESENCE_BEAT_MS = 40000;
+        const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+        const IDLE_CHECK_MS = 10000;
         let presenceTimer = null;
         let presenceByUserId = {};
+        let idleTimer = null;
+        let idleWatching = false;
+        let idleLogoutBusy = false;
+        let lastActivityAt = Date.now();
+        const IDLE_ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'wheel'];
 
         function isUserOnline(userId) {
             if (userId != null && Number(userId) === Number(currentLoggedInUser?.id)) return true;
@@ -2690,6 +2697,72 @@
                 touchUserPresence(false);
                 if (currentNavTab === 'users' || currentNavTab === 'usersSection') loadUsers();
             }, PRESENCE_BEAT_MS);
+        }
+
+        function bumpIdleActivity() {
+            if (!idleWatching || !currentLoggedInUser || idleLogoutBusy) return;
+            lastActivityAt = Date.now();
+        }
+
+        function stopIdleWatch() {
+            idleWatching = false;
+            if (idleTimer) {
+                clearInterval(idleTimer);
+                idleTimer = null;
+            }
+            IDLE_ACTIVITY_EVENTS.forEach(eventName => {
+                window.removeEventListener(eventName, bumpIdleActivity, true);
+            });
+            document.removeEventListener('visibilitychange', onIdleVisibilityChange);
+        }
+
+        function onIdleVisibilityChange() {
+            if (!idleWatching || !currentLoggedInUser) return;
+            if (document.visibilityState === 'visible') checkIdleTimeout();
+        }
+
+        function checkIdleTimeout() {
+            if (!idleWatching || !currentLoggedInUser || idleLogoutBusy) return;
+            if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
+                handleIdleLogout();
+            }
+        }
+
+        function startIdleWatch() {
+            stopIdleWatch();
+            idleWatching = true;
+            lastActivityAt = Date.now();
+            IDLE_ACTIVITY_EVENTS.forEach(eventName => {
+                window.addEventListener(eventName, bumpIdleActivity, { passive: true, capture: true });
+            });
+            document.addEventListener('visibilitychange', onIdleVisibilityChange);
+            idleTimer = setInterval(checkIdleTimeout, IDLE_CHECK_MS);
+        }
+
+        async function handleIdleLogout() {
+            if (idleLogoutBusy || !currentLoggedInUser) return;
+            idleLogoutBusy = true;
+            stopIdleWatch();
+            const message = currentLang === 'en'
+                ? 'You were signed out after 5 minutes of inactivity.'
+                : 'تم تسجيل خروجك تلقائياً بعد 5 دقائق من الخمول.';
+            try {
+                await handleLogout('idle');
+            } finally {
+                idleLogoutBusy = false;
+                alert(message);
+            }
+        }
+
+        async function sessionAbandonedByPresence(userId) {
+            try {
+                const { data } = await client.from('user_presence').select('last_seen_at').eq('user_id', userId).maybeSingle();
+                if (!data?.last_seen_at) return false;
+                const age = Date.now() - new Date(data.last_seen_at).getTime();
+                return Number.isFinite(age) && age >= IDLE_TIMEOUT_MS;
+            } catch (err) {
+                return false;
+            }
         }
 
         function stopUserPresence() {
@@ -6079,6 +6152,7 @@ const I18N = {
         'log.missingTable': 'جدول سجل النشاط غير موجود. نفّذ ملف add-activity-log.sql في Supabase.',
         'log.login': 'تسجيل دخول',
         'log.logout': 'تسجيل خروج',
+        'log.logout.idle': 'خروج بسبب الخمول',
         'log.trip.create': 'إضافة رحلة',
         'log.trip.edit': 'تعديل رحلة',
         'log.trip.complete': 'إنهاء رحلة',
@@ -6534,6 +6608,7 @@ const I18N = {
         'log.missingTable': 'Activity log table is missing. Run add-activity-log.sql in Supabase.',
         'log.login': 'Sign in',
         'log.logout': 'Sign out',
+        'log.logout.idle': 'Signed out due to idle',
         'log.trip.create': 'Add trip',
         'log.trip.edit': 'Edit trip',
         'log.trip.complete': 'Complete trip',
@@ -8981,6 +9056,7 @@ async function loadUsers() {
             setAppLang(currentLang);
             syncSidebarToggleBtn();
             startUserPresence();
+            startIdleWatch();
             if (typeof loadAllData === 'function') loadAllData();
         }
 
@@ -9001,6 +9077,13 @@ async function loadUsers() {
                     document.body.classList.remove('dashboard-active');
                     return;
                 }
+                if (await sessionAbandonedByPresence(profile.id)) {
+                    try { sessionStorage.removeItem(activitySessionFlag(profile.id)); } catch (err) {}
+                    await client.auth.signOut();
+                    clearStoredSession();
+                    document.body.classList.remove('dashboard-active');
+                    return;
+                }
                 openSession(profile);
                 await logLoginActivity(profile, 'restore');
             } catch (err) {
@@ -9010,10 +9093,15 @@ async function loadUsers() {
             }
         }
 
-        async function handleLogout() {
+        async function handleLogout(reason) {
             const loggingOutUser = currentLoggedInUser;
-            try { await logActivity('logout', 'session', loggingOutUser?.username || '', loggingOutUser?.employee_name || '', loggingOutUser); } catch (err) {}
+            const action = reason === 'idle' ? 'logout.idle' : 'logout';
+            const details = reason === 'idle'
+                ? (loggingOutUser?.employee_name || '') + (currentLang === 'en' ? ' · idle timeout' : ' · خمول')
+                : (loggingOutUser?.employee_name || '');
+            try { await logActivity(action, 'session', loggingOutUser?.username || '', details.trim(), loggingOutUser); } catch (err) {}
             try { sessionStorage.removeItem(activitySessionFlag(loggingOutUser?.id)); } catch (err) {}
+            stopIdleWatch();
             stopUserPresence();
             try { await touchUserPresence(true); } catch (err) {}
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
