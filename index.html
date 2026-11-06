@@ -57,6 +57,21 @@
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
         .analytics-fill { height: 100%; border-radius: 999px; }
+        .recv-filters {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: minmax(0, 1fr);
+            min-width: 0;
+        }
+        .recv-filters > div { min-width: 0; }
+        .recv-filters input,
+        .recv-filters select {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .recv-summary { min-width: 0; }
+        .recv-summary > div { min-width: 0; overflow: hidden; }
         @media (min-width: 640px) {
             .truck-card-fixed { width: 11rem; max-width: 100%; }
         }
@@ -435,10 +450,15 @@
         }
         @media (min-width: 768px) {
             .maint-action-grid { width: 20rem; }
+            .recv-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1280px) {
+            .recv-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
             .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+            .recv-filters { grid-template-columns: repeat(6, minmax(0, 1fr)); }
         }
         @media (min-width: 1920px) {
             #appContent table,
@@ -1175,7 +1195,7 @@
 
 <main id="receivablesSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div class="recv-filters">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="recvStartDate" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -1221,7 +1241,7 @@
             </button>
         </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="recv-summary grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
             <div id="recvTotalDue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
@@ -1233,10 +1253,6 @@
         <div class="bg-white p-5 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
             <div class="text-xs text-amber-700 font-bold mb-1" data-i18n="ui.remaining">المتبقي</div>
             <div id="recvRemaining" class="text-2xl font-bold text-amber-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
-            <div class="text-xs text-rose-600 font-bold mb-1" data-i18n="ui.overdue">المتأخرات</div>
-            <div id="recvOverdue" class="text-2xl font-bold text-rose-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
         </div>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
@@ -3654,12 +3670,6 @@ function tripPayStatusCode(trip) {
     return 'unpaid';
 }
 
-function isOverdueReceivable(trip) {
-    if (tripPayStatusCode(trip) === 'paid') return false;
-    const day = tripCompletionDate(trip) || dateOnly(trip.departure_date);
-    return !!day && day < todayDateInput();
-}
-
 function tripCollectionDateList(trip) {
     const dates = paymentLineItems(trip)
         .map(line => dateOnly(line.collection_date))
@@ -3752,18 +3762,15 @@ async function generateReceivablesReport() {
         if (startDate || endDate) rows = rows.filter(trip => tripHasCollectionInPeriod(trip, startDate, endDate));
         if (selectedClient) rows = rows.filter(trip => String(trip.client_name || '').trim() === selectedClient);
         if (selectedMethod) rows = rows.filter(trip => tripPaymentMethods(trip).includes(selectedMethod));
-        rows = sortTripsByCompletionDesc(rows);
+        rows = sortTripsByCollectionDesc(rows);
 
         const money = summarizeTripMoney(rows);
-        const overdue = rows.reduce((sum, trip) => sum + (isOverdueReceivable(trip) ? tripMoneyParts(trip).remaining : 0), 0);
         const totalEl = document.getElementById('recvTotalDue');
         const collectedEl = document.getElementById('recvCollected');
         const remainingEl = document.getElementById('recvRemaining');
-        const overdueEl = document.getElementById('recvOverdue');
         if (totalEl) totalEl.innerHTML = formatSAR(money.total);
         if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
         if (remainingEl) remainingEl.innerHTML = formatSAR(money.remaining);
-        if (overdueEl) overdueEl.innerHTML = formatSAR(overdue);
 
         if (!tbody) return;
         if (!rows.length) {
@@ -3829,6 +3836,25 @@ function filterBillableTripsForPeriod(trips, startDate, endDate) {
 function sortTripsByCompletionDesc(list) {
     return [...(list || [])].sort((a, b) => {
         const diff = tripCompletionDate(b).localeCompare(tripCompletionDate(a));
+        if (diff) return diff;
+        return tripNoValue(b) - tripNoValue(a);
+    });
+}
+
+function latestCollectionDate(trip) {
+    const dates = tripCollectionDateList(trip);
+    if (!dates.length) return '';
+    return dates.slice().sort().pop();
+}
+
+function sortTripsByCollectionDesc(list) {
+    return [...(list || [])].sort((a, b) => {
+        const da = latestCollectionDate(a);
+        const db = latestCollectionDate(b);
+        if (!da && !db) return tripNoValue(b) - tripNoValue(a);
+        if (!da) return 1;
+        if (!db) return -1;
+        const diff = db.localeCompare(da);
         if (diff) return diff;
         return tripNoValue(b) - tripNoValue(a);
     });
