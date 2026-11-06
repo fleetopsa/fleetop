@@ -1744,7 +1744,8 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.role">الدور</label>
-                          <select id="appUserRole" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                          <select id="appUserRole" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+    <option value="" data-i18n="ui.chooseRole">اختر الدور</option>
     <option value="user" data-i18n="role.user">مستخدم</option>
     <option value="accountant" data-i18n="role.accountant">محاسب</option>
     <option value="admin" data-i18n="role.admin">مدير</option>
@@ -1752,7 +1753,8 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.accountStatus">حالة الحساب</label>
-                            <select id="appUserStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <select id="appUserStatus" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.chooseAccountStatus">اختر حالة الحساب</option>
                                 <option value="نشط" data-i18n="ui.active">نشط</option>
                                 <option value="موقوف" data-i18n="ui.suspended">موقوف</option>
                             </select>
@@ -5867,6 +5869,8 @@ const I18N = {
         'ui.employeeName': 'اسم الموظف',
         'ui.password': 'كلمة المرور',
         'ui.role': 'الدور',
+        'ui.chooseRole': 'اختر الدور',
+        'ui.chooseAccountStatus': 'اختر حالة الحساب',
         'ui.accountStatus': 'حالة الحساب',
         'ui.saveUser': 'حفظ المستخدم',
         'ui.usersList': 'قائمة مستخدمي النظام والصلاحيات',
@@ -6308,6 +6312,8 @@ const I18N = {
         'ui.employeeName': 'Employee name',
         'ui.password': 'Password',
         'ui.role': 'Role',
+        'ui.chooseRole': 'Choose a role',
+        'ui.chooseAccountStatus': 'Choose account status',
         'ui.accountStatus': 'Account status',
         'ui.saveUser': 'Save user',
         'ui.usersList': 'System users and permissions',
@@ -8252,6 +8258,14 @@ async function loadUsers() {
                 alert('كلمة المرور يجب أن تكون 4 أحرف على الأقل.');
                 return;
             }
+            if (!role) {
+                alert(t('ui.chooseRole'));
+                return;
+            }
+            if (!status) {
+                alert(t('ui.chooseAccountStatus'));
+                return;
+            }
 
             const { error } = await client.rpc('admin_save_user', {
                 p_id: id ? Number(id) : null,
@@ -8294,8 +8308,8 @@ async function loadUsers() {
             document.getElementById('appPassword').value = '';
             document.getElementById('appPassword').placeholder = 'أدخل كلمة المرور';
             document.getElementById('appPasswordHint').classList.add('hidden');
-            document.getElementById('appUserRole').value = 'user'; // إعادة تعيين الدور للقيمة الافتراضية
-            document.getElementById('appUserStatus').value = 'نشط'; // إعادة تعيين الحالة
+            document.getElementById('appUserRole').value = '';
+            document.getElementById('appUserStatus').value = '';
             
             document.getElementById('userFormTitle').innerHTML = `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> إضافة مستخدم جديد`;
             document.getElementById('saveUserBtn').innerText = 'حفظ المستخدم';
