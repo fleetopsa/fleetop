@@ -352,19 +352,61 @@
             }
         }
         @media (min-width: 1280px) {
-            #mainDashboard { flex-direction: row; }
-            #appSidebar {
+            #mainDashboard {
+                flex-direction: column;
                 position: relative;
+            }
+            #menuToggleBtn { display: inline-flex; }
+            #appSidebar {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
                 width: 16rem;
+                z-index: 35;
                 flex-shrink: 0;
-                align-self: stretch;
                 min-height: 0;
                 overflow-y: auto;
-                transform: none;
+                transform: translateX(calc(100% - 14px));
+                transition: transform 0.22s ease, box-shadow 0.22s ease;
+                box-shadow: none;
+            }
+            #appSidebar::before {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 3px;
+                width: 4px;
+                height: 3rem;
+                margin-top: -1.5rem;
+                border-radius: 999px;
+                background: rgba(196, 163, 90, 0.85);
+                pointer-events: none;
+            }
+            #mainDashboard.sidebar-pinned #appSidebar,
+            #appSidebar.is-open,
+            #appSidebar:hover {
+                transform: translateX(0);
+                box-shadow: -14px 0 30px rgba(11, 42, 74, 0.22);
+            }
+            #mainDashboard.sidebar-pinned #appSidebar::before { display: none; }
+            #mainDashboard.sidebar-pinned #appContent {
+                padding-inline-end: 16rem;
+            }
+            #menuToggleBtn.is-pinned {
+                background: #c4a35a;
+                color: #0b2a4a;
+            }
+            #appContent {
+                width: 100%;
+                flex: 1;
+                min-width: 0;
+                transition: padding-inline-end 0.22s ease;
             }
         }
         body.is-printing #sidebarBackdrop,
-        body.is-printing #menuToggleBtn { display: none !important; }
+        body.is-printing #menuToggleBtn,
+        body.is-printing #appSidebar { display: none !important; }
         .suggest-list {
             position: fixed;
             z-index: 80;
@@ -486,7 +528,11 @@
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
+            #mainDashboard.sidebar-pinned #appContent { padding-inline-end: 17.5rem; }
             .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+        }
+        @media (min-width: 1280px) and (max-width: 1599px) {
+            #appSidebar { width: 16rem; }
         }
         @media (min-width: 1920px) {
             #appContent table,
@@ -4778,16 +4824,52 @@ async function resetTripCounter() {
     }
 }
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
+function isDesktopSidebarLayout() {
+    return window.matchMedia('(min-width: 1280px)').matches;
+}
+
+function syncSidebarToggleBtn() {
+    const btn = document.getElementById('menuToggleBtn');
+    const dash = document.getElementById('mainDashboard');
+    if (!btn || !dash) return;
+    const pinned = dash.classList.contains('sidebar-pinned');
+    btn.classList.toggle('is-pinned', isDesktopSidebarLayout() && pinned);
+    btn.setAttribute('aria-label', pinned
+        ? (currentLang === 'en' ? 'Unpin sidebar' : 'إلغاء تثبيت القائمة')
+        : (currentLang === 'en' ? 'Open menu' : 'فتح القائمة'));
+    const icon = btn.querySelector('i');
+    if (icon) {
+        icon.className = isDesktopSidebarLayout() && pinned
+            ? 'fa-solid fa-thumbtack'
+            : 'fa-solid fa-bars';
+    }
+}
+
 function toggleMobileNav(forceOpen) {
     const sidebar = document.getElementById('appSidebar');
     const backdrop = document.getElementById('sidebarBackdrop');
+    const dash = document.getElementById('mainDashboard');
     if (!sidebar) return;
+    if (isDesktopSidebarLayout()) {
+        const open = typeof forceOpen === 'boolean' ? forceOpen : !dash?.classList.contains('sidebar-pinned');
+        dash?.classList.toggle('sidebar-pinned', open);
+        sidebar.classList.remove('is-open');
+        if (backdrop) backdrop.classList.remove('is-open');
+        syncSidebarToggleBtn();
+        return;
+    }
     const open = typeof forceOpen === 'boolean' ? forceOpen : !sidebar.classList.contains('is-open');
     sidebar.classList.toggle('is-open', open);
     if (backdrop) backdrop.classList.toggle('is-open', open);
+    dash?.classList.remove('sidebar-pinned');
+    syncSidebarToggleBtn();
 }
 
 function closeMobileNav() {
+    if (isDesktopSidebarLayout()) {
+        document.getElementById('appSidebar')?.classList.remove('is-open');
+        return;
+    }
     toggleMobileNav(false);
 }
 
@@ -6866,6 +6948,7 @@ function setAppLang(lang) {
             fillMaintenanceFilterVehicles();
             renderMaintenanceReport();
         }
+        if (typeof syncSidebarToggleBtn === 'function') syncSidebarToggleBtn();
     }
 }
 
@@ -8860,6 +8943,7 @@ async function loadUsers() {
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
             toggleSystemMenu(false);
             setAppLang(currentLang);
+            syncSidebarToggleBtn();
             startUserPresence();
             if (typeof loadAllData === 'function') loadAllData();
         }
@@ -8933,10 +9017,18 @@ async function loadUsers() {
                 });
             }
             setAppLang(currentLang);
+            syncSidebarToggleBtn();
+            window.addEventListener('resize', syncSidebarToggleBtn);
             restoreSession();
         });
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') closeMobileNav();
+            if (event.key === 'Escape') {
+                if (isDesktopSidebarLayout()) {
+                    document.getElementById('mainDashboard')?.classList.remove('sidebar-pinned');
+                    syncSidebarToggleBtn();
+                }
+                closeMobileNav();
+            }
         });
     </script>
 </body>
