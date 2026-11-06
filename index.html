@@ -710,7 +710,7 @@
                                         <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                                     </button>
                                     <button onclick="switchTab('receivablesSection')" data-nav="receivablesSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-file-invoice ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.receivables">تقرير المستحقات والتحصيل</span>
+                                        <i class="fa-solid fa-file-invoice ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.receivables">تقرير متابعة التحصيل</span>
                                     </button>
                             <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
@@ -1294,7 +1294,7 @@
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
-            <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل المستحقات والتحصيل</span>
+            <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل متابعة التحصيل</span>
         </h3>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
@@ -5827,7 +5827,7 @@ const I18N = {
         'nav.reports': 'التقارير التشغيلية',
         'nav.financial': 'التقارير المالية',
         'nav.revenue': 'تقرير الإيرادات',
-        'nav.receivables': 'تقرير المستحقات والتحصيل',
+        'nav.receivables': 'تقرير متابعة التحصيل',
         'nav.commissions': 'تقرير العمولات',
         'nav.payouts': 'سداد العمولات',
         'nav.users': 'المستخدمين',
@@ -5861,8 +5861,8 @@ const I18N = {
         'page.reportsSub': 'الشاحنات والسائقين والرحلات التشغيلية',
         'page.revenue': 'تقرير الإيرادات',
         'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
-        'page.receivables': 'تقرير المستحقات والتحصيل',
-        'page.receivablesSub': 'المستحقات والمحصل والمتبقي والمتأخرات حسب العميل وطريقة السداد',
+        'page.receivables': 'تقرير متابعة التحصيل',
+        'page.receivablesSub': 'المستحقات والمحصل والمتبقي حسب العميل وطريقة السداد',
         'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
         'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
         'page.commissions': 'تقرير العمولات',
@@ -5949,7 +5949,7 @@ const I18N = {
         'ui.totalReceivables': 'إجمالي المستحقات',
         'ui.overdue': 'المتأخرات',
         'ui.allClients': 'جميع العملاء',
-        'ui.receivablesDetails': 'تفاصيل المستحقات والتحصيل',
+        'ui.receivablesDetails': 'تفاصيل متابعة التحصيل',
         'ui.noReceivables': 'لا توجد بيانات مطابقة للفلتر المحدد',
         'th.destination': 'الوجهة',
         'ui.completedTrips': 'عدد الرحلات المنجزة',
@@ -6282,7 +6282,7 @@ const I18N = {
         'nav.reports': 'Operations reports',
         'nav.financial': 'Financial reports',
         'nav.revenue': 'Revenue report',
-        'nav.receivables': 'Receivables and collections',
+        'nav.receivables': 'Collection follow-up',
         'nav.commissions': 'Commission report',
         'nav.payouts': 'Commission payouts',
         'nav.users': 'Users',
@@ -6316,8 +6316,8 @@ const I18N = {
         'page.reportsSub': 'Trucks, drivers and operational trips',
         'page.revenue': 'Revenue report',
         'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
-        'page.receivables': 'Receivables and collections',
-        'page.receivablesSub': 'Due, collected, remaining and overdue amounts by client and payment method',
+        'page.receivables': 'Collection follow-up',
+        'page.receivablesSub': 'Due, collected and remaining amounts by client and payment method',
         'page.fleetFinance': 'Commissions and fleet revenue',
         'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
         'page.commissions': 'Commission report',
@@ -6404,7 +6404,7 @@ const I18N = {
         'ui.totalReceivables': 'Total receivables',
         'ui.overdue': 'Overdue',
         'ui.allClients': 'All clients',
-        'ui.receivablesDetails': 'Receivables and collection details',
+        'ui.receivablesDetails': 'Collection follow-up details',
         'ui.noReceivables': 'No matching records for the selected filters',
         'th.destination': 'Destination',
         'ui.completedTrips': 'Completed trips',
