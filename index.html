@@ -3458,23 +3458,14 @@ async function generateFinancialReport() {
         if (selectedMethod) {
             activeTrips = activeTrips.filter(trip => paymentLineItems(trip).some(line => line.payment_method === selectedMethod));
         }
-        let totalRev = 0;
-        let collectedRev = 0;
-        let pendingRev = 0;
-
-        activeTrips.forEach(t => {
-            totalRev += roundMoney(t.total_amount || t.revenue || 0);
-            collectedRev += roundMoney(t.paid_amount || 0);
-            pendingRev += roundMoney(t.remaining_amount || 0);
-        });
-
+        const money = summarizeTripMoney(activeTrips);
         const totalEl = document.getElementById('finTotalRevenue');
         const collectedEl = document.getElementById('finCollectedAmount');
         const pendingEl = document.getElementById('finPendingAmount');
         const tripsEl = document.getElementById('finTotalTrips');
-        if (totalEl) totalEl.innerHTML = formatSAR(totalRev);
-        if (collectedEl) collectedEl.innerHTML = formatSAR(collectedRev);
-        if (pendingEl) pendingEl.innerHTML = formatSAR(pendingRev);
+        if (totalEl) totalEl.innerHTML = formatSAR(money.total);
+        if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
+        if (pendingEl) pendingEl.innerHTML = formatSAR(money.remaining);
         if (tripsEl) tripsEl.innerText = activeTrips.length.toLocaleString('en-US');
 
         if (!tbody) return;
@@ -3526,6 +3517,24 @@ function isCancelledTrip(trip) {
 function isCompletedTrip(trip) {
     const status = String(trip?.status || '').trim();
     return status === 'مكتملة' || status === 'منتهية';
+}
+
+function tripMoneyParts(trip) {
+    const total = roundMoney(trip?.total_amount || trip?.revenue || 0);
+    let paid = roundMoney(trip?.paid_amount || 0);
+    if (paid > total) paid = total;
+    const remaining = roundMoney(Math.max(0, total - paid));
+    return { total, paid, remaining };
+}
+
+function summarizeTripMoney(trips) {
+    return (trips || []).reduce((acc, trip) => {
+        const money = tripMoneyParts(trip);
+        acc.total += money.total;
+        acc.collected += money.paid;
+        acc.remaining += money.remaining;
+        return acc;
+    }, { total: 0, collected: 0, remaining: 0 });
 }
 
 function dateOnly(value) {
@@ -4155,25 +4164,16 @@ async function initReportFilters() {
                 if (!driversRes.error) dashboardExpiryCache.drivers = drivers;
                 if (dashboardExpiryCache.loaded) paintDashboardExpiryAlerts();
 
-                let totalRev = 0;
-                let collected = 0;
-                let remaining = 0;
+                const money = summarizeTripMoney((trips || []).filter(isCompletedTrip));
+                const totalRev = money.total;
+                const collected = money.collected;
+                const remaining = money.remaining;
 
                 const activeTable = document.getElementById('dashActiveTripsTable');
                 let activeTripsList = [];
 
                 if (trips) {
                     trips.forEach(t => {
-                        if (isBillableTrip(t)) {
-                            const tTotal = parseFloat(t.total_amount || 0);
-                            let tPaid = parseFloat(t.paid_amount || 0);
-                            if (tPaid > tTotal) tPaid = tTotal;
-                            const tRem = Math.max(0, tTotal - tPaid);
-
-                            totalRev += tTotal;
-                            collected += tPaid;
-                            remaining += tRem;
-                        }
                         if (t.status === 'جارية') {
                             activeTripsList.push(t);
                         }
