@@ -2209,7 +2209,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicleKind">نوع المركبة</label>
-                        <select id="maintVehicleKind" required onchange="fillMaintenanceVehicleOptions()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <select id="maintVehicleKind" required onchange="fillMaintenanceVehicleOptions(false)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="" data-i18n="maint.chooseVehicleKind">اختر نوع المركبة</option>
                             <option value="شاحنة" data-i18n="nav.trucks">الشاحنات</option>
                             <option value="أخرى" data-i18n="nav.otherVehicles">المركبات الأخرى</option>
                         </select>
@@ -2230,23 +2231,14 @@
                     <textarea id="maintDetails" rows="3" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="maint.detailsPh" placeholder="اكتب ما تم عمله"></textarea>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.invoice">فاتورة / صورة</label>
-                    <p class="text-[10px] text-slate-400 mb-1.5" data-i18n="maint.invoiceHint">اختياري. صورة أو PDF حتى 8 ميجا، مثل فاتورة الورشة.</p>
-                    <input type="hidden" id="maintInvoicePath">
-                    <input type="hidden" id="maintInvoiceName">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.attachments">المرفقات</label>
+                    <p class="text-[10px] text-slate-400 mb-1.5" data-i18n="maint.invoiceHint">اختياري. يمكن رفع أكثر من ملف الآن أو لاحقاً، صورة أو PDF حتى 8 ميجا لكل ملف.</p>
                     <label class="flex items-center justify-center gap-2 w-full cursor-pointer border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50 rounded-xl p-3 text-xs font-bold text-slate-600 transition">
                         <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
-                        <span data-i18n="maint.invoiceChoose">اضغط لتحميل فاتورة أو صورة</span>
-                        <input type="file" id="maintInvoiceFile" class="hidden" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.jpg,.jpeg,.png,.webp,.gif,.pdf" onchange="previewMaintenanceInvoice()">
+                        <span data-i18n="maint.invoiceChoose">اضغط لتحميل فاتورة أو صورة أو أكثر</span>
+                        <input type="file" id="maintInvoiceFile" class="hidden" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.jpg,.jpeg,.png,.webp,.gif,.pdf" onchange="previewMaintenanceInvoice()">
                     </label>
-                    <div id="maintInvoicePreview" class="hidden mt-2 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2">
-                        <img id="maintInvoiceThumb" alt="" class="hidden h-16 w-16 object-cover rounded-lg border border-slate-200">
-                        <div id="maintInvoicePdfMark" class="hidden h-16 w-16 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-[10px] font-black">PDF</div>
-                        <div class="min-w-0 flex-1">
-                            <p id="maintInvoiceFileName" class="text-[11px] font-bold text-slate-800 truncate"></p>
-                            <button type="button" onclick="clearMaintenanceInvoice()" class="text-[11px] font-bold text-rose-600 hover:text-rose-700 mt-1" data-i18n="maint.invoiceRemove">إزالة المرفق</button>
-                        </div>
-                    </div>
+                    <div id="maintInvoiceFileList" class="hidden mt-2 space-y-1"></div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" id="maintSubmitBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
@@ -2255,10 +2247,31 @@
             </form>
         </div>
     </div>
-    <div id="maintenanceInvoiceViewer" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onclick="closeMaintenanceInvoiceViewer()">
+    <div id="maintenanceInvoiceViewer" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onclick="closeMaintenanceInvoiceViewer()">
         <div class="relative max-w-3xl w-full max-h-[90vh]" onclick="event.stopPropagation()">
             <button type="button" onclick="closeMaintenanceInvoiceViewer()" class="absolute -top-3 -left-3 bg-white text-slate-700 w-8 h-8 rounded-full shadow font-bold z-10"><i class="fa-solid fa-xmark"></i></button>
             <img id="maintenanceInvoiceViewerImg" alt="" class="hidden max-h-[90vh] w-full object-contain rounded-2xl bg-black">
+        </div>
+    </div>
+    <div id="maintenanceAttachModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-xl border border-slate-200 text-slate-900 max-h-[92dvh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-paperclip text-amber-500 ml-2"></i> <span data-i18n="maint.attachments">المرفقات</span></h3>
+                <button type="button" onclick="closeMaintenanceAttachModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="maintAttachRowId">
+            <p id="maintAttachError" class="hidden text-xs font-bold text-rose-600 mb-3"></p>
+            <div id="maintAttachList" class="space-y-2 mb-3"></div>
+            <label class="flex items-center justify-center gap-2 w-full cursor-pointer border-2 border-dashed border-slate-200 hover:border-amber-400 bg-slate-50 rounded-xl p-3 text-xs font-bold text-slate-600 transition">
+                <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
+                <span data-i18n="maint.invoiceChoose">اضغط لتحميل فاتورة أو صورة أو أكثر</span>
+                <input type="file" id="maintAttachFile" class="hidden" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.jpg,.jpeg,.png,.webp,.gif,.pdf" onchange="previewMaintenanceAttachFiles()">
+            </label>
+            <div id="maintAttachPending" class="hidden mt-2 space-y-1 text-[11px] font-bold text-slate-700"></div>
+            <div class="flex gap-2 pt-4">
+                <button type="button" id="maintAttachSaveBtn" onclick="saveMaintenanceAttachments()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
+                <button type="button" onclick="closeMaintenanceAttachModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
+            </div>
         </div>
     </div>
     <div id="payoutModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -4467,8 +4480,8 @@ const MAINT_INVOICE_BUCKET = 'maintenance-invoices';
 const MAINT_INVOICE_MAX = 8 * 1024 * 1024;
 let maintenanceCache = [];
 let maintenanceVehicles = [];
-let maintInvoiceObjectUrl = '';
-let maintInvoiceCleared = false;
+let maintPendingFiles = [];
+let attachPendingFiles = [];
 
 function maintenanceTypeLabel(type) {
     const value = String(type || '').trim();
@@ -4522,7 +4535,7 @@ function showMaintenanceError(message) {
 
 function isMaintenanceInvoiceError(err) {
     const msg = String(err?.message || err || '');
-    return /invoice_path|invoice_name|maintenance-invoices|Bucket not found|storage/i.test(msg);
+    return /invoice_path|invoice_name|invoice_files|maintenance-invoices|Bucket not found|storage/i.test(msg);
 }
 
 function maintenanceInvoiceExt(file) {
@@ -4545,88 +4558,102 @@ function isMaintenanceInvoicePdf(name, path) {
     return /\.pdf$/i.test(String(name || path || ''));
 }
 
-function revokeMaintenanceInvoicePreview() {
-    if (maintInvoiceObjectUrl) {
-        URL.revokeObjectURL(maintInvoiceObjectUrl);
-        maintInvoiceObjectUrl = '';
-    }
+function parseMaintenanceAttachments(row) {
+    const files = [];
+    const seen = new Set();
+    const add = (path, name) => {
+        const filePath = String(path || '').trim();
+        if (!filePath || filePath.startsWith('[') || seen.has(filePath)) return;
+        seen.add(filePath);
+        files.push({
+            path: filePath,
+            name: String(name || '').trim() || filePath.split('/').pop()
+        });
+    };
+    const eat = (value) => {
+        if (!value) return;
+        if (Array.isArray(value)) {
+            value.forEach(item => {
+                if (!item) return;
+                if (typeof item === 'string') eat(item);
+                else add(item.path, item.name);
+            });
+            return;
+        }
+        if (typeof value === 'string') {
+            const text = value.trim();
+            if (text.startsWith('[')) {
+                try { eat(JSON.parse(text)); } catch { add(text, ''); }
+                return;
+            }
+            add(text, '');
+        }
+    };
+    eat(row?.invoice_files);
+    eat(row?.invoice_path);
+    if (files.length === 1 && row?.invoice_name) files[0].name = files[0].name || row.invoice_name;
+    return files;
 }
 
-function setMaintenanceInvoicePreview(src, name, isPdf) {
-    const box = document.getElementById('maintInvoicePreview');
-    const thumb = document.getElementById('maintInvoiceThumb');
-    const pdfMark = document.getElementById('maintInvoicePdfMark');
-    const fileName = document.getElementById('maintInvoiceFileName');
+function attachmentPayload(files) {
+    const list = (files || []).filter(item => item && item.path);
+    return {
+        invoice_files: list,
+        invoice_path: list[0]?.path || null,
+        invoice_name: list[0]?.name || null
+    };
+}
+
+function collectSelectedMaintenanceFiles(input, previous = []) {
+    const next = [...previous];
+    [...(input?.files || [])].forEach(file => {
+        if (!isMaintenanceInvoiceFile(file)) throw new Error('type');
+        if (file.size > MAINT_INVOICE_MAX) throw new Error('size');
+        next.push(file);
+    });
+    if (input) input.value = '';
+    return next;
+}
+
+function renderPendingFileList(boxId, files, removeFnName) {
+    const box = document.getElementById(boxId);
     if (!box) return;
-    if (!src && !name) {
+    if (!files.length) {
         box.classList.add('hidden');
-        if (thumb) {
-            thumb.src = '';
-            thumb.classList.add('hidden');
-        }
-        pdfMark?.classList.add('hidden');
-        if (fileName) fileName.textContent = '';
+        box.innerHTML = '';
         return;
     }
     box.classList.remove('hidden');
-    if (fileName) fileName.textContent = name || t('maint.invoiceAttached');
-    if (isPdf) {
-        if (thumb) {
-            thumb.src = '';
-            thumb.classList.add('hidden');
-        }
-        pdfMark?.classList.remove('hidden');
-        return;
-    }
-    pdfMark?.classList.add('hidden');
-    if (thumb) {
-        thumb.src = src || '';
-        thumb.classList.toggle('hidden', !src);
-    }
+    box.innerHTML = files.map((file, index) => `
+        <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+            <span class="truncate">${escapeHtml(file.name)}</span>
+            <button type="button" onclick="${removeFnName}(${index})" class="text-rose-600 font-bold shrink-0">${escapeHtml(t('maint.invoiceRemove'))}</button>
+        </div>
+    `).join('');
 }
 
 function resetMaintenanceInvoiceForm() {
-    revokeMaintenanceInvoicePreview();
-    maintInvoiceCleared = false;
+    maintPendingFiles = [];
     const file = document.getElementById('maintInvoiceFile');
     if (file) file.value = '';
-    const path = document.getElementById('maintInvoicePath');
-    if (path) path.value = '';
-    const name = document.getElementById('maintInvoiceName');
-    if (name) name.value = '';
-    setMaintenanceInvoicePreview('', '', false);
+    renderPendingFileList('maintInvoiceFileList', [], 'removeMaintenancePendingFile');
 }
 
 function previewMaintenanceInvoice() {
     const input = document.getElementById('maintInvoiceFile');
-    const file = input?.files?.[0];
-    revokeMaintenanceInvoicePreview();
-    if (!file) return;
-    if (!isMaintenanceInvoiceFile(file)) {
+    try {
+        maintPendingFiles = collectSelectedMaintenanceFiles(input, maintPendingFiles);
+        showMaintenanceError('');
+        renderPendingFileList('maintInvoiceFileList', maintPendingFiles, 'removeMaintenancePendingFile');
+    } catch (err) {
         if (input) input.value = '';
-        showMaintenanceError(t('maint.invoiceType'));
-        return;
+        showMaintenanceError(t(err.message === 'size' ? 'maint.invoiceTooBig' : 'maint.invoiceType'));
     }
-    if (file.size > MAINT_INVOICE_MAX) {
-        if (input) input.value = '';
-        showMaintenanceError(t('maint.invoiceTooBig'));
-        return;
-    }
-    showMaintenanceError('');
-    maintInvoiceCleared = false;
-    const isPdf = maintenanceInvoiceExt(file) === 'pdf';
-    if (!isPdf) {
-        maintInvoiceObjectUrl = URL.createObjectURL(file);
-    }
-    setMaintenanceInvoicePreview(maintInvoiceObjectUrl, file.name, isPdf);
 }
 
-function clearMaintenanceInvoice() {
-    revokeMaintenanceInvoicePreview();
-    maintInvoiceCleared = true;
-    const file = document.getElementById('maintInvoiceFile');
-    if (file) file.value = '';
-    setMaintenanceInvoicePreview('', '', false);
+function removeMaintenancePendingFile(index) {
+    maintPendingFiles.splice(index, 1);
+    renderPendingFileList('maintInvoiceFileList', maintPendingFiles, 'removeMaintenancePendingFile');
 }
 
 async function maintenanceInvoiceSignedUrl(path) {
@@ -4658,35 +4685,12 @@ async function deleteMaintenanceInvoiceFile(path) {
     }
 }
 
-async function showExistingMaintenanceInvoice(row) {
-    const path = String(row?.invoice_path || '').trim();
-    const name = String(row?.invoice_name || '').trim();
-    const pathInput = document.getElementById('maintInvoicePath');
-    const nameInput = document.getElementById('maintInvoiceName');
-    if (pathInput) pathInput.value = path;
-    if (nameInput) nameInput.value = name;
-    if (!path) {
-        setMaintenanceInvoicePreview('', '', false);
-        return;
-    }
-    const isPdf = isMaintenanceInvoicePdf(name, path);
-    try {
-        const url = isPdf ? '' : await maintenanceInvoiceSignedUrl(path);
-        setMaintenanceInvoicePreview(url, name || t('maint.invoiceAttached'), isPdf);
-    } catch (err) {
-        console.error(err);
-        setMaintenanceInvoicePreview('', name || t('maint.invoiceAttached'), isPdf);
-    }
-}
-
-async function openMaintenanceInvoice(id) {
-    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
-    const path = String(row?.invoice_path || '').trim();
+async function openMaintenanceAttachmentFile(path, name) {
     if (!path) return;
     try {
         const url = await maintenanceInvoiceSignedUrl(path);
         if (!url) return;
-        if (isMaintenanceInvoicePdf(row?.invoice_name, path)) {
+        if (isMaintenanceInvoicePdf(name, path)) {
             window.open(url, '_blank', 'noopener');
             return;
         }
@@ -4703,6 +4707,16 @@ async function openMaintenanceInvoice(id) {
     }
 }
 
+async function openMaintenanceInvoice(id) {
+    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    const files = parseMaintenanceAttachments(row);
+    if (files.length === 1) {
+        await openMaintenanceAttachmentFile(files[0].path, files[0].name);
+        return;
+    }
+    openMaintenanceAttachModal(id);
+}
+
 function closeMaintenanceInvoiceViewer() {
     const viewer = document.getElementById('maintenanceInvoiceViewer');
     const img = document.getElementById('maintenanceInvoiceViewerImg');
@@ -4710,16 +4724,130 @@ function closeMaintenanceInvoiceViewer() {
     viewer?.classList.add('hidden');
 }
 
-async function fillMaintenanceVehicleOptions() {
-    const kind = document.getElementById('maintVehicleKind')?.value || 'شاحنة';
+function showMaintenanceAttachError(message) {
+    const box = document.getElementById('maintAttachError');
+    if (!box) return;
+    box.textContent = message || '';
+    box.classList.toggle('hidden', !message);
+}
+
+function renderMaintenanceAttachList(row) {
+    const box = document.getElementById('maintAttachList');
+    if (!box) return;
+    const files = parseMaintenanceAttachments(row);
+    if (!files.length) {
+        box.innerHTML = `<p class="text-[11px] text-slate-400 font-bold">${escapeHtml(t('maint.noAttachments'))}</p>`;
+        return;
+    }
+    box.innerHTML = files.map((file, index) => `
+        <button type="button" onclick='openMaintenanceAttachmentFile(${JSON.stringify(file.path)}, ${JSON.stringify(file.name || '')})' class="w-full text-start bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-xl px-3 py-2 text-[11px] font-bold text-amber-800">
+            ${escapeHtml(file.name || `${t('maint.attachments')} ${index + 1}`)}
+        </button>
+    `).join('');
+}
+
+function openMaintenanceAttachModal(id) {
+    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    if (!row) return;
+    const idInput = document.getElementById('maintAttachRowId');
+    if (idInput) idInput.value = String(row.id);
+    attachPendingFiles = [];
+    const file = document.getElementById('maintAttachFile');
+    if (file) file.value = '';
+    showMaintenanceAttachError('');
+    renderMaintenanceAttachList(row);
+    renderPendingFileList('maintAttachPending', attachPendingFiles, 'removeMaintenanceAttachPendingFile');
+    document.getElementById('maintenanceAttachModal')?.classList.remove('hidden');
+}
+
+function closeMaintenanceAttachModal() {
+    attachPendingFiles = [];
+    const file = document.getElementById('maintAttachFile');
+    if (file) file.value = '';
+    document.getElementById('maintenanceAttachModal')?.classList.add('hidden');
+}
+
+function previewMaintenanceAttachFiles() {
+    const input = document.getElementById('maintAttachFile');
+    try {
+        attachPendingFiles = collectSelectedMaintenanceFiles(input, attachPendingFiles);
+        showMaintenanceAttachError('');
+        renderPendingFileList('maintAttachPending', attachPendingFiles, 'removeMaintenanceAttachPendingFile');
+    } catch (err) {
+        if (input) input.value = '';
+        showMaintenanceAttachError(t(err.message === 'size' ? 'maint.invoiceTooBig' : 'maint.invoiceType'));
+    }
+}
+
+function removeMaintenanceAttachPendingFile(index) {
+    attachPendingFiles.splice(index, 1);
+    renderPendingFileList('maintAttachPending', attachPendingFiles, 'removeMaintenanceAttachPendingFile');
+}
+
+async function uploadMaintenanceFiles(files) {
+    const uploaded = [];
+    for (const file of files) {
+        uploaded.push({
+            path: await uploadMaintenanceInvoice(file),
+            name: file.name || ''
+        });
+    }
+    return uploaded;
+}
+
+async function writeMaintenanceAttachments(rowId, files) {
+    const payload = attachmentPayload(files);
+    let { error } = await client.from('vehicle_maintenance').update(payload).eq('id', rowId);
+    if (error && /invoice_files/i.test(error.message || '')) {
+        ({ error } = await client.from('vehicle_maintenance').update({
+            invoice_path: files.length > 1 ? JSON.stringify(files) : (files[0]?.path || null),
+            invoice_name: files[0]?.name || null
+        }).eq('id', rowId));
+    }
+    if (error) throw error;
+}
+
+async function saveMaintenanceAttachments() {
+    const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
+    const row = maintenanceCache.find(item => Number(item.id) === Number(rowId));
+    if (!rowId || !row) return;
+    if (!attachPendingFiles.length) {
+        closeMaintenanceAttachModal();
+        return;
+    }
+    const button = document.getElementById('maintAttachSaveBtn');
+    if (button) button.disabled = true;
+    showMaintenanceAttachError('');
+    const uploaded = [];
+    try {
+        const newFiles = await uploadMaintenanceFiles(attachPendingFiles);
+        uploaded.push(...newFiles);
+        const files = parseMaintenanceAttachments(row).concat(newFiles);
+        await writeMaintenanceAttachments(rowId, files);
+        logActivity('maintenance.attach', 'صيانة', row.vehicle_plate || '', `${newFiles.length}`);
+        closeMaintenanceAttachModal();
+        await loadMaintenanceReport();
+    } catch (err) {
+        console.error(err);
+        for (const file of uploaded) await deleteMaintenanceInvoiceFile(file.path);
+        showMaintenanceAttachError(t(isMaintenanceInvoiceError(err) ? 'maint.missingInvoice' : 'maint.saveFailed'));
+    } finally {
+        if (button) button.disabled = false;
+    }
+}
+
+async function fillMaintenanceVehicleOptions(keepPlate) {
+    const kind = document.getElementById('maintVehicleKind')?.value || '';
     const select = document.getElementById('maintVehiclePlate');
     if (!select) return;
-    const current = select.value;
+    const current = keepPlate === false ? '' : select.value;
     if (!maintenanceVehicles.length) {
         const { data } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
         maintenanceVehicles = data || [];
     }
-    const rows = maintenanceVehicles.filter(row => kind === 'أخرى' ? !isCargoTruck(row) : isCargoTruck(row));
+    const rows = !kind
+        ? []
+        : maintenanceVehicles.filter(row => kind === 'أخرى' ? !isCargoTruck(row) : isCargoTruck(row));
     select.innerHTML = `<option value="">${escapeHtml(t('maint.chooseVehicle'))}</option>` + rows.map(row => {
         const plate = String(row.plate || '').trim();
         const model = String(row.model || '').trim();
@@ -4747,7 +4875,7 @@ async function openMaintenanceModal(id) {
     const details = document.getElementById('maintDetails');
     if (details) details.value = editing ? (row.details || '') : '';
     const kind = document.getElementById('maintVehicleKind');
-    if (kind) kind.value = String(row?.vehicle_kind || '').trim() === 'أخرى' ? 'أخرى' : 'شاحنة';
+    if (kind) kind.value = editing ? (String(row.vehicle_kind || '').trim() === 'أخرى' ? 'أخرى' : 'شاحنة') : '';
     fillMaintenanceTypeSelect(document.getElementById('maintType'), false);
     const typeSelect = document.getElementById('maintType');
     const other = document.getElementById('maintTypeOther');
@@ -4766,17 +4894,32 @@ async function openMaintenanceModal(id) {
         other.value = savedType;
     }
     maintenanceVehicles = [];
-    await fillMaintenanceVehicleOptions();
     const plate = document.getElementById('maintVehiclePlate');
+    if (plate) plate.value = editing ? (row.vehicle_plate || '') : '';
+    await fillMaintenanceVehicleOptions(editing);
     if (plate && editing) plate.value = row.vehicle_plate || '';
-    if (editing) await showExistingMaintenanceInvoice(row);
+    else if (plate) plate.value = '';
     modal.classList.remove('hidden');
 }
 
 function closeMaintenanceModal() {
     const idInput = document.getElementById('maintId');
     if (idInput) idInput.value = '';
+    const typeSelect = document.getElementById('maintType');
+    if (typeSelect) typeSelect.value = '';
+    const other = document.getElementById('maintTypeOther');
+    if (other) other.value = '';
+    toggleMaintenanceTypeOther();
+    const kind = document.getElementById('maintVehicleKind');
+    if (kind) kind.value = '';
+    const plate = document.getElementById('maintVehiclePlate');
+    if (plate) plate.value = '';
+    const cost = document.getElementById('maintCost');
+    if (cost) cost.value = '';
+    const details = document.getElementById('maintDetails');
+    if (details) details.value = '';
     resetMaintenanceInvoiceForm();
+    showMaintenanceError('');
     document.getElementById('maintenanceModal')?.classList.add('hidden');
 }
 
@@ -4831,12 +4974,13 @@ function renderMaintenanceReport() {
                     </div>
                </td>`
             : '';
-        const hasInvoice = Boolean(String(row.invoice_path || '').trim());
-        const invoiceCell = hasInvoice
-            ? `<td class="maint-col-tight p-3">
-                    <button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>
-               </td>`
-            : `<td class="maint-col-tight p-3 text-slate-300">—</td>`;
+        const hasInvoice = parseMaintenanceAttachments(row).length > 0;
+        const invoiceCell = `<td class="maint-col-tight p-3 no-print">
+            <div class="flex flex-col items-center gap-1">
+                ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : ''}
+                <button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>
+            </div>
+        </td>`;
         return `
             <tr class="hover:bg-slate-50 align-top">
                 <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(entered)}</td>
@@ -4910,8 +5054,8 @@ async function saveMaintenance(event) {
         }
         type = customType;
     }
-    const file = document.getElementById('maintInvoiceFile')?.files?.[0] || null;
-    if (file) {
+    const pendingFiles = [...maintPendingFiles];
+    for (const file of pendingFiles) {
         if (!isMaintenanceInvoiceFile(file)) {
             showMaintenanceError(t('maint.invoiceType'));
             return;
@@ -4921,10 +5065,9 @@ async function saveMaintenance(event) {
             return;
         }
     }
-    const existingPath = document.getElementById('maintInvoicePath')?.value || '';
     const button = document.getElementById('maintSubmitBtn');
     if (button) button.disabled = true;
-    let uploadedPath = '';
+    const uploaded = [];
     try {
         const payload = {
             service_date: serviceDate,
@@ -4934,34 +5077,31 @@ async function saveMaintenance(event) {
             cost,
             details: details || null
         };
-        if (file) {
-            uploadedPath = await uploadMaintenanceInvoice(file);
-            payload.invoice_path = uploadedPath;
-            payload.invoice_name = file.name || null;
-        } else if (maintInvoiceCleared) {
-            payload.invoice_path = null;
-            payload.invoice_name = null;
-        } else if (!editId) {
-            payload.invoice_path = null;
-            payload.invoice_name = null;
+        if (pendingFiles.length) {
+            uploaded.push(...await uploadMaintenanceFiles(pendingFiles));
         }
-        if (editId) {
-            const { error } = await client.from('vehicle_maintenance').update(payload).eq('id', editId);
-            if (error) throw error;
-            if (file && existingPath) await deleteMaintenanceInvoiceFile(existingPath);
-            if (maintInvoiceCleared && existingPath) await deleteMaintenanceInvoiceFile(existingPath);
-            logActivity('maintenance.edit', 'صيانة', plate, `${type} · ${serviceDate}`);
-        } else {
-            payload.entered_by = currentLoggedInUser?.employee_name || currentLoggedInUser?.username || '';
-            const { error } = await client.from('vehicle_maintenance').insert([payload]);
-            if (error) throw error;
-            logActivity('maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
+        const existingRow = editId ? maintenanceCache.find(item => Number(item.id) === Number(editId)) : null;
+        const files = (editId ? parseMaintenanceAttachments(existingRow) : []).concat(uploaded);
+        Object.assign(payload, attachmentPayload(files));
+        if (!editId) payload.entered_by = currentLoggedInUser?.employee_name || currentLoggedInUser?.username || '';
+        let { error } = editId
+            ? await client.from('vehicle_maintenance').update(payload).eq('id', editId)
+            : await client.from('vehicle_maintenance').insert([payload]);
+        if (error && /invoice_files/i.test(error.message || '')) {
+            delete payload.invoice_files;
+            payload.invoice_path = files.length > 1 ? JSON.stringify(files) : (files[0]?.path || null);
+            payload.invoice_name = files[0]?.name || null;
+            ({ error } = editId
+                ? await client.from('vehicle_maintenance').update(payload).eq('id', editId)
+                : await client.from('vehicle_maintenance').insert([payload]));
         }
+        if (error) throw error;
+        logActivity(editId ? 'maintenance.edit' : 'maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
         closeMaintenanceModal();
         await loadMaintenanceReport();
     } catch (err) {
         console.error(err);
-        if (uploadedPath) await deleteMaintenanceInvoiceFile(uploadedPath);
+        for (const file of uploaded) await deleteMaintenanceInvoiceFile(file.path);
         const missing = /vehicle_maintenance|schema cache|relation/i.test(err?.message || '');
         showMaintenanceError(t(missing ? 'maint.missingTable' : isMaintenanceInvoiceError(err) ? 'maint.missingInvoice' : 'maint.saveFailed'));
     } finally {
@@ -4982,7 +5122,7 @@ async function deleteMaintenance(id) {
         alert(t('maint.saveFailed'));
         return;
     }
-    await deleteMaintenanceInvoiceFile(row?.invoice_path);
+    for (const file of parseMaintenanceAttachments(row)) await deleteMaintenanceInvoiceFile(file.path);
     logActivity('maintenance.delete', 'صيانة', row?.vehicle_plate || '', row?.maintenance_type || '');
     await loadMaintenanceReport();
 }
@@ -5460,6 +5600,7 @@ const I18N = {
         'log.maintenance.add': 'إضافة صيانة',
         'log.maintenance.edit': 'تعديل صيانة',
         'log.maintenance.delete': 'حذف صيانة',
+        'log.maintenance.attach': 'رفع مرفقات صيانة',
         'log.staff.save': 'حفظ موظف',
         'log.staff.delete': 'حذف موظف',
         'log.password.change': 'تغيير كلمة المرور',
@@ -5578,6 +5719,7 @@ const I18N = {
         'maint.period': 'الفترة',
         'maint.chooseType': 'اختر نوع الصيانة',
         'maint.vehicleKind': 'نوع المركبة',
+        'maint.chooseVehicleKind': 'اختر نوع المركبة',
         'maint.otherVehicle': 'مركبة أخرى',
         'maint.type': 'نوع الصيانة',
         'maint.allTypes': 'جميع الأنواع',
@@ -5599,15 +5741,17 @@ const I18N = {
         'maint.deleteConfirm': 'حذف سجل الصيانة هذا؟',
         'maint.attachments': 'المرفقات',
         'maint.invoice': 'فاتورة / صورة',
-        'maint.invoiceHint': 'اختياري. صورة أو PDF حتى 8 ميجا، مثل فاتورة الورشة.',
-        'maint.invoiceChoose': 'اضغط لتحميل فاتورة أو صورة',
+        'maint.invoiceHint': 'اختياري. يمكن رفع أكثر من ملف الآن أو لاحقاً، صورة أو PDF حتى 8 ميجا لكل ملف.',
+        'maint.invoiceChoose': 'اضغط لتحميل فاتورة أو صورة أو أكثر',
         'maint.invoiceView': 'عرض',
-        'maint.invoiceRemove': 'إزالة المرفق',
+        'maint.invoiceUpload': 'تحميل',
+        'maint.noAttachments': 'لا توجد مرفقات بعد. يمكنك التحميل الآن.',
+        'maint.invoiceRemove': 'إزالة',
         'maint.invoiceAttached': 'مرفقة',
         'maint.invoiceTooBig': 'حجم الملف أكبر من 8 ميجا.',
         'maint.invoiceType': 'يُقبل صورة (JPG/PNG) أو ملف PDF فقط.',
         'maint.invoiceUploadFailed': 'تعذر عرض المرفق.',
-        'maint.missingInvoice': 'مرفقات الصيانة غير جاهزة. نفّذ ملف add-maintenance-invoice.sql في Supabase مرة واحدة.',
+        'maint.missingInvoice': 'مرفقات الصيانة غير جاهزة. نفّذ add-maintenance-invoice.sql ثم add-maintenance-attachments.sql في Supabase.',
         'ui.facilityDocs': 'التراخيص والاشتراكات',
         'ui.addTruck': 'إضافة شاحنة جديدة',
         'ui.plateNo': 'رقم اللوحة',
@@ -5893,6 +6037,7 @@ const I18N = {
         'log.maintenance.add': 'Add maintenance',
         'log.maintenance.edit': 'Edit maintenance',
         'log.maintenance.delete': 'Delete maintenance',
+        'log.maintenance.attach': 'Upload maintenance attachments',
         'log.staff.save': 'Save staff',
         'log.staff.delete': 'Delete staff',
         'log.password.change': 'Change password',
@@ -6011,6 +6156,7 @@ const I18N = {
         'maint.period': 'Period',
         'maint.chooseType': 'Choose the maintenance type',
         'maint.vehicleKind': 'Vehicle group',
+        'maint.chooseVehicleKind': 'Choose the vehicle group',
         'maint.otherVehicle': 'Other vehicle',
         'maint.type': 'Maintenance type',
         'maint.allTypes': 'All types',
@@ -6032,15 +6178,17 @@ const I18N = {
         'maint.deleteConfirm': 'Delete this maintenance record?',
         'maint.attachments': 'Attachments',
         'maint.invoice': 'Invoice / photo',
-        'maint.invoiceHint': 'Optional. Image or PDF up to 8 MB, such as a workshop invoice.',
-        'maint.invoiceChoose': 'Tap to upload an invoice or photo',
+        'maint.invoiceHint': 'Optional. You can upload several files now or later, image or PDF up to 8 MB each.',
+        'maint.invoiceChoose': 'Tap to upload one or more invoices or photos',
         'maint.invoiceView': 'View',
-        'maint.invoiceRemove': 'Remove attachment',
+        'maint.invoiceUpload': 'Upload',
+        'maint.noAttachments': 'No attachments yet. You can upload now.',
+        'maint.invoiceRemove': 'Remove',
         'maint.invoiceAttached': 'Attached',
         'maint.invoiceTooBig': 'The file is larger than 8 MB.',
         'maint.invoiceType': 'Only an image (JPG/PNG) or a PDF is accepted.',
         'maint.invoiceUploadFailed': 'Could not open the attachment.',
-        'maint.missingInvoice': 'Maintenance attachments are not ready. Run add-maintenance-invoice.sql in Supabase once.',
+        'maint.missingInvoice': 'Maintenance attachments are not ready. Run add-maintenance-invoice.sql then add-maintenance-attachments.sql in Supabase.',
         'ui.facilityDocs': 'Licenses and subscriptions',
         'ui.addTruck': 'Add truck',
         'ui.plateNo': 'Plate number',
