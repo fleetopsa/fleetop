@@ -661,12 +661,9 @@
                                     <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                                     </button>
-                                    <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
-                                    </button>
-                                    <button onclick="openCommissionPayoutTab()" data-nav="commissionPayoutSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-money-bill-wave ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.payouts">سداد العمولات</span>
-                                    </button>
+                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
+                            </button>
                                 </div>
                             </div>
                         </div>
@@ -1582,6 +1579,9 @@
                 </div>
             </div>
             <div class="flex flex-wrap justify-end gap-2 no-print">
+                <button type="button" onclick="openPayoutModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="ui.payCommission">سداد عمولة</span>
+                </button>
                 <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                     <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
                 </button>
@@ -1591,24 +1591,22 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm flex items-center justify-between">
-                <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</span>
-                    <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-                </div>
-                <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
+                <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalComms">إجمالي العمولات</span>
+                <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
-                <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-blue-700" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
-                    <h3 id="commTotalTripsDisplay" class="text-2xl font-bold text-blue-700 font-mono mt-1">0</h3>
-                </div>
-                <div class="w-10 h-10 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-lg">
-                    <i class="fa-solid fa-route"></i>
-                </div>
+            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
+                <span class="block text-[11px] font-bold text-rose-700" data-i18n="ui.paid">المدفوع</span>
+                <h3 id="commPaidDisplay" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
+                <span class="block text-[11px] font-bold text-emerald-700" data-i18n="ui.remaining">المتبقي</span>
+                <h3 id="commRemainingDisplay" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+                <span class="block text-[11px] font-bold text-blue-700" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
+                <h3 id="commTotalTripsDisplay" class="text-2xl font-bold text-blue-700 font-mono mt-1">0</h3>
             </div>
         </div>
 
@@ -1630,70 +1628,6 @@
                     </thead>
                     <tbody id="commissionReportTable" class="divide-y divide-slate-100">
                         <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <main id="commissionPayoutSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 no-print">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
-                    <input type="date" id="settleStartDate" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
-                    <input type="date" id="settleEndDate" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
-                    <select id="settleDriverFilter" onchange="generateCommissionSettlement()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex flex-wrap justify-end gap-2 no-print">
-                <button type="button" onclick="openPayoutModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="ui.payCommission">سداد عمولة</span>
-                </button>
-                <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
-                    <i class="fa-solid fa-print"></i> <span data-i18n="ui.print">طباعة</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalComms">إجمالي العمولات</span>
-                <h3 id="settleEarnedDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-rose-700" data-i18n="ui.paid">المدفوع</span>
-                <h3 id="settlePaidDisplay" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-emerald-700" data-i18n="ui.remaining">المتبقي</span>
-                <h3 id="settleRemainingDisplay" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="overflow-x-auto">
-                <table class="w-full text-right text-xs text-slate-700">
-                    <thead class="bg-slate-100 text-slate-700">
-                        <tr>
-                            <th class="p-3.5 rounded-r-xl" data-i18n="ui.driver">السائق</th>
-                            <th class="p-3.5" data-i18n="th.tripNo">رقم الرحلة</th>
-                            <th class="p-3.5" data-i18n="th.departureDate">تاريخ المغادرة</th>
-                            <th class="p-3.5" data-i18n="ui.truck">الشاحنة</th>
-                            <th class="p-3.5" data-i18n="th.commAmount">مبلغ العمولة</th>
-                            <th class="p-3.5 rounded-l-xl" data-i18n="ui.totalComms">إجمالي العمولات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="settleDriversTable">
-                        <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1721,6 +1655,7 @@
             </div>
         </div>
     </main>
+
             <!-- قسم المستخدمين -->
             <main id="usersSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -2670,9 +2605,6 @@ function clearAllPageFilters() {
     setFilterValue('commEndDate', '');
     setFilterValue('commTruckFilter', '');
     setFilterValue('commDriverFilter', '');
-    setFilterValue('settleStartDate', '');
-    setFilterValue('settleEndDate', '');
-    setFilterValue('settleDriverFilter', '');
     setFilterValue('staffJobFilter', '');
     setFilterValue('analyticsStartDate', '');
     setFilterValue('analyticsEndDate', '');
@@ -2705,17 +2637,11 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('finPaymentMethodFilter', '');
         return;
     }
-    if (id === 'commissionReportSection') {
+    if (id === 'commissionReportSection' || id === 'commissionPayoutSection') {
         setFilterValue('commStartDate', '');
         setFilterValue('commEndDate', '');
         setFilterValue('commTruckFilter', '');
         setFilterValue('commDriverFilter', '');
-        return;
-    }
-    if (id === 'commissionPayoutSection') {
-        setFilterValue('settleStartDate', '');
-        setFilterValue('settleEndDate', '');
-        setFilterValue('settleDriverFilter', '');
         return;
     }
     if (id === 'drivers' || id === 'employees') {
@@ -2769,7 +2695,6 @@ async function populateCommissionFilters() {
         const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
         fillSelectOptions('commDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
         fillSelectOptions('commTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
-        fillSelectOptions('settleDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
         fillSelectOptions('payoutDriver', tripDriverNameList(drivers), t('ui.chooseDriver'));
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر العمولات:', err);
@@ -2777,6 +2702,37 @@ async function populateCommissionFilters() {
 }
 
 let commissionTripsByNo = new Map();
+
+function renderCommissionPayoutLog(payouts) {
+    const payoutBody = document.getElementById('commissionPayoutTable');
+    if (!payoutBody) return;
+    const payoutTime = (payout) => {
+        const raw = dateOnly(payout?.departure_date) || dateOnly(payout?.collection_date);
+        const time = Date.parse(raw);
+        return Number.isFinite(time) ? time : 0;
+    };
+    const sortedPayouts = [...payouts].sort((a, b) => {
+        const diff = payoutTime(b) - payoutTime(a);
+        if (diff) return diff;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+    });
+    payoutBody.innerHTML = sortedPayouts.length ? sortedPayouts.map(payout => `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 font-mono text-slate-600">${escapeHtml(dateOnly(payout.departure_date) || '---')}</td>
+            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(payout.driver_name || 'غير محدد')}</td>
+            <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
+            <td class="p-3.5 text-slate-600">${escapeHtml(payout.payment_method || '—')}</td>
+            <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
+                <button type="button" onclick="openEditPayoutModal(${JSON.stringify(payout.id)})" class="text-amber-600 hover:text-amber-800 font-bold" title="${t('ui.edit')}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button type="button" onclick="deleteCommissionPayout(${JSON.stringify(payout.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="حذف الدفعة">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('') : `<tr><td colspan="5" class="text-center p-8 text-slate-400">${t('ui.noPayouts') || 'لا توجد مبالغ مصروفة في هذه الفترة'}</td></tr>`;
+}
 
 async function generateCommissionReport() {
     const tbody = document.getElementById('commissionReportTable');
@@ -2788,20 +2744,30 @@ async function generateCommissionReport() {
     try {
         let query = client.from('trips').select('*').order('id', { ascending: false });
         if (selectedDriver) query = query.eq('driver_name', selectedDriver);
-        if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
 
         const { data: trips, error } = await query;
         if (error) throw error;
 
         const activeTrips = sortTripsByCompletionDesc((trips || []).filter(trip => {
             if (!isCommissionEarnedTrip(trip)) return false;
+            if (selectedTruck && String(trip.truck_plate || trip.truck || '') !== selectedTruck) return false;
             return tripInDateRange(tripCompletionDate(trip), startDate, endDate);
         }));
+        const payouts = (trips || []).filter(trip => {
+            if (!isCommissionPayout(trip)) return false;
+            return tripInDateRange(dateOnly(trip.departure_date) || dateOnly(trip.collection_date), startDate, endDate);
+        });
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
+        const paid = payouts.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const earnedEl = document.getElementById('commTotalAmountDisplay');
+        const paidEl = document.getElementById('commPaidDisplay');
+        const remainingEl = document.getElementById('commRemainingDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
         if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
+        if (paidEl) paidEl.innerHTML = formatSAR(paid);
+        if (remainingEl) remainingEl.innerHTML = formatCommissionNet(earned - paid);
         if (tripsEl) tripsEl.innerText = activeTrips.filter(isCompletedTrip).length.toLocaleString('en-US');
+        renderCommissionPayoutLog(payouts);
 
         if (!tbody) return;
         if (!activeTrips.length) {
@@ -2867,6 +2833,8 @@ async function generateCommissionReport() {
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
+        const payoutBody = document.getElementById('commissionPayoutTable');
+        if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
     }
 }
 
@@ -2962,18 +2930,7 @@ function showAppSection(sectionId) {
 }
 
 async function openCommissionPayoutTab() {
-    if (!canViewCommissionReports()) {
-        alert('عذراً، هذا التقرير مخصص لصلاحيات الإدارة والمحاسبة فقط.');
-        return;
-    }
-    currentNavTab = 'commissionPayoutSection';
-    resetFiltersForScreen('commissionPayoutSection');
-    showAppSection('commissionPayoutSection');
-    await populateCommissionFilters();
-    await generateCommissionSettlement();
-    setActiveNav('commissionPayoutSection');
-    setPageHeader('commissionPayoutSection');
-    focusActivePage();
+    await openCommissionReportTab();
 }
 
 let editingPayout = null;
@@ -2996,7 +2953,7 @@ function openPayoutModal() {
     const payoutDate = document.getElementById('payoutDate');
     const noteInput = document.getElementById('payoutNote');
     if (idInput) idInput.value = '';
-    if (driverSelect) driverSelect.value = '';
+    if (driverSelect) driverSelect.value = document.getElementById('commDriverFilter')?.value || '';
     if (amountInput) amountInput.value = '';
     if (noteInput) noteInput.value = '';
     if (payoutDate) payoutDate.value = todayDateInput();
@@ -3047,105 +3004,7 @@ function closePayoutModal() {
 }
 
 async function generateCommissionSettlement() {
-    const tbody = document.getElementById('settleDriversTable');
-    const payoutBody = document.getElementById('commissionPayoutTable');
-    const selectedDriver = document.getElementById('settleDriverFilter')?.value || '';
-    const startDate = document.getElementById('settleStartDate')?.value || '';
-    const endDate = document.getElementById('settleEndDate')?.value || '';
-
-    try {
-        let query = client.from('trips').select('*').order('departure_date', { ascending: false });
-        if (selectedDriver) query = query.eq('driver_name', selectedDriver);
-        if (startDate) query = query.gte('departure_date', startDate);
-        if (endDate) query = query.lte('departure_date', endDate);
-        const { data: trips, error } = await query;
-        if (error) throw error;
-
-        const accountTrips = sortTripsByNoDesc((trips || []).filter(isCommissionEarnedTrip));
-        const payouts = (trips || []).filter(isCommissionPayout);
-        const earned = accountTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
-        const paid = payouts.reduce((sum, trip) => sum + commissionAmount(trip), 0);
-        const earnedEl = document.getElementById('settleEarnedDisplay');
-        const paidEl = document.getElementById('settlePaidDisplay');
-        const remainingEl = document.getElementById('settleRemainingDisplay');
-        if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
-        if (paidEl) paidEl.innerHTML = formatSAR(paid);
-        if (remainingEl) remainingEl.innerHTML = formatCommissionNet(earned - paid);
-
-        const groups = new Map();
-        const ensure = (name) => {
-            const key = name || 'غير محدد';
-            if (!groups.has(key)) groups.set(key, { trips: [], earned: 0, paid: 0 });
-            return groups.get(key);
-        };
-        accountTrips.forEach(trip => {
-            const group = ensure(trip.driver_name);
-            group.trips.push(trip);
-            group.earned += commissionAmount(trip);
-        });
-        payouts.forEach(trip => { ensure(trip.driver_name).paid += commissionAmount(trip); });
-
-        const drivers = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ar'));
-        if (tbody) {
-            tbody.innerHTML = drivers.length ? drivers.map(([name, group], driverIndex) => {
-                const trips = group.trips.length ? group.trips : [null];
-                const span = trips.length;
-                const band = driverIndex % 2 ? 'bg-amber-50' : 'bg-white';
-                const summary = `
-                    <td rowspan="${span}" class="p-3.5 align-middle ${band} border-r border-slate-200">
-                        <div class="text-[10px] font-bold text-slate-500">${t('ui.total')}</div>
-                        <div class="font-black font-mono text-slate-900">${formatSAR(group.earned)}</div>
-                        <div class="text-[10px] font-bold text-rose-600 mt-2">${t('ui.paid')}</div>
-                        <div class="font-black font-mono text-rose-600">${formatSAR(group.paid)}</div>
-                        <div class="text-[10px] font-bold ${roundMoney(group.earned - group.paid) < -0.009 ? 'text-amber-700' : 'text-emerald-700'} mt-2">${roundMoney(group.earned - group.paid) < -0.009 ? (currentLang === 'en' ? 'Credit' : 'رصيد للسائق') : t('ui.remaining')}</div>
-                        <div class="font-black font-mono ${roundMoney(group.earned - group.paid) < -0.009 ? 'text-amber-700' : 'text-emerald-700'}">${formatCommissionNet(group.earned - group.paid)}</div>
-                    </td>`;
-                const gap = driverIndex === 0 ? '' : `<tr class="driver-gap"><td colspan="6"></td></tr>`;
-                return gap + trips.map((trip, index) => `
-                    <tr class="${band} ${index === 0 ? 'driver-block-start' : ''}">
-                        ${index === 0 ? `<td rowspan="${span}" class="p-3.5 align-middle font-black text-slate-900 ${band} border-l border-slate-200">${escapeHtml(name)}</td>` : ''}
-                        <td class="p-3.5 font-black text-amber-600 font-mono">${trip ? escapeHtml(trip.trip_no || '---') : '—'}</td>
-                        <td class="p-3.5 text-slate-600 font-mono">${trip ? escapeHtml(trip.departure_date || '---') : '—'}</td>
-                        <td class="p-3.5 text-slate-700 font-mono">${trip ? escapeHtml(trip.truck_plate || '---') : '—'}</td>
-                        <td class="p-3.5 font-mono font-bold text-emerald-700">${trip ? formatSAR(commissionAmount(trip)) : '—'}</td>
-                        ${index === 0 ? summary : ''}
-                    </tr>
-                `).join('');
-            }).join('') : `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('ui.noMatchingCommissions')}</td></tr>`;
-        }
-
-        if (payoutBody) {
-            const payoutTime = (payout) => {
-                const raw = dateOnly(payout?.departure_date) || dateOnly(payout?.collection_date);
-                const time = Date.parse(raw);
-                return Number.isFinite(time) ? time : 0;
-            };
-            const sortedPayouts = [...payouts].sort((a, b) => {
-                const diff = payoutTime(b) - payoutTime(a);
-                if (diff) return diff;
-                return (Number(b.id) || 0) - (Number(a.id) || 0);
-            });
-            payoutBody.innerHTML = sortedPayouts.length ? sortedPayouts.map(payout => `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3.5 font-mono text-slate-600">${escapeHtml(dateOnly(payout.departure_date) || '---')}</td>
-                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(payout.driver_name || 'غير محدد')}</td>
-                    <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
-                    <td class="p-3.5 text-slate-600">${escapeHtml(payout.payment_method || '—')}</td>
-                    <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
-                        <button type="button" onclick="openEditPayoutModal(${JSON.stringify(payout.id)})" class="text-amber-600 hover:text-amber-800 font-bold" title="${t('ui.edit')}">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button type="button" onclick="deleteCommissionPayout(${JSON.stringify(payout.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="حذف الدفعة">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('') : `<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد مبالغ مصروفة في هذه الفترة</td></tr>`;
-        }
-    } catch (err) {
-        console.error('خطأ في سداد العمولات:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل سداد العمولات</td></tr>`;
-    }
+    await generateCommissionReport();
 }
 
 async function driverCommissionBalance(driverName) {
@@ -3281,7 +3140,6 @@ async function saveCommissionPayout(e) {
         closePayoutModal();
         logActivity(payoutId ? 'payout.edit' : 'payout.create', 'عمولة', driverName, `${formatMoney(amount)} · ${payoutDate}${note ? ' · ' + note : ''}`);
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
-        await generateCommissionSettlement();
     } catch (err) {
         console.error(err);
         showPayoutError((currentLang === 'en' ? 'Could not save the payout: ' : 'تعذر حفظ الدفعة: ') + (err.message || ''));
@@ -3341,7 +3199,6 @@ async function deleteCommissionPayout(id) {
             logActivity('payout.delete', 'عمولة', payoutId, '');
         }
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
-        await generateCommissionSettlement();
     } catch (err) {
         console.error(err);
         alert((currentLang === 'en' ? 'Could not delete the payout: ' : 'تعذر حذف الدفعة: ') + (err.message || err));
@@ -4184,10 +4041,9 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             typeof initReportFilters === 'function' ? initReportFilters() : null,
             typeof generateReport === 'function' ? generateReport() : null,
             typeof generateFinancialReport === 'function' ? generateFinancialReport() : null,
-            typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => Promise.allSettled([
-                typeof generateCommissionReport === 'function' ? generateCommissionReport() : null,
-                typeof generateCommissionSettlement === 'function' ? generateCommissionSettlement() : null
-            ])) : null,
+            typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => (
+                typeof generateCommissionReport === 'function' ? generateCommissionReport() : null
+            )) : null,
             typeof loadMaintenanceReport === 'function' ? loadMaintenanceReport() : null
         ]).catch(err => console.error(err));
     } finally {
@@ -5624,7 +5480,7 @@ const I18N = {
         'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
         'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
         'page.commissions': 'تقرير العمولات',
-        'page.commissionsSub': 'عرض وتصفية عمولات السائقين التفصيلية',
+        'page.commissionsSub': 'إجمالي العمولات والمدفوع والمتبقي وسجل الصرف',
         'page.payouts': 'سداد العمولات',
         'page.payoutsSub': 'عمولة كل سائق، وما تم صرفه، والمتبقي له',
         'page.facility': 'التراخيص والاشتراكات',
@@ -6069,7 +5925,7 @@ const I18N = {
         'page.fleetFinance': 'Commissions and fleet revenue',
         'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
         'page.commissions': 'Commission report',
-        'page.commissionsSub': 'Filter and review driver commissions',
+        'page.commissionsSub': 'Earned commissions, paid, remaining, and payout log',
         'page.payouts': 'Commission payouts',
         'page.payoutsSub': 'Earned, paid and remaining commission by driver',
         'page.facility': 'Licenses and subscriptions',
@@ -6669,7 +6525,7 @@ function setActiveNav(tabId) {
     document.querySelectorAll('[data-nav]').forEach(btn => {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
-    const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId);
+    const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
     const reportsOpen = tabId === 'reports' || financialOpen;
     const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
     if (reportsGroupBtn) reportsGroupBtn.classList.toggle('nav-open', reportsOpen);
@@ -6703,14 +6559,16 @@ function switchTab(tabId) {
     // 2. معالجة خاصة للتبويبات المالية لضمان ظهورها وتشغيل بياناتها
     if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection' || tabId === 'commissionReportSection' || tabId === 'commissionPayoutSection') {
         toggleFinancialMenu(true);
-        const targetFinSection = document.getElementById(tabId);
+        const resolvedTab = tabId === 'commissionPayoutSection' ? 'commissionReportSection' : tabId;
+        currentNavTab = resolvedTab;
+        setActiveNav(resolvedTab);
+        setPageHeader(resolvedTab);
+        const targetFinSection = document.getElementById(resolvedTab);
         if (targetFinSection) {
             targetFinSection.classList.remove('hidden');
             targetFinSection.scrollTop = 0;
-            if (tabId === 'commissionReportSection' && typeof generateCommissionReport === 'function') {
+            if (resolvedTab === 'commissionReportSection' && typeof generateCommissionReport === 'function') {
                 populateCommissionFilters().then(() => generateCommissionReport());
-            } else if (tabId === 'commissionPayoutSection' && typeof generateCommissionSettlement === 'function') {
-                populateCommissionFilters().then(() => generateCommissionSettlement());
             } else if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
