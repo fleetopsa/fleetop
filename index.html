@@ -57,15 +57,48 @@
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
         .analytics-fill { height: 100%; border-radius: 999px; }
-        .recv-filters {
-            display: grid;
-            gap: 0.75rem;
-            grid-template-columns: minmax(0, 1fr);
-            min-width: 0;
+        .recv-toolbar { min-width: 0; }
+        .recv-toolbar-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            justify-content: space-between;
         }
-        .recv-filters > div { min-width: 0; }
-        .recv-filters input,
-        .recv-filters select {
+        .recv-status-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.9rem;
+            padding: 0.28rem;
+        }
+        .recv-status-pill {
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            font-weight: 800;
+            font-size: 11px;
+            line-height: 1.2;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.7rem;
+            cursor: pointer;
+        }
+        .recv-status-pill.is-active { background: #0b2a4a; color: #c4a35a; }
+        .recv-status-pill[data-status="unpaid"].is-active { background: #fff1f2; color: #be123c; }
+        .recv-status-pill[data-status="partial"].is-active { background: #fffbeb; color: #b45309; }
+        .recv-status-pill[data-status="paid"].is-active { background: #ecfdf5; color: #047857; }
+        .recv-filter-fields {
+            display: grid;
+            gap: 0.6rem;
+            grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+            min-width: 0;
+            margin-top: 0.75rem;
+        }
+        .recv-filter-fields > div { min-width: 0; }
+        .recv-filter-fields input,
+        .recv-filter-fields select {
             width: 100%;
             max-width: 100%;
             min-width: 0;
@@ -450,15 +483,10 @@
         }
         @media (min-width: 768px) {
             .maint-action-grid { width: 20rem; }
-            .recv-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1280px) {
-            .recv-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
             .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
-            .recv-filters { grid-template-columns: repeat(6, minmax(0, 1fr)); }
         }
         @media (min-width: 1920px) {
             #appContent table,
@@ -1194,33 +1222,41 @@
 </main>
 
 <main id="receivablesSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print">
-        <div class="recv-filters">
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print recv-toolbar">
+        <div class="recv-toolbar-top">
+            <div class="recv-status-pills" role="group" aria-label="حالة السداد">
+                <input type="hidden" id="recvPayStatusFilter" value="">
+                <button type="button" class="recv-status-pill is-active" data-status="" onclick="setRecvPayStatus('')"><span data-i18n="ui.all">الكل</span></button>
+                <button type="button" class="recv-status-pill" data-status="unpaid" onclick="setRecvPayStatus('unpaid')"><span data-i18n="ui.unpaid">غير مسدد</span></button>
+                <button type="button" class="recv-status-pill" data-status="partial" onclick="setRecvPayStatus('partial')"><span data-i18n="ui.partial">سداد جزئي</span></button>
+                <button type="button" class="recv-status-pill" data-status="paid" onclick="setRecvPayStatus('paid')"><span data-i18n="ui.paidFull">مسدد</span></button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                    <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                </button>
+                <button type="button" onclick="resetReceivablesFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition">
+                    <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                </button>
+            </div>
+        </div>
+        <div class="recv-filter-fields">
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="recvStartDate" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
                 <input type="date" id="recvEndDate" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.clientName">اسم العميل</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="th.clientName">اسم العميل</label>
                 <select id="recvClientFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allClients">جميع العملاء</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
-                <select id="recvPayStatusFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="" data-i18n="ui.allPay">جميع حالات السداد</option>
-                    <option value="unpaid" data-i18n="ui.unpaid">غير مسدد</option>
-                    <option value="partial" data-i18n="ui.partial">سداد جزئي</option>
-                    <option value="paid" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
                 <select id="recvPayMethodFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
                     <option value="نقدي" data-i18n="ui.cash">نقدي</option>
@@ -1229,25 +1265,17 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="ui.truck">الشاحنة</label>
                 <select id="recvTruckFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-i18n="ui.driver">السائق</label>
                 <select id="recvDriverFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
                 </select>
             </div>
-        </div>
-        <div class="flex justify-end gap-2 mt-3">
-            <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
-                <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
-            </button>
-            <button type="button" onclick="resetReceivablesFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
-            </button>
         </div>
     </div>
     <div class="recv-summary grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -3682,6 +3710,19 @@ function tripPayStatusCode(trip) {
     return 'unpaid';
 }
 
+function syncRecvStatusPills() {
+    const current = document.getElementById('recvPayStatusFilter')?.value || '';
+    document.querySelectorAll('.recv-status-pill').forEach(btn => {
+        btn.classList.toggle('is-active', (btn.dataset.status || '') === current);
+    });
+}
+
+function setRecvPayStatus(code) {
+    setFilterValue('recvPayStatusFilter', code || '');
+    syncRecvStatusPills();
+    generateReceivablesReport();
+}
+
 function tripCollectionDateList(trip) {
     const dates = paymentLineItems(trip)
         .map(line => dateOnly(line.collection_date))
@@ -3764,6 +3805,7 @@ async function generateReceivablesReport() {
         const startDate = document.getElementById('recvStartDate')?.value || '';
         const endDate = document.getElementById('recvEndDate')?.value || '';
         const selectedClient = document.getElementById('recvClientFilter')?.value || '';
+        syncRecvStatusPills();
         const selectedStatus = document.getElementById('recvPayStatusFilter')?.value || '';
         const selectedMethod = document.getElementById('recvPayMethodFilter')?.value || '';
         const selectedTruck = document.getElementById('recvTruckFilter')?.value || '';
@@ -3827,6 +3869,7 @@ async function resetReceivablesFilters() {
     setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
+    syncRecvStatusPills();
     await generateReceivablesReport();
 }
 
@@ -5943,6 +5986,7 @@ const I18N = {
         'ui.fullTripCount': 'عدد الرحلات كاملة',
         'ui.unpaidAmounts': 'المبالغ الغير مسددة',
         'ui.reset': 'إعادة الضبط',
+        'ui.all': 'الكل',
         'ui.tripLog': 'سجل الرحلات',
         'ui.addTrip': 'إضافة رحلة جديدة',
         'th.clientRoute': 'العميل والمسار',
@@ -6397,6 +6441,7 @@ const I18N = {
         'ui.fullTripCount': 'All matching trips',
         'ui.unpaidAmounts': 'Unpaid amounts',
         'ui.reset': 'Reset',
+        'ui.all': 'All',
         'ui.tripLog': 'Trip log',
         'ui.addTrip': 'Add trip',
         'th.clientRoute': 'Client and route',
