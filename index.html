@@ -661,6 +661,9 @@
                                     <button onclick="switchTab('financialOverviewSection')" data-nav="financialOverviewSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-wallet ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.revenue">تقرير الإيرادات</span>
                                     </button>
+                                    <button onclick="switchTab('receivablesSection')" data-nav="receivablesSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-file-invoice ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.receivables">تقرير المستحقات والتحصيل</span>
+                                    </button>
                             <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
                             </button>
@@ -1164,6 +1167,98 @@
                 </thead>
                 <tbody id="financialReportTable" class="divide-y divide-slate-100">
                     <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<main id="receivablesSection" class="page-section hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                <input type="date" id="recvStartDate" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                <input type="date" id="recvEndDate" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.clientName">اسم العميل</label>
+                <select id="recvClientFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allClients">جميع العملاء</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payStatus">حالة السداد</label>
+                <select id="recvPayStatusFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allPay">جميع حالات السداد</option>
+                    <option value="unpaid" data-i18n="ui.unpaid">غير مسدد</option>
+                    <option value="partial" data-i18n="ui.partial">سداد جزئي</option>
+                    <option value="paid" data-i18n="ui.paidFull">مسدد (بالكامل)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
+                <select id="recvTruckFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
+                <select id="recvDriverFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-3">
+            <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+            </button>
+            <button type="button" onclick="resetReceivablesFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                <i class="fa-solid fa-rotate-left ml-1"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+            </button>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
+            <div id="recvTotalDue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
+            <div class="text-xs text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
+            <div id="recvCollected" class="text-2xl font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
+            <div class="text-xs text-amber-700 font-bold mb-1" data-i18n="ui.remaining">المتبقي</div>
+            <div id="recvRemaining" class="text-2xl font-bold text-amber-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
+            <div class="text-xs text-rose-600 font-bold mb-1" data-i18n="ui.overdue">المتأخرات</div>
+            <div id="recvOverdue" class="text-2xl font-bold text-rose-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
+        <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
+            <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل المستحقات والتحصيل</span>
+        </h3>
+        <div class="overflow-x-auto flex-grow">
+            <table class="w-full text-right text-xs text-slate-700">
+                <thead class="bg-slate-100 text-slate-700">
+                    <tr>
+                        <th class="p-3.5 rounded-r-xl" data-i18n="th.tripNo">رقم الرحلة</th>
+                        <th class="p-3.5" data-i18n="th.collectDate">تاريخ التحصيل</th>
+                        <th class="p-3.5" data-i18n="th.clientName">اسم العميل</th>
+                        <th class="p-3.5" data-i18n="th.destination">الوجهة</th>
+                        <th class="p-3.5" data-i18n="ui.truck">الشاحنة</th>
+                        <th class="p-3.5" data-i18n="ui.driver">السائق</th>
+                        <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
+                        <th class="p-3.5 rounded-l-xl" data-i18n="ui.payStatus">حالة السداد</th>
+                    </tr>
+                </thead>
+                <tbody id="receivablesReportTable" class="divide-y divide-slate-100">
+                    <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -2601,6 +2696,12 @@ function clearAllPageFilters() {
     setFilterValue('finTruckFilter', '');
     setFilterValue('finDriverFilter', '');
     setFilterValue('finPaymentMethodFilter', '');
+    setFilterValue('recvStartDate', '');
+    setFilterValue('recvEndDate', '');
+    setFilterValue('recvClientFilter', '');
+    setFilterValue('recvPayStatusFilter', '');
+    setFilterValue('recvTruckFilter', '');
+    setFilterValue('recvDriverFilter', '');
     setFilterValue('commStartDate', '');
     setFilterValue('commEndDate', '');
     setFilterValue('commTruckFilter', '');
@@ -2635,6 +2736,15 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('finTruckFilter', '');
         setFilterValue('finDriverFilter', '');
         setFilterValue('finPaymentMethodFilter', '');
+        return;
+    }
+    if (id === 'receivablesSection') {
+        setFilterValue('recvStartDate', '');
+        setFilterValue('recvEndDate', '');
+        setFilterValue('recvClientFilter', '');
+        setFilterValue('recvPayStatusFilter', '');
+        setFilterValue('recvTruckFilter', '');
+        setFilterValue('recvDriverFilter', '');
         return;
     }
     if (id === 'commissionReportSection' || id === 'commissionPayoutSection') {
@@ -3537,6 +3647,121 @@ function summarizeTripMoney(trips) {
     }, { total: 0, collected: 0, remaining: 0 });
 }
 
+function tripPayStatusCode(trip) {
+    const money = tripMoneyParts(trip);
+    if (money.remaining <= 0.009) return 'paid';
+    if (money.paid > 0.009) return 'partial';
+    return 'unpaid';
+}
+
+function isOverdueReceivable(trip) {
+    if (tripPayStatusCode(trip) === 'paid') return false;
+    const day = tripCompletionDate(trip) || dateOnly(trip.departure_date);
+    return !!day && day < todayDateInput();
+}
+
+function tripCollectionDatesHtml(trip) {
+    const dates = paymentLineItems(trip)
+        .map(line => dateOnly(line.collection_date))
+        .filter(Boolean);
+    if (!dates.length) return '—';
+    return stackReportCell(dates.map(date => escapeHtml(date)));
+}
+
+function receivablesPayBadge(trip) {
+    const code = tripPayStatusCode(trip);
+    const label = tripPaymentLabel(trip);
+    if (code === 'paid') return `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(label)}</span>`;
+    if (code === 'partial') return `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(label)}</span>`;
+    return `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(label)}</span>`;
+}
+
+async function populateReceivablesFilters(trips) {
+    try {
+        const { data: drivers } = await client.from('drivers').select('name, staff_kind').order('name');
+        const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
+        fillSelectOptions('recvDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
+        fillSelectOptions('recvTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
+        const clients = [...new Set((trips || [])
+            .filter(isCompletedTrip)
+            .map(trip => String(trip.client_name || '').trim())
+            .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
+        fillSelectOptions('recvClientFilter', clients, t('ui.allClients'));
+    } catch (err) {
+        console.error('خطأ في تعبئة فلاتر المستحقات:', err);
+    }
+}
+
+async function generateReceivablesReport() {
+    const tbody = document.getElementById('receivablesReportTable');
+    try {
+        const startDate = document.getElementById('recvStartDate')?.value || '';
+        const endDate = document.getElementById('recvEndDate')?.value || '';
+        const selectedClient = document.getElementById('recvClientFilter')?.value || '';
+        const selectedStatus = document.getElementById('recvPayStatusFilter')?.value || '';
+        const selectedTruck = document.getElementById('recvTruckFilter')?.value || '';
+        const selectedDriver = document.getElementById('recvDriverFilter')?.value || '';
+
+        let query = client.from('trips').select('*').order('id', { ascending: false });
+        if (selectedTruck) query = query.eq('truck_plate', selectedTruck);
+        if (selectedDriver) query = query.eq('driver_name', selectedDriver);
+
+        const { data: trips, error } = await query;
+        if (error) throw error;
+        const { data: settlementRows, error: settlementError } = await client.from('trips').select('*').eq('status', 'دفعة سداد');
+        if (settlementError) throw settlementError;
+        indexSettlements(settlementRows);
+        await populateReceivablesFilters(trips);
+
+        let rows = filterCompletedTripsForPeriod(trips, startDate, endDate);
+        if (selectedClient) rows = rows.filter(trip => String(trip.client_name || '').trim() === selectedClient);
+        if (selectedStatus) rows = rows.filter(trip => tripPayStatusCode(trip) === selectedStatus);
+        rows = sortTripsByCompletionDesc(rows);
+
+        const money = summarizeTripMoney(rows);
+        const overdue = rows.reduce((sum, trip) => sum + (isOverdueReceivable(trip) ? tripMoneyParts(trip).remaining : 0), 0);
+        const totalEl = document.getElementById('recvTotalDue');
+        const collectedEl = document.getElementById('recvCollected');
+        const remainingEl = document.getElementById('recvRemaining');
+        const overdueEl = document.getElementById('recvOverdue');
+        if (totalEl) totalEl.innerHTML = formatSAR(money.total);
+        if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
+        if (remainingEl) remainingEl.innerHTML = formatSAR(money.remaining);
+        if (overdueEl) overdueEl.innerHTML = formatSAR(overdue);
+
+        if (!tbody) return;
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(tr => `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${tripCollectionDatesHtml(tr)}</td>
+                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
+                <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripDestinationText(tr))}</td>
+                <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
+                <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
+                <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${formatSAR(tripMoneyParts(tr).total)}</td>
+                <td class="p-3.5 align-top">${receivablesPayBadge(tr)}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error('خطأ في تقرير المستحقات:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
+    }
+}
+
+async function resetReceivablesFilters() {
+    setFilterValue('recvStartDate', '');
+    setFilterValue('recvEndDate', '');
+    setFilterValue('recvClientFilter', '');
+    setFilterValue('recvPayStatusFilter', '');
+    setFilterValue('recvTruckFilter', '');
+    setFilterValue('recvDriverFilter', '');
+    await generateReceivablesReport();
+}
+
 function dateOnly(value) {
     return String(value || '').slice(0, 10);
 }
@@ -4077,6 +4302,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             typeof initReportFilters === 'function' ? initReportFilters() : null,
             typeof generateReport === 'function' ? generateReport() : null,
             typeof generateFinancialReport === 'function' ? generateFinancialReport() : null,
+            typeof generateReceivablesReport === 'function' ? generateReceivablesReport() : null,
             typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => (
                 typeof generateCommissionReport === 'function' ? generateCommissionReport() : null
             )) : null,
@@ -5471,6 +5697,7 @@ const I18N = {
         'nav.reports': 'التقارير التشغيلية',
         'nav.financial': 'التقارير المالية',
         'nav.revenue': 'تقرير الإيرادات',
+        'nav.receivables': 'تقرير المستحقات والتحصيل',
         'nav.commissions': 'تقرير العمولات',
         'nav.payouts': 'سداد العمولات',
         'nav.users': 'المستخدمين',
@@ -5504,6 +5731,8 @@ const I18N = {
         'page.reportsSub': 'الشاحنات والسائقين والرحلات التشغيلية',
         'page.revenue': 'تقرير الإيرادات',
         'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
+        'page.receivables': 'تقرير المستحقات والتحصيل',
+        'page.receivablesSub': 'المستحقات والمحصل والمتبقي والمتأخرات حسب العميل وحالة السداد',
         'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
         'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
         'page.commissions': 'تقرير العمولات',
@@ -5587,6 +5816,12 @@ const I18N = {
         'ui.totalRevenue': 'إجمالي الإيرادات',
         'ui.collected': 'المبالغ المحصلة',
         'ui.uncollected': 'المبالغ غير المحصلة',
+        'ui.totalReceivables': 'إجمالي المستحقات',
+        'ui.overdue': 'المتأخرات',
+        'ui.allClients': 'جميع العملاء',
+        'ui.receivablesDetails': 'تفاصيل المستحقات والتحصيل',
+        'ui.noReceivables': 'لا توجد بيانات مطابقة للفلتر المحدد',
+        'th.destination': 'الوجهة',
         'ui.completedTrips': 'عدد الرحلات المنجزة',
         'ui.trucks': 'الشاحنات',
         'ui.drivers': 'السائقين',
@@ -5916,6 +6151,7 @@ const I18N = {
         'nav.reports': 'Operations reports',
         'nav.financial': 'Financial reports',
         'nav.revenue': 'Revenue report',
+        'nav.receivables': 'Receivables and collections',
         'nav.commissions': 'Commission report',
         'nav.payouts': 'Commission payouts',
         'nav.users': 'Users',
@@ -5949,6 +6185,8 @@ const I18N = {
         'page.reportsSub': 'Trucks, drivers and operational trips',
         'page.revenue': 'Revenue report',
         'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
+        'page.receivables': 'Receivables and collections',
+        'page.receivablesSub': 'Due, collected, remaining and overdue amounts by client and payment status',
         'page.fleetFinance': 'Commissions and fleet revenue',
         'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
         'page.commissions': 'Commission report',
@@ -6032,6 +6270,12 @@ const I18N = {
         'ui.totalRevenue': 'Total revenue',
         'ui.collected': 'Collected',
         'ui.uncollected': 'Outstanding',
+        'ui.totalReceivables': 'Total receivables',
+        'ui.overdue': 'Overdue',
+        'ui.allClients': 'All clients',
+        'ui.receivablesDetails': 'Receivables and collection details',
+        'ui.noReceivables': 'No matching records for the selected filters',
+        'th.destination': 'Destination',
         'ui.completedTrips': 'Completed trips',
         'ui.trucks': 'Trucks',
         'ui.drivers': 'Drivers',
@@ -6349,6 +6593,7 @@ const PAGE_HEADER_KEYS = {
     reports: ['page.reports', 'page.reportsSub'],
     reportsSection: ['page.reports', 'page.reportsSub'],
     financialOverviewSection: ['page.revenue', 'page.revenueSub'],
+    receivablesSection: ['page.receivables', 'page.receivablesSub'],
     financialDetailsSection: ['page.fleetFinance', 'page.fleetFinanceSub'],
     commissionReportSection: ['page.commissions', 'page.commissionsSub'],
     commissionPayoutSection: ['page.payouts', 'page.payoutsSub'],
@@ -6552,7 +6797,7 @@ function setActiveNav(tabId) {
     document.querySelectorAll('[data-nav]').forEach(btn => {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
-    const financialOpen = ['financialOverviewSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
+    const financialOpen = ['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
     const reportsOpen = tabId === 'reports' || financialOpen;
     const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
     if (reportsGroupBtn) reportsGroupBtn.classList.toggle('nav-open', reportsOpen);
@@ -6584,7 +6829,7 @@ function switchTab(tabId) {
     });
 
     // 2. معالجة خاصة للتبويبات المالية لضمان ظهورها وتشغيل بياناتها
-    if (tabId === 'financialOverviewSection' || tabId === 'financialDetailsSection' || tabId === 'commissionReportSection' || tabId === 'commissionPayoutSection') {
+    if (tabId === 'financialOverviewSection' || tabId === 'receivablesSection' || tabId === 'financialDetailsSection' || tabId === 'commissionReportSection' || tabId === 'commissionPayoutSection') {
         toggleFinancialMenu(true);
         const resolvedTab = tabId === 'commissionPayoutSection' ? 'commissionReportSection' : tabId;
         currentNavTab = resolvedTab;
@@ -6596,6 +6841,8 @@ function switchTab(tabId) {
             targetFinSection.scrollTop = 0;
             if (resolvedTab === 'commissionReportSection' && typeof generateCommissionReport === 'function') {
                 populateCommissionFilters().then(() => generateCommissionReport());
+            } else if (resolvedTab === 'receivablesSection' && typeof generateReceivablesReport === 'function') {
+                generateReceivablesReport();
             } else if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
