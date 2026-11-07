@@ -2536,6 +2536,101 @@
             if (ok || source === 'restore') sessionStorage.setItem(flag, '1');
         }
 
+        function getSupabaseAccessToken() {
+            try {
+                const key = Object.keys(localStorage).find(item => item.startsWith('sb-') && item.endsWith('-auth-token'));
+                if (!key) return '';
+                const raw = JSON.parse(localStorage.getItem(key) || '{}');
+                return raw?.access_token || raw?.currentSession?.access_token || '';
+            } catch (err) {
+                return '';
+            }
+        }
+
+        function keepaliveSupabaseWrite(path, body, prefer) {
+            const token = getSupabaseAccessToken();
+            if (!token) return;
+            fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${token}`,
+                    Prefer: prefer || 'return=minimal'
+                },
+                body: JSON.stringify(body),
+                keepalive: true
+            }).catch(() => {});
+        }
+
+        let sessionEndFlushed = false;
+
+        function flushSessionEndOnUnload() {
+            const user = currentLoggedInUser;
+            if (!user?.id || idleLogoutBusy || sessionEndFlushed) return;
+            sessionEndFlushed = true;
+            try { sessionStorage.setItem('fleetop_page_unloading', String(Date.now())); } catch (err) {}
+            const offlineAt = new Date(Date.now() - PRESENCE_ONLINE_MS * 2).toISOString();
+            presenceByUserId[String(user.id)] = offlineAt;
+            keepaliveSupabaseWrite('user_presence?on_conflict=user_id', {
+                user_id: Number(user.id),
+                last_seen_at: offlineAt
+            }, 'resolution=merge-duplicates,return=minimal');
+            keepaliveSupabaseWrite('activity_log', [{
+                user_id: String(user.id),
+                username: String(user.username || '').trim(),
+                employee_name: String(user.employee_name || '').trim(),
+                role: user.role || '',
+                action: 'logout.close',
+                entity: 'session',
+                entity_no: String(user.username || ''),
+                details: (user.employee_name || '') + (document.documentElement.lang === 'en' ? ' · browser/device closed' : ' · إغلاق المتصفح أو الجهاز')
+            }]);
+            try { sessionStorage.removeItem(activitySessionFlag(user.id)); } catch (err) {}
+        }
+
+        function isLogoutAction(action) {
+            return String(action || '').startsWith('logout');
+        }
+
+        async function reconcileAbandonedSessions() {
+            if (!isAdminUser()) return;
+            try {
+                const cutoff = new Date(Date.now() - IDLE_TIMEOUT_MS).toISOString();
+                const { data: stale, error } = await client
+                    .from('user_presence')
+                    .select('user_id, last_seen_at')
+                    .lt('last_seen_at', cutoff);
+                if (error || !stale?.length) return;
+                for (const row of stale) {
+                    const userId = String(row.user_id || '');
+                    if (!userId || Number(userId) === Number(currentLoggedInUser?.id)) continue;
+                    const { data: logs } = await client
+                        .from('activity_log')
+                        .select('action, username, employee_name, role, user_id, created_at')
+                        .eq('user_id', userId)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    const last = logs && logs[0];
+                    if (!last || isLogoutAction(last.action)) continue;
+                    const endedAt = new Date(new Date(row.last_seen_at).getTime() + IDLE_TIMEOUT_MS).toISOString();
+                    await client.from('activity_log').insert([{
+                        user_id: userId,
+                        username: last.username || '',
+                        employee_name: last.employee_name || '',
+                        role: last.role || '',
+                        action: 'logout.abandoned',
+                        entity: 'session',
+                        entity_no: last.username || '',
+                        details: (last.employee_name || '') + (currentLang === 'en' ? ' · left without logout' : ' · مغادرة بدون تسجيل خروج'),
+                        created_at: endedAt
+                    }]);
+                }
+            } catch (err) {
+                console.warn('تعذر تسوية الجلسات المتروكة:', err);
+            }
+        }
+
         function activityLogDayBound(dateStr, endOfDay) {
             if (!dateStr) return '';
             return endOfDay ? `${dateStr}T23:59:59.999+03:00` : `${dateStr}T00:00:00+03:00`;
@@ -2588,6 +2683,7 @@
             }
             document.getElementById('clearActivityLogBtn')?.classList.remove('hidden');
             await fillActivityLogUserOptions();
+            await reconcileAbandonedSessions();
             const start = document.getElementById('activityLogStart')?.value || '';
             const end = document.getElementById('activityLogEnd')?.value || '';
             const userQ = String(document.getElementById('activityLogUser')?.value || '').trim();
@@ -6168,6 +6264,8 @@ const I18N = {
         'log.login': 'تسجيل دخول',
         'log.logout': 'تسجيل خروج',
         'log.logout.idle': 'خروج بسبب الخمول',
+        'log.logout.close': 'إغلاق المتصفح أو الجهاز',
+        'log.logout.abandoned': 'مغادرة بدون تسجيل خروج',
         'log.trip.create': 'إضافة رحلة',
         'log.trip.edit': 'تعديل رحلة',
         'log.trip.complete': 'إنهاء رحلة',
@@ -6624,6 +6722,8 @@ const I18N = {
         'log.login': 'Sign in',
         'log.logout': 'Sign out',
         'log.logout.idle': 'Signed out due to idle',
+        'log.logout.close': 'Browser or device closed',
+        'log.logout.abandoned': 'Left without signing out',
         'log.trip.create': 'Add trip',
         'log.trip.edit': 'Edit trip',
         'log.trip.complete': 'Complete trip',
@@ -8732,6 +8832,9 @@ async function loadUsers(options = {}) {
             try {
                 const { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
                 if (error) throw error;
+                if (isAdminUser() && !silent) {
+                    try { await reconcileAbandonedSessions(); } catch (err) { console.warn(err); }
+                }
                 try {
                     const { data: presence, error: presenceError } = await client.from('user_presence').select('user_id, last_seen_at');
                     if (!presenceError) {
@@ -9076,6 +9179,7 @@ async function loadUsers(options = {}) {
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
             toggleSystemMenu(false);
             setAppLang(currentLang);
+            sessionEndFlushed = false;
             syncSidebarToggleBtn();
             startUserPresence();
             startIdleWatch();
@@ -9117,6 +9221,7 @@ async function loadUsers(options = {}) {
 
         async function handleLogout(reason) {
             const loggingOutUser = currentLoggedInUser;
+            sessionEndFlushed = true;
             const action = reason === 'idle' ? 'logout.idle' : 'logout';
             const details = reason === 'idle'
                 ? (loggingOutUser?.employee_name || '') + (currentLang === 'en' ? ' · idle timeout' : ' · خمول')
@@ -9170,6 +9275,8 @@ async function loadUsers(options = {}) {
             window.addEventListener('resize', syncSidebarToggleBtn);
             restoreSession();
         });
+        window.addEventListener('pagehide', flushSessionEndOnUnload);
+        window.addEventListener('beforeunload', flushSessionEndOnUnload);
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 if (isDesktopSidebarLayout()) {
