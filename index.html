@@ -2656,12 +2656,14 @@
         let loginBusy = false;
         let appUsersById = {};
         const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
-        const PRESENCE_ONLINE_MS = 120000;
-        const PRESENCE_BEAT_MS = 40000;
+        const PRESENCE_ONLINE_MS = 5 * 60 * 1000;
+        const PRESENCE_BEAT_MS = 30000;
+        const PRESENCE_TOUCH_MIN_MS = 20000;
         const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
         const IDLE_CHECK_MS = 10000;
         let presenceTimer = null;
         let presenceByUserId = {};
+        let lastPresenceTouchAt = 0;
         let idleTimer = null;
         let idleWatching = false;
         let idleLogoutBusy = false;
@@ -2670,7 +2672,7 @@
 
         function isUserOnline(userId) {
             if (userId != null && Number(userId) === Number(currentLoggedInUser?.id)) return true;
-            const seen = presenceByUserId[userId];
+            const seen = presenceByUserId[String(userId)];
             if (!seen) return false;
             const at = new Date(seen).getTime();
             return Number.isFinite(at) && (Date.now() - at) < PRESENCE_ONLINE_MS;
@@ -2682,26 +2684,38 @@
             return `<span class="presence-dot ${online ? 'is-online' : 'is-offline'}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
         }
 
-        async function touchUserPresence(offline) {
+        async function touchUserPresence(offline, force) {
             const id = Number(currentLoggedInUser?.id || 0);
             if (!id) return;
-            const last_seen_at = new Date(offline ? Date.now() - PRESENCE_ONLINE_MS * 2 : Date.now()).toISOString();
+            const now = Date.now();
+            if (!offline && !force && now - lastPresenceTouchAt < PRESENCE_TOUCH_MIN_MS) return;
+            lastPresenceTouchAt = now;
+            const last_seen_at = new Date(offline ? now - PRESENCE_ONLINE_MS * 2 : now).toISOString();
+            presenceByUserId[String(id)] = last_seen_at;
             const { error } = await client.from('user_presence').upsert({ user_id: id, last_seen_at }, { onConflict: 'user_id' });
             if (error) console.warn('تعذر تحديث حالة الدخول:', error.message);
         }
 
+        function onPresenceVisibilityChange() {
+            if (!currentLoggedInUser) return;
+            if (document.visibilityState === 'visible') touchUserPresence(false, true);
+        }
+
         function startUserPresence() {
             stopUserPresence();
-            touchUserPresence(false);
+            touchUserPresence(false, true);
+            document.addEventListener('visibilitychange', onPresenceVisibilityChange);
             presenceTimer = setInterval(() => {
-                touchUserPresence(false);
-                if (currentNavTab === 'users' || currentNavTab === 'usersSection') loadUsers();
+                if (document.visibilityState === 'hidden') return;
+                touchUserPresence(false, true);
+                if (currentNavTab === 'users' || currentNavTab === 'usersSection') loadUsers({ silent: true });
             }, PRESENCE_BEAT_MS);
         }
 
         function bumpIdleActivity() {
-            if (!idleWatching || !currentLoggedInUser || idleLogoutBusy) return;
+            if (!currentLoggedInUser || idleLogoutBusy) return;
             lastActivityAt = Date.now();
+            if (idleWatching) touchUserPresence(false);
         }
 
         function stopIdleWatch() {
@@ -2770,6 +2784,7 @@
                 clearInterval(presenceTimer);
                 presenceTimer = null;
             }
+            document.removeEventListener('visibilitychange', onPresenceVisibilityChange);
         }
 
         function setLoginBusy(busy) {
@@ -8708,19 +8723,26 @@ async function cancelTrip(tripNo) {
                 }
             }
         }
-async function loadUsers() {
+async function loadUsers(options = {}) {
             const table = document.getElementById('usersTable');
-            table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">جاري تحميل المستخدمين...</td></tr>`;
+            const silent = !!options.silent;
+            if (!silent && table) {
+                table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">جاري تحميل المستخدمين...</td></tr>`;
+            }
             try {
                 const { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
                 if (error) throw error;
-                presenceByUserId = {};
                 try {
                     const { data: presence, error: presenceError } = await client.from('user_presence').select('user_id, last_seen_at');
                     if (!presenceError) {
+                        const next = {};
                         (presence || []).forEach(row => {
-                            presenceByUserId[row.user_id] = row.last_seen_at;
+                            next[String(row.user_id)] = row.last_seen_at;
                         });
+                        if (currentLoggedInUser?.id != null) {
+                            next[String(currentLoggedInUser.id)] = next[String(currentLoggedInUser.id)] || new Date().toISOString();
+                        }
+                        presenceByUserId = next;
                     }
                 } catch (err) {
                     console.warn(err);
