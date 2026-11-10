@@ -662,32 +662,30 @@
             </button>
         </form>
 
-        <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
-            <p class="text-[11px] font-bold leading-5 text-center" style="color:#e8d5a3" data-i18n="login.registerHint">إنشاء شركة جديدة مستقلة على المنصة. بياناتك منفصلة عن باقي الشركات.</p>
+        <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5" autocomplete="off">
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyName">اسم الشركة</label>
-                <input type="text" id="registerCompanyName" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyNamePh" placeholder="اسم الشركة">
+                <input type="text" id="registerCompanyName" name="fleetop_reg_company" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyNamePh" placeholder="اسم الشركة">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyCode">معرف الشركة</label>
-                <input type="text" id="registerCompanyCode" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
-                <p class="text-[10px] mt-1 font-bold" style="color:#c4a35a" data-i18n="login.companyCodeHint">رقم موحد خاص بشركتك للدخول لاحقاً (أحرف أو أرقام).</p>
+                <input type="text" id="registerCompanyCode" name="fleetop_reg_code" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
-                <input type="text" id="registerEmployeeName" autocomplete="name" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.employeeNamePh" placeholder="اسم المسؤول">
+                <input type="text" id="registerEmployeeName" name="fleetop_reg_employee" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.employeeNamePh" placeholder="اسم المسؤول">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
-                <input type="text" id="registerUsername" autocomplete="username" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
+                <input type="text" id="registerUsername" name="fleetop_reg_username" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
-                <input type="password" id="registerPassword" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+                <input type="password" id="registerPassword" name="fleetop_reg_password" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
-                <input type="password" id="registerConfirmPassword" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+                <input type="password" id="registerConfirmPassword" name="fleetop_reg_confirm" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
             </div>
             <div id="registerError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20"></div>
             <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSubmit">
@@ -2935,6 +2933,21 @@
 
         let authTab = 'login';
 
+        function clearRegisterForm() {
+            [
+                'registerCompanyName',
+                'registerCompanyCode',
+                'registerEmployeeName',
+                'registerUsername',
+                'registerPassword',
+                'registerConfirmPassword'
+            ].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('registerError')?.classList.add('hidden');
+        }
+
         function switchAuthTab(tab) {
             authTab = tab === 'register' ? 'register' : 'login';
             const loginForm = document.getElementById('loginForm');
@@ -2953,6 +2966,10 @@
             }
             document.getElementById('loginError')?.classList.add('hidden');
             document.getElementById('registerError')?.classList.add('hidden');
+            if (authTab === 'register') {
+                clearRegisterForm();
+                setTimeout(() => document.getElementById('registerCompanyName')?.focus(), 0);
+            }
         }
 
         function setLoginBusy(busy) {
