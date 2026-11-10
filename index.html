@@ -659,7 +659,7 @@
         </form>
 
         <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
-            <p class="text-[11px] font-bold leading-5 text-center" style="color:#e8d5a3" data-i18n="login.registerHint">لإنشاء أول حساب مدير على نسخة جديدة مخصصة لشركتك.</p>
+            <p class="text-[11px] font-bold leading-5 text-center" style="color:#e8d5a3" data-i18n="login.registerHint">إنشاء شركة جديدة مستقلة على المنصة. بياناتك منفصلة عن باقي الشركات.</p>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyName">اسم الشركة</label>
                 <input type="text" id="registerCompanyName" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyNamePh" placeholder="اسم الشركة">
@@ -2550,7 +2550,8 @@
                     action: String(action || ''),
                     entity: entity || '',
                     entity_no: entityNo != null ? String(entityNo) : '',
-                    details: details || ''
+                    details: details || '',
+                    ...(user.company_id != null ? { company_id: user.company_id } : {})
                 }];
                 let { error } = await client.from('activity_log').insert(payload);
                 if (error && /jwt|session|expired|not authenticated/i.test(error.message || '')) {
@@ -2791,7 +2792,7 @@
         let currentLoggedInUser = null;
         let loginBusy = false;
         let appUsersById = {};
-        const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id';
+        const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id, company_id';
         const PRESENCE_ONLINE_MS = 5 * 60 * 1000;
         const PRESENCE_BEAT_MS = 30000;
         const PRESENCE_TOUCH_MIN_MS = 20000;
@@ -2988,6 +2989,17 @@ function authEmailFor(username) {
     return value.includes('@') ? value : value + '@fleetop.internal';
 }
 
+function currentCompanyId(user = currentLoggedInUser) {
+    const id = user && user.company_id != null ? Number(user.company_id) : NaN;
+    return Number.isFinite(id) ? id : null;
+}
+
+function withCompany(payload, user = currentLoggedInUser) {
+    const companyId = currentCompanyId(user);
+    if (companyId == null || payload == null || typeof payload !== 'object') return payload;
+    return { ...payload, company_id: companyId };
+}
+
 function showLoginError(message, targetId = 'loginError') {
     const box = document.getElementById(targetId);
     if (!box) return;
@@ -2996,7 +3008,13 @@ function showLoginError(message, targetId = 'loginError') {
 }
 
 async function loadAppProfile(authId) {
-    const { data, error } = await client.from('app_users').select(APP_USER_FIELDS).eq('auth_id', authId).maybeSingle();
+    let { data, error } = await client.from('app_users').select(APP_USER_FIELDS).eq('auth_id', authId).maybeSingle();
+    if (error && /company_id/i.test(error.message || '')) {
+        ({ data, error } = await client.from('app_users')
+            .select('id, username, employee_name, role, status, auth_id')
+            .eq('auth_id', authId)
+            .maybeSingle());
+    }
     if (error) throw error;
     return data;
 }
@@ -3090,8 +3108,13 @@ async function handleRegister(e) {
         });
         if (error) {
             const msg = String(error.message || '');
-            if (/Could not find the function|function .* does not exist|42883/i.test(msg)) {
+            if (/Could not find the function|function .* does not exist|42883|company_id|fleetop_current_company_id|companies/i.test(msg)
+                && /does not exist|schema cache|column|relation/i.test(msg)) {
                 showLoginError(t('login.registerSqlMissing'), 'registerError');
+            } else if (/Could not find the function|function .* does not exist|42883/i.test(msg)) {
+                showLoginError(t('login.registerSqlMissing'), 'registerError');
+            } else if (/اسم المستخدم مستخدم/i.test(msg)) {
+                showLoginError(t('login.registerUsernameTaken'), 'registerError');
             } else {
                 showLoginError(msg || t('login.registerFailed'), 'registerError');
             }
@@ -3692,7 +3715,7 @@ async function saveCommissionPayout(e) {
             if (error) throw error;
         } else {
             const trip_no = await generatePayoutNo();
-            const { error } = await client.from('trips').insert([{
+            const { error } = await client.from('trips').insert([withCompany({
                 trip_no,
                 client_name: 'صرف عمولة',
                 from_city: '-',
@@ -3708,7 +3731,7 @@ async function saveCommissionPayout(e) {
                 status: 'صرف عمولة',
                 payment_status: extra > 0.009 ? 'رصيد مقدم' : 'مصروف',
                 payment_method: note || null
-            }]);
+            })]);
             if (error) throw error;
         }
         closePayoutModal();
@@ -4694,7 +4717,7 @@ async function recordSettlementPayment(parentTripNo, amount, method, date) {
     if (!(paid > 0) || !parentTripNo) return { error: null, trip_no: null };
     const trip_no = await generateSettlementNo();
     const collection_date = date || null;
-    const { error } = await client.from('trips').insert([{
+    const { error } = await client.from('trips').insert([withCompany({
         trip_no,
         client_name: parentTripNo,
         from_city: '-',
@@ -4711,7 +4734,7 @@ async function recordSettlementPayment(parentTripNo, amount, method, date) {
         payment_status: 'دفعة',
         payment_method: method || null,
         collection_date
-    }]);
+    })]);
     return { error, trip_no };
 }
 
@@ -5885,14 +5908,14 @@ async function saveMaintenance(event) {
     if (button) button.disabled = true;
     const uploaded = [];
     try {
-        const payload = {
+        const payload = withCompany({
             service_date: serviceDate,
             maintenance_type: type,
             vehicle_kind: kind,
             vehicle_plate: plate,
             cost,
             details: details || null
-        };
+        });
         if (pendingFiles.length) {
             uploaded.push(...await uploadMaintenanceFiles(pendingFiles));
         }
@@ -6154,14 +6177,14 @@ async function loadFacilityDocuments() {
 async function saveFacilityDocument(e) {
     e.preventDefault();
     const id = document.getElementById('facilityDocId').value;
-    const payload = {
+    const payload = withCompany({
         title: document.getElementById('facilityDocTitle').value.trim(),
         doc_type: document.getElementById('facilityDocType').value,
         doc_number: emptyToNull(document.getElementById('facilityDocNumber').value),
         issue_date: dateField('facilityDocIssue'),
         expiry_date: dateField('facilityDocExpiry'),
         notes: emptyToNull(document.getElementById('facilityDocNotes').value)
-    };
+    });
     if (!payload.doc_type) {
         alert(t('ui.chooseDocType'));
         return;
@@ -6326,13 +6349,14 @@ const I18N = {
         'login.companyNamePh': 'اسم الشركة',
         'login.employeeName': 'اسم المسؤول',
         'login.employeeNamePh': 'اسم المسؤول',
-        'login.registerHint': 'لإنشاء أول حساب مدير على نسخة جديدة مخصصة لشركتك.',
+        'login.registerHint': 'إنشاء شركة جديدة مستقلة على المنصة. بياناتك منفصلة عن باقي الشركات.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
         'login.registerPasswordMismatch': 'تأكيد كلمة المرور غير مطابق.',
         'login.registerFailed': 'تعذر إنشاء الحساب.',
-        'login.registerSqlMissing': 'التسجيل غير مفعّل بعد. نفّذ ملف fleetop-register.sql على قاعدة النسخة الجديدة.',
+        'login.registerSqlMissing': 'عزل الشركات غير مفعّل بعد. نفّذ ملف fleetop-multitenant.sql من SQL Editor ثم أعد المحاولة.',
+        'login.registerUsernameTaken': 'اسم المستخدم مستخدم مسبقاً على المنصة.',
         'login.error': 'خطأ في اسم المستخدم أو كلمة المرور.',
         'login.submit': 'تسجيل الدخول',
         'nav.dashboard': 'لوحة التحكم',
@@ -6798,13 +6822,14 @@ const I18N = {
         'login.companyNamePh': 'Company name',
         'login.employeeName': 'Admin name',
         'login.employeeNamePh': 'Admin name',
-        'login.registerHint': 'Create the first admin account on a new company copy of FleetOp.',
+        'login.registerHint': 'Create a new independent company on the platform. Your data stays separate from other companies.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
         'login.registerPasswordMismatch': 'Password confirmation does not match.',
         'login.registerFailed': 'Could not create the account.',
-        'login.registerSqlMissing': 'Registration is not enabled yet. Run fleetop-register.sql on the new company database.',
+        'login.registerSqlMissing': 'Company isolation is not enabled yet. Run fleetop-multitenant.sql in the SQL Editor, then try again.',
+        'login.registerUsernameTaken': 'This username is already used on the platform.',
         'login.error': 'Incorrect username or password.',
         'login.submit': 'Sign in',
         'nav.dashboard': 'Dashboard',
@@ -7401,13 +7426,25 @@ function applyCompanyBranding() {
     });
 }
 
+function companySettingsStorageKey() {
+    const companyId = currentCompanyId();
+    return companyId != null ? `fleetop_company_${companyId}` : 'fleetop_company';
+}
+
 async function loadCompanySettings() {
     try {
-        const { data, error } = await client.from('company_settings').select('*').order('id', { ascending: true }).limit(1);
+        let query = client.from('company_settings').select('*').order('id', { ascending: true }).limit(1);
+        const companyId = currentCompanyId();
+        if (companyId != null) query = query.eq('company_id', companyId);
+        const { data, error } = await query;
         if (error) throw error;
         companySettings = data && data[0] ? data[0] : {};
     } catch (err) {
-        companySettings = JSON.parse(localStorage.getItem('fleetop_company') || '{}');
+        try {
+            companySettings = JSON.parse(localStorage.getItem(companySettingsStorageKey()) || localStorage.getItem('fleetop_company') || '{}');
+        } catch (parseErr) {
+            companySettings = {};
+        }
     }
     fillCompanySettingsForm();
     applyCompanyBranding();
@@ -7439,7 +7476,7 @@ function fillCompanySettingsForm() {
 
 async function saveCompanySettings(e) {
     e.preventDefault();
-    const payload = {
+    const payload = withCompany({
         company_name_ar: emptyToNull(document.getElementById('companyNameAr')?.value),
         company_name_en: emptyToNull(document.getElementById('companyNameEn')?.value),
         slogan_ar: emptyToNull(document.getElementById('companySloganAr')?.value),
@@ -7452,19 +7489,25 @@ async function saveCompanySettings(e) {
         address: emptyToNull(document.getElementById('companyAddress')?.value),
         logo_data: companySettings.logo_data || null,
         updated_at: new Date().toISOString()
+    });
+    const write = (data) => {
+        if (companySettings.id) {
+            let q = client.from('company_settings').update(data).eq('id', companySettings.id);
+            const companyId = currentCompanyId();
+            if (companyId != null) q = q.eq('company_id', companyId);
+            return q;
+        }
+        return client.from('company_settings').insert([data]);
     };
-    const write = (data) => companySettings.id
-        ? client.from('company_settings').update(data).eq('id', companySettings.id)
-        : client.from('company_settings').insert([data]);
     const { error } = await writeIgnoringUnknownColumns(write, payload);
     if (error) {
-        localStorage.setItem('fleetop_company', JSON.stringify(payload));
+        localStorage.setItem(companySettingsStorageKey(), JSON.stringify(payload));
         companySettings = { ...companySettings, ...payload };
         applyCompanyBranding();
         alert(t('settings.saved') + '\n' + (error.message || ''));
         return;
     }
-    localStorage.setItem('fleetop_company', JSON.stringify(payload));
+    localStorage.setItem(companySettingsStorageKey(), JSON.stringify(payload));
     await loadCompanySettings();
     logActivity('settings.save', 'إعدادات', '', payload.company_name_ar || payload.company_name_en || '');
     alert(t('settings.saved'));
@@ -8463,9 +8506,9 @@ function closeAddTripModal() {
         return;
     }
 
-    const { error } = await client.from('trips').insert([{
+    const { error } = await client.from('trips').insert([withCompany({
         trip_no, client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name, driver_commission, total_amount, paid_amount, remaining_amount, status, payment_status
-    }]);
+    })]);
 
     if (!error) {
         revealSuggestion('client', client_name);
@@ -8793,7 +8836,7 @@ async function cancelTrip(tripNo) {
             const status = document.getElementById('truckStatus').value;
 
             const other = currentVehicleKind === 'أخرى';
-            const payload = {
+            const payload = withCompany({
                 plate,
                 model,
                 status: other && status === 'في رحلة' ? 'جاهزة للعمل' : status,
@@ -8803,7 +8846,7 @@ async function cancelTrip(tripNo) {
                 insurance_expiry: dateField('truckInsuranceExpiry'),
                 operation_card_no: other ? null : emptyToNull(document.getElementById('truckOperationCardNo')?.value),
                 operation_card_expiry: other ? null : dateField('truckOperationExpiry')
-            };
+            });
             const write = async (data) => id
                 ? client.from('trucks').update(data).eq('id', id)
                 : client.from('trucks').insert([data]);
@@ -8936,7 +8979,7 @@ async function cancelTrip(tripNo) {
             const phone = document.getElementById('driverPhone').value.trim();
             const status = document.getElementById('driverStatus').value;
 
-            const payload = {
+            const payload = withCompany({
                 name,
                 phone,
                 status,
@@ -8952,7 +8995,7 @@ async function cancelTrip(tripNo) {
                 driver_card_expiry: dateField('staffDriverCardExpiry'),
                 health_insurance_no: emptyToNull(document.getElementById('staffHealthNo')?.value),
                 health_insurance_expiry: dateField('staffHealthExpiry')
-            };
+            });
             const write = async (data) => id
                 ? client.from('drivers').update(data).eq('id', id)
                 : client.from('drivers').insert([data]);
