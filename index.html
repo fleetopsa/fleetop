@@ -629,14 +629,19 @@
                 <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-3 py-1.5 text-[#c4a35a]">EN</button>
             </div>
         </div>
-        <div class="text-center mb-6">
+        <div class="text-center mb-5">
             <div class="mb-1 flex justify-center">
                 <img src="fleetop-logo.png" alt="FleetOp" class="w-56 max-w-full h-auto object-contain">
             </div>
             <p class="text-xs font-bold mt-1" style="color:#e8d5a3" data-i18n="login.tagline">منصة إدارة الأسطول والرحلات</p>
         </div>
+
+        <div class="flex rounded-xl border overflow-hidden text-[11px] font-black mb-5" style="border-color:rgba(196,163,90,0.45);">
+            <button type="button" id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 px-3 py-2.5 transition" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.tabLogin">تسجيل الدخول</button>
+            <button type="button" id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 px-3 py-2.5 transition" style="background:transparent;color:#e8d5a3" data-i18n="login.tabRegister">إنشاء حساب</button>
+        </div>
         
-        <form onsubmit="handleLogin(event)" class="space-y-4">
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
                 <input type="text" id="usernameInput" name="username" autocomplete="username" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
@@ -645,11 +650,39 @@
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
                 <input type="password" id="passwordInput" name="password" autocomplete="current-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
             </div>
-            <div id="loginError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20" data-i18n="login.error">
+            <div id="loginError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20">
                 خطأ في اسم المستخدم أو كلمة المرور.
             </div>
             <button type="submit" id="loginSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.submit">
-                تسجيل الدخول للنظام
+                تسجيل الدخول
+            </button>
+        </form>
+
+        <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
+            <p class="text-[11px] font-bold leading-5 text-center" style="color:#e8d5a3" data-i18n="login.registerHint">لإنشاء أول حساب مدير على نسخة جديدة مخصصة لشركتك.</p>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyName">اسم الشركة</label>
+                <input type="text" id="registerCompanyName" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyNamePh" placeholder="اسم الشركة">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
+                <input type="text" id="registerEmployeeName" autocomplete="name" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.employeeNamePh" placeholder="اسم المسؤول">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
+                <input type="text" id="registerUsername" autocomplete="username" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
+                <input type="password" id="registerPassword" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
+                <input type="password" id="registerConfirmPassword" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+            </div>
+            <div id="registerError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20"></div>
+            <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSubmit">
+                إنشاء حساب
             </button>
         </form>
     </div>
@@ -2890,19 +2923,57 @@
             document.removeEventListener('visibilitychange', onPresenceVisibilityChange);
         }
 
+        let authTab = 'login';
+
+        function switchAuthTab(tab) {
+            authTab = tab === 'register' ? 'register' : 'login';
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLogin = document.getElementById('authTabLogin');
+            const tabRegister = document.getElementById('authTabRegister');
+            if (loginForm) loginForm.classList.toggle('hidden', authTab !== 'login');
+            if (registerForm) registerForm.classList.toggle('hidden', authTab !== 'register');
+            if (tabLogin) {
+                tabLogin.style.background = authTab === 'login' ? '#c4a35a' : 'transparent';
+                tabLogin.style.color = authTab === 'login' ? '#0b2a4a' : '#e8d5a3';
+            }
+            if (tabRegister) {
+                tabRegister.style.background = authTab === 'register' ? '#c4a35a' : 'transparent';
+                tabRegister.style.color = authTab === 'register' ? '#0b2a4a' : '#e8d5a3';
+            }
+            document.getElementById('loginError')?.classList.add('hidden');
+            document.getElementById('registerError')?.classList.add('hidden');
+        }
+
         function setLoginBusy(busy) {
             loginBusy = !!busy;
-            const btn = document.getElementById('loginSubmitBtn');
-            const user = document.getElementById('usernameInput');
-            const pass = document.getElementById('passwordInput');
-            if (btn) {
-                btn.disabled = loginBusy;
-                btn.textContent = loginBusy
+            const loginBtn = document.getElementById('loginSubmitBtn');
+            const registerBtn = document.getElementById('registerSubmitBtn');
+            const fields = [
+                'usernameInput', 'passwordInput',
+                'registerCompanyName', 'registerEmployeeName',
+                'registerUsername', 'registerPassword', 'registerConfirmPassword'
+            ];
+            if (loginBtn) {
+                loginBtn.disabled = loginBusy;
+                loginBtn.textContent = loginBusy
                     ? (currentLang === 'en' ? 'Signing in…' : 'جاري التحقق…')
                     : t('login.submit');
             }
-            if (user) user.disabled = loginBusy;
-            if (pass) pass.disabled = loginBusy;
+            if (registerBtn) {
+                registerBtn.disabled = loginBusy;
+                registerBtn.textContent = loginBusy
+                    ? (currentLang === 'en' ? 'Creating account…' : 'جاري إنشاء الحساب…')
+                    : t('login.registerSubmit');
+            }
+            fields.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = loginBusy;
+            });
+            const tabLogin = document.getElementById('authTabLogin');
+            const tabRegister = document.getElementById('authTabRegister');
+            if (tabLogin) tabLogin.disabled = loginBusy;
+            if (tabRegister) tabRegister.disabled = loginBusy;
         }
 
 function isAdminUser(user = currentLoggedInUser) {
@@ -2914,11 +2985,11 @@ function isAdminUser(user = currentLoggedInUser) {
 function authEmailFor(username) {
     const value = String(username || '').trim().toLowerCase();
     if (!value) return '';
-    return value.includes('@') ? value : value + '@gstco.internal';
+    return value.includes('@') ? value : value + '@fleetop.internal';
 }
 
-function showLoginError(message) {
-    const box = document.getElementById('loginError');
+function showLoginError(message, targetId = 'loginError') {
+    const box = document.getElementById(targetId);
     if (!box) return;
     box.innerText = message;
     box.classList.remove('hidden');
@@ -2930,7 +3001,41 @@ async function loadAppProfile(authId) {
     return data;
 }
 
-      async function handleLogin(e) {
+async function completeAuthLogin(username, password, errorBoxId = 'loginError') {
+    currentLoggedInUser = null;
+    const { data, error } = await client.auth.signInWithPassword({
+        email: authEmailFor(username),
+        password
+    });
+    if (error || !data?.user) {
+        showLoginError(t('login.error'), errorBoxId);
+        return false;
+    }
+    const profile = await loadAppProfile(data.user.id);
+    if (!profile) {
+        await client.auth.signOut();
+        showLoginError(
+            currentLang === 'en'
+                ? 'Account is not linked in the system.'
+                : 'الحساب غير مربوط في النظام. نفّذ ملف الحماية supabase-security.sql ثم أعد المحاولة.',
+            errorBoxId
+        );
+        return false;
+    }
+    if (profile.status === 'موقوف') {
+        await client.auth.signOut();
+        showLoginError(
+            currentLang === 'en' ? 'This account is currently suspended.' : 'عذراً، هذا الحساب موقوف حالياً.',
+            errorBoxId
+        );
+        return false;
+    }
+    openSession(profile);
+    await logLoginActivity(profile, 'login');
+    return true;
+}
+
+async function handleLogin(e) {
     e.preventDefault();
     if (loginBusy) return;
     const u = document.getElementById('usernameInput').value.trim();
@@ -2939,31 +3044,66 @@ async function loadAppProfile(authId) {
     setLoginBusy(true);
 
     try {
-        currentLoggedInUser = null;
-        const { data, error } = await client.auth.signInWithPassword({
-            email: authEmailFor(u),
-            password: p
-        });
-        if (error || !data?.user) {
-            showLoginError('خطأ في اسم المستخدم أو كلمة المرور.');
-            return;
-        }
-        const profile = await loadAppProfile(data.user.id);
-        if (!profile) {
-            await client.auth.signOut();
-            showLoginError('الحساب غير مربوط في النظام. نفّذ ملف الحماية supabase-security.sql ثم أعد المحاولة.');
-            return;
-        }
-        if (profile.status === 'موقوف') {
-            await client.auth.signOut();
-            showLoginError('عذراً، هذا الحساب موقوف حالياً.');
-            return;
-        }
-        openSession(profile);
-        await logLoginActivity(profile, 'login');
+        await completeAuthLogin(u, p, 'loginError');
     } catch (err) {
         console.error("Login error:", err);
-        showLoginError('حدث خطأ في الاتصال، حاول مرة أخرى.');
+        showLoginError(
+            currentLang === 'en' ? 'Connection error. Please try again.' : 'حدث خطأ في الاتصال، حاول مرة أخرى.',
+            'loginError'
+        );
+    } finally {
+        if (!currentLoggedInUser) setLoginBusy(false);
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    if (loginBusy) return;
+
+    const companyName = document.getElementById('registerCompanyName').value.trim();
+    const employeeName = document.getElementById('registerEmployeeName').value.trim();
+    const username = document.getElementById('registerUsername').value.trim();
+    const password = document.getElementById('registerPassword').value.trim();
+    const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+    document.getElementById('registerError').classList.add('hidden');
+
+    if (!companyName || !employeeName || !username || !password) {
+        showLoginError(t('login.registerRequired'), 'registerError');
+        return;
+    }
+    if (password.length < 4) {
+        showLoginError(t('login.registerPasswordShort'), 'registerError');
+        return;
+    }
+    if (password !== confirmPassword) {
+        showLoginError(t('login.registerPasswordMismatch'), 'registerError');
+        return;
+    }
+
+    setLoginBusy(true);
+    try {
+        const { error } = await client.rpc('register_company_admin', {
+            p_company_name: companyName,
+            p_username: username,
+            p_employee_name: employeeName,
+            p_password: password
+        });
+        if (error) {
+            const msg = String(error.message || '');
+            if (/Could not find the function|function .* does not exist|42883/i.test(msg)) {
+                showLoginError(t('login.registerSqlMissing'), 'registerError');
+            } else {
+                showLoginError(msg || t('login.registerFailed'), 'registerError');
+            }
+            return;
+        }
+        await completeAuthLogin(username, password, 'registerError');
+    } catch (err) {
+        console.error('Register error:', err);
+        showLoginError(
+            currentLang === 'en' ? 'Connection error. Please try again.' : 'حدث خطأ في الاتصال، حاول مرة أخرى.',
+            'registerError'
+        );
     } finally {
         if (!currentLoggedInUser) setLoginBusy(false);
     }
@@ -6176,11 +6316,25 @@ const I18N = {
     ar: {
         'login.tagline': 'منصة إدارة الأسطول والرحلات',
         'login.product': 'منصة عامة لكل شركات النقل',
+        'login.tabLogin': 'تسجيل الدخول',
+        'login.tabRegister': 'إنشاء حساب',
         'login.username': 'اسم المستخدم',
         'login.usernamePh': 'أدخل اسم المستخدم',
         'login.password': 'كلمة المرور',
+        'login.confirmPassword': 'تأكيد كلمة المرور',
+        'login.companyName': 'اسم الشركة',
+        'login.companyNamePh': 'اسم الشركة',
+        'login.employeeName': 'اسم المسؤول',
+        'login.employeeNamePh': 'اسم المسؤول',
+        'login.registerHint': 'لإنشاء أول حساب مدير على نسخة جديدة مخصصة لشركتك.',
+        'login.registerSubmit': 'إنشاء حساب',
+        'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
+        'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
+        'login.registerPasswordMismatch': 'تأكيد كلمة المرور غير مطابق.',
+        'login.registerFailed': 'تعذر إنشاء الحساب.',
+        'login.registerSqlMissing': 'التسجيل غير مفعّل بعد. نفّذ ملف fleetop-register.sql على قاعدة النسخة الجديدة.',
         'login.error': 'خطأ في اسم المستخدم أو كلمة المرور.',
-        'login.submit': 'تسجيل الدخول للنظام',
+        'login.submit': 'تسجيل الدخول',
         'nav.dashboard': 'لوحة التحكم',
         'nav.analytics': 'المتابعة والرسوم',
         'nav.trips': 'إدارة الرحلات',
@@ -6634,9 +6788,23 @@ const I18N = {
     en: {
         'login.tagline': 'Fleet and trip management platform',
         'login.product': 'A public platform for every transport company',
+        'login.tabLogin': 'Sign in',
+        'login.tabRegister': 'Create account',
         'login.username': 'Username',
         'login.usernamePh': 'Enter username',
         'login.password': 'Password',
+        'login.confirmPassword': 'Confirm password',
+        'login.companyName': 'Company name',
+        'login.companyNamePh': 'Company name',
+        'login.employeeName': 'Admin name',
+        'login.employeeNamePh': 'Admin name',
+        'login.registerHint': 'Create the first admin account on a new company copy of FleetOp.',
+        'login.registerSubmit': 'Create account',
+        'login.registerRequired': 'Please complete all required fields.',
+        'login.registerPasswordShort': 'Password must be at least 4 characters.',
+        'login.registerPasswordMismatch': 'Password confirmation does not match.',
+        'login.registerFailed': 'Could not create the account.',
+        'login.registerSqlMissing': 'Registration is not enabled yet. Run fleetop-register.sql on the new company database.',
         'login.error': 'Incorrect username or password.',
         'login.submit': 'Sign in',
         'nav.dashboard': 'Dashboard',
@@ -7989,7 +8157,8 @@ function resetTripFilters() {
     filterAndRenderTrips();
 }
 const tripSuggestions = { client: [], city: [] };
-const HIDDEN_SUGGESTIONS_KEY = 'gstco_hidden_suggestions';
+const HIDDEN_SUGGESTIONS_KEY = 'fleetop_hidden_suggestions';
+const HIDDEN_SUGGESTIONS_KEY_LEGACY = 'gstco_hidden_suggestions';
 let suggestMenu = null;
 let suggestInput = null;
 let suggestItems = [];
@@ -7997,7 +8166,15 @@ let suggestIndex = -1;
 
 function loadHiddenSuggestions() {
     try {
-        const raw = JSON.parse(localStorage.getItem(HIDDEN_SUGGESTIONS_KEY) || '{}');
+        let rawText = localStorage.getItem(HIDDEN_SUGGESTIONS_KEY);
+        if (!rawText) {
+            rawText = localStorage.getItem(HIDDEN_SUGGESTIONS_KEY_LEGACY) || '{}';
+            if (rawText && rawText !== '{}') {
+                localStorage.setItem(HIDDEN_SUGGESTIONS_KEY, rawText);
+                localStorage.removeItem(HIDDEN_SUGGESTIONS_KEY_LEGACY);
+            }
+        }
+        const raw = JSON.parse(rawText || '{}');
         return {
             client: new Set(raw.client || []),
             city: new Set(raw.city || [])
@@ -8012,6 +8189,7 @@ function saveHiddenSuggestions() {
         client: [...hiddenSuggestions.client],
         city: [...hiddenSuggestions.city]
     }));
+    localStorage.removeItem(HIDDEN_SUGGESTIONS_KEY_LEGACY);
 }
 
 const hiddenSuggestions = loadHiddenSuggestions();
@@ -9250,6 +9428,7 @@ async function loadUsers(options = {}) {
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
+            if (typeof switchAuthTab === 'function') switchAuthTab('login');
             setLoginBusy(false);
             const userInput = document.getElementById('usernameInput');
             if (userInput) userInput.focus();
