@@ -643,6 +643,10 @@
         
         <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
             <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyCode">معرف الشركة</label>
+                <input type="text" id="companyCodeInput" name="company_code" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
+            </div>
+            <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
                 <input type="text" id="usernameInput" name="username" autocomplete="username" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
             </div>
@@ -663,6 +667,11 @@
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyName">اسم الشركة</label>
                 <input type="text" id="registerCompanyName" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyNamePh" placeholder="اسم الشركة">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyCode">معرف الشركة</label>
+                <input type="text" id="registerCompanyCode" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
+                <p class="text-[10px] mt-1 font-bold" style="color:#c4a35a" data-i18n="login.companyCodeHint">رقم موحد خاص بشركتك للدخول لاحقاً (أحرف أو أرقام).</p>
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
@@ -2951,8 +2960,8 @@
             const loginBtn = document.getElementById('loginSubmitBtn');
             const registerBtn = document.getElementById('registerSubmitBtn');
             const fields = [
-                'usernameInput', 'passwordInput',
-                'registerCompanyName', 'registerEmployeeName',
+                'companyCodeInput', 'usernameInput', 'passwordInput',
+                'registerCompanyName', 'registerCompanyCode', 'registerEmployeeName',
                 'registerUsername', 'registerPassword', 'registerConfirmPassword'
             ];
             if (loginBtn) {
@@ -2983,10 +2992,17 @@ function isAdminUser(user = currentLoggedInUser) {
     return role === 'admin' || role === 'مدير';
 }
 
-function authEmailFor(username) {
+function normalizeCompanyCode(code) {
+    return String(code || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function authEmailFor(username, companyCode) {
     const value = String(username || '').trim().toLowerCase();
     if (!value) return '';
-    return value.includes('@') ? value : value + '@fleetop.internal';
+    if (value.includes('@')) return value;
+    const code = normalizeCompanyCode(companyCode);
+    if (!code) return value + '@fleetop.internal';
+    return value + '@' + code + '.fleetop.internal';
 }
 
 function currentCompanyId(user = currentLoggedInUser) {
@@ -2994,10 +3010,41 @@ function currentCompanyId(user = currentLoggedInUser) {
     return Number.isFinite(id) ? id : null;
 }
 
+function currentCompanyCode(user = currentLoggedInUser) {
+    const code = normalizeCompanyCode(user && user.company_code);
+    if (code) return code;
+    try {
+        return normalizeCompanyCode(localStorage.getItem('fleetop_company_code') || '');
+    } catch (err) {
+        return '';
+    }
+}
+
 function withCompany(payload, user = currentLoggedInUser) {
     const companyId = currentCompanyId(user);
     if (companyId == null || payload == null || typeof payload !== 'object') return payload;
     return { ...payload, company_id: companyId };
+}
+
+async function attachCompanyMeta(profile) {
+    if (!profile || profile.company_id == null) return profile;
+    try {
+        const { data } = await client
+            .from('companies')
+            .select('company_code, name')
+            .eq('id', profile.company_id)
+            .maybeSingle();
+        if (data) {
+            profile.company_code = data.company_code || profile.company_code || '';
+            profile.company_name = data.name || profile.company_name || '';
+            if (profile.company_code) {
+                localStorage.setItem('fleetop_company_code', normalizeCompanyCode(profile.company_code));
+            }
+        }
+    } catch (err) {
+        console.warn('تعذر تحميل معرف الشركة:', err);
+    }
+    return profile;
 }
 
 function showLoginError(message, targetId = 'loginError') {
@@ -3019,17 +3066,22 @@ async function loadAppProfile(authId) {
     return data;
 }
 
-async function completeAuthLogin(username, password, errorBoxId = 'loginError') {
+async function completeAuthLogin(username, password, companyCode, errorBoxId = 'loginError') {
     currentLoggedInUser = null;
+    const code = normalizeCompanyCode(companyCode);
+    if (!code) {
+        showLoginError(t('login.companyCodeRequired'), errorBoxId);
+        return false;
+    }
     const { data, error } = await client.auth.signInWithPassword({
-        email: authEmailFor(username),
+        email: authEmailFor(username, code),
         password
     });
     if (error || !data?.user) {
         showLoginError(t('login.error'), errorBoxId);
         return false;
     }
-    const profile = await loadAppProfile(data.user.id);
+    let profile = await loadAppProfile(data.user.id);
     if (!profile) {
         await client.auth.signOut();
         showLoginError(
@@ -3048,6 +3100,13 @@ async function completeAuthLogin(username, password, errorBoxId = 'loginError') 
         );
         return false;
     }
+    profile = await attachCompanyMeta(profile);
+    if (profile.company_code && normalizeCompanyCode(profile.company_code) !== code) {
+        await client.auth.signOut();
+        showLoginError(t('login.companyCodeMismatch'), errorBoxId);
+        return false;
+    }
+    localStorage.setItem('fleetop_company_code', code);
     openSession(profile);
     await logLoginActivity(profile, 'login');
     return true;
@@ -3056,13 +3115,14 @@ async function completeAuthLogin(username, password, errorBoxId = 'loginError') 
 async function handleLogin(e) {
     e.preventDefault();
     if (loginBusy) return;
+    const companyCode = document.getElementById('companyCodeInput').value.trim();
     const u = document.getElementById('usernameInput').value.trim();
     const p = document.getElementById('passwordInput').value.trim();
     document.getElementById('loginError').classList.add('hidden');
     setLoginBusy(true);
 
     try {
-        await completeAuthLogin(u, p, 'loginError');
+        await completeAuthLogin(u, p, companyCode, 'loginError');
     } catch (err) {
         console.error("Login error:", err);
         showLoginError(
@@ -3079,14 +3139,20 @@ async function handleRegister(e) {
     if (loginBusy) return;
 
     const companyName = document.getElementById('registerCompanyName').value.trim();
+    const companyCode = document.getElementById('registerCompanyCode').value.trim();
     const employeeName = document.getElementById('registerEmployeeName').value.trim();
     const username = document.getElementById('registerUsername').value.trim();
     const password = document.getElementById('registerPassword').value.trim();
     const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+    const normalizedCode = normalizeCompanyCode(companyCode);
     document.getElementById('registerError').classList.add('hidden');
 
-    if (!companyName || !employeeName || !username || !password) {
+    if (!companyName || !normalizedCode || !employeeName || !username || !password) {
         showLoginError(t('login.registerRequired'), 'registerError');
+        return;
+    }
+    if (normalizedCode.length < 3) {
+        showLoginError(t('login.companyCodeShort'), 'registerError');
         return;
     }
     if (password.length < 4) {
@@ -3102,6 +3168,7 @@ async function handleRegister(e) {
     try {
         const { error } = await client.rpc('register_company_admin', {
             p_company_name: companyName,
+            p_company_code: normalizedCode,
             p_username: username,
             p_employee_name: employeeName,
             p_password: password
@@ -3110,8 +3177,10 @@ async function handleRegister(e) {
             const msg = String(error.message || '');
             if (/التسجيل مغلق/i.test(msg)
                 || /Could not find the function|function .* does not exist|42883/i.test(msg)
-                || (/company_id|fleetop_current_company_id|companies/i.test(msg) && /does not exist|schema cache|column|relation/i.test(msg))) {
+                || (/company_id|company_code|fleetop_current_company_id|companies/i.test(msg) && /does not exist|schema cache|column|relation/i.test(msg))) {
                 showLoginError(t('login.registerSqlMissing'), 'registerError');
+            } else if (/معرف الشركة مستخدم/i.test(msg)) {
+                showLoginError(t('login.companyCodeTaken'), 'registerError');
             } else if (/اسم المستخدم مستخدم/i.test(msg)) {
                 showLoginError(t('login.registerUsernameTaken'), 'registerError');
             } else {
@@ -3119,7 +3188,9 @@ async function handleRegister(e) {
             }
             return;
         }
-        await completeAuthLogin(username, password, 'registerError');
+        document.getElementById('companyCodeInput').value = normalizedCode;
+        localStorage.setItem('fleetop_company_code', normalizedCode);
+        await completeAuthLogin(username, password, normalizedCode, 'registerError');
     } catch (err) {
         console.error('Register error:', err);
         showLoginError(
@@ -6349,14 +6420,21 @@ const I18N = {
         'login.employeeName': 'اسم المسؤول',
         'login.employeeNamePh': 'اسم المسؤول',
         'login.registerHint': 'إنشاء شركة جديدة مستقلة على المنصة. بياناتك منفصلة عن باقي الشركات.',
+        'login.companyCode': 'معرف الشركة',
+        'login.companyCodePh': 'مثال: 1010123456',
+        'login.companyCodeHint': 'رقم موحد خاص بشركتك للدخول لاحقاً (أحرف أو أرقام).',
+        'login.companyCodeRequired': 'أدخل معرف الشركة.',
+        'login.companyCodeShort': 'معرف الشركة يجب أن يكون 3 أحرف/أرقام على الأقل.',
+        'login.companyCodeTaken': 'معرف الشركة مستخدم مسبقاً.',
+        'login.companyCodeMismatch': 'معرف الشركة لا يطابق هذا الحساب.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
         'login.registerPasswordMismatch': 'تأكيد كلمة المرور غير مطابق.',
         'login.registerFailed': 'تعذر إنشاء الحساب.',
-        'login.registerSqlMissing': 'عزل الشركات غير مفعّل بعد. نفّذ ملف fleetop-multitenant.sql من SQL Editor ثم أعد المحاولة.',
-        'login.registerUsernameTaken': 'اسم المستخدم مستخدم مسبقاً على المنصة.',
-        'login.error': 'خطأ في اسم المستخدم أو كلمة المرور.',
+        'login.registerSqlMissing': 'معرف الشركات غير مفعّل بعد. نفّذ ملف fleetop-company-code.sql من SQL Editor ثم أعد المحاولة.',
+        'login.registerUsernameTaken': 'اسم المستخدم مستخدم مسبقاً في هذه الشركة.',
+        'login.error': 'خطأ في معرف الشركة أو اسم المستخدم أو كلمة المرور.',
         'login.submit': 'تسجيل الدخول',
         'nav.dashboard': 'لوحة التحكم',
         'nav.analytics': 'المتابعة والرسوم',
@@ -6822,14 +6900,21 @@ const I18N = {
         'login.employeeName': 'Admin name',
         'login.employeeNamePh': 'Admin name',
         'login.registerHint': 'Create a new independent company on the platform. Your data stays separate from other companies.',
+        'login.companyCode': 'Company ID',
+        'login.companyCodePh': 'Example: 1010123456',
+        'login.companyCodeHint': 'A unique company code used later for sign-in (letters or numbers).',
+        'login.companyCodeRequired': 'Enter the company ID.',
+        'login.companyCodeShort': 'Company ID must be at least 3 characters.',
+        'login.companyCodeTaken': 'This company ID is already used.',
+        'login.companyCodeMismatch': 'Company ID does not match this account.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
         'login.registerPasswordMismatch': 'Password confirmation does not match.',
         'login.registerFailed': 'Could not create the account.',
-        'login.registerSqlMissing': 'Company isolation is not enabled yet. Run fleetop-multitenant.sql in the SQL Editor, then try again.',
-        'login.registerUsernameTaken': 'This username is already used on the platform.',
-        'login.error': 'Incorrect username or password.',
+        'login.registerSqlMissing': 'Company IDs are not enabled yet. Run fleetop-company-code.sql in the SQL Editor, then try again.',
+        'login.registerUsernameTaken': 'This username is already used in this company.',
+        'login.error': 'Incorrect company ID, username, or password.',
         'login.submit': 'Sign in',
         'nav.dashboard': 'Dashboard',
         'nav.analytics': 'Analytics',
@@ -9274,7 +9359,7 @@ async function loadUsers(options = {}) {
             }
 
             try {
-                const email = authEmailFor(currentLoggedInUser.username);
+                const email = authEmailFor(currentLoggedInUser.username, currentCompanyCode(currentLoggedInUser));
                 const { error: checkError } = await client.auth.signInWithPassword({ email, password: currentPassword });
                 if (checkError) {
                     showPasswordError('ownPasswordError', 'كلمة المرور الحالية غير صحيحة.');
@@ -9385,7 +9470,12 @@ async function loadUsers(options = {}) {
             let roleName = 'مستخدم';
             if (user.role === 'admin') roleName = 'مدير';
             else if (user.role === 'accountant') roleName = 'محاسب';
-            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')';
+            const companyLabel = user.company_code ? ` · ${user.company_code}` : '';
+            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')' + companyLabel;
+            const sidebarCompany = document.getElementById('sidebarCompanyName');
+            if (sidebarCompany) {
+                sidebarCompany.textContent = [user.company_name, user.company_code].filter(Boolean).join(' · ');
+            }
 
             const financialMenu = document.getElementById('financialMenu');
             const canSeeFinance = user.role === 'admin' || user.role === 'accountant';
@@ -9423,7 +9513,7 @@ async function loadUsers(options = {}) {
                     document.body.classList.remove('dashboard-active');
                     return;
                 }
-                const profile = await loadAppProfile(authUser.id);
+                let profile = await loadAppProfile(authUser.id);
                 if (!profile || profile.status === 'موقوف') {
                     await client.auth.signOut();
                     clearStoredSession();
@@ -9437,6 +9527,7 @@ async function loadUsers(options = {}) {
                     document.body.classList.remove('dashboard-active');
                     return;
                 }
+                profile = await attachCompanyMeta(profile);
                 openSession(profile);
                 await logLoginActivity(profile, 'restore');
             } catch (err) {
@@ -9470,10 +9561,13 @@ async function loadUsers(options = {}) {
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
+            const savedCode = localStorage.getItem('fleetop_company_code') || '';
+            const codeInput = document.getElementById('companyCodeInput');
+            if (codeInput) codeInput.value = savedCode;
             if (typeof switchAuthTab === 'function') switchAuthTab('login');
             setLoginBusy(false);
-            const userInput = document.getElementById('usernameInput');
-            if (userInput) userInput.focus();
+            const focusEl = codeInput && !codeInput.value ? codeInput : document.getElementById('usernameInput');
+            if (focusEl) focusEl.focus();
         }
         document.addEventListener("DOMContentLoaded", () => {
             const logoInput = document.getElementById('companyLogoFile');
@@ -9501,6 +9595,11 @@ async function loadUsers(options = {}) {
             setAppLang(currentLang);
             syncSidebarToggleBtn();
             window.addEventListener('resize', syncSidebarToggleBtn);
+            try {
+                const savedCode = localStorage.getItem('fleetop_company_code') || '';
+                const codeInput = document.getElementById('companyCodeInput');
+                if (codeInput && savedCode) codeInput.value = savedCode;
+            } catch (err) {}
             restoreSession();
         });
         window.addEventListener('pagehide', flushSessionEndOnUnload);
