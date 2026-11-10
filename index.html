@@ -693,6 +693,16 @@
             </button>
         </form>
     </div>
+
+    <div id="supportCompanyModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-3xl shadow-2xl border p-6" style="background:rgba(11,42,74,0.96);border-color:rgba(196,163,90,0.45);">
+            <h3 class="font-black text-sm mb-1" style="color:#f5ead0" data-i18n="support.pickTitle">اختيار شركة للدعم</h3>
+            <p class="text-[11px] font-bold mb-4" style="color:#e8d5a3" data-i18n="support.pickHint">هذا الحساب للمنصة فقط ولا يظهر للشركات.</p>
+            <div id="supportCompanyList" class="space-y-2 max-h-72 overflow-y-auto mb-4"></div>
+            <p id="supportCompanyError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20 mb-3"></p>
+            <button type="button" id="supportCompanyLogoutBtn" onclick="cancelSupportCompanyPicker()" class="w-full font-bold py-3 rounded-xl text-xs transition" style="background:rgba(255,255,255,0.08);color:#e8d5a3" data-i18n="nav.logout">تسجيل الخروج</button>
+        </div>
+    </div>
     <!-- لوحة التحكم الاحترافية -->
     <div id="mainDashboard" class="hidden relative z-10 w-full max-w-full min-w-0 h-[100dvh] xl:h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" style="border:1px solid rgba(196,163,90,0.28)">
         <div id="printLetterhead" class="print-only" aria-hidden="true">
@@ -729,6 +739,9 @@
                         </div>
                         <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
                         <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3">محمد القحطاني (مدير)</p>
+                        <button type="button" id="supportSwitchCompanyBtn" onclick="openSupportCompanyPicker()" class="hidden mt-2 w-full text-[10px] font-black rounded-lg px-2 py-1.5 transition" style="background:rgba(196,163,90,0.2);color:#e8d5a3">
+                            <i class="fa-solid fa-building-user ml-1"></i> <span data-i18n="support.switchCompany">تبديل شركة الدعم</span>
+                        </button>
                         <script>
                             (function () {
                                 if (!localStorage.getItem('sessionUserId')) return;
@@ -3003,8 +3016,16 @@
             if (tabRegister) tabRegister.disabled = loginBusy;
         }
 
+const PLATFORM_COMPANY_CODE = 'platform';
+let pendingSupportProfile = null;
+
+function isSuperAdminUser(user = currentLoggedInUser) {
+    return !!(user && user.is_super_admin);
+}
+
 function isAdminUser(user = currentLoggedInUser) {
     if (!user) return false;
+    if (isSuperAdminUser(user)) return true;
     const role = String(user.role || '').trim().toLowerCase();
     return role === 'admin' || role === 'مدير';
 }
@@ -3083,8 +3104,117 @@ async function loadAppProfile(authId) {
     return data;
 }
 
+async function loadPlatformAdminProfile(authId) {
+    const { data, error } = await client
+        .from('platform_admins')
+        .select('id, username, employee_name, status, auth_id')
+        .eq('auth_id', authId)
+        .maybeSingle();
+    if (error) {
+        if (/platform_admins|schema cache|does not exist/i.test(error.message || '')) return null;
+        throw error;
+    }
+    if (!data) return null;
+    return {
+        id: data.id,
+        username: data.username,
+        employee_name: data.employee_name,
+        status: data.status,
+        auth_id: data.auth_id,
+        role: 'admin',
+        is_super_admin: true,
+        company_id: null,
+        company_code: PLATFORM_COMPANY_CODE,
+        company_name: currentLang === 'en' ? 'FleetOp Support' : 'دعم فليتوب'
+    };
+}
+
+async function loadSupportContextCompanyId() {
+    const { data, error } = await client
+        .from('platform_support_context')
+        .select('company_id')
+        .maybeSingle();
+    if (error) return null;
+    return data?.company_id != null ? Number(data.company_id) : null;
+}
+
+function showSupportCompanyError(message) {
+    const box = document.getElementById('supportCompanyError');
+    if (!box) return;
+    if (!message) {
+        box.classList.add('hidden');
+        box.innerText = '';
+        return;
+    }
+    box.innerText = message;
+    box.classList.remove('hidden');
+}
+
+async function openSupportCompanyPicker(profile = pendingSupportProfile) {
+    pendingSupportProfile = profile || pendingSupportProfile;
+    const modal = document.getElementById('supportCompanyModal');
+    const list = document.getElementById('supportCompanyList');
+    if (!modal || !list) return;
+    showSupportCompanyError('');
+    list.innerHTML = `<p class="text-xs font-bold text-center py-4" style="color:#e8d5a3">${currentLang === 'en' ? 'Loading…' : 'جاري التحميل…'}</p>`;
+    modal.classList.remove('hidden');
+    document.getElementById('loginSection')?.classList.add('hidden');
+    try {
+        const { data, error } = await client.rpc('list_support_companies');
+        if (error) throw error;
+        const companies = data || [];
+        if (!companies.length) {
+            list.innerHTML = `<p class="text-xs font-bold text-center py-4" style="color:#e8d5a3">${t('support.noCompanies')}</p>`;
+            return;
+        }
+        list.innerHTML = companies.map((c) => `
+            <button type="button" onclick="selectSupportCompany(${Number(c.id)})" class="w-full text-right rounded-xl px-3 py-3 transition border" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.35);color:#f5ead0">
+                <div class="font-black text-xs">${escapeHtml(c.name || '—')}</div>
+                <div class="text-[10px] font-bold mt-1" style="color:#c4a35a">${escapeHtml(c.company_code || '')}</div>
+            </button>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        list.innerHTML = '';
+        showSupportCompanyError(err.message || t('support.loadFailed'));
+    }
+}
+
+async function selectSupportCompany(companyId) {
+    showSupportCompanyError('');
+    try {
+        const { error } = await client.rpc('set_support_company', { p_company_id: Number(companyId) });
+        if (error) throw error;
+        let profile = pendingSupportProfile || currentLoggedInUser;
+        if (!profile) throw new Error(t('support.loadFailed'));
+        profile = { ...profile, company_id: Number(companyId), is_super_admin: true, role: 'admin' };
+        profile = await attachCompanyMeta(profile);
+        const loginSource = currentLoggedInUser ? 'restore' : 'login';
+        pendingSupportProfile = null;
+        document.getElementById('supportCompanyModal')?.classList.add('hidden');
+        openSession(profile);
+        await logLoginActivity(profile, loginSource);
+    } catch (err) {
+        console.error(err);
+        showSupportCompanyError(err.message || t('support.loadFailed'));
+    }
+}
+
+async function cancelSupportCompanyPicker() {
+    document.getElementById('supportCompanyModal')?.classList.add('hidden');
+    pendingSupportProfile = null;
+    try { await client.rpc('clear_support_company'); } catch (err) {}
+    try { await client.auth.signOut(); } catch (err) {}
+    clearStoredSession();
+    document.getElementById('mainDashboard')?.classList.add('hidden');
+    document.body.classList.remove('dashboard-active');
+    document.getElementById('loginSection')?.classList.remove('hidden');
+    setLoginBusy(false);
+}
+
 async function completeAuthLogin(username, password, companyCode, errorBoxId = 'loginError') {
     currentLoggedInUser = null;
+    pendingSupportProfile = null;
     const code = normalizeCompanyCode(companyCode);
     if (!code) {
         showLoginError(t('login.companyCodeRequired'), errorBoxId);
@@ -3098,6 +3228,27 @@ async function completeAuthLogin(username, password, companyCode, errorBoxId = '
         showLoginError(t('login.error'), errorBoxId);
         return false;
     }
+
+    if (code === PLATFORM_COMPANY_CODE) {
+        const platformProfile = await loadPlatformAdminProfile(data.user.id);
+        if (!platformProfile) {
+            await client.auth.signOut();
+            showLoginError(t('support.notLinked'), errorBoxId);
+            return false;
+        }
+        if (platformProfile.status === 'موقوف') {
+            await client.auth.signOut();
+            showLoginError(
+                currentLang === 'en' ? 'This account is currently suspended.' : 'عذراً، هذا الحساب موقوف حالياً.',
+                errorBoxId
+            );
+            return false;
+        }
+        setLoginBusy(false);
+        await openSupportCompanyPicker(platformProfile);
+        return true;
+    }
+
     let profile = await loadAppProfile(data.user.id);
     if (!profile) {
         await client.auth.signOut();
@@ -3170,6 +3321,10 @@ async function handleRegister(e) {
     }
     if (normalizedCode.length < 3) {
         showLoginError(t('login.companyCodeShort'), 'registerError');
+        return;
+    }
+    if (normalizedCode === PLATFORM_COMPANY_CODE) {
+        showLoginError(t('login.companyCodeReserved'), 'registerError');
         return;
     }
     if (password.length < 4) {
@@ -6443,7 +6598,14 @@ const I18N = {
         'login.companyCodeRequired': 'أدخل معرف الشركة.',
         'login.companyCodeShort': 'معرف الشركة يجب أن يكون 3 أحرف/أرقام على الأقل.',
         'login.companyCodeTaken': 'معرف الشركة مستخدم مسبقاً.',
+        'login.companyCodeReserved': 'معرف الشركة محجوز للمنصة.',
         'login.companyCodeMismatch': 'معرف الشركة لا يطابق هذا الحساب.',
+        'support.switchCompany': 'تبديل شركة الدعم',
+        'support.pickTitle': 'اختيار شركة للدعم',
+        'support.pickHint': 'هذا الحساب للمنصة فقط ولا يظهر للشركات.',
+        'support.noCompanies': 'لا توجد شركات مسجلة بعد.',
+        'support.loadFailed': 'تعذر تحميل شركات الدعم.',
+        'support.notLinked': 'حساب الدعم غير مربوط في المنصة.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
@@ -6923,7 +7085,14 @@ const I18N = {
         'login.companyCodeRequired': 'Enter the company ID.',
         'login.companyCodeShort': 'Company ID must be at least 3 characters.',
         'login.companyCodeTaken': 'This company ID is already used.',
+        'login.companyCodeReserved': 'This company ID is reserved for the platform.',
         'login.companyCodeMismatch': 'Company ID does not match this account.',
+        'support.switchCompany': 'Switch support company',
+        'support.pickTitle': 'Choose a company to support',
+        'support.pickHint': 'This account is for the platform only and is hidden from companies.',
+        'support.noCompanies': 'No companies registered yet.',
+        'support.loadFailed': 'Could not load support companies.',
+        'support.notLinked': 'Support account is not linked on the platform.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
@@ -9485,14 +9654,18 @@ async function loadUsers(options = {}) {
             if (typeof switchTab === 'function') switchTab('dashboard');
 
             let roleName = 'مستخدم';
-            if (user.role === 'admin') roleName = 'مدير';
+            if (isSuperAdminUser(user)) roleName = currentLang === 'en' ? 'Platform support' : 'دعم المنصة';
+            else if (user.role === 'admin') roleName = 'مدير';
             else if (user.role === 'accountant') roleName = 'محاسب';
             const companyLabel = user.company_code ? ` · ${user.company_code}` : '';
             document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')' + companyLabel;
             const sidebarCompany = document.getElementById('sidebarCompanyName');
             if (sidebarCompany) {
-                sidebarCompany.textContent = [user.company_name, user.company_code].filter(Boolean).join(' · ');
+                const prefix = isSuperAdminUser(user) ? (currentLang === 'en' ? 'Support · ' : 'دعم · ') : '';
+                sidebarCompany.textContent = prefix + [user.company_name, user.company_code].filter(Boolean).join(' · ');
             }
+            const supportBtn = document.getElementById('supportSwitchCompanyBtn');
+            if (supportBtn) supportBtn.classList.toggle('hidden', !isSuperAdminUser(user));
 
             const financialMenu = document.getElementById('financialMenu');
             const canSeeFinance = user.role === 'admin' || user.role === 'accountant';
@@ -9531,10 +9704,26 @@ async function loadUsers(options = {}) {
                     return;
                 }
                 let profile = await loadAppProfile(authUser.id);
+                if (!profile) {
+                    profile = await loadPlatformAdminProfile(authUser.id);
+                }
                 if (!profile || profile.status === 'موقوف') {
                     await client.auth.signOut();
                     clearStoredSession();
                     document.body.classList.remove('dashboard-active');
+                    return;
+                }
+                if (isSuperAdminUser(profile)) {
+                    const supportCompanyId = await loadSupportContextCompanyId();
+                    if (!supportCompanyId) {
+                        document.documentElement.classList.remove('session-restoring');
+                        await openSupportCompanyPicker(profile);
+                        return;
+                    }
+                    profile.company_id = supportCompanyId;
+                    profile = await attachCompanyMeta(profile);
+                    openSession(profile);
+                    await logLoginActivity(profile, 'restore');
                     return;
                 }
                 if (await sessionAbandonedByPresence(profile.id)) {
@@ -9566,6 +9755,9 @@ async function loadUsers(options = {}) {
             stopIdleWatch();
             stopUserPresence();
             try { await touchUserPresence(true); } catch (err) {}
+            if (isSuperAdminUser(loggingOutUser)) {
+                try { await client.rpc('clear_support_company'); } catch (err) {}
+            }
             try { await client.auth.signOut(); } catch (err) { console.error(err); }
             currentLoggedInUser = null;
             if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
