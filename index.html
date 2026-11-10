@@ -309,6 +309,7 @@
         #appContent { background: #faf7f2; }
         #menuToggleBtn { background: #0b2a4a; color: #c4a35a; }
         body.dashboard-active #loginBackdrop,
+        body.platform-active #loginBackdrop,
         body.is-printing #loginBackdrop,
         html.session-restoring #loginBackdrop { display: none !important; }
         html[lang="en"] #appContent table,
@@ -316,7 +317,9 @@
         html[lang="en"] #appContent td,
         html[lang="en"] #appContent .text-right { text-align: left; }
         html.session-restoring #loginSection { display: none !important; }
-        html.session-restoring #mainDashboard { display: flex !important; }
+        html.session-restoring:not(.platform-restoring) #mainDashboard { display: flex !important; }
+        html.session-restoring.platform-restoring #platformDashboard { display: flex !important; }
+        html.session-restoring.platform-restoring #mainDashboard { display: none !important; }
         #appContent, #appContent > main { min-height: 0; min-width: 0; }
         #appContent { min-width: 0; }
         #appContent .grid { min-width: 0; }
@@ -585,14 +588,20 @@
 <script>
         (function () {
             try {
-                if (localStorage.getItem('sessionUserId')) {
+                if (localStorage.getItem('sessionUserId') || localStorage.getItem('fleetop_platform_session') === '1') {
                     document.documentElement.classList.add('session-restoring');
+                    if (localStorage.getItem('fleetop_platform_session') === '1') {
+                        document.documentElement.classList.add('platform-restoring');
+                    }
                     return;
                 }
                 for (var i = 0; i < localStorage.length; i++) {
                     var key = localStorage.key(i);
                     if (key && key.indexOf('sb-') === 0 && key.indexOf('-auth-token') !== -1) {
                         document.documentElement.classList.add('session-restoring');
+                        if (localStorage.getItem('fleetop_platform_session') === '1') {
+                            document.documentElement.classList.add('platform-restoring');
+                        }
                         return;
                     }
                 }
@@ -608,7 +617,9 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-2 md:p-4 relative overflow-x-hidden">
 <script>
-    if (document.documentElement.classList.contains('session-restoring')) document.body.classList.add('dashboard-active');
+    if (document.documentElement.classList.contains('session-restoring')) {
+        document.body.classList.add(document.documentElement.classList.contains('platform-restoring') ? 'platform-active' : 'dashboard-active');
+    }
 </script>
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
     <symbol id="riyal-icon" viewBox="0 0 1124.14 1256.39">
@@ -703,6 +714,119 @@
             <button type="button" id="supportCompanyLogoutBtn" onclick="cancelSupportCompanyPicker()" class="w-full font-bold py-3 rounded-xl text-xs transition" style="background:rgba(255,255,255,0.08);color:#e8d5a3" data-i18n="nav.logout">تسجيل الخروج</button>
         </div>
     </div>
+    <div id="subscriptionEditModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm" data-i18n="sub.editTitle">تعديل الاشتراك</h3>
+                <button type="button" onclick="closeSubscriptionEditModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="saveSubscriptionEdit(event)" class="space-y-3">
+                <input type="hidden" id="subEditCompanyId">
+                <p id="subEditCompanyLabel" class="text-xs font-bold text-slate-700"></p>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.plan">الخطة</label>
+                    <select id="subEditPlan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="basic" data-i18n="sub.planBasic">أساسي</option>
+                        <option value="pro" data-i18n="sub.planPro">احترافي</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.status">الحالة</label>
+                    <select id="subEditStatus" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="trial" data-i18n="sub.statusTrial">تجربة</option>
+                        <option value="active" data-i18n="sub.statusActive">نشط</option>
+                        <option value="expired" data-i18n="sub.statusExpired">منتهي</option>
+                        <option value="suspended" data-i18n="sub.statusSuspended">موقوف</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.startsAt">يبدأ في</label>
+                        <input type="date" id="subEditStartsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.endsAt">ينتهي في</label>
+                        <input type="date" id="subEditEndsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.notes">ملاحظة</label>
+                    <input type="text" id="subEditNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="">
+                </div>
+                <p id="subEditError" class="hidden text-xs font-bold text-rose-600"></p>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs" data-i18n="ui.save">حفظ</button>
+                    <button type="button" onclick="closeSubscriptionEditModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs" data-i18n="ui.cancel">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- لوحة تحكم سوبر أدمن المنصة -->
+    <div id="platformDashboard" class="hidden relative z-10 w-full max-w-6xl min-w-0 h-[100dvh] xl:h-[96vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border" style="background:rgba(11,42,74,0.96);border-color:rgba(196,163,90,0.45)">
+        <div class="px-5 sm:px-8 py-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3" style="border-color:rgba(196,163,90,0.35)">
+            <div class="flex items-center gap-3 min-w-0">
+                <img src="fleetop-logo.png" alt="FleetOp" class="w-12 h-12 rounded-xl object-contain shrink-0">
+                <div class="min-w-0">
+                    <h1 class="font-black text-sm" style="color:#f5ead0" data-i18n="platform.title">لوحة تحكم المنصة</h1>
+                    <p id="platformUserBadge" class="text-[11px] font-bold truncate" style="color:#c4a35a"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="flex rounded-xl border overflow-hidden text-[11px] font-black" style="border-color:rgba(196,163,90,0.45);">
+                    <button type="button" onclick="setAppLang('ar')" class="lang-ar-btn px-3 py-1.5 text-[#c4a35a]">عربي</button>
+                    <button type="button" onclick="setAppLang('en')" class="lang-en-btn px-3 py-1.5 text-[#c4a35a]">EN</button>
+                </div>
+                <button type="button" onclick="handleLogout()" class="font-bold text-xs px-4 py-2 rounded-xl transition" style="background:#c4a35a;color:#0b2a4a">
+                    <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="nav.logout">تسجيل الخروج</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
+                    <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.totalCompanies">إجمالي الشركات</p>
+                    <p id="platformStatTotal" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
+                </div>
+                <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
+                    <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.activeSubs">اشتراكات فعّالة</p>
+                    <p id="platformStatActive" class="text-2xl font-black mt-1 text-emerald-300">0</p>
+                </div>
+                <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
+                    <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.blockedSubs">منتهية / موقوفة</p>
+                    <p id="platformStatBlocked" class="text-2xl font-black mt-1 text-rose-300">0</p>
+                </div>
+            </div>
+            <div class="rounded-2xl border p-4 sm:p-5" style="background:rgba(255,255,255,0.04);border-color:rgba(196,163,90,0.3)">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="font-black text-sm" style="color:#f5ead0" data-i18n="platform.companiesTitle">إدارة الشركات والاشتراكات</h2>
+                        <p class="text-[11px] font-bold mt-1" style="color:#e8d5a3" data-i18n="platform.companiesHint">لا يظهر حساب المنصة داخل سجلات الشركات، والإدارة تتم من هنا فقط.</p>
+                    </div>
+                    <button type="button" onclick="loadPlatformDashboard()" class="font-bold text-xs px-4 py-2 rounded-xl" style="background:rgba(196,163,90,0.2);color:#e8d5a3">
+                        <i class="fa-solid fa-rotate"></i> <span data-i18n="platform.refresh">تحديث</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl" style="background:rgba(255,255,255,0.03)">
+                    <table class="w-full text-right text-xs" style="color:#f5ead0">
+                        <thead style="background:rgba(196,163,90,0.15);color:#e8d5a3">
+                            <tr>
+                                <th class="p-3" data-i18n="sub.company">الشركة</th>
+                                <th class="p-3" data-i18n="login.companyCode">معرف الشركة</th>
+                                <th class="p-3" data-i18n="sub.plan">الخطة</th>
+                                <th class="p-3" data-i18n="sub.status">الحالة</th>
+                                <th class="p-3" data-i18n="sub.endsAt">ينتهي في</th>
+                                <th class="p-3 text-center" data-i18n="th.actions">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="platformCompaniesTable" class="divide-y" style="border-color:rgba(196,163,90,0.2)">
+                            <tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- لوحة التحكم الاحترافية -->
     <div id="mainDashboard" class="hidden relative z-10 w-full max-w-full min-w-0 h-[100dvh] xl:h-[96vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" style="border:1px solid rgba(196,163,90,0.28)">
         <div id="printLetterhead" class="print-only" aria-hidden="true">
@@ -739,9 +863,6 @@
                         </div>
                         <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
                         <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3">محمد القحطاني (مدير)</p>
-                        <button type="button" id="supportSwitchCompanyBtn" onclick="openSupportCompanyPicker()" class="hidden mt-2 w-full text-[10px] font-black rounded-lg px-2 py-1.5 transition" style="background:rgba(196,163,90,0.2);color:#e8d5a3">
-                            <i class="fa-solid fa-building-user ml-1"></i> <span data-i18n="support.switchCompany">تبديل شركة الدعم</span>
-                        </button>
                         <script>
                             (function () {
                                 if (!localStorage.getItem('sessionUserId')) return;
@@ -2018,53 +2139,6 @@
                     </div>
                 </div>
             </main>
-            <div id="subscriptionEditModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
-                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                        <h3 class="font-bold text-sm" data-i18n="sub.editTitle">تعديل الاشتراك</h3>
-                        <button type="button" onclick="closeSubscriptionEditModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <form onsubmit="saveSubscriptionEdit(event)" class="space-y-3">
-                        <input type="hidden" id="subEditCompanyId">
-                        <p id="subEditCompanyLabel" class="text-xs font-bold text-slate-700"></p>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.plan">الخطة</label>
-                            <select id="subEditPlan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="basic" data-i18n="sub.planBasic">أساسي</option>
-                                <option value="pro" data-i18n="sub.planPro">احترافي</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.status">الحالة</label>
-                            <select id="subEditStatus" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                <option value="trial" data-i18n="sub.statusTrial">تجربة</option>
-                                <option value="active" data-i18n="sub.statusActive">نشط</option>
-                                <option value="expired" data-i18n="sub.statusExpired">منتهي</option>
-                                <option value="suspended" data-i18n="sub.statusSuspended">موقوف</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.startsAt">يبدأ في</label>
-                                <input type="date" id="subEditStartsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.endsAt">ينتهي في</label>
-                                <input type="date" id="subEditEndsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.notes">ملاحظة</label>
-                            <input type="text" id="subEditNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="">
-                        </div>
-                        <p id="subEditError" class="hidden text-xs font-bold text-rose-600"></p>
-                        <div class="flex gap-2 pt-2">
-                            <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs" data-i18n="ui.save">حفظ</button>
-                            <button type="button" onclick="closeSubscriptionEditModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs" data-i18n="ui.cancel">إلغاء</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
             <main id="activityLogSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
                 <div class="bg-white px-3 sm:px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print min-w-0">
                     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-2 mb-3">
@@ -2632,6 +2706,7 @@
         async function logActivity(action, entity, entityNo, details, userOverride) {
             try {
                 const user = userOverride || currentLoggedInUser || {};
+                if (user.is_super_admin || isSuperAdminUser(user)) return false;
                 const username = String(user.username || '').trim();
                 if (!action) return false;
                 const payload = [{
@@ -3222,57 +3297,77 @@ function showSupportCompanyError(message) {
     box.classList.remove('hidden');
 }
 
-async function openSupportCompanyPicker(profile = pendingSupportProfile) {
-    pendingSupportProfile = profile || pendingSupportProfile;
-    const modal = document.getElementById('supportCompanyModal');
-    const list = document.getElementById('supportCompanyList');
-    if (!modal || !list) return;
-    showSupportCompanyError('');
-    list.innerHTML = `<p class="text-xs font-bold text-center py-4" style="color:#e8d5a3">${currentLang === 'en' ? 'Loading…' : 'جاري التحميل…'}</p>`;
-    modal.classList.remove('hidden');
+async function openPlatformSession(user) {
+    currentLoggedInUser = { ...user, is_super_admin: true, role: 'admin', company_id: null };
+    pendingSupportProfile = null;
+    try { await client.rpc('clear_support_company'); } catch (err) {}
+    localStorage.setItem('fleetop_platform_session', '1');
+    if (user && user.id != null) localStorage.setItem('sessionUserId', String(user.id));
+    localStorage.setItem('userRole', 'platform');
+    localStorage.setItem('userName', user.employee_name || user.username || '');
+    document.documentElement.classList.remove('session-restoring', 'platform-restoring');
+    setLoginBusy(false);
     document.getElementById('loginSection')?.classList.add('hidden');
+    document.getElementById('supportCompanyModal')?.classList.add('hidden');
+    document.getElementById('mainDashboard')?.classList.add('hidden');
+    document.getElementById('platformDashboard')?.classList.remove('hidden');
+    document.body.classList.remove('dashboard-active');
+    document.body.classList.add('platform-active');
+    const badge = document.getElementById('platformUserBadge');
+    if (badge) {
+        badge.textContent = `${user.employee_name || user.username || ''} · ${t('platform.role')}`;
+    }
+    sessionEndFlushed = false;
+    setAppLang(currentLang);
+    await loadPlatformDashboard();
+}
+
+async function loadPlatformDashboard() {
+    const table = document.getElementById('platformCompaniesTable');
+    if (!table) return;
+    table.innerHTML = `<tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">${currentLang === 'en' ? 'Loading…' : 'جاري التحميل...'}</td></tr>`;
     try {
         const { data, error } = await client.rpc('list_support_companies');
         if (error) throw error;
-        const companies = data || [];
-        if (!companies.length) {
-            list.innerHTML = `<p class="text-xs font-bold text-center py-4" style="color:#e8d5a3">${t('support.noCompanies')}</p>`;
+        subscriptionsCache = data || [];
+        const total = subscriptionsCache.length;
+        const active = subscriptionsCache.filter((c) => subscriptionAccessOk(c)).length;
+        const blocked = total - active;
+        const setStat = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = String(value);
+        };
+        setStat('platformStatTotal', total);
+        setStat('platformStatActive', active);
+        setStat('platformStatBlocked', blocked);
+        if (!total) {
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">${escapeHtml(t('support.noCompanies'))}</td></tr>`;
             return;
         }
-        list.innerHTML = companies.map((c) => {
+        table.innerHTML = subscriptionsCache.map((c) => {
             const ok = subscriptionAccessOk(c);
-            const subLabel = `${subscriptionPlanLabel(c.subscription_plan)} · ${subscriptionStatusLabel(c.subscription_status)}`;
-            return `
-            <button type="button" onclick="selectSupportCompany(${Number(c.id)})" class="w-full text-right rounded-xl px-3 py-3 transition border" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.35);color:#f5ead0">
-                <div class="font-black text-xs">${escapeHtml(c.name || '—')}</div>
-                <div class="text-[10px] font-bold mt-1" style="color:#c4a35a">${escapeHtml(c.company_code || '')}</div>
-                <div class="text-[10px] font-bold mt-1" style="color:${ok ? '#86efac' : '#fda4af'}">${escapeHtml(subLabel)}</div>
-            </button>`;
+            const tone = ok ? 'text-emerald-300' : 'text-rose-300';
+            return `<tr>
+                <td class="p-3 font-bold">${escapeHtml(c.name || '—')}</td>
+                <td class="p-3 font-mono" style="color:#c4a35a">${escapeHtml(c.company_code || '—')}</td>
+                <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
+                <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
+                <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
+                <td class="p-3 text-center">
+                    <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="font-bold text-xs px-3 py-1.5 rounded-lg" style="background:#c4a35a;color:#0b2a4a">${escapeHtml(t('sub.edit'))}</button>
+                </td>
+            </tr>`;
         }).join('');
     } catch (err) {
         console.error(err);
-        list.innerHTML = '';
-        showSupportCompanyError(err.message || t('support.loadFailed'));
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
     }
 }
 
-async function selectSupportCompany(companyId) {
-    showSupportCompanyError('');
-    try {
-        const { error } = await client.rpc('set_support_company', { p_company_id: Number(companyId) });
-        if (error) throw error;
-        let profile = pendingSupportProfile || currentLoggedInUser;
-        if (!profile) throw new Error(t('support.loadFailed'));
-        profile = { ...profile, company_id: Number(companyId), is_super_admin: true, role: 'admin' };
-        profile = await attachCompanyMeta(profile);
-        const loginSource = currentLoggedInUser ? 'restore' : 'login';
-        pendingSupportProfile = null;
-        document.getElementById('supportCompanyModal')?.classList.add('hidden');
-        openSession(profile);
-        await logLoginActivity(profile, loginSource);
-    } catch (err) {
-        console.error(err);
-        showSupportCompanyError(err.message || t('support.loadFailed'));
+async function openSupportCompanyPicker() {
+    // لم يعد مستخدماً: السوبر أدمن يعمل من لوحة المنصة فقط
+    if (pendingSupportProfile || isSuperAdminUser()) {
+        await openPlatformSession(pendingSupportProfile || currentLoggedInUser);
     }
 }
 
@@ -3282,8 +3377,9 @@ async function cancelSupportCompanyPicker() {
     try { await client.rpc('clear_support_company'); } catch (err) {}
     try { await client.auth.signOut(); } catch (err) {}
     clearStoredSession();
+    document.getElementById('platformDashboard')?.classList.add('hidden');
     document.getElementById('mainDashboard')?.classList.add('hidden');
-    document.body.classList.remove('dashboard-active');
+    document.body.classList.remove('dashboard-active', 'platform-active');
     document.getElementById('loginSection')?.classList.remove('hidden');
     setLoginBusy(false);
 }
@@ -3338,39 +3434,7 @@ async function assertCompanySubscriptionAccess(companyId, errorBoxId = 'loginErr
 let subscriptionsCache = [];
 
 async function loadSubscriptionsAdmin() {
-    const table = document.getElementById('subscriptionsTable');
-    if (!table) return;
-    if (!isSuperAdminUser()) {
-        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">${escapeHtml(t('support.notLinked'))}</td></tr>`;
-        return;
-    }
-    table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${currentLang === 'en' ? 'Loading…' : 'جاري التحميل...'}</td></tr>`;
-    try {
-        const { data, error } = await client.rpc('list_support_companies');
-        if (error) throw error;
-        subscriptionsCache = data || [];
-        if (!subscriptionsCache.length) {
-            table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${escapeHtml(t('support.noCompanies'))}</td></tr>`;
-            return;
-        }
-        table.innerHTML = subscriptionsCache.map((c) => {
-            const ok = subscriptionAccessOk(c);
-            const tone = ok ? 'text-emerald-700' : 'text-rose-600';
-            return `<tr class="hover:bg-slate-50">
-                <td class="p-3 font-bold text-slate-900">${escapeHtml(c.name || '—')}</td>
-                <td class="p-3 font-mono">${escapeHtml(c.company_code || '—')}</td>
-                <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
-                <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
-                <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
-                <td class="p-3 text-center">
-                    <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="text-amber-600 font-bold text-xs">${escapeHtml(t('sub.edit'))}</button>
-                </td>
-            </tr>`;
-        }).join('');
-    } catch (err) {
-        console.error(err);
-        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
-    }
+    return loadPlatformDashboard();
 }
 
 function openSubscriptionEditModal(companyId) {
@@ -3406,7 +3470,7 @@ async function saveSubscriptionEdit(e) {
         });
         if (error) throw error;
         closeSubscriptionEditModal();
-        await loadSubscriptionsAdmin();
+        await loadPlatformDashboard();
         alert(t('sub.saved'));
     } catch (err) {
         if (errBox) {
@@ -3451,7 +3515,7 @@ async function completeAuthLogin(username, password, companyCode, errorBoxId = '
             return false;
         }
         setLoginBusy(false);
-        await openSupportCompanyPicker(platformProfile);
+        await openPlatformSession(platformProfile);
         return true;
     }
 
@@ -6816,6 +6880,14 @@ const I18N = {
         'support.noCompanies': 'لا توجد شركات مسجلة بعد.',
         'support.loadFailed': 'تعذر تحميل شركات الدعم.',
         'support.notLinked': 'حساب الدعم غير مربوط في المنصة.',
+        'platform.title': 'لوحة تحكم المنصة',
+        'platform.role': 'سوبر أدمن المنصة',
+        'platform.totalCompanies': 'إجمالي الشركات',
+        'platform.activeSubs': 'اشتراكات فعّالة',
+        'platform.blockedSubs': 'منتهية / موقوفة',
+        'platform.companiesTitle': 'إدارة الشركات والاشتراكات',
+        'platform.companiesHint': 'لا يظهر حساب المنصة داخل سجلات الشركات، والإدارة تتم من هنا فقط.',
+        'platform.refresh': 'تحديث',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
@@ -7324,6 +7396,14 @@ const I18N = {
         'support.noCompanies': 'No companies registered yet.',
         'support.loadFailed': 'Could not load support companies.',
         'support.notLinked': 'Support account is not linked on the platform.',
+        'platform.title': 'Platform control panel',
+        'platform.role': 'Platform super admin',
+        'platform.totalCompanies': 'Total companies',
+        'platform.activeSubs': 'Active subscriptions',
+        'platform.blockedSubs': 'Expired / suspended',
+        'platform.companiesTitle': 'Companies and subscriptions',
+        'platform.companiesHint': 'The platform account never appears in company activity logs. Manage everything here.',
+        'platform.refresh': 'Refresh',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
@@ -7853,7 +7933,9 @@ function tf(key, n) {
 }
 
 function applyI18n() {
-    const scope = (currentLoggedInUser ? document : document.getElementById('loginSection')) || document;
+    const scope = currentLoggedInUser
+        ? document
+        : (document.getElementById('loginSection') || document);
     scope.querySelectorAll('[data-i18n]').forEach(el => {
         if (el.id === 'dashExpiryAlerts') return;
         el.textContent = t(el.dataset.i18n);
@@ -7926,8 +8008,9 @@ function applyCompanyBranding() {
     const sloganAr = companySettings.slogan_ar || t('login.tagline');
     const sloganEn = companySettings.slogan_en || 'Fleet & Trips Management';
     const display = currentLang === 'en' ? (nameEn || nameAr) : (nameAr || nameEn);
+    const fallback = (currentLoggedInUser && (currentLoggedInUser.company_name || currentLoggedInUser.company_code)) || '';
     const side = document.getElementById('sidebarCompanyName');
-    if (side) side.textContent = display;
+    if (side && !isSuperAdminUser()) side.textContent = display || fallback || side.textContent || '';
     const arEl = document.getElementById('printCompanyNameAr');
     const enEl = document.getElementById('printCompanyNameEn');
     const arSlogan = document.getElementById('printCompanySloganAr');
@@ -9900,36 +9983,40 @@ async function loadUsers(options = {}) {
             localStorage.removeItem('sessionUserId');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
-            document.documentElement.classList.remove('session-restoring');
+            localStorage.removeItem('fleetop_platform_session');
+            document.documentElement.classList.remove('session-restoring', 'platform-restoring');
         }
 
         function openSession(user) {
+            if (isSuperAdminUser(user)) {
+                openPlatformSession(user);
+                return;
+            }
             currentLoggedInUser = user;
+            localStorage.removeItem('fleetop_platform_session');
             if (user && user.id != null) localStorage.setItem('sessionUserId', String(user.id));
             localStorage.setItem('userRole', user.role || '');
             localStorage.setItem('userName', user.employee_name || '');
+            if (user.company_name) localStorage.setItem('fleetop_company_name', user.company_name);
 
-            document.documentElement.classList.remove('session-restoring');
+            document.documentElement.classList.remove('session-restoring', 'platform-restoring');
             setLoginBusy(false);
             document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('platformDashboard')?.classList.add('hidden');
             document.getElementById('mainDashboard').classList.remove('hidden');
+            document.body.classList.remove('platform-active');
             document.body.classList.add('dashboard-active');
             if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
             if (typeof switchTab === 'function') switchTab('dashboard');
 
             let roleName = 'مستخدم';
-            if (isSuperAdminUser(user)) roleName = currentLang === 'en' ? 'Platform support' : 'دعم المنصة';
-            else if (user.role === 'admin') roleName = 'مدير';
+            if (user.role === 'admin') roleName = 'مدير';
             else if (user.role === 'accountant') roleName = 'محاسب';
-            const companyLabel = user.company_code ? ` · ${user.company_code}` : '';
-            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')' + companyLabel;
+            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')';
             const sidebarCompany = document.getElementById('sidebarCompanyName');
             if (sidebarCompany) {
-                const prefix = isSuperAdminUser(user) ? (currentLang === 'en' ? 'Support · ' : 'دعم · ') : '';
-                sidebarCompany.textContent = prefix + [user.company_name, user.company_code].filter(Boolean).join(' · ');
+                sidebarCompany.textContent = user.company_name || user.company_code || localStorage.getItem('fleetop_company_name') || '';
             }
-            const supportBtn = document.getElementById('supportSwitchCompanyBtn');
-            if (supportBtn) supportBtn.classList.toggle('hidden', !isSuperAdminUser(user));
 
             const financialMenu = document.getElementById('financialMenu');
             const canSeeFinance = user.role === 'admin' || user.role === 'accountant';
@@ -9947,7 +10034,7 @@ async function loadUsers(options = {}) {
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
             const tabSubscriptionsBtn = document.getElementById('tabSubscriptionsBtn');
-            if (tabSubscriptionsBtn) tabSubscriptionsBtn.classList.toggle('hidden', !isSuperAdminUser(user));
+            if (tabSubscriptionsBtn) tabSubscriptionsBtn.classList.add('hidden');
             const systemMenu = document.getElementById('systemMenu');
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
             toggleSystemMenu(false);
@@ -9980,16 +10067,7 @@ async function loadUsers(options = {}) {
                     return;
                 }
                 if (isSuperAdminUser(profile)) {
-                    const supportCompanyId = await loadSupportContextCompanyId();
-                    if (!supportCompanyId) {
-                        document.documentElement.classList.remove('session-restoring');
-                        await openSupportCompanyPicker(profile);
-                        return;
-                    }
-                    profile.company_id = supportCompanyId;
-                    profile = await attachCompanyMeta(profile);
-                    openSession(profile);
-                    await logLoginActivity(profile, 'restore');
+                    await openPlatformSession(profile);
                     return;
                 }
                 if (await sessionAbandonedByPresence(profile.id)) {
@@ -10039,12 +10117,13 @@ async function loadUsers(options = {}) {
             closeOwnPasswordModal();
             closeResetPasswordModal();
             document.getElementById('mainDashboard').classList.add('hidden');
-            document.body.classList.remove('dashboard-active');
+            document.getElementById('platformDashboard')?.classList.add('hidden');
+            document.body.classList.remove('dashboard-active', 'platform-active');
             closeMobileNav();
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
-            const savedCode = localStorage.getItem('fleetop_company_code') || '';
+            const savedCode = isSuperAdminUser(loggingOutUser) ? '' : (localStorage.getItem('fleetop_company_code') || '');
             const codeInput = document.getElementById('companyCodeInput');
             if (codeInput) codeInput.value = savedCode;
             if (typeof switchAuthTab === 'function') switchAuthTab('login');
