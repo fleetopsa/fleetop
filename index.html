@@ -3108,10 +3108,9 @@ async function handleRegister(e) {
         });
         if (error) {
             const msg = String(error.message || '');
-            if (/Could not find the function|function .* does not exist|42883|company_id|fleetop_current_company_id|companies/i.test(msg)
-                && /does not exist|schema cache|column|relation/i.test(msg)) {
-                showLoginError(t('login.registerSqlMissing'), 'registerError');
-            } else if (/Could not find the function|function .* does not exist|42883/i.test(msg)) {
+            if (/التسجيل مغلق/i.test(msg)
+                || /Could not find the function|function .* does not exist|42883/i.test(msg)
+                || (/company_id|fleetop_current_company_id|companies/i.test(msg) && /does not exist|schema cache|column|relation/i.test(msg))) {
                 showLoginError(t('login.registerSqlMissing'), 'registerError');
             } else if (/اسم المستخدم مستخدم/i.test(msg)) {
                 showLoginError(t('login.registerUsernameTaken'), 'registerError');
