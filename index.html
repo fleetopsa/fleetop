@@ -842,6 +842,9 @@
                     <button onclick="switchTab('users')" id="tabUsersBtn" data-nav="users" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-user-shield text-base"></i> <span data-i18n="nav.users">المستخدمين</span>
                     </button>
+                    <button onclick="switchTab('subscriptions')" id="tabSubscriptionsBtn" data-nav="subscriptions" class="hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-file-contract text-base"></i> <span data-i18n="nav.subscriptions">اشتراكات الشركات</span>
+                    </button>
                     <div id="systemMenu" class="hidden">
                         <button type="button" onclick="toggleSystemMenu()" id="tabSystemGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-gear text-base"></i>
@@ -1993,6 +1996,75 @@
                 </div>
                 </div>
             </main>
+            <main id="subscriptionsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0 space-y-4">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-[11px] text-slate-500 font-bold mb-4" data-i18n="sub.hint">إدارة اشتراكات الشركات يدوياً بعد التحويل أو الاتفاق. الشركات المنتهية/الموقوفة لا تدخل النظام.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs text-slate-700">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="p-3 rounded-r-xl" data-i18n="sub.company">الشركة</th>
+                                    <th class="p-3" data-i18n="login.companyCode">معرف الشركة</th>
+                                    <th class="p-3" data-i18n="sub.plan">الخطة</th>
+                                    <th class="p-3" data-i18n="sub.status">الحالة</th>
+                                    <th class="p-3" data-i18n="sub.endsAt">ينتهي في</th>
+                                    <th class="p-3 rounded-l-xl text-center" data-i18n="th.actions">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subscriptionsTable" class="divide-y divide-slate-100">
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <div id="subscriptionEditModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-sm" data-i18n="sub.editTitle">تعديل الاشتراك</h3>
+                        <button type="button" onclick="closeSubscriptionEditModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <form onsubmit="saveSubscriptionEdit(event)" class="space-y-3">
+                        <input type="hidden" id="subEditCompanyId">
+                        <p id="subEditCompanyLabel" class="text-xs font-bold text-slate-700"></p>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.plan">الخطة</label>
+                            <select id="subEditPlan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="basic" data-i18n="sub.planBasic">أساسي</option>
+                                <option value="pro" data-i18n="sub.planPro">احترافي</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.status">الحالة</label>
+                            <select id="subEditStatus" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="trial" data-i18n="sub.statusTrial">تجربة</option>
+                                <option value="active" data-i18n="sub.statusActive">نشط</option>
+                                <option value="expired" data-i18n="sub.statusExpired">منتهي</option>
+                                <option value="suspended" data-i18n="sub.statusSuspended">موقوف</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.startsAt">يبدأ في</label>
+                                <input type="date" id="subEditStartsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.endsAt">ينتهي في</label>
+                                <input type="date" id="subEditEndsAt" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.notes">ملاحظة</label>
+                            <input type="text" id="subEditNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="">
+                        </div>
+                        <p id="subEditError" class="hidden text-xs font-bold text-rose-600"></p>
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs" data-i18n="ui.save">حفظ</button>
+                            <button type="button" onclick="closeSubscriptionEditModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs" data-i18n="ui.cancel">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <main id="activityLogSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
                 <div class="bg-white px-3 sm:px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print min-w-0">
                     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-2 mb-3">
@@ -3167,12 +3239,16 @@ async function openSupportCompanyPicker(profile = pendingSupportProfile) {
             list.innerHTML = `<p class="text-xs font-bold text-center py-4" style="color:#e8d5a3">${t('support.noCompanies')}</p>`;
             return;
         }
-        list.innerHTML = companies.map((c) => `
+        list.innerHTML = companies.map((c) => {
+            const ok = subscriptionAccessOk(c);
+            const subLabel = `${subscriptionPlanLabel(c.subscription_plan)} · ${subscriptionStatusLabel(c.subscription_status)}`;
+            return `
             <button type="button" onclick="selectSupportCompany(${Number(c.id)})" class="w-full text-right rounded-xl px-3 py-3 transition border" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.35);color:#f5ead0">
                 <div class="font-black text-xs">${escapeHtml(c.name || '—')}</div>
                 <div class="text-[10px] font-bold mt-1" style="color:#c4a35a">${escapeHtml(c.company_code || '')}</div>
-            </button>
-        `).join('');
+                <div class="text-[10px] font-bold mt-1" style="color:${ok ? '#86efac' : '#fda4af'}">${escapeHtml(subLabel)}</div>
+            </button>`;
+        }).join('');
     } catch (err) {
         console.error(err);
         list.innerHTML = '';
@@ -3210,6 +3286,136 @@ async function cancelSupportCompanyPicker() {
     document.body.classList.remove('dashboard-active');
     document.getElementById('loginSection')?.classList.remove('hidden');
     setLoginBusy(false);
+}
+
+function subscriptionStatusLabel(status) {
+    const key = {
+        trial: 'sub.statusTrial',
+        active: 'sub.statusActive',
+        expired: 'sub.statusExpired',
+        suspended: 'sub.statusSuspended'
+    }[String(status || '').toLowerCase()];
+    return key ? t(key) : (status || '—');
+}
+
+function subscriptionPlanLabel(plan) {
+    const key = {
+        basic: 'sub.planBasic',
+        pro: 'sub.planPro'
+    }[String(plan || '').toLowerCase()];
+    return key ? t(key) : (plan || '—');
+}
+
+function subscriptionAccessOk(row) {
+    const status = String(row?.subscription_status || '').toLowerCase();
+    if (!['trial', 'active'].includes(status)) return false;
+    if (!row?.subscription_ends_at) return true;
+    const end = String(row.subscription_ends_at).slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
+    return end >= today;
+}
+
+async function assertCompanySubscriptionAccess(companyId, errorBoxId = 'loginError') {
+    try {
+        const { data, error } = await client.rpc('get_company_subscription', { p_company_id: companyId });
+        if (error) {
+            if (/Could not find the function|does not exist|42883/i.test(error.message || '')) return true;
+            throw error;
+        }
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row) return true;
+        if (row.access_ok === false || !subscriptionAccessOk(row)) {
+            showLoginError(t('sub.blocked'), errorBoxId);
+            return false;
+        }
+        return true;
+    } catch (err) {
+        console.warn('subscription check:', err);
+        return true;
+    }
+}
+
+let subscriptionsCache = [];
+
+async function loadSubscriptionsAdmin() {
+    const table = document.getElementById('subscriptionsTable');
+    if (!table) return;
+    if (!isSuperAdminUser()) {
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">${escapeHtml(t('support.notLinked'))}</td></tr>`;
+        return;
+    }
+    table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${currentLang === 'en' ? 'Loading…' : 'جاري التحميل...'}</td></tr>`;
+    try {
+        const { data, error } = await client.rpc('list_support_companies');
+        if (error) throw error;
+        subscriptionsCache = data || [];
+        if (!subscriptionsCache.length) {
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${escapeHtml(t('support.noCompanies'))}</td></tr>`;
+            return;
+        }
+        table.innerHTML = subscriptionsCache.map((c) => {
+            const ok = subscriptionAccessOk(c);
+            const tone = ok ? 'text-emerald-700' : 'text-rose-600';
+            return `<tr class="hover:bg-slate-50">
+                <td class="p-3 font-bold text-slate-900">${escapeHtml(c.name || '—')}</td>
+                <td class="p-3 font-mono">${escapeHtml(c.company_code || '—')}</td>
+                <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
+                <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
+                <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
+                <td class="p-3 text-center">
+                    <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="text-amber-600 font-bold text-xs">${escapeHtml(t('sub.edit'))}</button>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        console.error(err);
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
+    }
+}
+
+function openSubscriptionEditModal(companyId) {
+    const company = subscriptionsCache.find((c) => Number(c.id) === Number(companyId));
+    if (!company) return;
+    document.getElementById('subEditCompanyId').value = company.id;
+    document.getElementById('subEditCompanyLabel').textContent = `${company.name || ''} · ${company.company_code || ''}`;
+    document.getElementById('subEditPlan').value = company.subscription_plan || 'basic';
+    document.getElementById('subEditStatus').value = company.subscription_status || 'active';
+    document.getElementById('subEditStartsAt').value = company.subscription_starts_at ? String(company.subscription_starts_at).slice(0, 10) : '';
+    document.getElementById('subEditEndsAt').value = company.subscription_ends_at ? String(company.subscription_ends_at).slice(0, 10) : '';
+    document.getElementById('subEditNotes').value = company.subscription_notes || '';
+    document.getElementById('subEditError')?.classList.add('hidden');
+    document.getElementById('subscriptionEditModal')?.classList.remove('hidden');
+}
+
+function closeSubscriptionEditModal() {
+    document.getElementById('subscriptionEditModal')?.classList.add('hidden');
+}
+
+async function saveSubscriptionEdit(e) {
+    e.preventDefault();
+    const companyId = Number(document.getElementById('subEditCompanyId').value);
+    const errBox = document.getElementById('subEditError');
+    try {
+        const { error } = await client.rpc('admin_update_subscription', {
+            p_company_id: companyId,
+            p_plan: document.getElementById('subEditPlan').value,
+            p_status: document.getElementById('subEditStatus').value,
+            p_starts_at: document.getElementById('subEditStartsAt').value,
+            p_ends_at: document.getElementById('subEditEndsAt').value,
+            p_notes: document.getElementById('subEditNotes').value || null
+        });
+        if (error) throw error;
+        closeSubscriptionEditModal();
+        await loadSubscriptionsAdmin();
+        alert(t('sub.saved'));
+    } catch (err) {
+        if (errBox) {
+            errBox.textContent = err.message || t('sub.loadFailed');
+            errBox.classList.remove('hidden');
+        } else {
+            alert(err.message || t('sub.loadFailed'));
+        }
+    }
 }
 
 async function completeAuthLogin(username, password, companyCode, errorBoxId = 'loginError') {
@@ -3272,6 +3478,10 @@ async function completeAuthLogin(username, password, companyCode, errorBoxId = '
     if (profile.company_code && normalizeCompanyCode(profile.company_code) !== code) {
         await client.auth.signOut();
         showLoginError(t('login.companyCodeMismatch'), errorBoxId);
+        return false;
+    }
+    if (!(await assertCompanySubscriptionAccess(profile.company_id, errorBoxId))) {
+        await client.auth.signOut();
         return false;
     }
     localStorage.setItem('fleetop_company_code', code);
@@ -6635,6 +6845,27 @@ const I18N = {
         'nav.commissions': 'تقرير العمولات',
         'nav.payouts': 'سداد العمولات',
         'nav.users': 'المستخدمين',
+        'nav.subscriptions': 'اشتراكات الشركات',
+        'page.subscriptions': 'اشتراكات الشركات',
+        'page.subscriptionsSub': 'تفعيل وتمديد وإيقاف اشتراكات الشركات',
+        'sub.hint': 'إدارة اشتراكات الشركات يدوياً بعد التحويل أو الاتفاق. الشركات المنتهية/الموقوفة لا تدخل النظام.',
+        'sub.company': 'الشركة',
+        'sub.plan': 'الخطة',
+        'sub.status': 'الحالة',
+        'sub.startsAt': 'يبدأ في',
+        'sub.endsAt': 'ينتهي في',
+        'sub.notes': 'ملاحظة',
+        'sub.editTitle': 'تعديل الاشتراك',
+        'sub.planBasic': 'أساسي',
+        'sub.planPro': 'احترافي',
+        'sub.statusTrial': 'تجربة',
+        'sub.statusActive': 'نشط',
+        'sub.statusExpired': 'منتهي',
+        'sub.statusSuspended': 'موقوف',
+        'sub.edit': 'تعديل',
+        'sub.saved': 'تم حفظ الاشتراك.',
+        'sub.blocked': 'اشتراك الشركة منتهٍ أو موقوف. تواصل مع دعم فليتوب.',
+        'sub.loadFailed': 'تعذر تحميل الاشتراكات.',
         'nav.activityLog': 'سجل النشاط',
         'nav.settings': 'إعدادات النظام',
         'nav.companySettings': 'البيانات الأساسية للمنشأة',
@@ -7122,6 +7353,27 @@ const I18N = {
         'nav.commissions': 'Commission report',
         'nav.payouts': 'Commission payouts',
         'nav.users': 'Users',
+        'nav.subscriptions': 'Company subscriptions',
+        'page.subscriptions': 'Company subscriptions',
+        'page.subscriptionsSub': 'Activate, extend, or suspend company subscriptions',
+        'sub.hint': 'Manage company subscriptions manually after payment or agreement. Expired/suspended companies cannot sign in.',
+        'sub.company': 'Company',
+        'sub.plan': 'Plan',
+        'sub.status': 'Status',
+        'sub.startsAt': 'Starts',
+        'sub.endsAt': 'Ends',
+        'sub.notes': 'Note',
+        'sub.editTitle': 'Edit subscription',
+        'sub.planBasic': 'Basic',
+        'sub.planPro': 'Pro',
+        'sub.statusTrial': 'Trial',
+        'sub.statusActive': 'Active',
+        'sub.statusExpired': 'Expired',
+        'sub.statusSuspended': 'Suspended',
+        'sub.edit': 'Edit',
+        'sub.saved': 'Subscription saved.',
+        'sub.blocked': 'Company subscription is expired or suspended. Contact FleetOp support.',
+        'sub.loadFailed': 'Could not load subscriptions.',
         'nav.activityLog': 'Activity log',
         'nav.settings': 'System settings',
         'nav.companySettings': 'Organization basic details',
@@ -7577,6 +7829,8 @@ const PAGE_HEADER_KEYS = {
     employees: ['page.employees', 'page.employeesSub'],
     users: ['page.users', 'page.usersSub'],
     usersSection: ['page.users', 'page.usersSub'],
+    subscriptions: ['page.subscriptions', 'page.subscriptionsSub'],
+    subscriptionsSection: ['page.subscriptions', 'page.subscriptionsSub'],
     activityLog: ['page.activityLog', 'page.activityLogSub'],
     activityLogSection: ['page.activityLog', 'page.activityLogSub'],
     settings: ['page.settings', 'page.settingsSub']
@@ -7848,6 +8102,16 @@ function switchTab(tabId) {
             section.scrollTop = 0;
         }
         fillCompanySettingsForm();
+        return;
+    }
+
+    if (tabId === 'subscriptions') {
+        const section = document.getElementById('subscriptionsSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadSubscriptionsAdmin === 'function') loadSubscriptionsAdmin();
         return;
     }
 
@@ -9682,6 +9946,8 @@ async function loadUsers(options = {}) {
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
+            const tabSubscriptionsBtn = document.getElementById('tabSubscriptionsBtn');
+            if (tabSubscriptionsBtn) tabSubscriptionsBtn.classList.toggle('hidden', !isSuperAdminUser(user));
             const systemMenu = document.getElementById('systemMenu');
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
             toggleSystemMenu(false);
@@ -9734,6 +10000,14 @@ async function loadUsers(options = {}) {
                     return;
                 }
                 profile = await attachCompanyMeta(profile);
+                if (!(await assertCompanySubscriptionAccess(profile.company_id, 'loginError'))) {
+                    await client.auth.signOut();
+                    clearStoredSession();
+                    document.body.classList.remove('dashboard-active');
+                    document.getElementById('loginSection')?.classList.remove('hidden');
+                    document.documentElement.classList.remove('session-restoring');
+                    return;
+                }
                 openSession(profile);
                 await logLoginActivity(profile, 'restore');
             } catch (err) {
