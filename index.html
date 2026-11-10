@@ -382,7 +382,7 @@
                 min-height: 0;
                 overflow-y: auto;
                 transform: translateX(calc(100% - 14px));
-                transition: transform 0.22s ease, box-shadow 0.22s ease;
+                transition: transform 0.22s ease, box-shadow 0.22s ease, z-index 0s linear 0.22s;
                 box-shadow: none;
             }
             #appSidebar::before {
@@ -400,8 +400,10 @@
             #sidebarUnpinBtn { display: none; }
             #appSidebar.is-open,
             #appSidebar:hover {
+                z-index: 50;
                 transform: translateX(0);
                 box-shadow: -14px 0 30px rgba(11, 42, 74, 0.22);
+                transition: transform 0.22s ease, box-shadow 0.22s ease, z-index 0s;
             }
             #mainDashboard.sidebar-pinned {
                 flex-direction: row;
@@ -782,7 +784,7 @@
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
                 <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
                     <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.totalCompanies">إجمالي الشركات</p>
                     <p id="platformStatTotal" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
@@ -799,7 +801,49 @@
                     <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.paymentsTotal">إجمالي التحصيل</p>
                     <p id="platformStatPayments" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
                 </div>
+                <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
+                    <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="payreq.pendingStat">إيصالات بانتظار المراجعة</p>
+                    <p id="platformStatPendingReceipts" class="text-2xl font-black mt-1 text-amber-300">0</p>
+                </div>
             </div>
+
+            <div class="rounded-2xl border p-4 sm:p-5" style="background:rgba(255,255,255,0.04);border-color:rgba(196,163,90,0.3)">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="font-black text-sm" style="color:#f5ead0" data-i18n="payreq.platformTitle">طلبات التحويل والإيصالات</h2>
+                        <p class="text-[11px] font-bold mt-1" style="color:#e8d5a3" data-i18n="payreq.platformHint">تنبيهات من الشركات بعد رفع إيصال التحويل للتجديد أو التفعيل.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="payReqFilterStatus" onchange="loadPlatformPaymentRequests()" class="p-2 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)">
+                            <option value="pending" data-i18n="payreq.statusPending">بانتظار المراجعة</option>
+                            <option value="all" data-i18n="payreq.statusAll">الكل</option>
+                            <option value="approved" data-i18n="payreq.statusApproved">معتمد</option>
+                            <option value="rejected" data-i18n="payreq.statusRejected">مرفوض</option>
+                        </select>
+                        <a id="platformWhatsappSupportBtn" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black" style="background:#25d366;color:#fff">
+                            <i class="fa-brands fa-whatsapp"></i> واتساب
+                        </a>
+                    </div>
+                </div>
+                <div class="overflow-x-auto rounded-xl" style="background:rgba(255,255,255,0.03)">
+                    <table class="w-full text-right text-xs" style="color:#f5ead0">
+                        <thead style="background:rgba(196,163,90,0.15);color:#e8d5a3">
+                            <tr>
+                                <th class="p-3" data-i18n="th.date">التاريخ</th>
+                                <th class="p-3" data-i18n="sub.company">الشركة</th>
+                                <th class="p-3" data-i18n="platform.amount">المبلغ</th>
+                                <th class="p-3" data-i18n="sub.status">الحالة</th>
+                                <th class="p-3" data-i18n="sub.notes">ملاحظة</th>
+                                <th class="p-3 text-center" data-i18n="th.actions">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="platformPaymentRequestsTable" class="divide-y" style="border-color:rgba(196,163,90,0.2)">
+                            <tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">—</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="rounded-2xl border p-4 sm:p-5" style="background:rgba(255,255,255,0.04);border-color:rgba(196,163,90,0.3)">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                     <div>
@@ -1041,6 +1085,9 @@
                 </nav>
             </div>
             <div class="pt-6 space-y-2" style="border-top:1px solid rgba(196,163,90,0.28)">
+                <a id="sidebarWhatsappSupport" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(37,211,102,0.16);color:#25d366;border:1px solid rgba(37,211,102,0.45)">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> <span data-i18n="support.whatsapp">دعم فني واتساب</span>
+                </a>
                 <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(196,163,90,0.12);color:#c4a35a;border:1px solid rgba(196,163,90,0.4)">
                     <i class="fa-solid fa-key"></i> <span data-i18n="nav.password">تغيير كلمة المرور</span>
                 </button>
@@ -2242,65 +2289,161 @@
                 </div>
             </main>
             <main id="settingsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
-                <div class="max-w-3xl">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
-                            <i class="fa-solid fa-building text-amber-500 ml-2"></i>
-                            <span data-i18n="settings.title">البيانات الأساسية للمنشأة</span>
-                        </h3>
-                        <p class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
-                        <form onsubmit="saveCompanySettings(event)" class="space-y-3.5">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameAr">اسم الشركة بالعربية</label>
-                                    <input type="text" id="companyNameAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameEn">اسم الشركة بالإنجليزية</label>
-                                    <input type="text" id="companyNameEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganAr">الوصف بالعربية</label>
-                                    <input type="text" id="companySloganAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganEn">الوصف بالإنجليزية</label>
-                                    <input type="text" id="companySloganEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.phone">الهاتف</label>
-                                    <input type="text" id="companyPhone" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.email">البريد</label>
-                                    <input type="email" id="companyEmail" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.city">المدينة</label>
-                                    <input type="text" id="companyCity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.cr">السجل التجاري</label>
-                                    <input type="text" id="companyCr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.vat">الرقم الضريبي</label>
-                                    <input type="text" id="companyVat" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.address">العنوان</label>
-                                    <input type="text" id="companyAddress" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.logo">شعار الشركة (للتقارير)</label>
-                                    <div class="flex items-center gap-4">
-                                        <img id="companyLogoPreview" src="" alt="" class="hidden w-16 h-16 rounded-xl object-contain border border-slate-200 bg-white">
-                                        <input type="file" id="companyLogoFile" accept="image/*" class="text-xs">
+                <div class="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+                    <div class="xl:col-span-7 min-w-0">
+                        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
+                                <i class="fa-solid fa-building text-amber-500 ml-2"></i>
+                                <span data-i18n="settings.title">البيانات الأساسية للمنشأة</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
+                            <form onsubmit="saveCompanySettings(event)" class="space-y-3.5">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameAr">اسم الشركة بالعربية</label>
+                                        <input type="text" id="companyNameAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameEn">اسم الشركة بالإنجليزية</label>
+                                        <input type="text" id="companyNameEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganAr">الوصف بالعربية</label>
+                                        <input type="text" id="companySloganAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.sloganEn">الوصف بالإنجليزية</label>
+                                        <input type="text" id="companySloganEn" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.phone">الهاتف</label>
+                                        <input type="text" id="companyPhone" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.email">البريد</label>
+                                        <input type="email" id="companyEmail" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.city">المدينة</label>
+                                        <input type="text" id="companyCity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.cr">السجل التجاري</label>
+                                        <input type="text" id="companyCr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.vat">الرقم الضريبي</label>
+                                        <input type="text" id="companyVat" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.address">العنوان</label>
+                                        <input type="text" id="companyAddress" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.logo">شعار الشركة</label>
+                                        <div class="flex items-center gap-4">
+                                            <img id="companyLogoPreview" src="" alt="" class="hidden w-16 h-16 rounded-xl object-contain border border-slate-200 bg-white">
+                                            <input type="file" id="companyLogoFile" accept="image/*" class="text-xs">
+                                        </div>
                                     </div>
                                 </div>
+                                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="xl:col-span-5 min-w-0 space-y-4">
+                        <div id="companySubscriptionCard" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                                        <i class="fa-solid fa-file-contract text-amber-500 ml-2"></i>
+                                        <span data-i18n="sub.companyTitle">اشتراك الشركة</span>
+                                    </h3>
+                                    <p class="text-[11px] text-slate-500 mt-1" data-i18n="sub.companyHint">حالة الاشتراك وتنبيه قرب الانتهاء، مع التواصل للدعم الفني.</p>
+                                </div>
+                                <a id="companyWhatsappSupportBtn" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-black shrink-0" style="background:#25d366;color:#fff">
+                                    <i class="fa-brands fa-whatsapp"></i> <span data-i18n="support.whatsapp">دعم فني واتساب</span>
+                                </a>
                             </div>
-                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
-                        </form>
+                            <div id="companySubscriptionAlert" class="rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-slate-50 text-slate-600 border-slate-200">
+                                <span data-i18n="sub.loading">جاري تحميل حالة الاشتراك...</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                    <p class="text-[10px] font-bold text-slate-500" data-i18n="sub.plan">الخطة</p>
+                                    <p id="companySubPlan" class="font-black text-slate-800 mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                    <p class="text-[10px] font-bold text-slate-500" data-i18n="sub.status">الحالة</p>
+                                    <p id="companySubStatus" class="font-black text-slate-800 mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                    <p class="text-[10px] font-bold text-slate-500" data-i18n="sub.startsAt">يبدأ في</p>
+                                    <p id="companySubStarts" class="font-mono font-bold text-slate-800 mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                    <p class="text-[10px] font-bold text-slate-500" data-i18n="sub.endsAt">ينتهي في</p>
+                                    <p id="companySubEnds" class="font-mono font-bold text-slate-800 mt-1">—</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="companyPaymentRequestCard" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center">
+                                <i class="fa-solid fa-receipt text-amber-500 ml-2"></i>
+                                <span data-i18n="payreq.title">رفع إيصال التحويل البنكي</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-1 mb-4" data-i18n="payreq.hint">بعد التحويل ارفع الإيصال هنا ليصل تنبيه للسوبر آدمن، ويمكنك أيضاً إرسال رسالة واتساب للدعم.</p>
+                            <form id="companyPaymentRequestForm" onsubmit="submitCompanyPaymentRequest(event)" class="space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="platform.amount">المبلغ</label>
+                                        <input type="number" id="payReqAmount" min="0.01" step="0.01" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.date">التاريخ</label>
+                                        <input type="date" id="payReqDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.plan">الخطة</label>
+                                        <select id="payReqPlan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                            <option value="basic" data-i18n="sub.planBasic">أساسي</option>
+                                            <option value="pro" data-i18n="sub.planPro">احترافي</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.notes">ملاحظة</label>
+                                    <input type="text" id="payReqNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="payreq.notesPh" placeholder="مثال: تجديد اشتراك / تفعيل حساب">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="payreq.receipt">إيصال التحويل (صورة أو PDF)</label>
+                                    <input type="file" id="payReqReceipt" accept="image/*,application/pdf" required class="w-full text-xs">
+                                    <p class="text-[10px] text-slate-400 mt-1" data-i18n="payreq.receiptHint">الحد الأقصى 4 ميغابايت.</p>
+                                </div>
+                                <p id="payReqError" class="hidden text-rose-600 text-xs font-bold"></p>
+                                <div class="flex flex-col gap-2">
+                                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-3 rounded-xl text-xs" data-i18n="payreq.submit">إرسال الإيصال</button>
+                                    <button type="button" onclick="openSupportWhatsapp('renew')" class="font-bold px-5 py-3 rounded-xl text-xs border border-emerald-200 text-emerald-700 bg-emerald-50" data-i18n="payreq.whatsappNotify">إبلاغ الدعم عبر واتساب</button>
+                                </div>
+                            </form>
+                            <div class="mt-5 overflow-x-auto rounded-xl border border-slate-100">
+                                <table class="w-full text-right text-xs text-slate-700">
+                                    <thead class="bg-slate-50 text-slate-600">
+                                        <tr>
+                                            <th class="p-2.5" data-i18n="th.date">التاريخ</th>
+                                            <th class="p-2.5" data-i18n="platform.amount">المبلغ</th>
+                                            <th class="p-2.5" data-i18n="sub.status">الحالة</th>
+                                            <th class="p-2.5" data-i18n="sub.notes">ملاحظة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="companyPaymentRequestsTable">
+                                        <tr><td colspan="4" class="text-center p-4 text-slate-400">—</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -2752,6 +2895,15 @@
     <script>
         const SUPABASE_URL = 'https://hmttwtlaeczvfjozsama.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtdHR3dGxhZWN6dmZqb3pzYW1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNTU5NjIsImV4cCI6MjEwNTczMTk2Mn0.0-M1LVkNnbVSbUeYX_RueqUUcHNRbCtipCn5nGSuVNc';
+        /*
+         * رقم واتساب الدعم الفني — ضع رقمك الحقيقي هنا فقط.
+         * أمثلة مقبولة:
+         *   '0551234567'
+         *   '966551234567'
+         *   '+966 55 123 4567'
+         * لا تترك الرقم التجريبي؛ وإلا لن يفتح واتساب برقم صحيح.
+         */
+        const FLEETOP_SUPPORT_WHATSAPP = '966552873334';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
         });
@@ -3492,6 +3644,8 @@ async function loadPlatformDashboard() {
             }).join('');
         }
         await loadSubscriptionPayments();
+        await loadPlatformPaymentRequests();
+        refreshSupportWhatsappLinks();
     } catch (err) {
         console.error(err);
         table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
@@ -3677,6 +3831,350 @@ async function assertCompanySubscriptionAccess(companyId, errorBoxId = 'loginErr
     } catch (err) {
         console.warn('subscription check:', err);
         return true;
+    }
+}
+
+let companySubscriptionInfo = null;
+let companyPaymentRequestsCache = [];
+let platformPaymentRequestsCache = [];
+let lastPaymentRequestId = null;
+
+function normalizeWhatsappDigits(value) {
+    const map = {
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+    };
+    return String(value || '').replace(/[٠-٩۰-۹]/g, (d) => map[d] || d);
+}
+
+function supportWhatsappNumber() {
+    let n = normalizeWhatsappDigits(FLEETOP_SUPPORT_WHATSAPP).replace(/[^\d]/g, '');
+    if (!n) return '';
+    // تجاهل الرقم التجريبي القديم حتى لا يفتح واتساب على رقم خاطئ
+    if (n === '966500000000' || n === '500000000' || n === '0500000000') return '';
+    if (n.startsWith('00')) n = n.slice(2);
+    if (n.startsWith('9660') && n.length >= 13) n = `966${n.slice(4)}`;
+    if (n.startsWith('05') && n.length === 10) n = `966${n.slice(1)}`;
+    if (n.startsWith('5') && n.length === 9) n = `966${n}`;
+    if (n.startsWith('0') && n.length === 10) n = `966${n.slice(1)}`;
+    // رقم سعودي صحيح بعد التحويل: 966 + 9 أرقام
+    if (n.startsWith('966') && n.length !== 12) return '';
+    if (!n.startsWith('966') && n.length < 10) return '';
+    return n;
+}
+
+function formatSupportWhatsappDisplay() {
+    const n = supportWhatsappNumber();
+    if (!n) return '';
+    if (n.startsWith('966') && n.length === 12) {
+        return `+${n.slice(0, 3)} ${n.slice(3, 5)} ${n.slice(5, 8)} ${n.slice(8)}`;
+    }
+    return `+${n}`;
+}
+
+function buildSupportWhatsappUrl(message) {
+    const n = supportWhatsappNumber();
+    if (!n) return '#';
+    const text = encodeURIComponent(message || t('payreq.waSupport'));
+    return `https://wa.me/${n}?text=${text}`;
+}
+
+function refreshSupportWhatsappLinks() {
+    const href = buildSupportWhatsappUrl(t('payreq.waSupport'));
+    const ready = !!(href && href !== '#');
+    ['sidebarWhatsappSupport', 'companyWhatsappSupportBtn', 'platformWhatsappSupportBtn'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.href = ready ? href : '#';
+        el.setAttribute('aria-disabled', ready ? 'false' : 'true');
+        el.classList.toggle('opacity-60', !ready);
+    });
+}
+
+function openSupportWhatsapp(kind = 'support') {
+    let message = t('payreq.waSupport');
+    if (kind === 'renew') {
+        const company = companySubscriptionInfo?.company_name
+            || currentLoggedInUser?.company_name
+            || localStorage.getItem('fleetop_company_name')
+            || '';
+        const amount = document.getElementById('payReqAmount')?.value || '';
+        message = t('payreq.waRenew')
+            .replace('{id}', lastPaymentRequestId != null ? String(lastPaymentRequestId) : '—')
+            .replace('{company}', company || '—')
+            .replace('{amount}', amount || '—');
+    }
+    const url = buildSupportWhatsappUrl(message);
+    if (!url || url === '#') {
+        alert(currentLang === 'en'
+            ? 'Set your real WhatsApp number in index.html → FLEETOP_SUPPORT_WHATSAPP (e.g. 0551234567 or 966551234567), then re-upload.'
+            : 'ضع رقم واتساب الحقيقي في index.html عند FLEETOP_SUPPORT_WHATSAPP (مثال: 0551234567 أو 966551234567) ثم ارفع الملف.');
+        return;
+    }
+    window.open(url, '_blank', 'noopener');
+}
+
+function paymentRequestStatusLabel(status) {
+    const key = {
+        pending: 'payreq.statusPending',
+        approved: 'payreq.statusApproved',
+        rejected: 'payreq.statusRejected'
+    }[String(status || '').toLowerCase()];
+    return key ? t(key) : (status || '—');
+}
+
+function paintCompanySubscriptionCard(row) {
+    companySubscriptionInfo = row || null;
+    const alertBox = document.getElementById('companySubscriptionAlert');
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+    if (!row) {
+        setText('companySubPlan', '—');
+        setText('companySubStatus', '—');
+        setText('companySubStarts', '—');
+        setText('companySubEnds', '—');
+        if (alertBox) {
+            alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-slate-50 text-slate-600 border-slate-200';
+            alertBox.textContent = t('sub.alertUnknown');
+        }
+        return;
+    }
+    const ends = row.subscription_ends_at ? String(row.subscription_ends_at).slice(0, 10) : '';
+    const starts = row.subscription_starts_at ? String(row.subscription_starts_at).slice(0, 10) : '';
+    const days = daysUntilDate(ends);
+    const ok = row.access_ok !== false && subscriptionAccessOk(row);
+    setText('companySubPlan', subscriptionPlanLabel(row.subscription_plan));
+    setText('companySubStatus', subscriptionStatusLabel(row.subscription_status));
+    setText('companySubStarts', starts || '—');
+    setText('companySubEnds', ends || '—');
+    if (!alertBox) return;
+    if (!ok) {
+        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-rose-50 text-rose-700 border-rose-200';
+        alertBox.textContent = t('sub.alertExpired');
+        return;
+    }
+    if (days != null && days <= 7) {
+        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-rose-50 text-rose-700 border-rose-200';
+        alertBox.textContent = t('sub.alertUrgent').replace('{days}', String(Math.max(days, 0))).replace('{date}', ends);
+    } else if (days != null && days <= 30) {
+        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-amber-50 text-amber-800 border-amber-200';
+        alertBox.textContent = t('sub.alertSoon').replace('{days}', String(days)).replace('{date}', ends);
+    } else {
+        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-emerald-50 text-emerald-800 border-emerald-200';
+        alertBox.textContent = t('sub.alertOk').replace('{days}', days != null ? String(days) : '—');
+    }
+}
+
+async function loadCompanySubscriptionCard() {
+    refreshSupportWhatsappLinks();
+    const payCard = document.getElementById('companyPaymentRequestCard');
+    if (payCard) payCard.classList.toggle('hidden', !(isAdminUser() || isSupportMode()));
+    try {
+        const { data, error } = await client.rpc('get_company_subscription', {});
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        paintCompanySubscriptionCard(row);
+    } catch (err) {
+        console.warn('company subscription card:', err);
+        paintCompanySubscriptionCard(null);
+    }
+    if (isAdminUser() || isSupportMode()) {
+        const dateEl = document.getElementById('payReqDate');
+        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+        await loadCompanyPaymentRequests();
+    }
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('read'));
+        reader.readAsDataURL(file);
+    });
+}
+
+async function submitCompanyPaymentRequest(e) {
+    e.preventDefault();
+    const errBox = document.getElementById('payReqError');
+    if (errBox) {
+        errBox.classList.add('hidden');
+        errBox.textContent = '';
+    }
+    if (!isAdminUser() && !isSupportMode()) {
+        alert(t('payreq.adminOnly'));
+        return;
+    }
+    const file = document.getElementById('payReqReceipt')?.files?.[0];
+    if (!file) {
+        if (errBox) {
+            errBox.textContent = t('payreq.fileRequired');
+            errBox.classList.remove('hidden');
+        }
+        return;
+    }
+    const mime = String(file.type || '').toLowerCase();
+    if (!(mime.startsWith('image/') || mime === 'application/pdf')) {
+        if (errBox) {
+            errBox.textContent = t('payreq.fileType');
+            errBox.classList.remove('hidden');
+        }
+        return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+        if (errBox) {
+            errBox.textContent = t('payreq.fileTooBig');
+            errBox.classList.remove('hidden');
+        }
+        return;
+    }
+    try {
+        const receiptData = await readFileAsDataUrl(file);
+        const { data, error } = await client.rpc('company_submit_payment_request', {
+            p_amount: Number(document.getElementById('payReqAmount').value),
+            p_paid_at: document.getElementById('payReqDate').value,
+            p_plan: document.getElementById('payReqPlan').value || null,
+            p_notes: document.getElementById('payReqNotes').value || null,
+            p_receipt_name: file.name || null,
+            p_receipt_mime: mime || null,
+            p_receipt_data: receiptData
+        });
+        if (error) throw error;
+        lastPaymentRequestId = data;
+        document.getElementById('companyPaymentRequestForm')?.reset();
+        const dateEl = document.getElementById('payReqDate');
+        if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+        await loadCompanyPaymentRequests();
+        alert(t('payreq.submitted'));
+        if (confirm(t('payreq.whatsappNotify') + '?')) openSupportWhatsapp('renew');
+    } catch (err) {
+        const msg = err?.message || '';
+        const text = /Could not find the function|does not exist|42883|subscription_payment_requests/i.test(msg)
+            ? t('payreq.sqlMissing')
+            : (msg || t('payreq.sqlMissing'));
+        if (errBox) {
+            errBox.textContent = text;
+            errBox.classList.remove('hidden');
+        } else {
+            alert(text);
+        }
+    }
+}
+
+async function loadCompanyPaymentRequests() {
+    const table = document.getElementById('companyPaymentRequestsTable');
+    if (!table) return;
+    try {
+        const { data, error } = await client.rpc('company_list_payment_requests');
+        if (error) throw error;
+        companyPaymentRequestsCache = data || [];
+        if (!companyPaymentRequestsCache.length) {
+            table.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">${escapeHtml(t('payreq.none'))}</td></tr>`;
+            return;
+        }
+        table.innerHTML = companyPaymentRequestsCache.map((row) => {
+            const tone = String(row.status || '').toLowerCase() === 'pending'
+                ? 'text-amber-700'
+                : (String(row.status || '').toLowerCase() === 'approved' ? 'text-emerald-700' : 'text-rose-700');
+            return `<tr>
+                <td class="p-2.5 font-mono">${escapeHtml(row.paid_at ? String(row.paid_at).slice(0, 10) : '—')}</td>
+                <td class="p-2.5 font-bold">${escapeHtml(Number(row.amount || 0).toLocaleString('en-US'))}</td>
+                <td class="p-2.5 font-bold ${tone}">${escapeHtml(paymentRequestStatusLabel(row.status))}</td>
+                <td class="p-2.5">${escapeHtml(row.notes || row.receipt_name || '—')}</td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        const missing = /Could not find the function|does not exist|42883|subscription_payment_requests/i.test(err?.message || '');
+        table.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-rose-500">${escapeHtml(missing ? t('payreq.sqlMissing') : (err.message || t('payreq.sqlMissing')))}</td></tr>`;
+    }
+}
+
+async function loadPlatformPaymentRequests() {
+    const table = document.getElementById('platformPaymentRequestsTable');
+    const stat = document.getElementById('platformStatPendingReceipts');
+    if (!table) return;
+    refreshSupportWhatsappLinks();
+    const status = document.getElementById('payReqFilterStatus')?.value || 'pending';
+    try {
+        const { data, error } = await client.rpc('admin_list_payment_requests', { p_status: status });
+        if (error) throw error;
+        platformPaymentRequestsCache = data || [];
+        const pendingCount = platformPaymentRequestsCache.filter((r) => String(r.status || '').toLowerCase() === 'pending').length;
+        if (stat && status === 'pending') stat.textContent = String(pendingCount);
+        if (stat && status !== 'pending') {
+            try {
+                const { data: countData } = await client.rpc('admin_count_pending_payment_requests');
+                if (countData != null) stat.textContent = String(countData);
+            } catch (countErr) {}
+        }
+        if (!platformPaymentRequestsCache.length) {
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">${escapeHtml(t('payreq.none'))}</td></tr>`;
+            return;
+        }
+        table.innerHTML = platformPaymentRequestsCache.map((row) => {
+            const pending = String(row.status || '').toLowerCase() === 'pending';
+            const tone = pending ? 'text-amber-300' : (String(row.status || '').toLowerCase() === 'approved' ? 'text-emerald-300' : 'text-rose-300');
+            const actions = pending
+                ? `<button type="button" onclick="viewPaymentRequestReceipt(${Number(row.id)})" class="font-bold text-[11px] px-2 py-1 rounded-lg ml-1" style="background:rgba(255,255,255,0.12);color:#e8d5a3">${escapeHtml(t('payreq.viewReceipt'))}</button>
+                   <button type="button" onclick="reviewPaymentRequest(${Number(row.id)}, 'approve', false)" class="font-bold text-[11px] px-2 py-1 rounded-lg ml-1" style="background:rgba(196,163,90,0.25);color:#f5ead0">${escapeHtml(t('payreq.approve'))}</button>
+                   <button type="button" onclick="reviewPaymentRequest(${Number(row.id)}, 'approve', true)" class="font-bold text-[11px] px-2 py-1 rounded-lg ml-1" style="background:#c4a35a;color:#0b2a4a">${escapeHtml(t('payreq.approveActivate'))}</button>
+                   <button type="button" onclick="reviewPaymentRequest(${Number(row.id)}, 'reject', false)" class="font-bold text-[11px] px-2 py-1 rounded-lg bg-rose-500/20 text-rose-200">${escapeHtml(t('payreq.reject'))}</button>`
+                : `<button type="button" onclick="viewPaymentRequestReceipt(${Number(row.id)})" class="font-bold text-[11px] px-2 py-1 rounded-lg" style="background:rgba(255,255,255,0.12);color:#e8d5a3">${escapeHtml(t('payreq.viewReceipt'))}</button>`;
+            return `<tr>
+                <td class="p-3 font-mono">${escapeHtml(row.paid_at ? String(row.paid_at).slice(0, 10) : '—')}</td>
+                <td class="p-3 font-bold">${escapeHtml(row.company_name || '—')}<div class="font-mono text-[10px]" style="color:#c4a35a">${escapeHtml(row.company_code || '')}</div></td>
+                <td class="p-3 font-bold">${escapeHtml(Number(row.amount || 0).toLocaleString('en-US'))}</td>
+                <td class="p-3 font-bold ${tone}">${escapeHtml(paymentRequestStatusLabel(row.status))}</td>
+                <td class="p-3">${escapeHtml(row.notes || row.created_by || '—')}</td>
+                <td class="p-3 text-center whitespace-nowrap">${actions}</td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        const missing = /Could not find the function|does not exist|42883|subscription_payment_requests/i.test(err?.message || '');
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(missing ? t('payreq.sqlMissing') : (err.message || t('payreq.sqlMissing')))}</td></tr>`;
+        if (stat) stat.textContent = '0';
+    }
+}
+
+function viewPaymentRequestReceipt(id) {
+    const row = platformPaymentRequestsCache.find((r) => Number(r.id) === Number(id));
+    if (!row?.receipt_data) {
+        alert(t('payreq.fileRequired'));
+        return;
+    }
+    const w = window.open('', '_blank');
+    if (!w) return;
+    const mime = row.receipt_mime || '';
+    const title = escapeHtml(row.receipt_name || `receipt-${id}`);
+    if (String(mime).includes('pdf') || String(row.receipt_data).startsWith('data:application/pdf')) {
+        w.document.write(`<title>${title}</title><embed src="${row.receipt_data}" type="application/pdf" width="100%" height="100%">`);
+    } else {
+        w.document.write(`<title>${title}</title><img src="${row.receipt_data}" style="max-width:100%;height:auto;display:block;margin:0 auto">`);
+    }
+    w.document.close();
+}
+
+async function reviewPaymentRequest(id, action, activate) {
+    const notes = action === 'reject'
+        ? (prompt(currentLang === 'en' ? 'Rejection note (optional):' : 'ملاحظة الرفض (اختياري):') || null)
+        : null;
+    try {
+        const { error } = await client.rpc('admin_review_payment_request', {
+            p_id: Number(id),
+            p_action: action,
+            p_review_notes: notes,
+            p_activate: !!activate,
+            p_extend_days: 365
+        });
+        if (error) throw error;
+        alert(t('payreq.reviewed'));
+        await loadPlatformDashboard();
+    } catch (err) {
+        alert(err.message || t('payreq.sqlMissing'));
     }
 }
 
@@ -5675,6 +6173,9 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     try {
         const core = [];
         if (typeof loadCompanySettings === 'function') core.push(loadCompanySettings());
+        if (typeof loadCompanySubscriptionCard === 'function') core.push(loadCompanySubscriptionCard().then(() => {
+            if (typeof paintDashboardExpiryAlerts === 'function') paintDashboardExpiryAlerts();
+        }));
         if (typeof loadDashboardData === 'function') core.push(loadDashboardData());
         if (typeof loadTripsData === 'function') core.push(loadTripsData());
         if (typeof loadTrucks === 'function') core.push(loadTrucks());
@@ -5735,9 +6236,28 @@ async function initReportFilters() {
                 box.textContent = t('ui.checkingDates');
                 return;
             }
+            const alerts = collectExpiryAlerts(dashboardExpiryCache.docs, dashboardExpiryCache.trucks, dashboardExpiryCache.drivers);
+            const sub = typeof companySubscriptionInfo !== 'undefined' ? companySubscriptionInfo : null;
+            if (sub) {
+                const ends = sub.subscription_ends_at ? String(sub.subscription_ends_at).slice(0, 10) : '';
+                const days = typeof daysUntilDate === 'function' ? daysUntilDate(ends) : null;
+                const ok = sub.access_ok !== false && typeof subscriptionAccessOk === 'function' && subscriptionAccessOk(sub);
+                if (!ok || (days != null && days <= EXPIRY_SOON_DAYS)) {
+                    alerts.unshift({
+                        category: currentLang === 'en' ? 'Subscription' : 'الاشتراك',
+                        name: sub.company_name || (currentLang === 'en' ? 'Company' : 'الشركة'),
+                        label: !ok
+                            ? (currentLang === 'en' ? 'Expired / suspended' : 'منتهٍ / موقوف')
+                            : (currentLang === 'en' ? 'Platform subscription' : 'اشتراك المنصة'),
+                        date: ends || new Date().toISOString().slice(0, 10),
+                        days: ok ? (days == null ? 0 : days) : -1,
+                        tab: 'settings'
+                    });
+                }
+            }
             renderExpiryAlerts(
                 'dashExpiryAlerts',
-                collectExpiryAlerts(dashboardExpiryCache.docs, dashboardExpiryCache.trucks, dashboardExpiryCache.drivers),
+                alerts,
                 t('ui.checkingExpiryEmpty')
             );
         }
@@ -7152,6 +7672,43 @@ const I18N = {
         'platform.noPayments': 'لا توجد دفعات',
         'platform.paymentSaved': 'تم تسجيل الدفعة.',
         'platform.paymentsSqlMissing': 'نفّذ ملف fleetop-subscription-payments.sql ثم أعد المحاولة.',
+        'support.whatsapp': 'دعم فني واتساب',
+        'sub.companyTitle': 'اشتراك الشركة',
+        'sub.companyHint': 'حالة الاشتراك وتنبيه قرب الانتهاء، مع التواصل للدعم الفني.',
+        'sub.loading': 'جاري تحميل حالة الاشتراك...',
+        'sub.alertOk': 'الاشتراك ساري. متبقٍ {days} يومًا.',
+        'sub.alertSoon': 'تنبيه: الاشتراك ينتهي خلال {days} يومًا في {date}. يُفضّل التجديد قريبًا.',
+        'sub.alertUrgent': 'عاجل: الاشتراك ينتهي خلال {days} يومًا في {date}. ارفع إيصال التحويل أو تواصل مع الدعم.',
+        'sub.alertExpired': 'الاشتراك منتهٍ أو موقوف. ارفع إيصال التحويل أو تواصل مع الدعم لتفعيل الحساب.',
+        'sub.alertUnknown': 'تعذر جلب حالة الاشتراك حالياً.',
+        'payreq.title': 'رفع إيصال التحويل البنكي',
+        'payreq.hint': 'بعد التحويل ارفع الإيصال هنا ليصل تنبيه للسوبر آدمن، ويمكنك أيضاً إرسال رسالة واتساب للدعم.',
+        'payreq.notesPh': 'مثال: تجديد اشتراك / تفعيل حساب',
+        'payreq.receipt': 'إيصال التحويل (صورة أو PDF)',
+        'payreq.receiptHint': 'الحد الأقصى 4 ميغابايت.',
+        'payreq.submit': 'إرسال الإيصال',
+        'payreq.whatsappNotify': 'إبلاغ الدعم عبر واتساب',
+        'payreq.submitted': 'تم إرسال الإيصال. سيظهر تنبيه في لوحة المنصة.',
+        'payreq.sqlMissing': 'نفّذ ملف fleetop-payment-requests.sql ثم أعد المحاولة.',
+        'payreq.adminOnly': 'رفع الإيصال متاح لمشرف الشركة فقط.',
+        'payreq.fileRequired': 'أرفق صورة أو ملف PDF للإيصال.',
+        'payreq.fileTooBig': 'حجم الإيصال كبير جداً (الحد 4 ميغابايت).',
+        'payreq.fileType': 'صيغة الإيصال غير مدعومة. استخدم صورة أو PDF.',
+        'payreq.none': 'لا توجد طلبات بعد.',
+        'payreq.pendingStat': 'إيصالات بانتظار المراجعة',
+        'payreq.platformTitle': 'طلبات التحويل والإيصالات',
+        'payreq.platformHint': 'تنبيهات من الشركات بعد رفع إيصال التحويل للتجديد أو التفعيل.',
+        'payreq.statusPending': 'بانتظار المراجعة',
+        'payreq.statusAll': 'الكل',
+        'payreq.statusApproved': 'معتمد',
+        'payreq.statusRejected': 'مرفوض',
+        'payreq.viewReceipt': 'عرض الإيصال',
+        'payreq.approve': 'اعتماد',
+        'payreq.approveActivate': 'اعتماد وتفعيل',
+        'payreq.reject': 'رفض',
+        'payreq.reviewed': 'تمت مراجعة الطلب.',
+        'payreq.waRenew': 'مرحباً دعم FleetOp، تم تحويل مبلغ الاشتراك لتجديد/تفعيل حساب شركتنا. رقم الطلب: {id}. الشركة: {company}. المبلغ: {amount}.',
+        'payreq.waSupport': 'مرحباً دعم FleetOp، أحتاج مساعدة فنية على النظام.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
@@ -7309,7 +7866,7 @@ const I18N = {
         'settings.cr': 'السجل التجاري',
         'settings.vat': 'الرقم الضريبي',
         'settings.address': 'العنوان',
-        'settings.logo': 'شعار الشركة (للتقارير)',
+        'settings.logo': 'شعار الشركة',
         'settings.save': 'حفظ إعدادات الشركة',
         'settings.saved': 'تم حفظ بيانات الشركة.',
         'print.by': 'طُبع بواسطة: ',
@@ -7683,6 +8240,43 @@ const I18N = {
         'platform.noPayments': 'No payments yet',
         'platform.paymentSaved': 'Payment recorded.',
         'platform.paymentsSqlMissing': 'Run fleetop-subscription-payments.sql then try again.',
+        'support.whatsapp': 'WhatsApp support',
+        'sub.companyTitle': 'Company subscription',
+        'sub.companyHint': 'Subscription status, expiry alerts, and support contact.',
+        'sub.loading': 'Loading subscription status…',
+        'sub.alertOk': 'Subscription is active. {days} days remaining.',
+        'sub.alertSoon': 'Notice: subscription ends in {days} days on {date}. Consider renewing soon.',
+        'sub.alertUrgent': 'Urgent: subscription ends in {days} days on {date}. Upload a transfer receipt or contact support.',
+        'sub.alertExpired': 'Subscription is expired or suspended. Upload a receipt or contact support to activate the account.',
+        'sub.alertUnknown': 'Could not load subscription status right now.',
+        'payreq.title': 'Upload bank transfer receipt',
+        'payreq.hint': 'After transferring, upload the receipt so the platform admin is notified. You can also message support on WhatsApp.',
+        'payreq.notesPh': 'Example: renewal / account activation',
+        'payreq.receipt': 'Transfer receipt (image or PDF)',
+        'payreq.receiptHint': 'Maximum 4 MB.',
+        'payreq.submit': 'Submit receipt',
+        'payreq.whatsappNotify': 'Notify support on WhatsApp',
+        'payreq.submitted': 'Receipt submitted. It will appear as an alert on the platform panel.',
+        'payreq.sqlMissing': 'Run fleetop-payment-requests.sql then try again.',
+        'payreq.adminOnly': 'Only the company admin can upload receipts.',
+        'payreq.fileRequired': 'Attach an image or PDF receipt.',
+        'payreq.fileTooBig': 'Receipt is too large (max 4 MB).',
+        'payreq.fileType': 'Unsupported file type. Use an image or PDF.',
+        'payreq.none': 'No requests yet.',
+        'payreq.pendingStat': 'Receipts awaiting review',
+        'payreq.platformTitle': 'Transfer requests & receipts',
+        'payreq.platformHint': 'Alerts from companies after uploading a transfer receipt for renewal or activation.',
+        'payreq.statusPending': 'Pending review',
+        'payreq.statusAll': 'All',
+        'payreq.statusApproved': 'Approved',
+        'payreq.statusRejected': 'Rejected',
+        'payreq.viewReceipt': 'View receipt',
+        'payreq.approve': 'Approve',
+        'payreq.approveActivate': 'Approve & activate',
+        'payreq.reject': 'Reject',
+        'payreq.reviewed': 'Request reviewed.',
+        'payreq.waRenew': 'Hello FleetOp support, we transferred the subscription payment to renew/activate our account. Request #{id}. Company: {company}. Amount: {amount}.',
+        'payreq.waSupport': 'Hello FleetOp support, I need technical help with the system.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
@@ -7840,7 +8434,7 @@ const I18N = {
         'settings.cr': 'Commercial registration',
         'settings.vat': 'VAT number',
         'settings.address': 'Address',
-        'settings.logo': 'Company logo (for reports)',
+        'settings.logo': 'Company logo',
         'settings.save': 'Save company settings',
         'settings.saved': 'Company details saved.',
         'print.by': 'Printed by: ',
@@ -8234,6 +8828,7 @@ function applyI18n() {
         btn.classList.toggle('bg-slate-100', currentLang !== 'en');
         btn.classList.toggle('text-slate-600', currentLang !== 'en');
     });
+    if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
 }
 
 function setAppLang(lang) {
@@ -8470,6 +9065,7 @@ function switchTab(tabId) {
             section.scrollTop = 0;
         }
         fillCompanySettingsForm();
+        if (typeof loadCompanySubscriptionCard === 'function') loadCompanySubscriptionCard();
         return;
     }
 
@@ -10295,6 +10891,7 @@ async function loadUsers(options = {}) {
             if (typeof switchTab === 'function') switchTab('dashboard');
 
             updateSidebarIdentity(user);
+            if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
 
             const financialMenu = document.getElementById('financialMenu');
             const canSeeFinance = user.role === 'admin' || user.role === 'accountant' || isSupportMode(user);
@@ -10456,6 +11053,7 @@ async function loadUsers(options = {}) {
                 });
             }
             setAppLang(currentLang);
+            if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
             syncSidebarToggleBtn();
             window.addEventListener('resize', syncSidebarToggleBtn);
             try {
