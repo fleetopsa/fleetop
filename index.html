@@ -782,7 +782,7 @@
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
                     <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.totalCompanies">إجمالي الشركات</p>
                     <p id="platformStatTotal" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
@@ -794,6 +794,10 @@
                 <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
                     <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.blockedSubs">منتهية / موقوفة</p>
                     <p id="platformStatBlocked" class="text-2xl font-black mt-1 text-rose-300">0</p>
+                </div>
+                <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
+                    <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.paymentsTotal">إجمالي التحصيل</p>
+                    <p id="platformStatPayments" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
                 </div>
             </div>
             <div class="rounded-2xl border p-4 sm:p-5" style="background:rgba(255,255,255,0.04);border-color:rgba(196,163,90,0.3)">
@@ -820,6 +824,52 @@
                         </thead>
                         <tbody id="platformCompaniesTable" class="divide-y" style="border-color:rgba(196,163,90,0.2)">
                             <tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border p-4 sm:p-5" style="background:rgba(255,255,255,0.04);border-color:rgba(196,163,90,0.3)">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="font-black text-sm" style="color:#f5ead0" data-i18n="platform.paymentsTitle">تحصيل الاشتراكات</h2>
+                        <p class="text-[11px] font-bold mt-1" style="color:#e8d5a3" data-i18n="platform.paymentsHint">سجّل المدفوعات واعرض الإجمالي حسب الشركة أو الفترة.</p>
+                    </div>
+                </div>
+                <form id="platformPaymentForm" onsubmit="saveSubscriptionPayment(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 mb-4">
+                    <select id="payCompanyId" required class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)"></select>
+                    <input type="number" id="payAmount" min="0.01" step="0.01" required placeholder="المبلغ" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)" data-i18n-placeholder="platform.amountPh">
+                    <input type="date" id="payDate" required class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)">
+                    <select id="payPlan" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)">
+                        <option value="basic" data-i18n="sub.planBasic">أساسي</option>
+                        <option value="pro" data-i18n="sub.planPro">احترافي</option>
+                    </select>
+                    <input type="text" id="payNotes" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)" data-i18n-placeholder="platform.notesPh" placeholder="ملاحظة">
+                    <button type="submit" class="font-bold text-xs rounded-xl px-3 py-2" style="background:#c4a35a;color:#0b2a4a" data-i18n="platform.addPayment">تسجيل دفعة</button>
+                </form>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-3">
+                    <select id="payFilterCompany" onchange="loadSubscriptionPayments()" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)"></select>
+                    <input type="date" id="payFilterFrom" onchange="loadSubscriptionPayments()" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)">
+                    <input type="date" id="payFilterTo" onchange="loadSubscriptionPayments()" class="p-2.5 rounded-xl text-xs outline-none" style="background:rgba(255,255,255,0.08);color:#f5ead0;border:1px solid rgba(196,163,90,0.35)">
+                    <div class="rounded-xl px-3 py-2 flex items-center justify-between" style="background:rgba(196,163,90,0.15);color:#f5ead0">
+                        <span class="text-[11px] font-bold" data-i18n="platform.filteredTotal">إجمالي الفلتر</span>
+                        <strong id="platformPaymentsFilteredTotal" class="font-black">0</strong>
+                    </div>
+                </div>
+                <div class="overflow-x-auto rounded-xl" style="background:rgba(255,255,255,0.03)">
+                    <table class="w-full text-right text-xs" style="color:#f5ead0">
+                        <thead style="background:rgba(196,163,90,0.15);color:#e8d5a3">
+                            <tr>
+                                <th class="p-3" data-i18n="th.date">التاريخ</th>
+                                <th class="p-3" data-i18n="sub.company">الشركة</th>
+                                <th class="p-3" data-i18n="platform.amount">المبلغ</th>
+                                <th class="p-3" data-i18n="sub.plan">الخطة</th>
+                                <th class="p-3" data-i18n="sub.notes">ملاحظة</th>
+                                <th class="p-3 text-center" data-i18n="th.actions">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="platformPaymentsTable" class="divide-y" style="border-color:rgba(196,163,90,0.2)">
+                            <tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">—</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -862,14 +912,21 @@
                             </button>
                         </div>
                         <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
-                        <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3">محمد القحطاني (مدير)</p>
+                        <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3"></p>
+                        <button type="button" id="supportReturnPlatformBtn" onclick="returnToPlatformDashboard()" class="hidden mt-2 w-full text-[10px] font-black rounded-lg px-2 py-1.5 transition" style="background:rgba(196,163,90,0.2);color:#e8d5a3">
+                            <i class="fa-solid fa-arrow-right-from-bracket ml-1"></i> <span data-i18n="platform.backToPanel">العودة للوحة المنصة</span>
+                        </button>
                         <script>
                             (function () {
                                 if (!localStorage.getItem('sessionUserId')) return;
                                 var name = localStorage.getItem('userName') || '';
                                 var role = localStorage.getItem('userRole');
-                                var roleName = role === 'admin' ? 'مدير' : (role === 'accountant' ? 'محاسب' : 'مستخدم');
-                                if (name) document.getElementById('currentUserBadge').textContent = name + ' (' + roleName + ')';
+                                var company = localStorage.getItem('fleetop_company_name') || '';
+                                var roleName = role === 'admin' ? 'مدير' : (role === 'accountant' ? 'محاسب' : (role === 'platform' ? 'دعم المنصة' : 'مستخدم'));
+                                var badge = document.getElementById('currentUserBadge');
+                                var side = document.getElementById('sidebarCompanyName');
+                                if (badge && name) badge.textContent = name + ' (' + roleName + ')';
+                                if (side && company) side.textContent = company;
                             })();
                         </script>
                     </div>
@@ -3170,11 +3227,45 @@ function isSuperAdminUser(user = currentLoggedInUser) {
     return !!(user && user.is_super_admin);
 }
 
+function isSupportMode(user = currentLoggedInUser) {
+    return !!(user && user.is_super_admin && user.is_support_mode);
+}
+
+function isPlatformHomeUser(user = currentLoggedInUser) {
+    return isSuperAdminUser(user) && !isSupportMode(user);
+}
+
 function isAdminUser(user = currentLoggedInUser) {
     if (!user) return false;
     if (isSuperAdminUser(user)) return true;
     const role = String(user.role || '').trim().toLowerCase();
     return role === 'admin' || role === 'مدير';
+}
+
+function updateSidebarIdentity(user = currentLoggedInUser) {
+    if (!user || isPlatformHomeUser(user)) return;
+    let roleName = 'مستخدم';
+    if (isSupportMode(user)) roleName = currentLang === 'en' ? 'Platform support' : 'دعم المنصة';
+    else if (user.role === 'admin') roleName = currentLang === 'en' ? t('role.admin') : 'مدير';
+    else if (user.role === 'accountant') roleName = currentLang === 'en' ? t('role.accountant') : 'محاسب';
+    else roleName = currentLang === 'en' ? t('role.user') : 'مستخدم';
+    const badge = document.getElementById('currentUserBadge');
+    if (badge) {
+        badge.textContent = `${user.employee_name || user.username || ''} (${roleName})`;
+    }
+    const side = document.getElementById('sidebarCompanyName');
+    if (side) {
+        const companyLabel = user.company_name
+            || companySettings.company_name_ar
+            || companySettings.company_name_en
+            || user.company_code
+            || localStorage.getItem('fleetop_company_name')
+            || '';
+        side.textContent = companyLabel;
+        if (companyLabel) localStorage.setItem('fleetop_company_name', companyLabel);
+    }
+    const returnBtn = document.getElementById('supportReturnPlatformBtn');
+    if (returnBtn) returnBtn.classList.toggle('hidden', !isSupportMode(user));
 }
 
 function normalizeCompanyCode(code) {
@@ -3225,9 +3316,15 @@ async function attachCompanyMeta(profile) {
             if (profile.company_code) {
                 localStorage.setItem('fleetop_company_code', normalizeCompanyCode(profile.company_code));
             }
+            if (profile.company_name) {
+                localStorage.setItem('fleetop_company_name', profile.company_name);
+            }
         }
     } catch (err) {
         console.warn('تعذر تحميل معرف الشركة:', err);
+    }
+    if (!profile.company_name) {
+        profile.company_name = localStorage.getItem('fleetop_company_name') || profile.company_code || '';
     }
     return profile;
 }
@@ -3298,15 +3395,26 @@ function showSupportCompanyError(message) {
 }
 
 async function openPlatformSession(user) {
-    currentLoggedInUser = { ...user, is_super_admin: true, role: 'admin', company_id: null };
+    currentLoggedInUser = {
+        ...user,
+        is_super_admin: true,
+        is_support_mode: false,
+        role: 'admin',
+        company_id: null,
+        company_code: PLATFORM_COMPANY_CODE,
+        company_name: ''
+    };
     pendingSupportProfile = null;
     try { await client.rpc('clear_support_company'); } catch (err) {}
     localStorage.setItem('fleetop_platform_session', '1');
+    localStorage.removeItem('fleetop_support_company_id');
     if (user && user.id != null) localStorage.setItem('sessionUserId', String(user.id));
     localStorage.setItem('userRole', 'platform');
     localStorage.setItem('userName', user.employee_name || user.username || '');
     document.documentElement.classList.remove('session-restoring', 'platform-restoring');
     setLoginBusy(false);
+    stopIdleWatch();
+    stopUserPresence();
     document.getElementById('loginSection')?.classList.add('hidden');
     document.getElementById('supportCompanyModal')?.classList.add('hidden');
     document.getElementById('mainDashboard')?.classList.add('hidden');
@@ -3322,6 +3430,25 @@ async function openPlatformSession(user) {
     await loadPlatformDashboard();
 }
 
+function fillPlatformCompanySelects() {
+    const options = [`<option value="">${t('platform.allCompanies')}</option>`]
+        .concat((subscriptionsCache || []).map((c) => `<option value="${Number(c.id)}">${escapeHtml(c.name || '')} (${escapeHtml(c.company_code || '')})</option>`));
+    const payCompany = document.getElementById('payCompanyId');
+    const filterCompany = document.getElementById('payFilterCompany');
+    if (payCompany) {
+        const current = payCompany.value;
+        payCompany.innerHTML = [`<option value="">${t('platform.chooseCompany')}</option>`]
+            .concat((subscriptionsCache || []).map((c) => `<option value="${Number(c.id)}">${escapeHtml(c.name || '')} (${escapeHtml(c.company_code || '')})</option>`))
+            .join('');
+        if (current) payCompany.value = current;
+    }
+    if (filterCompany) {
+        const current = filterCompany.value;
+        filterCompany.innerHTML = options.join('');
+        if (current) filterCompany.value = current;
+    }
+}
+
 async function loadPlatformDashboard() {
     const table = document.getElementById('platformCompaniesTable');
     if (!table) return;
@@ -3330,6 +3457,7 @@ async function loadPlatformDashboard() {
         const { data, error } = await client.rpc('list_support_companies');
         if (error) throw error;
         subscriptionsCache = data || [];
+        fillPlatformCompanySelects();
         const total = subscriptionsCache.length;
         const active = subscriptionsCache.filter((c) => subscriptionAccessOk(c)).length;
         const blocked = total - active;
@@ -3340,32 +3468,153 @@ async function loadPlatformDashboard() {
         setStat('platformStatTotal', total);
         setStat('platformStatActive', active);
         setStat('platformStatBlocked', blocked);
+        if (!document.getElementById('payDate')?.value) {
+            const payDate = document.getElementById('payDate');
+            if (payDate) payDate.value = new Date().toISOString().slice(0, 10);
+        }
         if (!total) {
             table.innerHTML = `<tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">${escapeHtml(t('support.noCompanies'))}</td></tr>`;
-            return;
+        } else {
+            table.innerHTML = subscriptionsCache.map((c) => {
+                const ok = subscriptionAccessOk(c);
+                const tone = ok ? 'text-emerald-300' : 'text-rose-300';
+                return `<tr>
+                    <td class="p-3 font-bold">${escapeHtml(c.name || '—')}</td>
+                    <td class="p-3 font-mono" style="color:#c4a35a">${escapeHtml(c.company_code || '—')}</td>
+                    <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
+                    <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
+                    <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg ml-1" style="background:#c4a35a;color:#0b2a4a">${escapeHtml(t('sub.edit'))}</button>
+                        <button type="button" onclick="enterSupportCompany(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg" style="background:rgba(255,255,255,0.12);color:#e8d5a3">${escapeHtml(t('platform.enterSupport'))}</button>
+                    </td>
+                </tr>`;
+            }).join('');
         }
-        table.innerHTML = subscriptionsCache.map((c) => {
-            const ok = subscriptionAccessOk(c);
-            const tone = ok ? 'text-emerald-300' : 'text-rose-300';
-            return `<tr>
-                <td class="p-3 font-bold">${escapeHtml(c.name || '—')}</td>
-                <td class="p-3 font-mono" style="color:#c4a35a">${escapeHtml(c.company_code || '—')}</td>
-                <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
-                <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
-                <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
-                <td class="p-3 text-center">
-                    <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="font-bold text-xs px-3 py-1.5 rounded-lg" style="background:#c4a35a;color:#0b2a4a">${escapeHtml(t('sub.edit'))}</button>
-                </td>
-            </tr>`;
-        }).join('');
+        await loadSubscriptionPayments();
     } catch (err) {
         console.error(err);
         table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
     }
 }
 
+async function loadSubscriptionPayments() {
+    const table = document.getElementById('platformPaymentsTable');
+    const totalEl = document.getElementById('platformPaymentsFilteredTotal');
+    const allTotalEl = document.getElementById('platformStatPayments');
+    if (!table) return;
+    const companyId = document.getElementById('payFilterCompany')?.value || '';
+    const from = document.getElementById('payFilterFrom')?.value || null;
+    const to = document.getElementById('payFilterTo')?.value || null;
+    try {
+        const { data, error } = await client.rpc('admin_list_subscription_payments', {
+            p_company_id: companyId ? Number(companyId) : null,
+            p_from: from || null,
+            p_to: to || null
+        });
+        if (error) throw error;
+        const rows = data || [];
+        const sum = rows.reduce((acc, row) => acc + (Number(row.amount) || 0), 0);
+        if (totalEl) totalEl.textContent = formatMoney(sum);
+        if (allTotalEl) allTotalEl.textContent = formatMoney(sum);
+        if (!rows.length) {
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8" style="color:#e8d5a3">${escapeHtml(t('platform.noPayments'))}</td></tr>`;
+            return;
+        }
+        table.innerHTML = rows.map((row) => `<tr>
+            <td class="p-3 font-mono">${escapeHtml(row.paid_at ? String(row.paid_at).slice(0, 10) : '—')}</td>
+            <td class="p-3 font-bold">${escapeHtml(row.company_name || '—')} <span class="font-mono" style="color:#c4a35a">${escapeHtml(row.company_code || '')}</span></td>
+            <td class="p-3 font-black">${escapeHtml(formatMoney(row.amount))}</td>
+            <td class="p-3">${escapeHtml(subscriptionPlanLabel(row.plan))}</td>
+            <td class="p-3">${escapeHtml(row.notes || '—')}</td>
+            <td class="p-3 text-center">
+                <button type="button" onclick="deleteSubscriptionPayment(${Number(row.id)})" class="text-rose-300 font-bold text-xs">${currentLang === 'en' ? 'Delete' : 'حذف'}</button>
+            </td>
+        </tr>`).join('');
+    } catch (err) {
+        console.error(err);
+        if (/Could not find the function|does not exist|42883|subscription_payments/i.test(err.message || '')) {
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(t('platform.paymentsSqlMissing'))}</td></tr>`;
+            return;
+        }
+        table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-300">${escapeHtml(err.message || t('sub.loadFailed'))}</td></tr>`;
+    }
+}
+
+async function saveSubscriptionPayment(e) {
+    e.preventDefault();
+    const companyId = Number(document.getElementById('payCompanyId')?.value || 0);
+    const amount = Number(document.getElementById('payAmount')?.value || 0);
+    const paidAt = document.getElementById('payDate')?.value || null;
+    const plan = document.getElementById('payPlan')?.value || 'basic';
+    const notes = document.getElementById('payNotes')?.value || null;
+    try {
+        const { error } = await client.rpc('admin_add_subscription_payment', {
+            p_company_id: companyId,
+            p_amount: amount,
+            p_paid_at: paidAt,
+            p_plan: plan,
+            p_period_start: null,
+            p_period_end: null,
+            p_notes: notes
+        });
+        if (error) throw error;
+        document.getElementById('payAmount').value = '';
+        document.getElementById('payNotes').value = '';
+        await loadSubscriptionPayments();
+        alert(t('platform.paymentSaved'));
+    } catch (err) {
+        alert(err.message || t('platform.paymentsSqlMissing'));
+    }
+}
+
+async function deleteSubscriptionPayment(id) {
+    if (!confirm(currentLang === 'en' ? 'Delete this payment?' : 'حذف هذه الدفعة؟')) return;
+    try {
+        const { error } = await client.rpc('admin_delete_subscription_payment', { p_id: Number(id) });
+        if (error) throw error;
+        await loadSubscriptionPayments();
+    } catch (err) {
+        alert(err.message || t('sub.loadFailed'));
+    }
+}
+
+async function enterSupportCompany(companyId) {
+    if (!isSuperAdminUser()) return;
+    try {
+        const { error } = await client.rpc('set_support_company', { p_company_id: Number(companyId) });
+        if (error) throw error;
+        let profile = {
+            ...(currentLoggedInUser || {}),
+            is_super_admin: true,
+            is_support_mode: true,
+            role: 'admin',
+            company_id: Number(companyId)
+        };
+        profile = await attachCompanyMeta(profile);
+        localStorage.setItem('fleetop_support_company_id', String(companyId));
+        localStorage.removeItem('fleetop_platform_session');
+        openSession(profile);
+    } catch (err) {
+        alert(err.message || t('support.loadFailed'));
+    }
+}
+
+async function returnToPlatformDashboard() {
+    if (!isSuperAdminUser()) return;
+    localStorage.removeItem('fleetop_support_company_id');
+    const profile = {
+        ...(currentLoggedInUser || {}),
+        is_super_admin: true,
+        is_support_mode: false,
+        company_id: null,
+        company_code: PLATFORM_COMPANY_CODE,
+        company_name: ''
+    };
+    await openPlatformSession(profile);
+}
+
 async function openSupportCompanyPicker() {
-    // لم يعد مستخدماً: السوبر أدمن يعمل من لوحة المنصة فقط
     if (pendingSupportProfile || isSuperAdminUser()) {
         await openPlatformSession(pendingSupportProfile || currentLoggedInUser);
     }
@@ -6888,6 +7137,21 @@ const I18N = {
         'platform.companiesTitle': 'إدارة الشركات والاشتراكات',
         'platform.companiesHint': 'لا يظهر حساب المنصة داخل سجلات الشركات، والإدارة تتم من هنا فقط.',
         'platform.refresh': 'تحديث',
+        'platform.enterSupport': 'دخول للدعم',
+        'platform.backToPanel': 'العودة للوحة المنصة',
+        'platform.paymentsTitle': 'تحصيل الاشتراكات',
+        'platform.paymentsHint': 'سجّل المدفوعات واعرض الإجمالي حسب الشركة أو الفترة.',
+        'platform.paymentsTotal': 'إجمالي التحصيل',
+        'platform.filteredTotal': 'إجمالي الفلتر',
+        'platform.addPayment': 'تسجيل دفعة',
+        'platform.amount': 'المبلغ',
+        'platform.amountPh': 'المبلغ',
+        'platform.notesPh': 'ملاحظة',
+        'platform.chooseCompany': 'اختر الشركة',
+        'platform.allCompanies': 'كل الشركات',
+        'platform.noPayments': 'لا توجد دفعات',
+        'platform.paymentSaved': 'تم تسجيل الدفعة.',
+        'platform.paymentsSqlMissing': 'نفّذ ملف fleetop-subscription-payments.sql ثم أعد المحاولة.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
@@ -7404,6 +7668,21 @@ const I18N = {
         'platform.companiesTitle': 'Companies and subscriptions',
         'platform.companiesHint': 'The platform account never appears in company activity logs. Manage everything here.',
         'platform.refresh': 'Refresh',
+        'platform.enterSupport': 'Enter support',
+        'platform.backToPanel': 'Back to platform panel',
+        'platform.paymentsTitle': 'Subscription collections',
+        'platform.paymentsHint': 'Record payments and view totals by company or period.',
+        'platform.paymentsTotal': 'Total collected',
+        'platform.filteredTotal': 'Filtered total',
+        'platform.addPayment': 'Record payment',
+        'platform.amount': 'Amount',
+        'platform.amountPh': 'Amount',
+        'platform.notesPh': 'Note',
+        'platform.chooseCompany': 'Choose company',
+        'platform.allCompanies': 'All companies',
+        'platform.noPayments': 'No payments yet',
+        'platform.paymentSaved': 'Payment recorded.',
+        'platform.paymentsSqlMissing': 'Run fleetop-subscription-payments.sql then try again.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 4 characters.',
@@ -7967,9 +8246,13 @@ function setAppLang(lang) {
     setPageHeader(currentNavTab);
     applyCompanyBranding();
     if (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) {
-        const roleKey = currentLoggedInUser.role === 'admin' ? 'role.admin' : (currentLoggedInUser.role === 'accountant' ? 'role.accountant' : 'role.user');
-        const badge = document.getElementById('currentUserBadge');
-        if (badge) badge.textContent = (currentLoggedInUser.employee_name || currentLoggedInUser.username || '') + ' (' + t(roleKey) + ')';
+        updateSidebarIdentity(currentLoggedInUser);
+        if (isPlatformHomeUser(currentLoggedInUser)) {
+            const platformBadge = document.getElementById('platformUserBadge');
+            if (platformBadge) {
+                platformBadge.textContent = `${currentLoggedInUser.employee_name || currentLoggedInUser.username || ''} · ${t('platform.role')}`;
+            }
+        }
         if (typeof renderAdminControls === 'function') renderAdminControls();
         if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
@@ -8008,15 +8291,17 @@ function applyCompanyBranding() {
     const sloganAr = companySettings.slogan_ar || t('login.tagline');
     const sloganEn = companySettings.slogan_en || 'Fleet & Trips Management';
     const display = currentLang === 'en' ? (nameEn || nameAr) : (nameAr || nameEn);
-    const fallback = (currentLoggedInUser && (currentLoggedInUser.company_name || currentLoggedInUser.company_code)) || '';
-    const side = document.getElementById('sidebarCompanyName');
-    if (side && !isSuperAdminUser()) side.textContent = display || fallback || side.textContent || '';
+    if (display && currentLoggedInUser && !isPlatformHomeUser()) {
+        currentLoggedInUser.company_name = display;
+        localStorage.setItem('fleetop_company_name', display);
+    }
+    if (!isPlatformHomeUser()) updateSidebarIdentity(currentLoggedInUser);
     const arEl = document.getElementById('printCompanyNameAr');
     const enEl = document.getElementById('printCompanyNameEn');
     const arSlogan = document.getElementById('printCompanySloganAr');
     const enSlogan = document.getElementById('printCompanySloganEn');
-    if (arEl) arEl.textContent = nameAr || nameEn || 'Company';
-    if (enEl) enEl.textContent = nameEn || nameAr || 'Company';
+    if (arEl) arEl.textContent = nameAr || nameEn || (currentLoggedInUser && currentLoggedInUser.company_name) || 'Company';
+    if (enEl) enEl.textContent = nameEn || nameAr || (currentLoggedInUser && currentLoggedInUser.company_name) || 'Company';
     if (arSlogan) arSlogan.textContent = sloganAr;
     if (enSlogan) enSlogan.textContent = sloganEn;
     const logos = ['printCompanyLogo', 'companyLogoPreview'];
@@ -9988,15 +10273,15 @@ async function loadUsers(options = {}) {
         }
 
         function openSession(user) {
-            if (isSuperAdminUser(user)) {
+            if (isPlatformHomeUser(user)) {
                 openPlatformSession(user);
                 return;
             }
             currentLoggedInUser = user;
-            localStorage.removeItem('fleetop_platform_session');
+            if (!isSupportMode(user)) localStorage.removeItem('fleetop_platform_session');
             if (user && user.id != null) localStorage.setItem('sessionUserId', String(user.id));
-            localStorage.setItem('userRole', user.role || '');
-            localStorage.setItem('userName', user.employee_name || '');
+            localStorage.setItem('userRole', isSupportMode(user) ? 'platform' : (user.role || ''));
+            localStorage.setItem('userName', user.employee_name || user.username || '');
             if (user.company_name) localStorage.setItem('fleetop_company_name', user.company_name);
 
             document.documentElement.classList.remove('session-restoring', 'platform-restoring');
@@ -10009,17 +10294,10 @@ async function loadUsers(options = {}) {
             if (typeof clearAllPageFilters === 'function') clearAllPageFilters();
             if (typeof switchTab === 'function') switchTab('dashboard');
 
-            let roleName = 'مستخدم';
-            if (user.role === 'admin') roleName = 'مدير';
-            else if (user.role === 'accountant') roleName = 'محاسب';
-            document.getElementById('currentUserBadge').innerText = (user.employee_name || user.username || '') + ' (' + roleName + ')';
-            const sidebarCompany = document.getElementById('sidebarCompanyName');
-            if (sidebarCompany) {
-                sidebarCompany.textContent = user.company_name || user.company_code || localStorage.getItem('fleetop_company_name') || '';
-            }
+            updateSidebarIdentity(user);
 
             const financialMenu = document.getElementById('financialMenu');
-            const canSeeFinance = user.role === 'admin' || user.role === 'accountant';
+            const canSeeFinance = user.role === 'admin' || user.role === 'accountant' || isSupportMode(user);
             if (financialMenu) financialMenu.classList.toggle('hidden', !canSeeFinance);
             toggleFinancialMenu(false);
 
@@ -10032,17 +10310,23 @@ async function loadUsers(options = {}) {
             }
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
-            if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin');
+            if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
             const tabSubscriptionsBtn = document.getElementById('tabSubscriptionsBtn');
             if (tabSubscriptionsBtn) tabSubscriptionsBtn.classList.add('hidden');
             const systemMenu = document.getElementById('systemMenu');
-            if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin');
+            if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
             toggleSystemMenu(false);
             setAppLang(currentLang);
+            updateSidebarIdentity(currentLoggedInUser);
             sessionEndFlushed = false;
             syncSidebarToggleBtn();
-            startUserPresence();
-            startIdleWatch();
+            if (!isSupportMode(user)) {
+                startUserPresence();
+                startIdleWatch();
+            } else {
+                stopUserPresence();
+                stopIdleWatch();
+            }
             if (typeof loadAllData === 'function') loadAllData();
         }
 
@@ -10067,6 +10351,23 @@ async function loadUsers(options = {}) {
                     return;
                 }
                 if (isSuperAdminUser(profile)) {
+                    const supportCompanyId = Number(localStorage.getItem('fleetop_support_company_id') || 0);
+                    if (supportCompanyId) {
+                        try {
+                            await client.rpc('set_support_company', { p_company_id: supportCompanyId });
+                            profile = await attachCompanyMeta({
+                                ...profile,
+                                is_super_admin: true,
+                                is_support_mode: true,
+                                role: 'admin',
+                                company_id: supportCompanyId
+                            });
+                            openSession(profile);
+                            return;
+                        } catch (err) {
+                            localStorage.removeItem('fleetop_support_company_id');
+                        }
+                    }
                     await openPlatformSession(profile);
                     return;
                 }
