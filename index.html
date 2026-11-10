@@ -3002,7 +3002,7 @@ function authEmailFor(username, companyCode) {
     if (value.includes('@')) return value;
     const code = normalizeCompanyCode(companyCode);
     if (!code) return value + '@fleetop.internal';
-    return value + '@' + code + '.fleetop.internal';
+    return value + '.' + code + '@fleetop.internal';
 }
 
 function currentCompanyId(user = currentLoggedInUser) {
