@@ -3098,6 +3098,7 @@
             const user = currentLoggedInUser;
             if (!user?.id || idleLogoutBusy || sessionEndFlushed) return;
             sessionEndFlushed = true;
+            // نفس التبويب يحتفظ بـ sessionStorage عند التحديث، فيُستثنى من تسجيل الخروج.
             try { sessionStorage.setItem('fleetop_page_unloading', String(Date.now())); } catch (err) {}
             const offlineAt = new Date(Date.now() - PRESENCE_ONLINE_MS * 2).toISOString();
             presenceByUserId[String(user.id)] = offlineAt;
@@ -3105,17 +3106,16 @@
                 user_id: Number(user.id),
                 last_seen_at: offlineAt
             }, 'resolution=merge-duplicates,return=minimal');
-            keepaliveSupabaseWrite('activity_log', [{
-                user_id: String(user.id),
-                username: String(user.username || '').trim(),
-                employee_name: String(user.employee_name || '').trim(),
-                role: user.role || '',
-                action: 'logout.close',
-                entity: 'session',
-                entity_no: String(user.username || ''),
-                details: (user.employee_name || '') + (document.documentElement.lang === 'en' ? ' · browser/device closed' : ' · إغلاق المتصفح أو الجهاز')
-            }]);
-            try { sessionStorage.removeItem(activitySessionFlag(user.id)); } catch (err) {}
+        }
+
+        function recentSameTabReload() {
+            try {
+                const ts = Number(sessionStorage.getItem('fleetop_page_unloading') || 0);
+                if (!ts) return false;
+                return Date.now() - ts < 60000;
+            } catch (err) {
+                return false;
+            }
         }
 
         function isLogoutAction(action) {
@@ -11711,8 +11711,19 @@ async function loadUsers(options = {}) {
                     await openPlatformSession(profile);
                     return;
                 }
-                if (await sessionAbandonedByPresence(profile.id)) {
+                const sameTabReload = recentSameTabReload();
+                try { sessionStorage.removeItem('fleetop_page_unloading'); } catch (err) {}
+                if (!sameTabReload && await sessionAbandonedByPresence(profile.id)) {
                     try { sessionStorage.removeItem(activitySessionFlag(profile.id)); } catch (err) {}
+                    try {
+                        await logActivity(
+                            'logout.close',
+                            'session',
+                            profile.username || '',
+                            (profile.employee_name || '') + (currentLang === 'en' ? ' · browser/device closed' : ' · إغلاق المتصفح أو الجهاز'),
+                            profile
+                        );
+                    } catch (err) {}
                     await client.auth.signOut();
                     clearStoredSession();
                     document.body.classList.remove('dashboard-active');
