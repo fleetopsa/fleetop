@@ -4262,10 +4262,32 @@ async function loadCompanySubscriptionCard() {
     if (payCard) payCard.classList.toggle('hidden', !(isAdminUser() || isSupportMode()));
     try {
         const companyId = currentCompanyId();
-        const { data, error } = await client.rpc('get_company_subscription', companyId != null ? { p_company_id: companyId } : {});
-        if (error) throw error;
-        const row = Array.isArray(data) ? data[0] : data;
-        paintCompanySubscriptionCard(row);
+        let row = null;
+        const rpc = await client.rpc('get_company_subscription', companyId != null ? { p_company_id: companyId } : {});
+        if (!rpc.error) {
+            row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
+        }
+        if (!row && companyId != null) {
+            const direct = await client
+                .from('companies')
+                .select('id, name, company_code, subscription_plan, subscription_status, subscription_starts_at, subscription_ends_at, subscription_notes')
+                .eq('id', companyId)
+                .maybeSingle();
+            if (!direct.error && direct.data) {
+                row = {
+                    company_id: direct.data.id,
+                    company_name: direct.data.name,
+                    company_code: direct.data.company_code,
+                    subscription_plan: direct.data.subscription_plan,
+                    subscription_status: direct.data.subscription_status,
+                    subscription_starts_at: direct.data.subscription_starts_at,
+                    subscription_ends_at: direct.data.subscription_ends_at,
+                    subscription_notes: direct.data.subscription_notes,
+                    access_ok: subscriptionAccessOk(direct.data)
+                };
+            }
+        }
+        paintCompanySubscriptionCard(row || null);
     } catch (err) {
         console.warn('company subscription card:', err);
         paintCompanySubscriptionCard(null);
