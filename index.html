@@ -3454,6 +3454,17 @@
             try { localStorage.removeItem(PENDING_REGISTER_KEY); } catch (err) {}
         }
 
+        function discardStalePendingRegister() {
+            // لا تُستعاد شاشة انتظار الإيميل بعد إعادة فتح المتصفح،
+            // وخصوصاً عند تعطيل تأكيد البريد.
+            if (!FLEETOP_REQUIRE_EMAIL_VERIFY) {
+                clearPendingRegister();
+                return true;
+            }
+            clearPendingRegister();
+            return true;
+        }
+
         function showRegisterOtpStep(show) {
             const details = document.getElementById('registerDetailsStep');
             const otp = document.getElementById('registerOtpStep');
@@ -3493,6 +3504,7 @@
         }
 
         function backToRegisterDetails() {
+            clearPendingRegister();
             document.getElementById('registerError')?.classList.add('hidden');
             showRegisterOtpStep(false);
         }
@@ -3518,13 +3530,9 @@
             document.getElementById('loginError')?.classList.add('hidden');
             document.getElementById('registerError')?.classList.add('hidden');
             if (authTab === 'register') {
-                const pending = loadPendingRegister();
-                if (pending?.email) {
-                    showRegisterOtpStep(true);
-                } else {
-                    clearRegisterForm();
-                    setTimeout(() => document.getElementById('registerCompanyName')?.focus(), 0);
-                }
+                // لا تُعد شاشة انتظار الإيميل تلقائياً من localStorage؛ فقط نموذج إنشاء حساب نظيف
+                clearRegisterForm();
+                setTimeout(() => document.getElementById('registerCompanyName')?.focus(), 0);
             } else {
                 showRegisterOtpStep(false);
             }
@@ -11606,11 +11614,8 @@ async function loadUsers(options = {}) {
                 if (!authUser) {
                     clearStoredSession();
                     document.body.classList.remove('dashboard-active');
-                    const pendingOnly = loadPendingRegister();
-                    if (pendingOnly?.email && typeof switchAuthTab === 'function' && FLEETOP_PUBLIC_REGISTER) {
-                        switchAuthTab('register');
-                        showRegisterOtpStep(true);
-                    }
+                    // cold start: دائماً شاشة الدخول، ولا تُستعاد شاشة انتظار الإيميل
+                    if (typeof switchAuthTab === 'function') switchAuthTab('login');
                     return;
                 }
                 let profile = await loadAppProfile(authUser.id);
@@ -11619,7 +11624,8 @@ async function loadUsers(options = {}) {
                 }
                 if (!profile) {
                     const email = String(authUser.email || '').toLowerCase();
-                    if (email && !email.endsWith('@fleetop.internal')) {
+                    // أكمل التسجيل فقط إذا كان تأكيد البريد مفعّلاً وهناك جلسة بريد مؤكدة حية
+                    if (FLEETOP_REQUIRE_EMAIL_VERIFY && email && !email.endsWith('@fleetop.internal')) {
                         setLoginBusy(true);
                         try {
                             await finishRegisterAfterEmailConfirm();
@@ -11630,7 +11636,9 @@ async function loadUsers(options = {}) {
                     }
                     await client.auth.signOut();
                     clearStoredSession();
+                    clearPendingRegister();
                     document.body.classList.remove('dashboard-active');
+                    if (typeof switchAuthTab === 'function') switchAuthTab('login');
                     return;
                 }
                 if (profile.status === 'موقوف') {
@@ -11722,7 +11730,9 @@ async function loadUsers(options = {}) {
             if (focusEl) focusEl.focus();
         }
         document.addEventListener("DOMContentLoaded", () => {
+            if (typeof discardStalePendingRegister === 'function') discardStalePendingRegister();
             if (typeof applyPublicRegisterGate === 'function') applyPublicRegisterGate();
+            if (typeof switchAuthTab === 'function') switchAuthTab('login');
             const logoInput = document.getElementById('companyLogoFile');
             if (logoInput) {
                 logoInput.addEventListener('change', (event) => {
