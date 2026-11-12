@@ -116,7 +116,7 @@
             .truck-card-fixed { width: 11rem; max-width: 100%; }
         }
         .print-only { display: none !important; }
-        @page { size: A4; margin: 14mm 18mm 16mm 18mm; }
+        @page { size: auto; margin: 10mm 12mm; }
         body.is-printing {
             background: #fff !important;
             height: auto !important;
@@ -145,8 +145,36 @@
             border-radius: 0 !important;
             box-shadow: none !important;
             background: #fff !important;
-            padding: 0 12mm !important;
+            padding: 0 !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
+        }
+        body.is-printing main.print-target,
+        body.is-printing main.print-target .grid,
+        body.is-printing main.print-target .overflow-x-auto {
+            max-width: 100% !important;
+            min-width: 0 !important;
+        }
+        body.is-printing main.print-target table {
+            min-width: 0 !important;
+            width: 100% !important;
+            table-layout: fixed;
+        }
+        body.is-printing main.print-target th,
+        body.is-printing main.print-target td {
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            padding: 1.6mm 1.4mm !important;
+            font-size: 9.5pt !important;
+        }
+        body.is-printing #financialOverviewSection > .grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 3mm !important;
+        }
+        body.is-printing #financialOverviewSection .text-2xl {
+            font-size: 13pt !important;
         }
         body.is-printing #mainDashboard > .flex-grow {
             display: block !important;
