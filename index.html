@@ -10445,8 +10445,8 @@ function renderTripsTable(trips) {
                         <div class="text-[10px] text-slate-400 font-mono">${t('ui.date')}: ${tr.departure_date} (${tv(tr.trip_type || 'ذهاب')})</div>
                     </td>
                     <td class="p-3.5">
-                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${t('ui.plateLabel')}: ${tr.truck_plate}</div>
-                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${t('ui.driverLabel')}: ${tr.driver_name}</div>
+                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${tr.truck_plate}</div>
+                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${tr.driver_name}</div>
                     </td>
                     <td class="p-3.5 font-mono text-[11px]">
                         ${isCancelledTrip(tr) ? `
