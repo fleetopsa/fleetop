@@ -7175,6 +7175,8 @@ function toggleMobileNav(forceOpen) {
         dash?.classList.toggle('sidebar-pinned', open);
         sidebar.classList.remove('is-open');
         if (backdrop) backdrop.classList.remove('is-open');
+        if (open) openCurrentSidebarPath();
+        else collapseSidebarSubmenus();
         syncSidebarToggleBtn();
         return;
     }
@@ -7235,6 +7237,50 @@ function toggleVehiclesMenu(forceOpen) {
 function toggleStaffMenu(forceOpen) {
     if (forceOpen !== false) toggleFacilityMenu(true);
     toggleSidebarSubmenu('staffSubMenu', 'staffMenuChevron', forceOpen);
+}
+
+function collapseSidebarSubmenus() {
+    [
+        ['facilitySubMenu', 'facilityMenuChevron'],
+        ['vehiclesSubMenu', 'vehiclesMenuChevron'],
+        ['staffSubMenu', 'staffMenuChevron'],
+        ['reportsSubMenu', 'reportsMenuChevron'],
+        ['financialSubMenu', 'financialMenuChevron'],
+        ['systemSubMenu', 'systemMenuChevron']
+    ].forEach(([subId, chevronId]) => toggleSidebarSubmenu(subId, chevronId, false));
+}
+
+function openCurrentSidebarPath() {
+    const tabId = currentNavTab || '';
+    if (['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId)) {
+        toggleFinancialMenu(true);
+    } else if (tabId === 'reports' || tabId === 'reportsSection') {
+        toggleReportsMenu(true);
+    } else if (tabId === 'maintenance' || tabId === 'trucks' || tabId === 'otherVehicles') {
+        toggleVehiclesMenu(true);
+    } else if (tabId === 'drivers' || tabId === 'employees') {
+        toggleStaffMenu(true);
+    } else if (tabId === 'facility') {
+        toggleFacilityMenu(true);
+    } else if (tabId === 'settings' || tabId === 'activityLog' || tabId === 'activityLogSection') {
+        toggleSystemMenu(true);
+    }
+}
+
+function bindSidebarSubmenuCollapse() {
+    const sidebar = document.getElementById('appSidebar');
+    if (!sidebar || sidebar.dataset.submenuBound) return;
+    sidebar.dataset.submenuBound = '1';
+    sidebar.addEventListener('mouseenter', () => {
+        if (!isDesktopSidebarLayout()) return;
+        if (document.getElementById('mainDashboard')?.classList.contains('sidebar-pinned')) return;
+        openCurrentSidebarPath();
+    });
+    sidebar.addEventListener('mouseleave', () => {
+        if (!isDesktopSidebarLayout()) return;
+        if (document.getElementById('mainDashboard')?.classList.contains('sidebar-pinned')) return;
+        collapseSidebarSubmenus();
+    });
 }
 
 let currentVehicleKind = 'شاحنة';
@@ -12046,6 +12092,7 @@ async function loadUsers(options = {}) {
             setAppLang(currentLang);
             if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
             syncSidebarToggleBtn();
+            bindSidebarSubmenuCollapse();
             window.addEventListener('resize', syncSidebarToggleBtn);
             try {
                 const savedCode = localStorage.getItem('fleetop_company_code') || '';
