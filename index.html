@@ -4696,38 +4696,45 @@ async function sendRegisterEmailLink(email) {
 
 function mapRegisterRpcError(msg) {
     if (/يجب تأكيد البريد|البريد غير مؤكد/i.test(msg)) return t('login.registerEmailNotVerified');
-    if (/Could not find the function|function .* does not exist|42883|p_email/i.test(msg)) return t('login.registerEmailSqlMissing');
+    if (/لا يوجد طلب تسجيل/i.test(msg)) return t('login.registerPendingMissing');
+    if (/Could not find the function|function .* does not exist|42883|save_registration_pending|complete_verified_registration/i.test(msg)) {
+        return t('login.registerEmailSqlMissing');
+    }
     if (/معرف الشركة مستخدم/i.test(msg)) return t('login.companyCodeTaken');
     if (/اسم المستخدم مستخدم/i.test(msg)) return t('login.registerUsernameTaken');
     return msg || t('login.registerFailed');
 }
 
-async function finishRegisterAfterEmailConfirm(payload) {
-    const { error } = await client.rpc('register_company_admin', {
-        p_company_name: payload.companyName,
-        p_company_code: payload.normalizedCode,
-        p_username: payload.username,
-        p_employee_name: payload.employeeName,
-        p_password: payload.password,
-        p_email: payload.email
-    });
+async function finishRegisterAfterEmailConfirm() {
+    const localPending = loadPendingRegister();
+    const { data, error } = await client.rpc('complete_verified_registration');
     if (error) {
         try { await client.auth.signOut(); } catch (signOutErr) {}
         if (typeof switchAuthTab === 'function') switchAuthTab('register');
-        showRegisterOtpStep(true);
+        showRegisterOtpStep(!!localPending?.email);
         showLoginError(mapRegisterRpcError(String(error.message || '')), 'registerError');
+        document.getElementById('loginSection')?.classList.remove('hidden');
+        document.documentElement.classList.remove('session-restoring');
         return false;
     }
-    const code = payload.normalizedCode;
-    const username = payload.username;
-    const password = payload.password;
+    const row = Array.isArray(data) ? data[0] : data;
+    const code = row?.company_code || localPending?.normalizedCode || '';
+    const username = row?.username || localPending?.username || '';
+    const password = localPending?.password || '';
     clearPendingRegister();
     try { await client.auth.signOut(); } catch (signOutErr) {}
     document.getElementById('companyCodeInput').value = code;
     localStorage.setItem('fleetop_company_code', code);
     clearRegisterForm();
     if (typeof switchAuthTab === 'function') switchAuthTab('login');
-    return completeAuthLogin(username, password, code, 'registerError');
+    if (password && username && code) {
+        return completeAuthLogin(username, password, code, 'loginError');
+    }
+    document.getElementById('usernameInput').value = username;
+    showLoginError(t('login.registerCreatedLogin'), 'loginError');
+    document.getElementById('loginSection')?.classList.remove('hidden');
+    document.documentElement.classList.remove('session-restoring');
+    return true;
 }
 
 async function handleRegister(e) {
@@ -4751,6 +4758,15 @@ async function handleRegister(e) {
 
     setLoginBusy(true);
     try {
+        const { error: saveError } = await client.rpc('save_registration_pending', {
+            p_company_name: payload.companyName,
+            p_company_code: payload.normalizedCode,
+            p_username: payload.username,
+            p_employee_name: payload.employeeName,
+            p_password: payload.password,
+            p_email: payload.email
+        });
+        if (saveError) throw saveError;
         await sendRegisterEmailLink(payload.email);
         savePendingRegister(payload);
         showRegisterOtpStep(true);
@@ -4761,10 +4777,14 @@ async function handleRegister(e) {
             showLoginError(t('login.registerOtpRateLimit'), 'registerError');
         } else if (/redirect|url not allowed|whitelist/i.test(msg)) {
             showLoginError(t('login.registerRedirectNotAllowed'), 'registerError');
+        } else if (/Could not find the function|function .* does not exist|42883|save_registration_pending/i.test(msg)) {
+            showLoginError(t('login.registerEmailSqlMissing'), 'registerError');
+        } else if (/معرف الشركة مستخدم/i.test(msg)) {
+            showLoginError(t('login.companyCodeTaken'), 'registerError');
         } else if (/email|smtp|sending/i.test(msg)) {
             showLoginError(t('login.registerOtpEmailFailed'), 'registerError');
         } else {
-            showLoginError(msg || t('login.registerFailed'), 'registerError');
+            showLoginError(mapRegisterRpcError(msg), 'registerError');
         }
     } finally {
         setLoginBusy(false);
@@ -8135,6 +8155,8 @@ const I18N = {
         'login.registerRedirectNotAllowed': 'أضف رابط الموقع في Authentication → URL Configuration → Redirect URLs.',
         'login.registerEmailNotVerified': 'يجب تأكيد البريد أولاً عبر الرابط.',
         'login.registerEmailSqlMissing': 'نفّذ ملف fleetop-register-email.sql ثم أعد المحاولة.',
+        'login.registerPendingMissing': 'انتهت صلاحية طلب التسجيل أو فُتح الرابط قبل الحفظ. أعد إنشاء الحساب وأرسل الرابط مرة أخرى.',
+        'login.registerCreatedLogin': 'تم إنشاء الحساب. سجّل الدخول بنفس كلمة المرور التي اخترتها.',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.',
         'login.registerPasswordWeak': 'كلمة المرور يجب أن تحتوي على حرف ورقم على الأقل.',
@@ -8744,6 +8766,8 @@ const I18N = {
         'login.registerRedirectNotAllowed': 'Add your site URL in Authentication → URL Configuration → Redirect URLs.',
         'login.registerEmailNotVerified': 'Confirm your email via the link first.',
         'login.registerEmailSqlMissing': 'Run fleetop-register-email.sql then try again.',
+        'login.registerPendingMissing': 'Registration request expired or the link was opened too early. Create the account again and resend the link.',
+        'login.registerCreatedLogin': 'Account created. Sign in with the password you chose.',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 8 characters.',
         'login.registerPasswordWeak': 'Password must include at least one letter and one number.',
@@ -11547,12 +11571,11 @@ async function loadUsers(options = {}) {
                     profile = await loadPlatformAdminProfile(authUser.id);
                 }
                 if (!profile) {
-                    const pending = loadPendingRegister();
                     const email = String(authUser.email || '').toLowerCase();
-                    if (pending?.email && email === String(pending.email).toLowerCase()) {
+                    if (email && !email.endsWith('@fleetop.internal')) {
                         setLoginBusy(true);
                         try {
-                            await finishRegisterAfterEmailConfirm(pending);
+                            await finishRegisterAfterEmailConfirm();
                         } finally {
                             if (!currentLoggedInUser) setLoginBusy(false);
                         }
