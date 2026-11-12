@@ -7544,7 +7544,6 @@ async function openMaintenanceModal(id) {
     resetMaintenanceInvoiceForm();
     const row = id ? maintenanceCache.find(item => Number(item.id) === Number(id)) : null;
     const editing = Boolean(row);
-    if (editing && !isAdminUser()) return;
     const title = document.getElementById('maintModalTitle');
     if (title) title.textContent = t(editing ? 'maint.edit' : 'maint.add');
     const idInput = document.getElementById('maintId');
@@ -7629,7 +7628,7 @@ function renderMaintenanceReport() {
     const actionsHead = document.getElementById('maintActionsHead');
     if (!tbody) return;
     const admin = typeof isAdminUser === 'function' && isAdminUser();
-    if (actionsHead) actionsHead.classList.toggle('hidden', !admin);
+    if (actionsHead) actionsHead.classList.remove('hidden');
     const rows = maintenanceRowsForView();
     const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
     if (costEl) costEl.innerHTML = formatSAR(total);
@@ -7647,14 +7646,12 @@ function renderMaintenanceReport() {
             hour: '2-digit',
             minute: '2-digit'
         }) : '—';
-        const actions = admin
-            ? `<td class="p-3 text-center no-print">
+        const actions = `<td class="p-3 text-center no-print">
                     <div class="flex items-center justify-center gap-2">
                         <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>
+                        ${admin ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
                     </div>
-               </td>`
-            : '';
+               </td>`;
         const hasInvoice = parseMaintenanceAttachments(row).length > 0;
         const invoiceCell = `<td class="maint-col-tight p-3 no-print">
             <div class="flex flex-col items-center gap-1">
@@ -7712,11 +7709,40 @@ async function resetMaintenanceFilters() {
     await loadMaintenanceReport();
 }
 
+function buildMaintenanceEditDiff(before, after) {
+    const labels = {
+        service_date: currentLang === 'en' ? 'Service date' : 'تاريخ الصيانة',
+        maintenance_type: currentLang === 'en' ? 'Type' : 'نوع الصيانة',
+        vehicle_kind: currentLang === 'en' ? 'Vehicle kind' : 'نوع المركبة',
+        vehicle_plate: currentLang === 'en' ? 'Vehicle' : 'المركبة',
+        cost: currentLang === 'en' ? 'Cost' : 'التكلفة',
+        details: currentLang === 'en' ? 'Details' : 'التفاصيل'
+    };
+    const show = (key, value) => {
+        if (value == null || value === '') return '—';
+        if (key === 'cost') return String(roundMoney(value));
+        if (key === 'service_date') return dateInputValue(value) || String(value);
+        return String(value).trim() || '—';
+    };
+    const same = (key) => {
+        if (key === 'cost') return roundMoney(before?.[key]) === roundMoney(after?.[key]);
+        if (key === 'service_date') return dateInputValue(before?.[key]) === dateInputValue(after?.[key]);
+        return String(before?.[key] ?? '').trim() === String(after?.[key] ?? '').trim();
+    };
+    const lines = [];
+    Object.keys(labels).forEach((key) => {
+        if (same(key)) return;
+        lines.push(`${labels[key]}: ${show(key, before?.[key])} ← ${show(key, after?.[key])}`);
+    });
+    if (!lines.length) return currentLang === 'en' ? 'Saved without field changes' : 'حُفظ بدون تغيير في الحقول';
+    const header = currentLang === 'en' ? 'Changes (before ← after):' : 'التغييرات (قبل ← بعد):';
+    return `${header}\n${lines.join('\n')}`;
+}
+
 async function saveMaintenance(event) {
     event.preventDefault();
     showMaintenanceError('');
     const editId = Number(document.getElementById('maintId')?.value || 0);
-    if (editId && !isAdminUser()) return;
     const serviceDate = document.getElementById('maintServiceDate')?.value || '';
     let type = document.getElementById('maintType')?.value || '';
     const customType = document.getElementById('maintTypeOther')?.value.trim() || '';
@@ -7777,7 +7803,17 @@ async function saveMaintenance(event) {
                 : await client.from('vehicle_maintenance').insert([payload]));
         }
         if (error) throw error;
-        logActivity(editId ? 'maintenance.edit' : 'maintenance.add', 'صيانة', plate, `${type} · ${serviceDate}`);
+        const detailsText = editId
+            ? buildMaintenanceEditDiff(existingRow || {}, {
+                service_date: serviceDate,
+                maintenance_type: type,
+                vehicle_kind: kind,
+                vehicle_plate: plate,
+                cost,
+                details
+            })
+            : `${type} · ${serviceDate}`;
+        logActivity(editId ? 'maintenance.edit' : 'maintenance.add', 'صيانة', plate, detailsText);
         closeMaintenanceModal();
         await loadMaintenanceReport();
     } catch (err) {
