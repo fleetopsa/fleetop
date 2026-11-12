@@ -2833,8 +2833,14 @@
     </div>
     <div id="maintenanceInvoiceViewer" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onclick="closeMaintenanceInvoiceViewer()">
         <div class="relative max-w-3xl w-full max-h-[90vh]" onclick="event.stopPropagation()">
-            <button type="button" onclick="closeMaintenanceInvoiceViewer()" class="absolute -top-3 -left-3 bg-white text-slate-700 w-8 h-8 rounded-full shadow font-bold z-10"><i class="fa-solid fa-xmark"></i></button>
-            <img id="maintenanceInvoiceViewerImg" alt="" class="hidden max-h-[90vh] w-full object-contain rounded-2xl bg-black">
+            <button type="button" onclick="closeMaintenanceInvoiceViewer()" class="absolute -top-3 -left-3 bg-white text-slate-700 w-8 h-8 rounded-full shadow font-bold z-20"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" id="maintViewerPrev" onclick="stepMaintenanceViewer(-1)" class="hidden absolute top-1/2 -translate-y-1/2 right-2 z-20 w-10 h-10 rounded-full bg-white/95 text-slate-800 shadow font-bold" aria-label="السابق"><i class="fa-solid fa-chevron-right"></i></button>
+            <button type="button" id="maintViewerNext" onclick="stepMaintenanceViewer(1)" class="hidden absolute top-1/2 -translate-y-1/2 left-2 z-20 w-10 h-10 rounded-full bg-white/95 text-slate-800 shadow font-bold" aria-label="التالي"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="rounded-2xl bg-black overflow-hidden min-h-[240px] flex items-center justify-center">
+                <img id="maintenanceInvoiceViewerImg" alt="" class="hidden max-h-[78vh] w-full object-contain">
+                <iframe id="maintenanceInvoiceViewerFrame" title="attachment" class="hidden w-full h-[78vh] bg-white"></iframe>
+            </div>
+            <p id="maintViewerCaption" class="mt-2 text-center text-xs font-bold text-white"></p>
         </div>
     </div>
     <div id="maintenanceAttachModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
@@ -7315,20 +7321,40 @@ async function deleteMaintenanceInvoiceFile(path) {
     }
 }
 
-async function openMaintenanceAttachmentFile(path, name) {
-    if (!path) return;
+let maintViewerFiles = [];
+let maintViewerIndex = 0;
+
+async function showMaintenanceViewerAt(index) {
+    if (!maintViewerFiles.length) return;
+    maintViewerIndex = (index + maintViewerFiles.length) % maintViewerFiles.length;
+    const file = maintViewerFiles[maintViewerIndex];
+    const viewer = document.getElementById('maintenanceInvoiceViewer');
+    const img = document.getElementById('maintenanceInvoiceViewerImg');
+    const frame = document.getElementById('maintenanceInvoiceViewerFrame');
+    const caption = document.getElementById('maintViewerCaption');
+    const prev = document.getElementById('maintViewerPrev');
+    const next = document.getElementById('maintViewerNext');
+    const many = maintViewerFiles.length > 1;
+    prev?.classList.toggle('hidden', !many);
+    next?.classList.toggle('hidden', !many);
     try {
-        const url = await maintenanceInvoiceSignedUrl(path);
+        const url = await maintenanceInvoiceSignedUrl(file.path);
         if (!url) return;
-        if (isMaintenanceInvoicePdf(name, path)) {
-            window.open(url, '_blank', 'noopener');
-            return;
-        }
-        const viewer = document.getElementById('maintenanceInvoiceViewer');
-        const img = document.getElementById('maintenanceInvoiceViewerImg');
+        const pdf = isMaintenanceInvoicePdf(file.name, file.path);
         if (img) {
-            img.src = url;
-            img.classList.remove('hidden');
+            img.classList.toggle('hidden', pdf);
+            img.src = pdf ? '' : url;
+            img.alt = file.name || '';
+        }
+        if (frame) {
+            frame.classList.toggle('hidden', !pdf);
+            frame.src = pdf ? url : '';
+        }
+        if (caption) {
+            const label = file.name || `${t('maint.attachments')} ${maintViewerIndex + 1}`;
+            caption.textContent = many
+                ? `${maintViewerIndex + 1} / ${maintViewerFiles.length} · ${label}`
+                : label;
         }
         viewer?.classList.remove('hidden');
     } catch (err) {
@@ -7337,20 +7363,37 @@ async function openMaintenanceAttachmentFile(path, name) {
     }
 }
 
+function stepMaintenanceViewer(step) {
+    if (maintViewerFiles.length < 2) return;
+    showMaintenanceViewerAt(maintViewerIndex + step);
+}
+
+function openMaintenanceViewer(files, index) {
+    maintViewerFiles = (files || []).filter(file => file && file.path);
+    if (!maintViewerFiles.length) return;
+    showMaintenanceViewerAt(Number(index) || 0);
+}
+
+async function openMaintenanceAttachmentFile(path, name) {
+    if (!path) return;
+    openMaintenanceViewer([{ path, name: name || '' }], 0);
+}
+
 async function openMaintenanceInvoice(id) {
     const row = maintenanceCache.find(item => Number(item.id) === Number(id));
     const files = parseMaintenanceAttachments(row);
-    if (files.length === 1) {
-        await openMaintenanceAttachmentFile(files[0].path, files[0].name);
-        return;
-    }
-    openMaintenanceAttachModal(id);
+    if (!files.length) return;
+    openMaintenanceViewer(files, 0);
 }
 
 function closeMaintenanceInvoiceViewer() {
     const viewer = document.getElementById('maintenanceInvoiceViewer');
     const img = document.getElementById('maintenanceInvoiceViewerImg');
+    const frame = document.getElementById('maintenanceInvoiceViewerFrame');
     if (img) img.src = '';
+    if (frame) frame.src = '';
+    maintViewerFiles = [];
+    maintViewerIndex = 0;
     viewer?.classList.add('hidden');
 }
 
@@ -7370,10 +7413,18 @@ function renderMaintenanceAttachList(row) {
         return;
     }
     box.innerHTML = files.map((file, index) => `
-        <button type="button" onclick='openMaintenanceAttachmentFile(${JSON.stringify(file.path)}, ${JSON.stringify(file.name || '')})' class="w-full text-start bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-xl px-3 py-2 text-[11px] font-bold text-amber-800">
+        <button type="button" onclick="openMaintenanceAttachAt(${index})" class="w-full text-start bg-slate-50 border border-slate-200 hover:border-amber-400 rounded-xl px-3 py-2 text-[11px] font-bold text-amber-800">
             ${escapeHtml(file.name || `${t('maint.attachments')} ${index + 1}`)}
         </button>
     `).join('');
+}
+
+function openMaintenanceAttachAt(index) {
+    const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
+    const row = maintenanceCache.find(item => Number(item.id) === rowId);
+    const files = parseMaintenanceAttachments(row);
+    if (!files.length) return;
+    openMaintenanceViewer(files, index);
 }
 
 function openMaintenanceAttachModal(id) {
