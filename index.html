@@ -10779,9 +10779,6 @@ function closeAddTripModal() {
         const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
         const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
         await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }]);
-        
-        if (truckUpdate.error) console.error("خطأ في تحديث الشاحنة:", truckUpdate.error);
-        if (driverUpdate.error) console.error("خطأ في تحديث السائق:", driverUpdate.error);
 
         closeAddTripModal();
         logActivity('trip.create', 'رحلة', trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
