@@ -7263,9 +7263,11 @@ async function maintenanceInvoiceSignedUrl(path) {
 }
 
 async function uploadMaintenanceInvoice(file) {
+    const companyId = currentCompanyId();
+    if (companyId == null) throw new Error('company');
     const ext = maintenanceInvoiceExt(file);
     const id = (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const path = `${new Date().toISOString().slice(0, 10)}/${id}.${ext}`;
+    const path = `${companyId}/${new Date().toISOString().slice(0, 10)}/${id}.${ext}`;
     const { error } = await client.storage.from(MAINT_INVOICE_BUCKET).upload(path, file, {
         cacheControl: '3600',
         upsert: false,
