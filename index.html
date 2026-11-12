@@ -236,8 +236,8 @@
         }
         body.is-printing .print-letterhead-grid img.print-company-logo.hidden { display: none !important; }
         body.is-printing .print-company-cr {
-            margin: 3mm 0 0;
-            text-align: center;
+            display: block;
+            margin-top: 1mm;
             font-size: 11px;
             font-weight: 700;
             color: #0f172a;
@@ -271,6 +271,11 @@
             font-size: 11px;
             color: #64748b;
             margin-top: 1mm;
+        }
+        body.is-printing .print-brand-en .print-company-cr,
+        body.is-printing .print-brand-ar .print-company-cr {
+            color: #0f172a;
+            font-weight: 700;
         }
         body.is-printing #printFooter {
             display: flex !important;
@@ -1004,15 +1009,16 @@
             <div class="print-letterhead-grid">
                 <div class="print-brand-en">
                     <strong id="printCompanyNameEn">Company name</strong>
+                    <span id="printCompanyCrEn" class="print-company-cr"></span>
                     <span id="printCompanySloganEn">Fleet operations</span>
                 </div>
                 <img id="printCompanyLogo" class="print-company-logo hidden" alt="">
                 <div class="print-brand-ar">
                     <strong id="printCompanyNameAr">اسم الشركة</strong>
+                    <span id="printCompanyCrAr" class="print-company-cr"></span>
                     <span id="printCompanySloganAr">إدارة الأسطول والرحلات</span>
                 </div>
             </div>
-            <p id="printCompanyCr" class="print-company-cr"></p>
         </div>
         <div id="printFooter" class="print-only" aria-hidden="true">
             <span id="printUserName"></span>
@@ -9713,11 +9719,11 @@ function applyCompanyBranding() {
     if (enEl) enEl.textContent = nameEn || nameAr || (currentLoggedInUser && currentLoggedInUser.company_name) || 'Company';
     if (arSlogan) arSlogan.textContent = sloganAr;
     if (enSlogan) enSlogan.textContent = sloganEn;
-    const crEl = document.getElementById('printCompanyCr');
-    if (crEl) {
-        const cr = String(companySettings.cr_number || '').trim();
-        crEl.textContent = cr ? `${t('settings.cr')}: ${cr}` : '';
-    }
+    const cr = String(companySettings.cr_number || '').trim();
+    const crAr = document.getElementById('printCompanyCrAr');
+    const crEn = document.getElementById('printCompanyCrEn');
+    if (crAr) crAr.textContent = cr ? `الرقم الوطني الموحد: ${cr}` : '';
+    if (crEn) crEn.textContent = cr ? `Unified national number: ${cr}` : '';
     const logos = ['printCompanyLogo', 'companyLogoPreview'];
     logos.forEach(id => {
         const img = document.getElementById(id);
