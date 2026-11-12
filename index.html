@@ -1102,7 +1102,7 @@
             </div>
             <div class="pt-6 space-y-2" style="border-top:1px solid rgba(196,163,90,0.28)">
                 <a id="sidebarWhatsappSupport" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(37,211,102,0.16);color:#25d366;border:1px solid rgba(37,211,102,0.45)">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> <span data-i18n="support.whatsapp">دعم فني واتساب</span>
+                    <i class="fa-brands fa-whatsapp text-sm"></i> <span data-i18n="support.whatsapp">الدعم الفني</span>
                 </a>
                 <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(196,163,90,0.12);color:#c4a35a;border:1px solid rgba(196,163,90,0.4)">
                     <i class="fa-solid fa-key"></i> <span data-i18n="nav.password">تغيير كلمة المرور</span>
@@ -2439,7 +2439,7 @@
                                 <p id="payReqError" class="hidden text-rose-600 text-xs font-bold"></p>
                                 <div class="flex flex-col gap-2">
                                     <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-3 rounded-xl text-xs" data-i18n="payreq.submit">إرسال الإيصال</button>
-                                    <button type="button" onclick="openSupportWhatsapp('renew')" class="font-bold px-5 py-3 rounded-xl text-xs border border-emerald-200 text-emerald-700 bg-emerald-50" data-i18n="payreq.whatsappNotify">إبلاغ الدعم عبر واتساب</button>
+                                    <button type="button" onclick="openSupportWhatsapp('renew')" class="inline-flex items-center justify-center gap-2 font-bold px-5 py-3 rounded-xl text-xs border border-emerald-200 text-emerald-700 bg-emerald-50"><i class="fa-brands fa-whatsapp"></i> <span data-i18n="payreq.whatsappNotify">إبلاغ الدعم الفني عبر الواتساب</span></button>
                                 </div>
                             </form>
                             <div class="mt-5 overflow-x-auto rounded-xl border border-slate-100">
@@ -4288,8 +4288,6 @@ async function loadCompanySubscriptionCard() {
         paintCompanySubscriptionCard(null);
     }
     if (isAdminUser() || isSupportMode()) {
-        const dateEl = document.getElementById('payReqDate');
-        if (dateEl && !dateEl.value) dateEl.value = todayDateInput();
         await loadCompanyPaymentRequests();
     }
 }
@@ -4396,8 +4394,6 @@ async function submitCompanyPaymentRequest(e) {
         if (error) throw error;
         lastPaymentRequestId = data;
         document.getElementById('companyPaymentRequestForm')?.reset();
-        const dateEl = document.getElementById('payReqDate');
-        if (dateEl) dateEl.value = todayDateInput();
         await loadCompanyPaymentRequests();
         alert(t('payreq.submitted'));
         if (confirm(t('payreq.whatsappNotify') + '?')) openSupportWhatsapp('renew');
@@ -8343,7 +8339,7 @@ const I18N = {
         'platform.noPayments': 'لا توجد دفعات',
         'platform.paymentSaved': 'تم تسجيل الدفعة.',
         'platform.paymentsSqlMissing': 'نفّذ ملف fleetop-subscription-payments.sql ثم أعد المحاولة.',
-        'support.whatsapp': 'دعم فني واتساب',
+        'support.whatsapp': 'الدعم الفني',
         'sub.companyTitle': 'اشتراك الشركة',
         'sub.companyHint': 'حالة الاشتراك وتنبيه قرب الانتهاء.',
         'sub.loading': 'جاري تحميل حالة الاشتراك...',
@@ -8358,7 +8354,7 @@ const I18N = {
         'payreq.receipt': 'إيصال التحويل (صورة أو PDF)',
         'payreq.receiptHint': 'الحد الأقصى 4 ميغابايت.',
         'payreq.submit': 'إرسال الإيصال',
-        'payreq.whatsappNotify': 'إبلاغ الدعم عبر واتساب',
+        'payreq.whatsappNotify': 'إبلاغ الدعم الفني عبر الواتساب',
         'payreq.submitted': 'تم إرسال الإيصال. سيظهر تنبيه في لوحة المنصة.',
         'payreq.sqlMissing': 'نفّذ ملف fleetop-payment-requests.sql ثم أعد المحاولة.',
         'payreq.storageSqlMissing': 'نفّذ ملف fleetop-receipt-storage.sql ثم أعد المحاولة.',
@@ -8957,7 +8953,7 @@ const I18N = {
         'platform.noPayments': 'No payments yet',
         'platform.paymentSaved': 'Payment recorded.',
         'platform.paymentsSqlMissing': 'Run fleetop-subscription-payments.sql then try again.',
-        'support.whatsapp': 'WhatsApp support',
+        'support.whatsapp': 'Technical support',
         'sub.companyTitle': 'Company subscription',
         'sub.companyHint': 'Subscription status and expiry alerts.',
         'sub.loading': 'Loading subscription status…',
@@ -8972,7 +8968,7 @@ const I18N = {
         'payreq.receipt': 'Transfer receipt (image or PDF)',
         'payreq.receiptHint': 'Maximum 4 MB.',
         'payreq.submit': 'Submit receipt',
-        'payreq.whatsappNotify': 'Notify support on WhatsApp',
+        'payreq.whatsappNotify': 'Notify technical support via WhatsApp',
         'payreq.submitted': 'Receipt submitted. It will appear as an alert on the platform panel.',
         'payreq.sqlMissing': 'Run fleetop-payment-requests.sql then try again.',
         'payreq.storageSqlMissing': 'Run fleetop-receipt-storage.sql then try again.',
