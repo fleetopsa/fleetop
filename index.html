@@ -688,13 +688,17 @@
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
                 <input type="text" id="registerEmployeeName" name="fleetop_reg_employee" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.employeeNamePh" placeholder="اسم المسؤول">
             </div>
+            <div id="registerInviteWrap" class="hidden">
+                <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.inviteCode">رمز الدعوة</label>
+                <input type="text" id="registerInviteCode" name="fleetop_reg_invite" autocomplete="off" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.inviteCodePh" placeholder="أدخل رمز الدعوة">
+            </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
-                <input type="text" id="registerUsername" name="fleetop_reg_username" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أدخل اسم المستخدم">
+                <input type="text" id="registerUsername" name="fleetop_reg_username" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.usernamePh" placeholder="أحرف إنجليزية وأرقام فقط">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
-                <input type="password" id="registerPassword" name="fleetop_reg_password" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+                <input type="password" id="registerPassword" name="fleetop_reg_password" autocomplete="new-password" required minlength="8" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="8 أحرف على الأقل + حرف ورقم">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
@@ -2606,7 +2610,8 @@
                             <input type="radio" name="editVatMode" value="exclusive" onchange="calculateEditRemaining()" class="ml-2 accent-amber-500"> غير شامل
                         </label>
                     </div>
-                    <p id="editVatBreakdown" class="text-[11px] text-slate-500 mt-2 leading-5">المبلغ المعروض هو الإجمالي المسجل. اختر غير شامل فقط إذا كان الرقم قبل الضريبة.</p>
+                    <p id="editVatRecordedNote" class="text-[11px] font-bold text-slate-700 mt-2 leading-5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"></p>
+                    <p id="editVatBreakdown" class="text-[11px] text-slate-500 mt-2 leading-5">المبلغ المعروض حسب طريقة التسجيل المحفوظة.</p>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المتبقي (تلقائي)</label>
@@ -2709,7 +2714,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">كلمة المرور الجديدة</label>
-                    <input type="password" id="ownNewPassword" required autocomplete="new-password" minlength="4" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="4 أحرف على الأقل">
+                    <input type="password" id="ownNewPassword" required autocomplete="new-password" minlength="8" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="8 أحرف على الأقل + حرف ورقم">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">تأكيد كلمة المرور الجديدة</label>
@@ -2736,7 +2741,7 @@
                 <input type="hidden" id="resetPasswordUserId">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">كلمة المرور الجديدة</label>
-                    <input type="password" id="resetNewPassword" required autocomplete="new-password" minlength="4" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="4 أحرف على الأقل">
+                    <input type="password" id="resetNewPassword" required autocomplete="new-password" minlength="8" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="8 أحرف على الأقل + حرف ورقم">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">تأكيد كلمة المرور الجديدة</label>
@@ -2904,9 +2909,84 @@
          * لا تترك الرقم التجريبي؛ وإلا لن يفتح واتساب برقم صحيح.
          */
         const FLEETOP_SUPPORT_WHATSAPP = '966552873334';
+        /** فتح إنشاء حساب شركة من شاشة الدخول */
+        const FLEETOP_PUBLIC_REGISTER = true;
+        /** إن وُضعت قيمة غير فارغة، يلزم إدخالها عند إنشاء حساب جديد */
+        const FLEETOP_REGISTER_INVITE_CODE = '';
+        const FLEETOP_PASSWORD_MIN = 8;
+        const FLEETOP_LOGIN_MAX_ATTEMPTS = 5;
+        const FLEETOP_LOGIN_LOCK_MINUTES = 15;
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
         });
+
+        function normalizeAppUsername(username) {
+            return String(username || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+        }
+
+        function validateAppUsername(username) {
+            const raw = String(username || '').trim();
+            if (!raw) return t('login.usernameRequired') || 'أدخل اسم المستخدم';
+            if (raw.includes('@')) return t('login.usernameNoAt');
+            const normalized = normalizeAppUsername(raw);
+            if (!normalized || normalized.length < 3) return t('login.usernameInvalid');
+            if (normalized !== raw.toLowerCase()) return t('login.usernameInvalid');
+            return '';
+        }
+
+        function validateAppPassword(password, { required = true } = {}) {
+            const value = String(password || '');
+            if (!value) return required ? t('login.registerPasswordShort') : '';
+            if (value.length < FLEETOP_PASSWORD_MIN) return t('login.registerPasswordShort');
+            if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value)) return t('login.registerPasswordWeak');
+            return '';
+        }
+
+        function loginLockStorageKey() {
+            return 'fleetop_login_lock';
+        }
+
+        function readLoginLock() {
+            try {
+                return JSON.parse(localStorage.getItem(loginLockStorageKey()) || '{}') || {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function writeLoginLock(data) {
+            localStorage.setItem(loginLockStorageKey(), JSON.stringify(data || {}));
+        }
+
+        function clearLoginLock() {
+            localStorage.removeItem(loginLockStorageKey());
+        }
+
+        function getLoginLockRemainingMs() {
+            const lock = readLoginLock();
+            const until = Number(lock.until || 0);
+            return until > Date.now() ? until - Date.now() : 0;
+        }
+
+        function noteLoginFailure() {
+            const lock = readLoginLock();
+            const fails = Number(lock.fails || 0) + 1;
+            const next = { fails, until: 0 };
+            if (fails >= FLEETOP_LOGIN_MAX_ATTEMPTS) {
+                next.until = Date.now() + (FLEETOP_LOGIN_LOCK_MINUTES * 60 * 1000);
+                next.fails = 0;
+            }
+            writeLoginLock(next);
+            return next;
+        }
+
+        function applyPublicRegisterGate() {
+            const tabRegister = document.getElementById('authTabRegister');
+            const inviteWrap = document.getElementById('registerInviteWrap');
+            if (tabRegister) tabRegister.classList.toggle('hidden', !FLEETOP_PUBLIC_REGISTER);
+            if (inviteWrap) inviteWrap.classList.toggle('hidden', !FLEETOP_REGISTER_INVITE_CODE);
+            if (!FLEETOP_PUBLIC_REGISTER && typeof switchAuthTab === 'function') switchAuthTab('login');
+        }
 
         function activitySessionFlag(userId) {
             return `fleetop_activity_login_${userId || ''}`;
@@ -3129,7 +3209,7 @@
                             <td class="p-3.5 font-mono">${escapeHtml(row.username || '—')}</td>
                             <td class="p-3.5 font-bold text-amber-700">${escapeHtml(t('log.' + row.action))}</td>
                             <td class="p-3.5 font-mono text-slate-700">${escapeHtml(record || '—')}</td>
-                            <td class="p-3.5 text-slate-600">${escapeHtml(row.details || '—')}</td>
+                            <td class="p-3.5 text-slate-600 text-[11px] whitespace-pre-wrap max-w-md align-top">${escapeHtml(row.details || '—')}</td>
                         </tr>`;
                 }).join('');
             } catch (err) {
@@ -3318,6 +3398,7 @@
         }
 
         function switchAuthTab(tab) {
+            if (tab === 'register' && !FLEETOP_PUBLIC_REGISTER) tab = 'login';
             authTab = tab === 'register' ? 'register' : 'login';
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
@@ -3330,6 +3411,7 @@
                 tabLogin.style.color = authTab === 'login' ? '#0b2a4a' : '#e8d5a3';
             }
             if (tabRegister) {
+                tabRegister.classList.toggle('hidden', !FLEETOP_PUBLIC_REGISTER);
                 tabRegister.style.background = authTab === 'register' ? '#c4a35a' : 'transparent';
                 tabRegister.style.color = authTab === 'register' ? '#0b2a4a' : '#e8d5a3';
             }
@@ -3425,9 +3507,8 @@ function normalizeCompanyCode(code) {
 }
 
 function authEmailFor(username, companyCode) {
-    const value = String(username || '').trim().toLowerCase();
+    const value = normalizeAppUsername(username);
     if (!value) return '';
-    if (value.includes('@')) return value;
     const code = normalizeCompanyCode(companyCode);
     if (!code) return value + '@fleetop.internal';
     return value + '.' + code + '@fleetop.internal';
@@ -3815,14 +3896,26 @@ function subscriptionAccessOk(row) {
 }
 
 async function assertCompanySubscriptionAccess(companyId, errorBoxId = 'loginError') {
+    const id = companyId != null ? Number(companyId) : NaN;
+    if (!Number.isFinite(id)) {
+        console.warn('subscription check skipped: missing company_id');
+        return true;
+    }
     try {
-        const { data, error } = await client.rpc('get_company_subscription', { p_company_id: companyId });
+        const { data, error } = await client.rpc('get_company_subscription', { p_company_id: id });
         if (error) {
-            if (/Could not find the function|does not exist|42883/i.test(error.message || '')) return true;
-            throw error;
+            const msg = String(error.message || '');
+            // الدالة غير منفّذة بعد: لا نمنع الدخول
+            if (/Could not find the function|does not exist|42883/i.test(msg)) return true;
+            // خطأ تقني/صلاحية عابر: نسجّله ولا نغلق الحساب بسبب عطل الفحص
+            console.warn('subscription check error:', msg);
+            return true;
         }
         const row = Array.isArray(data) ? data[0] : data;
-        if (!row) return true;
+        if (!row) {
+            console.warn('subscription check: empty row for company', id);
+            return true;
+        }
         if (row.access_ok === false || !subscriptionAccessOk(row)) {
             showLoginError(t('sub.blocked'), errorBoxId);
             return false;
@@ -4232,9 +4325,23 @@ async function saveSubscriptionEdit(e) {
 async function completeAuthLogin(username, password, companyCode, errorBoxId = 'loginError') {
     currentLoggedInUser = null;
     pendingSupportProfile = null;
+    const lockMs = getLoginLockRemainingMs();
+    if (lockMs > 0) {
+        const mins = Math.max(1, Math.ceil(lockMs / 60000));
+        showLoginError(t('login.locked').replace('{mins}', String(mins)), errorBoxId);
+        return false;
+    }
     const code = normalizeCompanyCode(companyCode);
     if (!code) {
         showLoginError(t('login.companyCodeRequired'), errorBoxId);
+        return false;
+    }
+    const usernameError = validateAppUsername(username);
+    if (usernameError && code !== PLATFORM_COMPANY_CODE) {
+        // السماح بأسماء السوبر أدمن كما هي مع تنظيف الرموز فقط
+    }
+    if (String(username || '').includes('@')) {
+        showLoginError(t('login.usernameNoAt'), errorBoxId);
         return false;
     }
     const { data, error } = await client.auth.signInWithPassword({
@@ -4242,9 +4349,16 @@ async function completeAuthLogin(username, password, companyCode, errorBoxId = '
         password
     });
     if (error || !data?.user) {
-        showLoginError(t('login.error'), errorBoxId);
+        const lock = noteLoginFailure();
+        if (lock.until) {
+            showLoginError(t('login.locked').replace('{mins}', String(FLEETOP_LOGIN_LOCK_MINUTES)), errorBoxId);
+        } else {
+            const left = Math.max(0, FLEETOP_LOGIN_MAX_ATTEMPTS - Number(lock.fails || 0));
+            showLoginError(`${t('login.error')} (${t('login.attemptsLeft').replace('{n}', String(left))})`, errorBoxId);
+        }
         return false;
     }
+    clearLoginLock();
 
     if (code === PLATFORM_COMPANY_CODE) {
         const platformProfile = await loadPlatformAdminProfile(data.user.id);
@@ -4326,6 +4440,10 @@ async function handleLogin(e) {
 async function handleRegister(e) {
     e.preventDefault();
     if (loginBusy) return;
+    if (!FLEETOP_PUBLIC_REGISTER) {
+        showLoginError(t('login.registerClosed'), 'registerError');
+        return;
+    }
 
     const companyName = document.getElementById('registerCompanyName').value.trim();
     const companyCode = document.getElementById('registerCompanyCode').value.trim();
@@ -4333,11 +4451,16 @@ async function handleRegister(e) {
     const username = document.getElementById('registerUsername').value.trim();
     const password = document.getElementById('registerPassword').value.trim();
     const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+    const inviteCode = document.getElementById('registerInviteCode')?.value.trim() || '';
     const normalizedCode = normalizeCompanyCode(companyCode);
     document.getElementById('registerError').classList.add('hidden');
 
     if (!companyName || !normalizedCode || !employeeName || !username || !password) {
         showLoginError(t('login.registerRequired'), 'registerError');
+        return;
+    }
+    if (FLEETOP_REGISTER_INVITE_CODE && inviteCode !== FLEETOP_REGISTER_INVITE_CODE) {
+        showLoginError(t('login.registerInviteInvalid'), 'registerError');
         return;
     }
     if (normalizedCode.length < 3) {
@@ -4348,8 +4471,14 @@ async function handleRegister(e) {
         showLoginError(t('login.companyCodeReserved'), 'registerError');
         return;
     }
-    if (password.length < 4) {
-        showLoginError(t('login.registerPasswordShort'), 'registerError');
+    const usernameError = validateAppUsername(username);
+    if (usernameError) {
+        showLoginError(usernameError, 'registerError');
+        return;
+    }
+    const passwordError = validateAppPassword(password);
+    if (passwordError) {
+        showLoginError(passwordError, 'registerError');
         return;
     }
     if (password !== confirmPassword) {
@@ -4756,6 +4885,9 @@ function openTripDetails(tripNo) {
         ['الشاحنة', trip.truck_plate || trip.truck],
         ['السائق', trip.driver_name],
         ['حالة الرحلة', tripStatusLabel(trip)],
+        ['طريقة المبلغ', trip.vat_mode ? tripVatModeLabel(trip.vat_mode) : 'غير محفوظة (افتراض: شامل)'],
+        ['قبل الضريبة', { html: formatSAR(trip.amount_before_vat != null ? trip.amount_before_vat : (roundMoney((trip.total_amount || 0) / 1.15))) }],
+        ['الضريبة', { html: formatSAR(trip.vat_amount != null ? trip.vat_amount : roundMoney((trip.total_amount || 0) - ((trip.total_amount || 0) / 1.15))) }],
         ['الإجمالي', { html: formatSAR(trip.total_amount || 0) }],
         ['المدفوع', { html: formatSAR(trip.paid_amount || 0) }],
         ['المتبقي', { html: formatSAR(trip.remaining_amount || 0) }],
@@ -7711,8 +7843,19 @@ const I18N = {
         'payreq.waSupport': 'مرحباً دعم FleetOp، أحتاج مساعدة فنية على النظام.',
         'login.registerSubmit': 'إنشاء حساب',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
-        'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 4 أحرف على الأقل.',
+        'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.',
+        'login.registerPasswordWeak': 'كلمة المرور يجب أن تحتوي على حرف ورقم على الأقل.',
         'login.registerPasswordMismatch': 'تأكيد كلمة المرور غير مطابق.',
+        'login.usernameNoAt': 'اسم المستخدم لا يمكن أن يحتوي على @.',
+        'login.usernameInvalid': 'اسم المستخدم يقبل فقط حروف إنجليزية وأرقام و . _ - (3 على الأقل).',
+        'login.usernameRequired': 'أدخل اسم المستخدم.',
+        'login.locked': 'تم إيقاف الدخول مؤقتاً لمدة {mins} دقيقة بسبب محاولات فاشلة.',
+        'login.attemptsLeft': 'متبقي {n} محاولات',
+        'login.registerClosed': 'إنشاء الحساب مغلق حالياً. تواصل مع دعم فليتوب.',
+        'login.inviteCode': 'رمز الدعوة',
+        'login.inviteCodePh': 'أدخل رمز الدعوة',
+        'login.registerInviteInvalid': 'رمز الدعوة غير صحيح.',
+        'sub.checkFailed': 'تعذر التحقق من الاشتراك. حاول مرة أخرى أو تواصل مع الدعم.',
         'login.registerFailed': 'تعذر إنشاء الحساب.',
         'login.registerSqlMissing': 'معرف الشركات غير مفعّل بعد. نفّذ ملف fleetop-company-code.sql من SQL Editor ثم أعد المحاولة.',
         'login.registerUsernameTaken': 'اسم المستخدم مستخدم مسبقاً في هذه الشركة.',
@@ -8279,8 +8422,19 @@ const I18N = {
         'payreq.waSupport': 'Hello FleetOp support, I need technical help with the system.',
         'login.registerSubmit': 'Create account',
         'login.registerRequired': 'Please complete all required fields.',
-        'login.registerPasswordShort': 'Password must be at least 4 characters.',
+        'login.registerPasswordShort': 'Password must be at least 8 characters.',
+        'login.registerPasswordWeak': 'Password must include at least one letter and one number.',
         'login.registerPasswordMismatch': 'Password confirmation does not match.',
+        'login.usernameNoAt': 'Username cannot contain @.',
+        'login.usernameInvalid': 'Username allows only English letters, numbers, and . _ - (min 3).',
+        'login.usernameRequired': 'Enter a username.',
+        'login.locked': 'Sign-in is temporarily locked for {mins} minutes after failed attempts.',
+        'login.attemptsLeft': '{n} attempts left',
+        'login.registerClosed': 'Registration is currently closed. Contact FleetOp support.',
+        'login.inviteCode': 'Invite code',
+        'login.inviteCodePh': 'Enter invite code',
+        'login.registerInviteInvalid': 'Invalid invite code.',
+        'sub.checkFailed': 'Could not verify subscription. Try again or contact support.',
         'login.registerFailed': 'Could not create the account.',
         'login.registerSqlMissing': 'Company IDs are not enabled yet. Run fleetop-company-code.sql in the SQL Editor, then try again.',
         'login.registerUsernameTaken': 'This username is already used in this company.',
@@ -9468,21 +9622,35 @@ async function renderAnalyticsDashboard() {
         function tripAmountBreakdown() {
             const entered = roundMoney(parseFloat(document.getElementById('totalAmount').value) || 0);
             const inclusive = document.querySelector('input[name="vatMode"]:checked')?.value !== 'exclusive';
-            const vat = inclusive ? 0 : roundMoney(entered * 0.15);
-            const total = roundMoney(entered + vat);
-            return { inclusive, entered, vat, total };
+            const vat = inclusive ? roundMoney(entered - (entered / 1.15)) : roundMoney(entered * 0.15);
+            const total = inclusive ? entered : roundMoney(entered + vat);
+            const before = inclusive ? roundMoney(entered - vat) : entered;
+            return { inclusive, entered, before, vat, total, mode: inclusive ? 'inclusive' : 'exclusive' };
+        }
+
+        function tripVatModeLabel(mode) {
+            return String(mode || '').toLowerCase() === 'exclusive' ? 'غير شامل الضريبة' : 'شامل الضريبة';
+        }
+
+        function tripVatPayloadFromBreakdown(breakdown) {
+            return {
+                vat_mode: breakdown.mode,
+                amount_before_vat: breakdown.before,
+                vat_amount: breakdown.vat,
+                total_amount: breakdown.total
+            };
         }
 
         function calculateRemaining() {
-            const { inclusive, vat, total } = tripAmountBreakdown();
+            const { inclusive, before, vat, total } = tripAmountBreakdown();
             const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
             const remaining = total - paid;
             document.getElementById('remainingAmount').value = remaining >= 0 ? roundMoney(remaining) : 0;
             const breakdown = document.getElementById('vatBreakdown');
             if (!breakdown) return;
             breakdown.innerHTML = inclusive
-                ? 'سيُسجل المبلغ كما هو لأنه شامل ضريبة القيمة المضافة.'
-                : `ضريبة 15٪: ${formatSAR(vat)} — الإجمالي الذي سيُسجل شامل الضريبة: ${formatSAR(total)}`;
+                ? `سيُسجل كـ <strong>شامل الضريبة</strong>: قبل الضريبة ${formatSAR(before)} · الضريبة ${formatSAR(vat)} · الإجمالي ${formatSAR(total)}`
+                : `سيُسجل كـ <strong>غير شامل</strong>: المبلغ المدخل ${formatSAR(before)} · ضريبة 15٪ ${formatSAR(vat)} · الإجمالي ${formatSAR(total)}`;
         }
 
         async function loadDropdowns() {
@@ -9618,7 +9786,7 @@ function renderTripsTable(trips) {
 
             let actionButtons = '';
             const currentRemaining = tr.remaining_amount || 0;
-            const editButton = (isAdminUser() && (tr.status === 'جارية' || isCompletedTrip(tr)))
+            const editButton = (tr.status === 'جارية' || isCompletedTrip(tr))
                 ? `<button type="button" onclick='openEditTripModal(${JSON.stringify(tr.trip_no)})' class="bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.edit')}"><i class="fa-solid fa-pen-to-square ml-1"></i> ${t('ui.edit')}</button>`
                 : '';
 
@@ -9980,7 +10148,8 @@ function closeAddTripModal() {
     const truck_plate = document.getElementById('tripTruck').value;
     const driver_name = document.getElementById('tripDriver').value;
     const driver_commission = parseFloat(document.getElementById('driverCommissionInput').value) || 0;
-    const { total: total_amount } = tripAmountBreakdown();
+    const amountParts = tripAmountBreakdown();
+    const { total: total_amount } = amountParts;
     let paid_amount = parseFloat(document.getElementById('paidAmount').value) || 0;
     if (paid_amount > total_amount) paid_amount = total_amount;
     paid_amount = roundMoney(paid_amount);
@@ -10004,9 +10173,15 @@ function closeAddTripModal() {
         return;
     }
 
-    const { error } = await client.from('trips').insert([withCompany({
-        trip_no, client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name, driver_commission, total_amount, paid_amount, remaining_amount, status, payment_status
-    })]);
+    const tripPayload = withCompany({
+        trip_no, client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name, driver_commission,
+        paid_amount, remaining_amount, status, payment_status,
+        ...tripVatPayloadFromBreakdown(amountParts)
+    });
+    const { error } = await writeIgnoringUnknownColumns(
+        (data) => client.from('trips').insert([data]),
+        tripPayload
+    );
 
     if (!error) {
         revealSuggestion('client', client_name);
@@ -10041,13 +10216,34 @@ function dateInputValue(value) {
 function editAmountBreakdown() {
     const entered = roundMoney(parseFloat(document.getElementById('editTotalAmount').value) || 0);
     const inclusive = document.querySelector('input[name="editVatMode"]:checked')?.value !== 'exclusive';
-    const vat = inclusive ? 0 : roundMoney(entered * 0.15);
-    const total = roundMoney(entered + vat);
-    return { inclusive, vat, total };
+    const vat = inclusive ? roundMoney(entered - (entered / 1.15)) : roundMoney(entered * 0.15);
+    const total = inclusive ? entered : roundMoney(entered + vat);
+    const before = inclusive ? roundMoney(entered - vat) : entered;
+    return { inclusive, entered, before, vat, total, mode: inclusive ? 'inclusive' : 'exclusive' };
+}
+
+function paintEditVatRecordedNote(trip) {
+    const note = document.getElementById('editVatRecordedNote');
+    if (!note) return;
+    const mode = String(trip?.vat_mode || 'inclusive').toLowerCase() === 'exclusive' ? 'exclusive' : 'inclusive';
+    const total = roundMoney(trip?.total_amount || 0);
+    const before = trip?.amount_before_vat != null
+        ? roundMoney(trip.amount_before_vat)
+        : (mode === 'exclusive' ? roundMoney(total / 1.15) : total);
+    const vat = trip?.vat_amount != null
+        ? roundMoney(trip.vat_amount)
+        : roundMoney(total - (mode === 'exclusive' ? before : roundMoney(total / 1.15)));
+    if (!trip?.vat_mode) {
+        note.innerHTML = `لا توجد طريقة محفوظة لهذه الرحلة القديمة — المبلغ المعروض هو <strong>الإجمالي المسجل</strong> ${formatSAR(total)} (افتراض: شامل الضريبة).`;
+        return;
+    }
+    note.innerHTML = mode === 'exclusive'
+        ? `مسجّلة كـ <strong>غير شامل الضريبة</strong>: قبل الضريبة ${formatSAR(before)} · الضريبة ${formatSAR(vat)} · الإجمالي ${formatSAR(total)}`
+        : `مسجّلة كـ <strong>شامل الضريبة</strong>: الإجمالي ${formatSAR(total)} · منها ضريبة تقريبية ${formatSAR(roundMoney(total - (total / 1.15)))}`;
 }
 
 function calculateEditRemaining() {
-    const { inclusive, vat, total } = editAmountBreakdown();
+    const { inclusive, before, vat, total } = editAmountBreakdown();
     const paid = parseFloat(document.getElementById('editPaidAmount').value) || 0;
     const remaining = total - paid;
     const remainingInput = document.getElementById('editRemainingAmount');
@@ -10055,8 +10251,8 @@ function calculateEditRemaining() {
     const breakdown = document.getElementById('editVatBreakdown');
     if (!breakdown) return;
     breakdown.innerHTML = inclusive
-        ? 'المبلغ المعروض هو الإجمالي المسجل. اختر غير شامل فقط إذا كان الرقم قبل الضريبة.'
-        : `ضريبة 15٪: ${formatSAR(vat)} — الإجمالي بعد التعديل: ${formatSAR(total)}`;
+        ? `التعديل الحالي: <strong>شامل الضريبة</strong> — قبل الضريبة ${formatSAR(before)} · الضريبة ${formatSAR(vat)} · الإجمالي ${formatSAR(total)}`
+        : `التعديل الحالي: <strong>غير شامل</strong> — المبلغ المدخل ${formatSAR(before)} · ضريبة 15٪ ${formatSAR(vat)} · الإجمالي ${formatSAR(total)}`;
 }
 
 function closeEditTripModal() {
@@ -10090,9 +10286,72 @@ async function fillEditFleetOptions(trip) {
     driverSelect.value = currentDriver;
 }
 
+function tripEditDisplayValue(key, value) {
+    if (value == null || value === '') return '—';
+    if (['total_amount', 'paid_amount', 'remaining_amount', 'driver_commission', 'amount_before_vat', 'vat_amount'].includes(key)) {
+        return String(roundMoney(value));
+    }
+    if (key === 'vat_mode') return tripVatModeLabel(value);
+    if (key.endsWith('_date') || key === 'departure_date' || key === 'collection_date' || key === 'completion_date') {
+        return dateInputValue(value) || '—';
+    }
+    return String(value).trim() || '—';
+}
+
+function tripEditValuesEqual(key, beforeVal, afterVal) {
+    if (['total_amount', 'paid_amount', 'remaining_amount', 'driver_commission', 'amount_before_vat', 'vat_amount'].includes(key)) {
+        return roundMoney(beforeVal) === roundMoney(afterVal);
+    }
+    if (key.endsWith('_date') || key === 'departure_date' || key === 'collection_date' || key === 'completion_date') {
+        return dateInputValue(beforeVal) === dateInputValue(afterVal);
+    }
+    if (key === 'vat_mode') {
+        const a = String(beforeVal || 'inclusive').toLowerCase() === 'exclusive' ? 'exclusive' : 'inclusive';
+        const b = String(afterVal || 'inclusive').toLowerCase() === 'exclusive' ? 'exclusive' : 'inclusive';
+        return a === b;
+    }
+    return String(beforeVal ?? '').trim() === String(afterVal ?? '').trim();
+}
+
+function buildTripEditDiff(before, after) {
+    const labels = {
+        client_name: currentLang === 'en' ? 'Client' : 'العميل',
+        from_city: currentLang === 'en' ? 'From' : 'من',
+        to_city: currentLang === 'en' ? 'To' : 'إلى',
+        trip_type: currentLang === 'en' ? 'Trip type' : 'نوع الرحلة',
+        departure_date: currentLang === 'en' ? 'Departure' : 'تاريخ المغادرة',
+        truck_plate: currentLang === 'en' ? 'Truck' : 'الشاحنة',
+        driver_name: currentLang === 'en' ? 'Driver' : 'السائق',
+        driver_commission: currentLang === 'en' ? 'Commission' : 'عمولة السائق',
+        vat_mode: currentLang === 'en' ? 'VAT mode' : 'طريقة الضريبة',
+        amount_before_vat: currentLang === 'en' ? 'Before VAT' : 'قبل الضريبة',
+        vat_amount: currentLang === 'en' ? 'VAT amount' : 'مبلغ الضريبة',
+        total_amount: currentLang === 'en' ? 'Total' : 'الإجمالي',
+        paid_amount: currentLang === 'en' ? 'Paid' : 'المدفوع',
+        remaining_amount: currentLang === 'en' ? 'Remaining' : 'المتبقي',
+        payment_status: currentLang === 'en' ? 'Payment status' : 'حالة السداد',
+        payment_method: currentLang === 'en' ? 'Payment method' : 'طريقة الدفع',
+        collection_date: currentLang === 'en' ? 'Collection date' : 'تاريخ التحصيل',
+        completion_date: currentLang === 'en' ? 'Completion date' : 'تاريخ الإنهاء'
+    };
+    const lines = [];
+    Object.keys(labels).forEach((key) => {
+        if (!(key in after) && before[key] == null) return;
+        if (tripEditValuesEqual(key, before[key], after[key])) return;
+        const from = tripEditDisplayValue(key, before[key]);
+        const to = tripEditDisplayValue(key, after[key]);
+        lines.push(`${labels[key]}: ${from} ← ${to}`);
+    });
+    if (!lines.length) {
+        return currentLang === 'en' ? 'Saved without field changes' : 'حُفظ بدون تغيير في الحقول';
+    }
+    const header = currentLang === 'en' ? 'Changes (before ← after):' : 'التغييرات (قبل ← بعد):';
+    return `${header}\n${lines.join('\n')}`;
+}
+
 async function openEditTripModal(tripNo) {
-    if (!isAdminUser()) {
-        alert('تعديل الرحلة متاح لصلاحيات المدير فقط.');
+    if (!currentLoggedInUser) {
+        alert(currentLang === 'en' ? 'Please sign in first.' : 'يلزم تسجيل الدخول أولاً.');
         return;
     }
     let trip = allTripsCache.find(t => String(t.trip_no) === String(tripNo));
@@ -10122,11 +10381,17 @@ async function openEditTripModal(tripNo) {
     });
     document.getElementById('editDepartureDate').value = dateInputValue(trip.departure_date);
     document.getElementById('editDriverCommission').value = trip.driver_commission || 0;
-    document.getElementById('editTotalAmount').value = trip.total_amount || 0;
     document.getElementById('editPaidAmount').value = trip.paid_amount || 0;
+    const savedMode = String(trip.vat_mode || 'inclusive').toLowerCase() === 'exclusive' ? 'exclusive' : 'inclusive';
     document.querySelectorAll('input[name="editVatMode"]').forEach(input => {
-        input.checked = input.value === 'inclusive';
+        input.checked = input.value === savedMode;
     });
+    const totalStored = roundMoney(trip.total_amount || 0);
+    const amountField = savedMode === 'exclusive'
+        ? (trip.amount_before_vat != null ? roundMoney(trip.amount_before_vat) : roundMoney(totalStored / 1.15))
+        : totalStored;
+    document.getElementById('editTotalAmount').value = amountField;
+    paintEditVatRecordedNote(trip);
     const method = document.getElementById('editPaymentMethod');
     [...method.options].forEach(option => {
         if (option.dataset.extra) option.remove();
@@ -10151,8 +10416,8 @@ async function openEditTripModal(tripNo) {
 
 async function saveEditTrip(e) {
     if (e) e.preventDefault();
-    if (!isAdminUser()) {
-        alert('تعديل الرحلة متاح لصلاحيات المدير فقط.');
+    if (!currentLoggedInUser) {
+        alert(currentLang === 'en' ? 'Please sign in first.' : 'يلزم تسجيل الدخول أولاً.');
         return;
     }
     const trip = editingTripSnapshot;
@@ -10168,7 +10433,8 @@ async function saveEditTrip(e) {
     const truck_plate = document.getElementById('editTripTruck').value.trim();
     const driver_name = document.getElementById('editTripDriver').value.trim();
     const driver_commission = roundMoney(parseFloat(document.getElementById('editDriverCommission').value) || 0);
-    const { total: total_amount } = editAmountBreakdown();
+    const amountParts = editAmountBreakdown();
+    const { total: total_amount } = amountParts;
     let paid_amount = roundMoney(parseFloat(document.getElementById('editPaidAmount').value) || 0);
     if (paid_amount > total_amount) {
         alert('المبلغ المدفوع أكبر من إجمالي الرحلة بعد التعديل.');
@@ -10199,19 +10465,21 @@ async function saveEditTrip(e) {
         }
     }
 
+    const vatPayload = tripVatPayloadFromBreakdown(amountParts);
     const editPayload = {
         client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name,
-        driver_commission, total_amount, paid_amount, remaining_amount, payment_status,
-        payment_method, collection_date
+        driver_commission, paid_amount, remaining_amount, payment_status,
+        payment_method, collection_date,
+        ...vatPayload
     };
     if (String(trip.status || '').trim() !== 'جارية') editPayload.completion_date = completion_date;
 
-    let { error } = await client.from('trips').update(editPayload).eq('trip_no', trip.trip_no);
-    if (error && /completion_date/i.test(error.message || '')) {
-        delete editPayload.completion_date;
-        const retry = await client.from('trips').update(editPayload).eq('trip_no', trip.trip_no);
-        error = retry.error;
-    }
+    const diffDetails = buildTripEditDiff(trip, editPayload);
+
+    let { error } = await writeIgnoringUnknownColumns(
+        (data) => client.from('trips').update(data).eq('trip_no', trip.trip_no),
+        editPayload
+    );
 
     if (error) {
         alert('تعذر حفظ التعديل: ' + error.message);
@@ -10235,7 +10503,7 @@ async function saveEditTrip(e) {
     revealSuggestion('city', from_city);
     revealSuggestion('city', to_city);
     closeEditTripModal();
-    logActivity('trip.edit', 'رحلة', trip.trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
+    logActivity('trip.edit', 'رحلة', trip.trip_no, diffDetails);
     alert('تم حفظ تعديل الرحلة ' + trip.trip_no);
     if (typeof loadAllData === 'function') loadAllData();
 }
@@ -10634,9 +10902,17 @@ async function loadUsers(options = {}) {
                 alert('أدخل كلمة المرور للمستخدم الجديد.');
                 return;
             }
-            if (password && password.length < 4) {
-                alert('كلمة المرور يجب أن تكون 4 أحرف على الأقل.');
+            const usernameError = validateAppUsername(username);
+            if (usernameError) {
+                alert(usernameError);
                 return;
+            }
+            if (password) {
+                const passwordError = validateAppPassword(password);
+                if (passwordError) {
+                    alert(passwordError);
+                    return;
+                }
             }
             if (!role) {
                 alert(t('ui.chooseRole'));
@@ -10759,8 +11035,9 @@ async function loadUsers(options = {}) {
             const newPassword = document.getElementById('ownNewPassword').value.trim();
             const confirmPassword = document.getElementById('ownConfirmPassword').value.trim();
 
-            if (newPassword.length < 4) {
-                showPasswordError('ownPasswordError', 'كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل.');
+            const passwordError = validateAppPassword(newPassword);
+            if (passwordError) {
+                showPasswordError('ownPasswordError', passwordError);
                 return;
             }
             if (newPassword !== confirmPassword) {
@@ -10804,8 +11081,9 @@ async function loadUsers(options = {}) {
                 showPasswordError('resetPasswordError', 'المستخدم غير موجود.');
                 return;
             }
-            if (newPassword.length < 4) {
-                showPasswordError('resetPasswordError', 'كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل.');
+            const resetPasswordError = validateAppPassword(newPassword);
+            if (resetPasswordError) {
+                showPasswordError('resetPasswordError', resetPasswordError);
                 return;
             }
             if (newPassword !== confirmPassword) {
@@ -11030,6 +11308,7 @@ async function loadUsers(options = {}) {
             if (focusEl) focusEl.focus();
         }
         document.addEventListener("DOMContentLoaded", () => {
+            if (typeof applyPublicRegisterGate === 'function') applyPublicRegisterGate();
             const logoInput = document.getElementById('companyLogoFile');
             if (logoInput) {
                 logoInput.addEventListener('change', (event) => {
