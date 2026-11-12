@@ -275,6 +275,8 @@
             background: #0b2a4a;
             color: #f5ead0;
             border-color: rgba(196, 163, 90, 0.28);
+            border-left-width: 0;
+            border-inline-end: 1px solid rgba(196, 163, 90, 0.28);
         }
         #appSidebar [data-nav],
         #appSidebar #tabFacilityBtn,
@@ -413,6 +415,7 @@
                 top: auto;
                 bottom: auto;
                 right: auto;
+                left: auto;
                 transform: none !important;
                 box-shadow: none;
                 align-self: stretch;
@@ -425,6 +428,28 @@
                 flex: 1;
                 min-width: 0;
             }
+            html[dir="ltr"] #appSidebar {
+                right: auto;
+                left: 0;
+                transform: translateX(calc(-100% + 14px));
+            }
+            html[dir="ltr"] #appSidebar::before {
+                left: auto;
+                right: 3px;
+            }
+            html[dir="ltr"] #appSidebar.is-open,
+            html[dir="ltr"] #appSidebar:hover {
+                transform: translateX(0);
+                box-shadow: 14px 0 30px rgba(11, 42, 74, 0.22);
+            }
+        }
+        @media (max-width: 1279px) {
+            html[dir="ltr"] #appSidebar {
+                right: auto;
+                left: 0;
+                transform: translateX(-110%);
+            }
+            html[dir="ltr"] #appSidebar.is-open { transform: translateX(0); }
         }
         body.is-printing #sidebarBackdrop,
         body.is-printing #menuToggleBtn,
