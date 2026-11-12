@@ -689,9 +689,9 @@
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
                     <input type="text" id="registerEmployeeName" name="fleetop_reg_employee" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.employeeNamePh" placeholder="اسم المسؤول">
                 </div>
-                <div>
+                <div id="registerEmailWrap">
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.registerEmail">البريد الإلكتروني</label>
-                    <input type="email" id="registerEmail" name="fleetop_reg_email" autocomplete="email" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.registerEmailPh" placeholder="name@example.com">
+                    <input type="email" id="registerEmail" name="fleetop_reg_email" autocomplete="email" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.registerEmailPh" placeholder="name@example.com">
                 </div>
                 <div id="registerInviteWrap" class="hidden">
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.inviteCode">رمز الدعوة</label>
@@ -709,8 +709,8 @@
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
                     <input type="password" id="registerConfirmPassword" name="fleetop_reg_confirm" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
                 </div>
-                <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSendLink">
-                    إرسال رابط التأكيد
+                <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSubmit">
+                    إنشاء حساب
                 </button>
             </div>
             <div id="registerOtpStep" class="hidden space-y-3.5">
@@ -2922,6 +2922,12 @@
         const FLEETOP_SUPPORT_WHATSAPP = '966552873334';
         /** فتح إنشاء حساب شركة من شاشة الدخول */
         const FLEETOP_PUBLIC_REGISTER = true;
+        /**
+         * تأكيد البريد قبل إنشاء الحساب.
+         * false = تسجيل مباشر (مناسب الآن لأن بريد Supabase الافتراضي محدود).
+         * true = يحتاج رابط إيميل + يفضّل SMTP مخصص.
+         */
+        const FLEETOP_REQUIRE_EMAIL_VERIFY = false;
         /** عند إعادة فتح التسجيل: ضع رمزاً هنا ليصبح مطلوباً عند الإنشاء */
         const FLEETOP_REGISTER_INVITE_CODE = '';
         const SUBSCRIPTION_RECEIPT_BUCKET = 'subscription-receipts';
@@ -2995,8 +3001,17 @@
         function applyPublicRegisterGate() {
             const tabRegister = document.getElementById('authTabRegister');
             const inviteWrap = document.getElementById('registerInviteWrap');
+            const emailWrap = document.getElementById('registerEmailWrap');
+            const emailInput = document.getElementById('registerEmail');
+            const submitBtn = document.getElementById('registerSubmitBtn');
             if (tabRegister) tabRegister.classList.toggle('hidden', !FLEETOP_PUBLIC_REGISTER);
             if (inviteWrap) inviteWrap.classList.toggle('hidden', !FLEETOP_REGISTER_INVITE_CODE);
+            if (emailWrap) emailWrap.classList.toggle('hidden', !FLEETOP_REQUIRE_EMAIL_VERIFY);
+            if (emailInput) emailInput.required = !!FLEETOP_REQUIRE_EMAIL_VERIFY;
+            if (submitBtn) {
+                submitBtn.setAttribute('data-i18n', FLEETOP_REQUIRE_EMAIL_VERIFY ? 'login.registerSendLink' : 'login.registerSubmit');
+                submitBtn.textContent = FLEETOP_REQUIRE_EMAIL_VERIFY ? t('login.registerSendLink') : t('login.registerSubmit');
+            }
             if (!FLEETOP_PUBLIC_REGISTER && typeof switchAuthTab === 'function') switchAuthTab('login');
         }
 
@@ -3536,8 +3551,10 @@
             if (registerBtn) {
                 registerBtn.disabled = loginBusy;
                 registerBtn.textContent = loginBusy
-                    ? (currentLang === 'en' ? 'Sending link…' : 'جاري إرسال الرابط…')
-                    : t('login.registerSendLink');
+                    ? (FLEETOP_REQUIRE_EMAIL_VERIFY
+                        ? (currentLang === 'en' ? 'Sending link…' : 'جاري إرسال الرابط…')
+                        : (currentLang === 'en' ? 'Creating account…' : 'جاري إنشاء الحساب…'))
+                    : (FLEETOP_REQUIRE_EMAIL_VERIFY ? t('login.registerSendLink') : t('login.registerSubmit'));
             }
             if (resendBtn) resendBtn.disabled = loginBusy;
             if (backBtn) backBtn.disabled = loginBusy;
@@ -4666,10 +4683,15 @@ function collectRegisterPayload() {
 }
 
 function validateRegisterPayload(payload) {
-    if (!payload.companyName || !payload.normalizedCode || !payload.employeeName || !payload.username || !payload.password || !payload.email) {
+    if (!payload.companyName || !payload.normalizedCode || !payload.employeeName || !payload.username || !payload.password) {
         return t('login.registerRequired');
     }
-    if (!isValidRegisterEmail(payload.email)) return t('login.registerEmailInvalid');
+    if (FLEETOP_REQUIRE_EMAIL_VERIFY) {
+        if (!payload.email) return t('login.registerRequired');
+        if (!isValidRegisterEmail(payload.email)) return t('login.registerEmailInvalid');
+    } else if (payload.email && !isValidRegisterEmail(payload.email)) {
+        return t('login.registerEmailInvalid');
+    }
     if (FLEETOP_REGISTER_INVITE_CODE && payload.inviteCode !== FLEETOP_REGISTER_INVITE_CODE) {
         return t('login.registerInviteInvalid');
     }
@@ -4737,6 +4759,22 @@ async function finishRegisterAfterEmailConfirm() {
     return true;
 }
 
+async function registerCompanyDirect(payload) {
+    const { error } = await client.rpc('register_company_admin', {
+        p_company_name: payload.companyName,
+        p_company_code: payload.normalizedCode,
+        p_username: payload.username,
+        p_employee_name: payload.employeeName,
+        p_password: payload.password,
+        p_email: payload.email || null
+    });
+    if (error) throw error;
+    document.getElementById('companyCodeInput').value = payload.normalizedCode;
+    localStorage.setItem('fleetop_company_code', payload.normalizedCode);
+    clearRegisterForm();
+    return completeAuthLogin(payload.username, payload.password, payload.normalizedCode, 'registerError');
+}
+
 async function handleRegister(e) {
     e.preventDefault();
     if (loginBusy) return;
@@ -4758,6 +4796,10 @@ async function handleRegister(e) {
 
     setLoginBusy(true);
     try {
+        if (!FLEETOP_REQUIRE_EMAIL_VERIFY) {
+            await registerCompanyDirect(payload);
+            return;
+        }
         const { error: saveError } = await client.rpc('save_registration_pending', {
             p_company_name: payload.companyName,
             p_company_code: payload.normalizedCode,
@@ -4771,23 +4813,23 @@ async function handleRegister(e) {
         savePendingRegister(payload);
         showRegisterOtpStep(true);
     } catch (err) {
-        console.error('Register email link error:', err);
+        console.error('Register error:', err);
         const msg = String(err?.message || '');
-        if (/rate limit|security purposes|after/i.test(msg)) {
+        if (/rate limit|security purposes|only request this after|for security purposes/i.test(msg)) {
             showLoginError(t('login.registerOtpRateLimit'), 'registerError');
         } else if (/redirect|url not allowed|whitelist/i.test(msg)) {
             showLoginError(t('login.registerRedirectNotAllowed'), 'registerError');
-        } else if (/Could not find the function|function .* does not exist|42883|save_registration_pending/i.test(msg)) {
+        } else if (/Could not find the function|function .* does not exist|42883|save_registration_pending|register_company_admin/i.test(msg)) {
             showLoginError(t('login.registerEmailSqlMissing'), 'registerError');
         } else if (/معرف الشركة مستخدم/i.test(msg)) {
             showLoginError(t('login.companyCodeTaken'), 'registerError');
-        } else if (/email|smtp|sending/i.test(msg)) {
+        } else if (/email|smtp|sending/i.test(msg) && FLEETOP_REQUIRE_EMAIL_VERIFY) {
             showLoginError(t('login.registerOtpEmailFailed'), 'registerError');
         } else {
             showLoginError(mapRegisterRpcError(msg), 'registerError');
         }
     } finally {
-        setLoginBusy(false);
+        if (!currentLoggedInUser) setLoginBusy(false);
     }
 }
 
@@ -4800,7 +4842,12 @@ async function resendRegisterOtp() {
         await sendRegisterEmailLink(pending.email);
         alert(t('login.registerLinkResent'));
     } catch (err) {
-        showLoginError(err?.message || t('login.registerOtpEmailFailed'), 'registerError');
+        const msg = String(err?.message || '');
+        if (/rate limit|security purposes|only request this after|for security purposes/i.test(msg)) {
+            showLoginError(t('login.registerOtpRateLimit'), 'registerError');
+        } else {
+            showLoginError(msg || t('login.registerOtpEmailFailed'), 'registerError');
+        }
     } finally {
         setLoginBusy(false);
     }
@@ -8150,8 +8197,8 @@ const I18N = {
         'login.registerOtpRequired': 'أدخل رمز التأكيد.',
         'login.registerOtpInvalid': 'رابط التأكيد غير صالح أو منتهي.',
         'login.registerOtpResent': 'تم إعادة إرسال رابط التأكيد.',
-        'login.registerOtpRateLimit': 'انتظر قليلاً قبل طلب رابط جديد.',
-        'login.registerOtpEmailFailed': 'تعذر إرسال رابط التأكيد. تحقق من إعداد البريد في Supabase Auth.',
+        'login.registerOtpRateLimit': 'بريد التأكيد محدود حالياً. انتظر دقيقة على الأقل قبل إعادة الإرسال، أو استخدم التسجيل المباشر.',
+        'login.registerOtpEmailFailed': 'تعذر إرسال الإيميل. بريد Supabase الافتراضي محدود جداً ويفضّل SMTP أو تعطيل تأكيد البريد مؤقتاً.',
         'login.registerRedirectNotAllowed': 'أضف رابط الموقع في Authentication → URL Configuration → Redirect URLs.',
         'login.registerEmailNotVerified': 'يجب تأكيد البريد أولاً عبر الرابط.',
         'login.registerEmailSqlMissing': 'نفّذ ملف fleetop-register-email.sql ثم أعد المحاولة.',
@@ -8761,8 +8808,8 @@ const I18N = {
         'login.registerOtpRequired': 'Enter the verification code.',
         'login.registerOtpInvalid': 'Confirmation link is invalid or expired.',
         'login.registerOtpResent': 'Confirmation link resent.',
-        'login.registerOtpRateLimit': 'Please wait before requesting another link.',
-        'login.registerOtpEmailFailed': 'Could not send the confirmation link. Check Supabase Auth email settings.',
+        'login.registerOtpRateLimit': 'Confirmation email is rate-limited. Wait at least a minute before resending, or use direct registration.',
+        'login.registerOtpEmailFailed': 'Could not send the email. Supabase default email is very limited; use custom SMTP or disable email verification temporarily.',
         'login.registerRedirectNotAllowed': 'Add your site URL in Authentication → URL Configuration → Redirect URLs.',
         'login.registerEmailNotVerified': 'Confirm your email via the link first.',
         'login.registerEmailSqlMissing': 'Run fleetop-register-email.sql then try again.',
