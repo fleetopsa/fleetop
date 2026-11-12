@@ -2909,10 +2909,11 @@
          * لا تترك الرقم التجريبي؛ وإلا لن يفتح واتساب برقم صحيح.
          */
         const FLEETOP_SUPPORT_WHATSAPP = '966552873334';
-        /** فتح إنشاء حساب شركة من شاشة الدخول */
-        const FLEETOP_PUBLIC_REGISTER = true;
-        /** إن وُضعت قيمة غير فارغة، يلزم إدخالها عند إنشاء حساب جديد */
+        /** فتح إنشاء حساب شركة من شاشة الدخول (مغلق افتراضياً للتحصين) */
+        const FLEETOP_PUBLIC_REGISTER = false;
+        /** عند إعادة فتح التسجيل: ضع رمزاً هنا ليصبح مطلوباً عند الإنشاء */
         const FLEETOP_REGISTER_INVITE_CODE = '';
+        const SUBSCRIPTION_RECEIPT_BUCKET = 'subscription-receipts';
         const FLEETOP_PASSWORD_MIN = 8;
         const FLEETOP_LOGIN_MAX_ATTEMPTS = 5;
         const FLEETOP_LOGIN_LOCK_MINUTES = 15;
@@ -4091,6 +4092,40 @@ function readFileAsDataUrl(file) {
     });
 }
 
+function receiptFileExt(file) {
+    const name = String(file?.name || '');
+    const fromName = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+    if (fromName && /^[a-z0-9]+$/.test(fromName)) return fromName;
+    const mime = String(file?.type || '').toLowerCase();
+    if (mime === 'application/pdf') return 'pdf';
+    if (mime.includes('png')) return 'png';
+    if (mime.includes('webp')) return 'webp';
+    if (mime.includes('gif')) return 'gif';
+    return 'jpg';
+}
+
+async function uploadSubscriptionReceipt(file) {
+    const companyId = currentCompanyId();
+    if (companyId == null) throw new Error(t('payreq.uploadFailed'));
+    const ext = receiptFileExt(file);
+    const id = (crypto.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const path = `${companyId}/${id}.${ext}`;
+    const { error } = await client.storage.from(SUBSCRIPTION_RECEIPT_BUCKET).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || (ext === 'pdf' ? 'application/pdf' : 'image/jpeg')
+    });
+    if (error) throw error;
+    return path;
+}
+
+async function subscriptionReceiptSignedUrl(path) {
+    if (!path) return '';
+    const { data, error } = await client.storage.from(SUBSCRIPTION_RECEIPT_BUCKET).createSignedUrl(path, 3600);
+    if (error) throw error;
+    return data?.signedUrl || '';
+}
+
 async function submitCompanyPaymentRequest(e) {
     e.preventDefault();
     const errBox = document.getElementById('payReqError');
@@ -4125,17 +4160,28 @@ async function submitCompanyPaymentRequest(e) {
         }
         return;
     }
+    let uploadedPath = '';
     try {
-        const receiptData = await readFileAsDataUrl(file);
-        const { data, error } = await client.rpc('company_submit_payment_request', {
+        try {
+            uploadedPath = await uploadSubscriptionReceipt(file);
+        } catch (uploadErr) {
+            console.warn('receipt storage upload failed, fallback base64:', uploadErr);
+            uploadedPath = '';
+        }
+        const payload = {
             p_amount: Number(document.getElementById('payReqAmount').value),
             p_paid_at: document.getElementById('payReqDate').value,
             p_plan: document.getElementById('payReqPlan').value || null,
             p_notes: document.getElementById('payReqNotes').value || null,
             p_receipt_name: file.name || null,
             p_receipt_mime: mime || null,
-            p_receipt_data: receiptData
-        });
+            p_receipt_data: null,
+            p_receipt_path: uploadedPath || null
+        };
+        if (!uploadedPath) {
+            payload.p_receipt_data = await readFileAsDataUrl(file);
+        }
+        const { data, error } = await client.rpc('company_submit_payment_request', payload);
         if (error) throw error;
         lastPaymentRequestId = data;
         document.getElementById('companyPaymentRequestForm')?.reset();
@@ -4145,9 +4191,12 @@ async function submitCompanyPaymentRequest(e) {
         alert(t('payreq.submitted'));
         if (confirm(t('payreq.whatsappNotify') + '?')) openSupportWhatsapp('renew');
     } catch (err) {
+        if (uploadedPath) {
+            try { await client.storage.from(SUBSCRIPTION_RECEIPT_BUCKET).remove([uploadedPath]); } catch (removeErr) {}
+        }
         const msg = err?.message || '';
-        const text = /Could not find the function|does not exist|42883|subscription_payment_requests/i.test(msg)
-            ? t('payreq.sqlMissing')
+        const text = /Could not find the function|does not exist|42883|subscription_payment_requests|Bucket not found|subscription-receipts/i.test(msg)
+            ? t('payreq.storageSqlMissing')
             : (msg || t('payreq.sqlMissing'));
         if (errBox) {
             errBox.textContent = text;
@@ -4233,22 +4282,60 @@ async function loadPlatformPaymentRequests() {
     }
 }
 
-function viewPaymentRequestReceipt(id) {
-    const row = platformPaymentRequestsCache.find((r) => Number(r.id) === Number(id));
-    if (!row?.receipt_data) {
-        alert(t('payreq.fileRequired'));
-        return;
+async function viewPaymentRequestReceipt(id) {
+    const cached = platformPaymentRequestsCache.find((r) => Number(r.id) === Number(id));
+    try {
+        let path = cached?.receipt_path || '';
+        let dataUrl = '';
+        let mime = cached?.receipt_mime || '';
+        let name = cached?.receipt_name || `receipt-${id}`;
+        if (!path || cached?.has_legacy_receipt) {
+            const { data, error } = await client.rpc('admin_get_payment_receipt', { p_id: Number(id) });
+            if (error) throw error;
+            const row = Array.isArray(data) ? data[0] : data;
+            if (row) {
+                path = row.receipt_path || path;
+                dataUrl = row.receipt_data || '';
+                mime = row.receipt_mime || mime;
+                name = row.receipt_name || name;
+            }
+        }
+        if (path) {
+            try {
+                const signed = await subscriptionReceiptSignedUrl(path);
+                if (signed) {
+                    window.open(signed, '_blank', 'noopener');
+                    return;
+                }
+            } catch (signedErr) {
+                console.warn('receipt signed url failed:', signedErr);
+            }
+        }
+        if (!dataUrl && cached?.has_legacy_receipt !== false) {
+            const { data, error } = await client.rpc('admin_get_payment_receipt', { p_id: Number(id) });
+            if (!error) {
+                const row = Array.isArray(data) ? data[0] : data;
+                if (row?.receipt_data) dataUrl = row.receipt_data;
+                if (row?.receipt_mime) mime = row.receipt_mime;
+                if (row?.receipt_name) name = row.receipt_name;
+            }
+        }
+        if (!dataUrl) {
+            alert(t('payreq.fileRequired'));
+            return;
+        }
+        const w = window.open('', '_blank');
+        if (!w) return;
+        const title = escapeHtml(name);
+        if (String(mime).includes('pdf') || String(dataUrl).startsWith('data:application/pdf')) {
+            w.document.write(`<title>${title}</title><embed src="${dataUrl}" type="application/pdf" width="100%" height="100%">`);
+        } else {
+            w.document.write(`<title>${title}</title><img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto">`);
+        }
+        w.document.close();
+    } catch (err) {
+        alert(err.message || t('payreq.fileRequired'));
     }
-    const w = window.open('', '_blank');
-    if (!w) return;
-    const mime = row.receipt_mime || '';
-    const title = escapeHtml(row.receipt_name || `receipt-${id}`);
-    if (String(mime).includes('pdf') || String(row.receipt_data).startsWith('data:application/pdf')) {
-        w.document.write(`<title>${title}</title><embed src="${row.receipt_data}" type="application/pdf" width="100%" height="100%">`);
-    } else {
-        w.document.write(`<title>${title}</title><img src="${row.receipt_data}" style="max-width:100%;height:auto;display:block;margin:0 auto">`);
-    }
-    w.document.close();
 }
 
 async function reviewPaymentRequest(id, action, activate) {
@@ -7822,6 +7909,8 @@ const I18N = {
         'payreq.whatsappNotify': 'إبلاغ الدعم عبر واتساب',
         'payreq.submitted': 'تم إرسال الإيصال. سيظهر تنبيه في لوحة المنصة.',
         'payreq.sqlMissing': 'نفّذ ملف fleetop-payment-requests.sql ثم أعد المحاولة.',
+        'payreq.storageSqlMissing': 'نفّذ ملف fleetop-receipt-storage.sql ثم أعد المحاولة.',
+        'payreq.uploadFailed': 'تعذر رفع الإيصال. تأكد من الشركة والتخزين.',
         'payreq.adminOnly': 'رفع الإيصال متاح لمشرف الشركة فقط.',
         'payreq.fileRequired': 'أرفق صورة أو ملف PDF للإيصال.',
         'payreq.fileTooBig': 'حجم الإيصال كبير جداً (الحد 4 ميغابايت).',
@@ -8401,6 +8490,8 @@ const I18N = {
         'payreq.whatsappNotify': 'Notify support on WhatsApp',
         'payreq.submitted': 'Receipt submitted. It will appear as an alert on the platform panel.',
         'payreq.sqlMissing': 'Run fleetop-payment-requests.sql then try again.',
+        'payreq.storageSqlMissing': 'Run fleetop-receipt-storage.sql then try again.',
+        'payreq.uploadFailed': 'Could not upload the receipt. Check company and storage setup.',
         'payreq.adminOnly': 'Only the company admin can upload receipts.',
         'payreq.fileRequired': 'Attach an image or PDF receipt.',
         'payreq.fileTooBig': 'Receipt is too large (max 4 MB).',
