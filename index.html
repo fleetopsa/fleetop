@@ -367,22 +367,47 @@
             inset: 0;
             z-index: 0;
             overflow: hidden;
-            background: #0b2a4a;
+            background: #f6f1e6;
         }
         #loginBackdrop img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             object-position: center;
-            filter: saturate(0.78) brightness(0.92);
+            filter: saturate(0.92) brightness(1.06);
         }
         #loginBackdrop::after {
             content: "";
             position: absolute;
             inset: 0;
-            background:
-                linear-gradient(180deg, rgba(11, 42, 74, 0.64) 0%, rgba(11, 42, 74, 0.48) 40%, rgba(11, 42, 74, 0.78) 100%),
-                linear-gradient(90deg, rgba(11, 42, 74, 0.42), transparent 34%, transparent 68%, rgba(27, 107, 74, 0.18));
+            background: linear-gradient(180deg, rgba(246, 241, 230, 0.28) 0%, rgba(250, 247, 242, 0.08) 42%, rgba(246, 241, 230, 0.38) 100%);
+        }
+        #loginSection {
+            background: rgba(246, 241, 230, 0.96) !important;
+            border-color: #e4d8c0 !important;
+            color: #0b2a4a;
+        }
+        #loginSection label,
+        #loginSection #registerOtpHint {
+            color: #1e3a5f !important;
+        }
+        #loginSection p[data-i18n="login.tagline"] { color: #3e5670 !important; }
+        #loginSection p[data-i18n="login.registerCheckSpam"] { color: #8a6230 !important; }
+        #loginSection input {
+            background: #fff !important;
+            color: #0b2a4a !important;
+            border: 1px solid #e4d8c0 !important;
+        }
+        #loginSection input::placeholder { color: #94a3b8 !important; }
+        #loginSection #loginError,
+        #loginSection #registerError {
+            color: #be123c !important;
+            background: #fff1f2 !important;
+            border-color: #fecdd3 !important;
+        }
+        #loginSection #registerOtpBackBtn {
+            background: rgba(11, 42, 74, 0.06) !important;
+            color: #0b2a4a !important;
         }
         #appSidebar {
             background: #f6f1e6;
@@ -3706,12 +3731,12 @@
             if (registerForm) registerForm.classList.toggle('hidden', authTab !== 'register');
             if (tabLogin) {
                 tabLogin.style.background = authTab === 'login' ? '#c4a35a' : 'transparent';
-                tabLogin.style.color = authTab === 'login' ? '#0b2a4a' : '#e8d5a3';
+                tabLogin.style.color = authTab === 'login' ? '#0b2a4a' : '#3e5670';
             }
             if (tabRegister) {
                 tabRegister.classList.toggle('hidden', !FLEETOP_PUBLIC_REGISTER);
                 tabRegister.style.background = authTab === 'register' ? '#c4a35a' : 'transparent';
-                tabRegister.style.color = authTab === 'register' ? '#0b2a4a' : '#e8d5a3';
+                tabRegister.style.color = authTab === 'register' ? '#0b2a4a' : '#3e5670';
             }
             document.getElementById('loginError')?.classList.add('hidden');
             document.getElementById('registerError')?.classList.add('hidden');
