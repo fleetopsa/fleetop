@@ -199,6 +199,36 @@
         body.is-printing #financialOverviewSection .text-2xl {
             font-size: 13pt !important;
         }
+        body.is-printing #receivablesSection > .recv-summary {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+        body.is-printing #receivablesSection > .recv-table-card,
+        body.is-printing #receivablesSection .overflow-x-auto,
+        body.is-printing #receivablesSection table,
+        body.is-printing #receivablesSection tbody {
+            display: block !important;
+            flex: none !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+        }
+        body.is-printing #receivablesSection table {
+            display: table !important;
+        }
+        body.is-printing #receivablesSection thead { display: table-header-group !important; }
+        body.is-printing #receivablesSection tbody { display: table-row-group !important; }
+        body.is-printing #receivablesSection tr {
+            display: table-row !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        body.is-printing #receivablesSection th,
+        body.is-printing #receivablesSection td { display: table-cell !important; }
         body.is-printing #mainDashboard > .flex-grow {
             display: block !important;
             order: 1;
@@ -1758,7 +1788,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
+    <div class="recv-table-card bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
             <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل متابعة التحصيل</span>
         </h3>
