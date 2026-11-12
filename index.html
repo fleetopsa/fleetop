@@ -385,11 +385,11 @@
                 linear-gradient(90deg, rgba(11, 42, 74, 0.42), transparent 34%, transparent 68%, rgba(27, 107, 74, 0.18));
         }
         #appSidebar {
-            background: #0b2a4a;
-            color: #f5ead0;
-            border-color: rgba(196, 163, 90, 0.28);
+            background: #f6f1e6;
+            color: #0b2a4a;
+            border-color: #e4d8c0;
             border-left-width: 0;
-            border-inline-end: 1px solid rgba(196, 163, 90, 0.28);
+            border-inline-end: 1px solid #e4d8c0;
         }
         #appSidebar [data-nav],
         #appSidebar #tabFacilityBtn,
@@ -398,7 +398,7 @@
         #appSidebar #tabStaffBtn,
         #appSidebar #tabReportsGroupBtn,
         #appSidebar #tabSystemGroupBtn {
-            color: #d6c9a8;
+            color: #1e3a5f;
         }
         #appSidebar [data-nav]:hover,
         #appSidebar #tabFacilityBtn:hover,
@@ -407,14 +407,14 @@
         #appSidebar #tabStaffBtn:hover,
         #appSidebar #tabReportsGroupBtn:hover,
         #appSidebar #tabSystemGroupBtn:hover {
-            background: rgba(196, 163, 90, 0.14);
-            color: #fff8ea;
+            background: rgba(11, 42, 74, 0.06);
+            color: #0b2a4a;
         }
         #appSidebar .nav-active {
             background: #c4a35a !important;
             color: #0b2a4a !important;
         }
-        #appSidebar .nav-open { color: #c4a35a !important; }
+        #appSidebar .nav-open { color: #8a6230 !important; }
         #appSidebar nav button {
             justify-content: flex-start;
             text-align: start;
@@ -1106,14 +1106,14 @@
                     <img src="fleetop-logo.png" alt="FleetOp" class="w-16 h-16 rounded-xl object-contain shrink-0">
                     <div class="min-w-0 flex-1">
                         <div class="flex items-start justify-between gap-2">
-                            <h1 class="font-black text-base leading-snug" style="color:#f5ead0">FleetOp · فليتوب</h1>
-                            <button type="button" id="sidebarUnpinBtn" onclick="toggleMobileNav(false)" class="hidden w-8 h-8 items-center justify-center rounded-lg shrink-0 transition" style="background:rgba(196,163,90,0.18);color:#c4a35a" title="إلغاء تثبيت القائمة" aria-label="إلغاء تثبيت القائمة">
+                            <h1 class="font-black text-base leading-snug" style="color:#0b2a4a">FleetOp · فليتوب</h1>
+                            <button type="button" id="sidebarUnpinBtn" onclick="toggleMobileNav(false)" class="hidden w-8 h-8 items-center justify-center rounded-lg shrink-0 transition" style="background:rgba(11,42,74,0.08);color:#0b2a4a" title="إلغاء تثبيت القائمة" aria-label="إلغاء تثبيت القائمة">
                                 <i class="fa-solid fa-thumbtack"></i>
                             </button>
                         </div>
-                        <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#c4a35a"></p>
-                        <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#e8d5a3"></p>
-                        <button type="button" id="supportReturnPlatformBtn" onclick="returnToPlatformDashboard()" class="hidden mt-2 w-full text-[10px] font-black rounded-lg px-2 py-1.5 transition" style="background:rgba(196,163,90,0.2);color:#e8d5a3">
+                        <p id="sidebarCompanyName" class="text-[10px] font-bold truncate" style="color:#8a6230"></p>
+                        <p id="currentUserBadge" class="text-[10px] font-bold" style="color:#3e5670"></p>
+                        <button type="button" id="supportReturnPlatformBtn" onclick="returnToPlatformDashboard()" class="hidden mt-2 w-full text-[10px] font-black rounded-lg px-2 py-1.5 transition" style="background:rgba(11,42,74,0.08);color:#0b2a4a">
                             <i class="fa-solid fa-arrow-right-from-bracket ml-1"></i> <span data-i18n="platform.backToPanel">العودة للوحة المنصة</span>
                         </button>
                         <script>
@@ -1240,14 +1240,14 @@
                     </div>
                 </nav>
             </div>
-            <div class="pt-6 space-y-2" style="border-top:1px solid rgba(196,163,90,0.28)">
-                <a id="sidebarWhatsappSupport" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(37,211,102,0.16);color:#25d366;border:1px solid rgba(37,211,102,0.45)">
+            <div class="pt-6 space-y-2" style="border-top:1px solid #e4d8c0">
+                <a id="sidebarWhatsappSupport" href="#" target="_blank" rel="noopener" onclick="openSupportWhatsapp('support'); return false;" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(18,140,78,0.1);color:#128c4e;border:1px solid rgba(18,140,78,0.35)">
                     <i class="fa-brands fa-whatsapp text-sm"></i> <span data-i18n="support.whatsapp">الدعم الفني</span>
                 </a>
-                <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(196,163,90,0.12);color:#c4a35a;border:1px solid rgba(196,163,90,0.4)">
+                <button type="button" onclick="openOwnPasswordModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-bold rounded-xl text-xs transition" style="background:rgba(138,98,48,0.1);color:#8a6230;border:1px solid rgba(138,98,48,0.28)">
                     <i class="fa-solid fa-key"></i> <span data-i18n="nav.password">تغيير كلمة المرور</span>
                 </button>
-                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white font-bold rounded-xl text-xs transition border border-rose-500/20">
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-600 text-rose-700 hover:text-white font-bold rounded-xl text-xs transition border border-rose-500/20">
                     <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="nav.logout">تسجيل الخروج</span>
                 </button>
             </div>
