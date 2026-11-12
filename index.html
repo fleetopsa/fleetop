@@ -709,23 +709,15 @@
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
                     <input type="password" id="registerConfirmPassword" name="fleetop_reg_confirm" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
                 </div>
-                <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSendCode">
-                    إرسال رمز التأكيد
+                <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSendLink">
+                    إرسال رابط التأكيد
                 </button>
             </div>
             <div id="registerOtpStep" class="hidden space-y-3.5">
-                <p id="registerOtpHint" class="text-[11px] font-bold text-center" style="color:#e8d5a3"></p>
-                <div>
-                    <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.registerOtp">رمز التأكيد</label>
-                    <input type="text" id="registerOtpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40 tracking-[0.35em] text-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="000000">
-                </div>
-                <button type="button" id="registerOtpSubmitBtn" onclick="handleRegisterOtp()" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerVerify">
-                    تأكيد وإنشاء الحساب
-                </button>
-                <div class="flex gap-2">
-                    <button type="button" id="registerOtpResendBtn" onclick="resendRegisterOtp()" class="flex-1 font-bold py-2.5 rounded-xl text-xs transition" style="background:rgba(255,255,255,0.08);color:#e8d5a3" data-i18n="login.registerResend">إعادة إرسال الرمز</button>
-                    <button type="button" id="registerOtpBackBtn" onclick="backToRegisterDetails()" class="flex-1 font-bold py-2.5 rounded-xl text-xs transition" style="background:rgba(255,255,255,0.08);color:#e8d5a3" data-i18n="login.registerBack">رجوع</button>
-                </div>
+                <p id="registerOtpHint" class="text-[11px] font-bold text-center leading-5" style="color:#e8d5a3"></p>
+                <p class="text-[11px] font-bold text-center" style="color:#c4a35a" data-i18n="login.registerCheckSpam">إذا لم يصلك خلال دقيقة، تحقق من مجلد السبام.</p>
+                <button type="button" id="registerOtpResendBtn" onclick="resendRegisterOtp()" class="w-full font-bold py-3 rounded-xl text-xs transition" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerResendLink">إعادة إرسال الرابط</button>
+                <button type="button" id="registerOtpBackBtn" onclick="backToRegisterDetails()" class="w-full font-bold py-2.5 rounded-xl text-xs transition" style="background:rgba(255,255,255,0.08);color:#e8d5a3" data-i18n="login.registerBack">رجوع</button>
             </div>
             <div id="registerError" class="hidden text-rose-200 text-xs font-bold text-center py-2.5 rounded-xl border border-rose-400/40 bg-rose-500/20"></div>
         </form>
@@ -2937,7 +2929,7 @@
         const FLEETOP_LOGIN_MAX_ATTEMPTS = 5;
         const FLEETOP_LOGIN_LOCK_MINUTES = 15;
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
 
         function normalizeAppUsername(username) {
@@ -3402,11 +3394,49 @@
 
         let authTab = 'login';
 
+        const PENDING_REGISTER_KEY = 'fleetop_pending_register';
         let pendingRegister = null;
 
         function isValidRegisterEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim())
                 && !String(email || '').toLowerCase().endsWith('@fleetop.internal');
+        }
+
+        function registerEmailRedirectTo() {
+            try {
+                const url = new URL(window.location.href);
+                url.hash = '';
+                url.search = '';
+                let path = url.pathname || '/';
+                path = path.replace(/index\.html$/i, '');
+                if (!path.endsWith('/')) path += '/';
+                url.pathname = path;
+                return url.toString();
+            } catch (err) {
+                return String(window.location.href || '').split('#')[0].split('?')[0];
+            }
+        }
+
+        function savePendingRegister(payload) {
+            pendingRegister = payload;
+            try { localStorage.setItem(PENDING_REGISTER_KEY, JSON.stringify(payload)); } catch (err) {}
+        }
+
+        function loadPendingRegister() {
+            if (pendingRegister) return pendingRegister;
+            try {
+                const raw = localStorage.getItem(PENDING_REGISTER_KEY);
+                if (!raw) return null;
+                pendingRegister = JSON.parse(raw);
+                return pendingRegister;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        function clearPendingRegister() {
+            pendingRegister = null;
+            try { localStorage.removeItem(PENDING_REGISTER_KEY); } catch (err) {}
         }
 
         function showRegisterOtpStep(show) {
@@ -3421,14 +3451,15 @@
                 const el = document.getElementById(id);
                 if (el) el.required = !show;
             });
-            if (show && pendingRegister?.email) {
+            const pending = loadPendingRegister();
+            if (show && pending?.email) {
                 const hint = document.getElementById('registerOtpHint');
-                if (hint) hint.textContent = t('login.registerOtpHint').replace('{email}', pendingRegister.email);
+                if (hint) hint.textContent = t('login.registerLinkHint').replace('{email}', pending.email);
             }
         }
 
         function clearRegisterForm() {
-            pendingRegister = null;
+            clearPendingRegister();
             [
                 'registerCompanyName',
                 'registerCompanyCode',
@@ -3437,8 +3468,7 @@
                 'registerInviteCode',
                 'registerUsername',
                 'registerPassword',
-                'registerConfirmPassword',
-                'registerOtpCode'
+                'registerConfirmPassword'
             ].forEach((id) => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
@@ -3448,7 +3478,6 @@
         }
 
         function backToRegisterDetails() {
-            document.getElementById('registerOtpCode').value = '';
             document.getElementById('registerError')?.classList.add('hidden');
             showRegisterOtpStep(false);
         }
@@ -3474,10 +3503,14 @@
             document.getElementById('loginError')?.classList.add('hidden');
             document.getElementById('registerError')?.classList.add('hidden');
             if (authTab === 'register') {
-                clearRegisterForm();
-                setTimeout(() => document.getElementById('registerCompanyName')?.focus(), 0);
+                const pending = loadPendingRegister();
+                if (pending?.email) {
+                    showRegisterOtpStep(true);
+                } else {
+                    clearRegisterForm();
+                    setTimeout(() => document.getElementById('registerCompanyName')?.focus(), 0);
+                }
             } else {
-                pendingRegister = null;
                 showRegisterOtpStep(false);
             }
         }
@@ -3486,14 +3519,13 @@
             loginBusy = !!busy;
             const loginBtn = document.getElementById('loginSubmitBtn');
             const registerBtn = document.getElementById('registerSubmitBtn');
-            const otpBtn = document.getElementById('registerOtpSubmitBtn');
             const resendBtn = document.getElementById('registerOtpResendBtn');
             const backBtn = document.getElementById('registerOtpBackBtn');
             const fields = [
                 'companyCodeInput', 'usernameInput', 'passwordInput',
                 'registerCompanyName', 'registerCompanyCode', 'registerEmployeeName',
                 'registerEmail', 'registerInviteCode', 'registerUsername',
-                'registerPassword', 'registerConfirmPassword', 'registerOtpCode'
+                'registerPassword', 'registerConfirmPassword'
             ];
             if (loginBtn) {
                 loginBtn.disabled = loginBusy;
@@ -3504,14 +3536,8 @@
             if (registerBtn) {
                 registerBtn.disabled = loginBusy;
                 registerBtn.textContent = loginBusy
-                    ? (currentLang === 'en' ? 'Sending code…' : 'جاري إرسال الرمز…')
-                    : t('login.registerSendCode');
-            }
-            if (otpBtn) {
-                otpBtn.disabled = loginBusy;
-                otpBtn.textContent = loginBusy
-                    ? (currentLang === 'en' ? 'Verifying…' : 'جاري التأكيد…')
-                    : t('login.registerVerify');
+                    ? (currentLang === 'en' ? 'Sending link…' : 'جاري إرسال الرابط…')
+                    : t('login.registerSendLink');
             }
             if (resendBtn) resendBtn.disabled = loginBusy;
             if (backBtn) backBtn.disabled = loginBusy;
@@ -4657,12 +4683,51 @@ function validateRegisterPayload(payload) {
     return '';
 }
 
-async function sendRegisterEmailOtp(email) {
+async function sendRegisterEmailLink(email) {
     const { error } = await client.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: true }
+        options: {
+            shouldCreateUser: true,
+            emailRedirectTo: registerEmailRedirectTo()
+        }
     });
     if (error) throw error;
+}
+
+function mapRegisterRpcError(msg) {
+    if (/يجب تأكيد البريد|البريد غير مؤكد/i.test(msg)) return t('login.registerEmailNotVerified');
+    if (/Could not find the function|function .* does not exist|42883|p_email/i.test(msg)) return t('login.registerEmailSqlMissing');
+    if (/معرف الشركة مستخدم/i.test(msg)) return t('login.companyCodeTaken');
+    if (/اسم المستخدم مستخدم/i.test(msg)) return t('login.registerUsernameTaken');
+    return msg || t('login.registerFailed');
+}
+
+async function finishRegisterAfterEmailConfirm(payload) {
+    const { error } = await client.rpc('register_company_admin', {
+        p_company_name: payload.companyName,
+        p_company_code: payload.normalizedCode,
+        p_username: payload.username,
+        p_employee_name: payload.employeeName,
+        p_password: payload.password,
+        p_email: payload.email
+    });
+    if (error) {
+        try { await client.auth.signOut(); } catch (signOutErr) {}
+        if (typeof switchAuthTab === 'function') switchAuthTab('register');
+        showRegisterOtpStep(true);
+        showLoginError(mapRegisterRpcError(String(error.message || '')), 'registerError');
+        return false;
+    }
+    const code = payload.normalizedCode;
+    const username = payload.username;
+    const password = payload.password;
+    clearPendingRegister();
+    try { await client.auth.signOut(); } catch (signOutErr) {}
+    document.getElementById('companyCodeInput').value = code;
+    localStorage.setItem('fleetop_company_code', code);
+    clearRegisterForm();
+    if (typeof switchAuthTab === 'function') switchAuthTab('login');
+    return completeAuthLogin(username, password, code, 'registerError');
 }
 
 async function handleRegister(e) {
@@ -4673,7 +4738,6 @@ async function handleRegister(e) {
         return;
     }
     if (!document.getElementById('registerOtpStep')?.classList.contains('hidden')) {
-        await handleRegisterOtp();
         return;
     }
 
@@ -4687,15 +4751,16 @@ async function handleRegister(e) {
 
     setLoginBusy(true);
     try {
-        await sendRegisterEmailOtp(payload.email);
-        pendingRegister = payload;
+        await sendRegisterEmailLink(payload.email);
+        savePendingRegister(payload);
         showRegisterOtpStep(true);
-        setTimeout(() => document.getElementById('registerOtpCode')?.focus(), 0);
     } catch (err) {
-        console.error('Register OTP send error:', err);
+        console.error('Register email link error:', err);
         const msg = String(err?.message || '');
         if (/rate limit|security purposes|after/i.test(msg)) {
             showLoginError(t('login.registerOtpRateLimit'), 'registerError');
+        } else if (/redirect|url not allowed|whitelist/i.test(msg)) {
+            showLoginError(t('login.registerRedirectNotAllowed'), 'registerError');
         } else if (/email|smtp|sending/i.test(msg)) {
             showLoginError(t('login.registerOtpEmailFailed'), 'registerError');
         } else {
@@ -4707,86 +4772,17 @@ async function handleRegister(e) {
 }
 
 async function resendRegisterOtp() {
-    if (loginBusy || !pendingRegister?.email) return;
+    const pending = loadPendingRegister();
+    if (loginBusy || !pending?.email) return;
     document.getElementById('registerError')?.classList.add('hidden');
     setLoginBusy(true);
     try {
-        await sendRegisterEmailOtp(pendingRegister.email);
-        alert(t('login.registerOtpResent'));
+        await sendRegisterEmailLink(pending.email);
+        alert(t('login.registerLinkResent'));
     } catch (err) {
         showLoginError(err?.message || t('login.registerOtpEmailFailed'), 'registerError');
     } finally {
         setLoginBusy(false);
-    }
-}
-
-async function handleRegisterOtp() {
-    if (loginBusy) return;
-    if (!pendingRegister) {
-        showLoginError(t('login.registerRequired'), 'registerError');
-        showRegisterOtpStep(false);
-        return;
-    }
-    const token = String(document.getElementById('registerOtpCode')?.value || '').trim();
-    if (!token) {
-        showLoginError(t('login.registerOtpRequired'), 'registerError');
-        return;
-    }
-    document.getElementById('registerError')?.classList.add('hidden');
-    setLoginBusy(true);
-    try {
-        const { error: otpError } = await client.auth.verifyOtp({
-            email: pendingRegister.email,
-            token,
-            type: 'email'
-        });
-        if (otpError) throw otpError;
-
-        const { error } = await client.rpc('register_company_admin', {
-            p_company_name: pendingRegister.companyName,
-            p_company_code: pendingRegister.normalizedCode,
-            p_username: pendingRegister.username,
-            p_employee_name: pendingRegister.employeeName,
-            p_password: pendingRegister.password,
-            p_email: pendingRegister.email
-        });
-        if (error) {
-            const msg = String(error.message || '');
-            try { await client.auth.signOut(); } catch (signOutErr) {}
-            if (/يجب تأكيد البريد|البريد غير مؤكد/i.test(msg)) {
-                showLoginError(t('login.registerEmailNotVerified'), 'registerError');
-            } else if (/Could not find the function|function .* does not exist|42883|p_email/i.test(msg)) {
-                showLoginError(t('login.registerEmailSqlMissing'), 'registerError');
-            } else if (/معرف الشركة مستخدم/i.test(msg)) {
-                showLoginError(t('login.companyCodeTaken'), 'registerError');
-            } else if (/اسم المستخدم مستخدم/i.test(msg)) {
-                showLoginError(t('login.registerUsernameTaken'), 'registerError');
-            } else {
-                showLoginError(msg || t('login.registerFailed'), 'registerError');
-            }
-            return;
-        }
-
-        const code = pendingRegister.normalizedCode;
-        const username = pendingRegister.username;
-        const password = pendingRegister.password;
-        pendingRegister = null;
-        try { await client.auth.signOut(); } catch (signOutErr) {}
-        document.getElementById('companyCodeInput').value = code;
-        localStorage.setItem('fleetop_company_code', code);
-        clearRegisterForm();
-        await completeAuthLogin(username, password, code, 'registerError');
-    } catch (err) {
-        console.error('Register verify error:', err);
-        const msg = String(err?.message || '');
-        try { await client.auth.signOut(); } catch (signOutErr) {}
-        if (/otp|token|invalid|expired/i.test(msg)) {
-            showLoginError(t('login.registerOtpInvalid'), 'registerError');
-        } else {
-            showLoginError(msg || t('login.registerFailed'), 'registerError');
-        }
-    } finally {
-        if (!currentLoggedInUser) setLoginBusy(false);
     }
 }
         // دالة تعبئة فلتر السائقين وفتح تقرير العمولات (للأدمن والمحاسب فقط)
@@ -8120,18 +8116,24 @@ const I18N = {
         'login.registerEmail': 'البريد الإلكتروني',
         'login.registerEmailPh': 'name@example.com',
         'login.registerEmailInvalid': 'أدخل بريداً إلكترونياً صالحاً.',
-        'login.registerSendCode': 'إرسال رمز التأكيد',
-        'login.registerOtp': 'رمز التأكيد',
+        'login.registerSendCode': 'إرسال رابط التأكيد',
+        'login.registerSendLink': 'إرسال رابط التأكيد',
+        'login.registerOtp': 'تأكيد البريد',
         'login.registerOtpHint': 'أدخل الرمز المرسل إلى {email}',
+        'login.registerLinkHint': 'أرسلنا رابط تأكيد إلى {email}. افتح بريدك واضغط الرابط لإكمال إنشاء الحساب.',
+        'login.registerCheckSpam': 'إذا لم يصلك خلال دقيقة، تحقق من مجلد السبام.',
         'login.registerVerify': 'تأكيد وإنشاء الحساب',
-        'login.registerResend': 'إعادة إرسال الرمز',
+        'login.registerResend': 'إعادة إرسال الرابط',
+        'login.registerResendLink': 'إعادة إرسال الرابط',
         'login.registerBack': 'رجوع',
+        'login.registerLinkResent': 'تم إعادة إرسال رابط التأكيد.',
         'login.registerOtpRequired': 'أدخل رمز التأكيد.',
-        'login.registerOtpInvalid': 'رمز التأكيد غير صحيح أو منتهي.',
-        'login.registerOtpResent': 'تم إعادة إرسال رمز التأكيد.',
-        'login.registerOtpRateLimit': 'انتظر قليلاً قبل طلب رمز جديد.',
-        'login.registerOtpEmailFailed': 'تعذر إرسال رمز التأكيد. فعّل Email OTP في Supabase Auth.',
-        'login.registerEmailNotVerified': 'يجب تأكيد البريد أولاً.',
+        'login.registerOtpInvalid': 'رابط التأكيد غير صالح أو منتهي.',
+        'login.registerOtpResent': 'تم إعادة إرسال رابط التأكيد.',
+        'login.registerOtpRateLimit': 'انتظر قليلاً قبل طلب رابط جديد.',
+        'login.registerOtpEmailFailed': 'تعذر إرسال رابط التأكيد. تحقق من إعداد البريد في Supabase Auth.',
+        'login.registerRedirectNotAllowed': 'أضف رابط الموقع في Authentication → URL Configuration → Redirect URLs.',
+        'login.registerEmailNotVerified': 'يجب تأكيد البريد أولاً عبر الرابط.',
         'login.registerEmailSqlMissing': 'نفّذ ملف fleetop-register-email.sql ثم أعد المحاولة.',
         'login.registerRequired': 'أكمل جميع الحقول المطلوبة.',
         'login.registerPasswordShort': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.',
@@ -8723,18 +8725,24 @@ const I18N = {
         'login.registerEmail': 'Email',
         'login.registerEmailPh': 'name@example.com',
         'login.registerEmailInvalid': 'Enter a valid email address.',
-        'login.registerSendCode': 'Send verification code',
-        'login.registerOtp': 'Verification code',
+        'login.registerSendCode': 'Send confirmation link',
+        'login.registerSendLink': 'Send confirmation link',
+        'login.registerOtp': 'Email confirmation',
         'login.registerOtpHint': 'Enter the code sent to {email}',
+        'login.registerLinkHint': 'We sent a confirmation link to {email}. Open your email and click the link to finish creating the account.',
+        'login.registerCheckSpam': 'If it does not arrive within a minute, check your spam folder.',
         'login.registerVerify': 'Verify and create account',
-        'login.registerResend': 'Resend code',
+        'login.registerResend': 'Resend link',
+        'login.registerResendLink': 'Resend link',
         'login.registerBack': 'Back',
+        'login.registerLinkResent': 'Confirmation link resent.',
         'login.registerOtpRequired': 'Enter the verification code.',
-        'login.registerOtpInvalid': 'Invalid or expired verification code.',
-        'login.registerOtpResent': 'Verification code resent.',
-        'login.registerOtpRateLimit': 'Please wait before requesting another code.',
-        'login.registerOtpEmailFailed': 'Could not send the code. Enable Email OTP in Supabase Auth.',
-        'login.registerEmailNotVerified': 'Email must be verified first.',
+        'login.registerOtpInvalid': 'Confirmation link is invalid or expired.',
+        'login.registerOtpResent': 'Confirmation link resent.',
+        'login.registerOtpRateLimit': 'Please wait before requesting another link.',
+        'login.registerOtpEmailFailed': 'Could not send the confirmation link. Check Supabase Auth email settings.',
+        'login.registerRedirectNotAllowed': 'Add your site URL in Authentication → URL Configuration → Redirect URLs.',
+        'login.registerEmailNotVerified': 'Confirm your email via the link first.',
         'login.registerEmailSqlMissing': 'Run fleetop-register-email.sql then try again.',
         'login.registerRequired': 'Please complete all required fields.',
         'login.registerPasswordShort': 'Password must be at least 8 characters.',
@@ -11527,13 +11535,35 @@ async function loadUsers(options = {}) {
                 if (!authUser) {
                     clearStoredSession();
                     document.body.classList.remove('dashboard-active');
+                    const pendingOnly = loadPendingRegister();
+                    if (pendingOnly?.email && typeof switchAuthTab === 'function' && FLEETOP_PUBLIC_REGISTER) {
+                        switchAuthTab('register');
+                        showRegisterOtpStep(true);
+                    }
                     return;
                 }
                 let profile = await loadAppProfile(authUser.id);
                 if (!profile) {
                     profile = await loadPlatformAdminProfile(authUser.id);
                 }
-                if (!profile || profile.status === 'موقوف') {
+                if (!profile) {
+                    const pending = loadPendingRegister();
+                    const email = String(authUser.email || '').toLowerCase();
+                    if (pending?.email && email === String(pending.email).toLowerCase()) {
+                        setLoginBusy(true);
+                        try {
+                            await finishRegisterAfterEmailConfirm(pending);
+                        } finally {
+                            if (!currentLoggedInUser) setLoginBusy(false);
+                        }
+                        return;
+                    }
+                    await client.auth.signOut();
+                    clearStoredSession();
+                    document.body.classList.remove('dashboard-active');
+                    return;
+                }
+                if (profile.status === 'موقوف') {
                     await client.auth.signOut();
                     clearStoredSession();
                     document.body.classList.remove('dashboard-active');
