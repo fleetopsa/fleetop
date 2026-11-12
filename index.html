@@ -3475,7 +3475,13 @@
                 'registerEmail', 'registerUsername', 'registerPassword', 'registerConfirmPassword'
             ].forEach((id) => {
                 const el = document.getElementById(id);
-                if (el) el.required = !show;
+                if (!el) return;
+                if (id === 'registerEmail') {
+                    // لا تفرض required على بريد مخفي؛ يمنع زر الإنشاء بصمت
+                    el.required = !show && !!FLEETOP_REQUIRE_EMAIL_VERIFY;
+                } else {
+                    el.required = !show;
+                }
             });
             const pending = loadPendingRegister();
             if (show && pending?.email) {
