@@ -2293,11 +2293,16 @@
                                     <th class="p-3.5" data-i18n="th.username">اسم المستخدم</th>
                                     <th class="p-3.5" data-i18n="log.action">العملية</th>
                                     <th class="p-3.5" data-i18n="log.record">السجل</th>
-                                    <th class="p-3.5 rounded-l-xl" data-i18n="log.details">التفاصيل</th>
+                                    <th class="p-3.5 text-center" colspan="2" data-i18n="log.changeDetails">تفاصيل التغيير</th>
+                                </tr>
+                                <tr>
+                                    <th class="p-2" colspan="5"></th>
+                                    <th class="p-2 text-center" data-i18n="log.before">قبل</th>
+                                    <th class="p-2 text-center rounded-l-xl" data-i18n="log.after">بعد</th>
                                 </tr>
                             </thead>
                             <tbody id="activityLogTable" class="divide-y divide-slate-100">
-                                <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                                <tr><td colspan="7" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3197,11 +3202,33 @@
             }
         }
 
+        function splitActivityChange(details) {
+            const text = String(details || '').trim();
+            if (!text) return { before: '—', after: '—' };
+            const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+            const beforeLines = [];
+            const afterLines = [];
+            lines.forEach((line) => {
+                if (/^(التغييرات|changes)\b/i.test(line)) return;
+                const match = line.match(/^(.*?):\s*(.*?)\s*←\s*(.*)$/);
+                if (!match) return;
+                beforeLines.push(`${match[1]}: ${match[2] || '—'}`);
+                afterLines.push(`${match[1]}: ${match[3] || '—'}`);
+            });
+            if (beforeLines.length || afterLines.length) {
+                return {
+                    before: beforeLines.join('\n'),
+                    after: afterLines.join('\n')
+                };
+            }
+            return { before: '—', after: text };
+        }
+
         async function loadActivityLog() {
             const tbody = document.getElementById('activityLogTable');
             if (!tbody) return;
             if (!isAdminUser()) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
                 document.getElementById('clearActivityLogBtn')?.classList.add('hidden');
                 return;
             }
@@ -3218,17 +3245,18 @@
                 if (userQ) query = query.ilike('username', userQ);
                 const { data, error } = await query;
                 if (error) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
                     return;
                 }
                 const rows = data || [];
                 if (!rows.length) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('log.empty')}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${t('log.empty')}</td></tr>`;
                     return;
                 }
                 tbody.innerHTML = rows.map(row => {
                     const when = formatActivityLogTime(row.created_at);
                     const record = [row.entity, row.entity_no].filter(Boolean).join(' · ');
+                    const change = splitActivityChange(row.details);
                     return `
                         <tr class="hover:bg-slate-50">
                             <td class="p-3.5 font-mono text-slate-600 whitespace-nowrap">${escapeHtml(when)}</td>
@@ -3236,12 +3264,13 @@
                             <td class="p-3.5 font-mono">${escapeHtml(row.username || '—')}</td>
                             <td class="p-3.5 font-bold text-amber-700">${escapeHtml(t('log.' + row.action))}</td>
                             <td class="p-3.5 font-mono text-slate-700">${escapeHtml(record || '—')}</td>
-                            <td class="p-3.5 text-slate-600 text-[11px] whitespace-pre-wrap max-w-md align-top">${escapeHtml(row.details || '—')}</td>
+                            <td class="p-3.5 text-slate-600 text-[11px] whitespace-pre-wrap max-w-xs align-top">${escapeHtml(change.before)}</td>
+                            <td class="p-3.5 text-slate-900 text-[11px] whitespace-pre-wrap max-w-xs align-top">${escapeHtml(change.after)}</td>
                         </tr>`;
                 }).join('');
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">${escapeHtml(t('log.missingTable'))}</td></tr>`;
             }
         }
 
@@ -8337,6 +8366,9 @@ const I18N = {
         'log.action': 'العملية',
         'log.record': 'السجل',
         'log.details': 'التفاصيل',
+        'log.changeDetails': 'تفاصيل التغيير',
+        'log.before': 'قبل',
+        'log.after': 'بعد',
         'log.searchUser': 'ابحث بالمستخدم',
         'log.empty': 'لا توجد عمليات بعد تفعيل السجل في هذه الفترة',
         'log.clear': 'مسح السجل',
@@ -8948,6 +8980,9 @@ const I18N = {
         'log.action': 'Action',
         'log.record': 'Record',
         'log.details': 'Details',
+        'log.changeDetails': 'Change details',
+        'log.before': 'Before',
+        'log.after': 'After',
         'log.searchUser': 'Search by user',
         'log.empty': 'No activity after the log was enabled for this period',
         'log.clear': 'Clear log',
