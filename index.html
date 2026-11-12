@@ -235,6 +235,14 @@
             justify-self: center;
         }
         body.is-printing .print-letterhead-grid img.print-company-logo.hidden { display: none !important; }
+        body.is-printing .print-company-cr {
+            margin: 3mm 0 0;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        body.is-printing .print-company-cr:empty { display: none !important; }
         body.is-printing .print-platform-mark {
             display: flex !important;
             align-items: center;
@@ -1004,6 +1012,7 @@
                     <span id="printCompanySloganAr">إدارة الأسطول والرحلات</span>
                 </div>
             </div>
+            <p id="printCompanyCr" class="print-company-cr"></p>
         </div>
         <div id="printFooter" class="print-only" aria-hidden="true">
             <span id="printUserName"></span>
@@ -2401,7 +2410,7 @@
                                         <input type="text" id="companyCity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                     </div>
                                     <div>
-                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.cr">السجل التجاري</label>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.cr">الرقم الوطني الموحد</label>
                                         <input type="text" id="companyCr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                                     </div>
                                     <div>
@@ -8622,7 +8631,7 @@ const I18N = {
         'settings.phone': 'الهاتف',
         'settings.email': 'البريد',
         'settings.city': 'المدينة',
-        'settings.cr': 'السجل التجاري',
+        'settings.cr': 'الرقم الوطني الموحد',
         'settings.vat': 'الرقم الضريبي',
         'settings.address': 'العنوان',
         'settings.logo': 'شعار الشركة',
@@ -9236,7 +9245,7 @@ const I18N = {
         'settings.phone': 'Phone',
         'settings.email': 'Email',
         'settings.city': 'City',
-        'settings.cr': 'Commercial registration',
+        'settings.cr': 'Unified national number',
         'settings.vat': 'VAT number',
         'settings.address': 'Address',
         'settings.logo': 'Company logo',
@@ -9704,6 +9713,11 @@ function applyCompanyBranding() {
     if (enEl) enEl.textContent = nameEn || nameAr || (currentLoggedInUser && currentLoggedInUser.company_name) || 'Company';
     if (arSlogan) arSlogan.textContent = sloganAr;
     if (enSlogan) enSlogan.textContent = sloganEn;
+    const crEl = document.getElementById('printCompanyCr');
+    if (crEl) {
+        const cr = String(companySettings.cr_number || '').trim();
+        crEl.textContent = cr ? `${t('settings.cr')}: ${cr}` : '';
+    }
     const logos = ['printCompanyLogo', 'companyLogoPreview'];
     logos.forEach(id => {
         const img = document.getElementById(id);
