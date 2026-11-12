@@ -5887,6 +5887,59 @@ function sameFleetValue(a, b) {
     return String(a || '').trim() === String(b || '').trim();
 }
 
+function activeAssignmentSets(trips) {
+    const active = (trips || []).filter(trip => String(trip?.status || '').trim() === 'جارية');
+    return {
+        plates: new Set(active.map(trip => String(trip.truck_plate || '').trim()).filter(Boolean)),
+        drivers: new Set(active.map(trip => String(trip.driver_name || '').trim()).filter(Boolean))
+    };
+}
+
+function truckStatusForTrips(truck, assignments) {
+    const plate = String(truck?.plate || '').trim();
+    const blocked = truck?.status === 'صيانة دورية' || truck?.status === 'في الصيانة' || truck?.status === 'عطلانة';
+    if (isCargoTruck(truck) && plate && assignments.plates.has(plate) && !blocked) return 'في رحلة';
+    return truck?.status;
+}
+
+function driverStatusForTrips(driver, assignments) {
+    const name = String(driver?.name || '').trim();
+    const blocked = driver?.status === 'إجازة' || driver?.status === 'في إجازة' || driver?.status === 'موقوف';
+    if (isTripDriver(driver) && name && assignments.drivers.has(name) && !blocked) return 'في رحلة';
+    return driver?.status;
+}
+
+async function alignFleetWithActiveTrips(trucks, drivers, trips) {
+    const assignments = activeAssignmentSets(trips);
+    const truckIds = (trucks || [])
+        .filter(truck => truckStatusForTrips(truck, assignments) === 'في رحلة' && truck.status !== 'في رحلة')
+        .map(truck => truck.id)
+        .filter(id => id != null);
+    const driverIds = (drivers || [])
+        .filter(driver => driverStatusForTrips(driver, assignments) === 'في رحلة' && driver.status !== 'في رحلة')
+        .map(driver => driver.id)
+        .filter(id => id != null);
+    if (truckIds.length) {
+        const { error } = await client.from('trucks').update({ status: 'في رحلة' }).in('id', truckIds);
+        if (!error) {
+            truckIds.forEach(id => {
+                const row = trucks.find(truck => truck.id === id);
+                if (row) row.status = 'في رحلة';
+            });
+        }
+    }
+    if (driverIds.length) {
+        const { error } = await client.from('drivers').update({ status: 'في رحلة' }).in('id', driverIds);
+        if (!error) {
+            driverIds.forEach(id => {
+                const row = drivers.find(driver => driver.id === id);
+                if (row) row.status = 'في رحلة';
+            });
+        }
+    }
+    return assignments;
+}
+
 function isCancelledTrip(trip) {
     return String(trip?.status || '').trim() === 'ملغاة';
 }
@@ -6838,10 +6891,11 @@ async function initReportFilters() {
                 setHtml('dashRemainingAmount', formatSAR(remaining));
                 setText('dashTotalTrips', trips ? trips.filter(isCompletedTrip).length : 0);
 
+                const assignments = await alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
                 const fleetTrucks = (trucks || []).filter(isCargoTruck);
                 const totalTrucks = fleetTrucks.length;
-                const readyTrucks = fleetTrucks.filter(t => t.status === 'جاهزة للعمل').length;
-                const busyTrucks = fleetTrucks.filter(t => t.status === 'في رحلة').length;
+                const readyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'جاهزة للعمل').length;
+                const busyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'في رحلة').length;
                 const maintTrucks = fleetTrucks.filter(t => t.status === 'صيانة دورية' || t.status === 'في الصيانة').length;
                 const brokenTrucks = fleetTrucks.filter(t => t.status === 'عطلانة').length;
 
@@ -6853,8 +6907,8 @@ async function initReportFilters() {
 
                 const fleetDrivers = (drivers || []).filter(isTripDriver);
                 const totalDrivers = fleetDrivers.length;
-                const readyDrivers = fleetDrivers.filter(d => d.status === 'متوفر').length;
-                const busyDrivers = fleetDrivers.filter(d => d.status === 'في رحلة').length;
+                const readyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'متوفر').length;
+                const busyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'في رحلة').length;
                 const leaveDrivers = fleetDrivers.filter(d => d.status === 'إجازة' || d.status === 'في إجازة').length;
                 const suspendedDrivers = fleetDrivers.filter(d => d.status === 'موقوف').length;
 
@@ -10722,8 +10776,9 @@ function closeAddTripModal() {
             const settlement = await recordSettlementPayment(trip_no, paid_amount, '', departure_date);
             if (settlement.error) console.error('تعذر حفظ دفعة الإنشاء:', settlement.error);
         }
-        const truckUpdate = await client.from('trucks').update({ status: 'في رحلة' }).eq('plate', truck_plate);
-        const driverUpdate = await client.from('drivers').update({ status: 'في رحلة' }).eq('name', driver_name);
+        const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
+        const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
+        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }]);
         
         if (truckUpdate.error) console.error("خطأ في تحديث الشاحنة:", truckUpdate.error);
         if (driverUpdate.error) console.error("خطأ في تحديث السائق:", driverUpdate.error);
@@ -11020,14 +11075,13 @@ async function saveEditTrip(e) {
     if (trip.status === 'جارية') {
         if (!sameFleetValue(trip.truck_plate, truck_plate)) {
             await releaseFleetIfIdle({ truck_plate: trip.truck_plate }, trip.trip_no);
-            const truckUpdate = await client.from('trucks').update({ status: 'في رحلة' }).eq('plate', truck_plate);
-            if (truckUpdate.error) console.error('خطأ في تحديث الشاحنة:', truckUpdate.error);
         }
         if (!sameFleetValue(trip.driver_name, driver_name)) {
             await releaseFleetIfIdle({ driver_name: trip.driver_name }, trip.trip_no);
-            const driverUpdate = await client.from('drivers').update({ status: 'في رحلة' }).eq('name', driver_name);
-            if (driverUpdate.error) console.error('خطأ في تحديث السائق:', driverUpdate.error);
         }
+        const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
+        const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
+        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }]);
     }
 
     revealSuggestion('client', client_name);
@@ -11043,8 +11097,12 @@ async function saveEditTrip(e) {
             const table = document.getElementById('trucksTable');
             applyVehicleScreenLabels();
             try {
-                const { data: trucks, error } = await client.from('trucks').select('*').order('id', { ascending: false });
+                const [{ data: trucks, error }, { data: activeTrips }] = await Promise.all([
+                    client.from('trucks').select('*').order('id', { ascending: false }),
+                    client.from('trips').select('truck_plate, driver_name, status').eq('status', 'جارية')
+                ]);
                 if (error) throw error;
+                const assignments = await alignFleetWithActiveTrips(trucks || [], [], activeTrips || []);
                 allTrucksById = {};
                 (trucks || []).forEach(tr => { allTrucksById[tr.id] = tr; });
                 const other = currentVehicleKind === 'أخرى';
@@ -11052,16 +11110,17 @@ async function saveEditTrip(e) {
 
                 if (visible.length > 0) {
                     table.innerHTML = visible.map(tr => {
+                        const shownStatus = truckStatusForTrips(tr, assignments);
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-                        if (tr.status === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
-                        if (tr.status === 'صيانة دورية' || tr.status === 'في الصيانة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
-                        if (tr.status === 'عطلانة') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
+                        if (shownStatus === 'صيانة دورية' || shownStatus === 'في الصيانة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        if (shownStatus === 'عطلانة') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
 
                         return `
                             <tr class="hover:bg-slate-50 transition">
                                 <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(tr.status === 'في الصيانة' ? 'صيانة دورية' : tr.status))}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في الصيانة' ? 'صيانة دورية' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml([
                                     { label: 'الاستمارة', date: tr.istimara_expiry },
                                     { label: 'الفحص', date: tr.inspection_expiry },
@@ -11211,8 +11270,12 @@ async function cancelTrip(tripNo) {
             const cols = employee ? 6 : 5;
             table.innerHTML = `<tr><td colspan="${cols}" class="text-center p-8 text-slate-400">${employee ? 'جاري تحميل الموظفين...' : 'جاري تحميل السائقين...'}</td></tr>`;
             try {
-                const { data: drivers, error } = await client.from('drivers').select('*').order('id', { ascending: false });
+                const [{ data: drivers, error }, { data: activeTrips }] = await Promise.all([
+                    client.from('drivers').select('*').order('id', { ascending: false }),
+                    client.from('trips').select('truck_plate, driver_name, status').eq('status', 'جارية')
+                ]);
                 if (error) throw error;
+                const assignments = await alignFleetWithActiveTrips([], drivers || [], activeTrips || []);
                 allDriversById = {};
                 (drivers || []).forEach(dr => { allDriversById[dr.id] = dr; });
                 let visible = (drivers || []).filter(dr => employee ? !isTripDriver(dr) : isTripDriver(dr));
@@ -11227,10 +11290,11 @@ async function cancelTrip(tripNo) {
 
                 if (visible.length > 0) {
                     table.innerHTML = visible.map(dr => {
+                        const shownStatus = driverStatusForTrips(dr, assignments);
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-                        if (dr.status === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
-                        if (dr.status === 'إجازة' || dr.status === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
-                        if (dr.status === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
+                        if (shownStatus === 'إجازة' || shownStatus === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        if (shownStatus === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
                         const jobCell = employee ? `<td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(dr.job_title) || '—')}</td>` : '';
                         const docs = employee
                             ? [
@@ -11251,7 +11315,7 @@ async function cancelTrip(tripNo) {
                                 <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
                                 ${jobCell}
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(dr.status === 'في إجازة' ? 'إجازة' : dr.status))}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في إجازة' ? 'إجازة' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     <button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
