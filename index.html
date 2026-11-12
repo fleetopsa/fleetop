@@ -103,8 +103,31 @@
             max-width: 100%;
             min-width: 0;
         }
-        .recv-summary { min-width: 0; }
-        .recv-summary > div { min-width: 0; overflow: hidden; }
+        .recv-summary {
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+            min-width: 0;
+            margin-bottom: 1.5rem;
+        }
+        .recv-summary-money {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+        .recv-summary-money > div,
+        .recv-trip-card { min-width: 0; overflow: hidden; }
+        .recv-trip-card {
+            flex: 0 0 10.5rem;
+            width: 10.5rem;
+        }
+        @media (max-width: 767px) {
+            .recv-summary { flex-direction: column; }
+            .recv-summary-money { grid-template-columns: 1fr; }
+            .recv-trip-card { width: 100%; flex-basis: auto; }
+        }
         .dash-side-card {
             height: 16rem;
             max-height: 16rem;
@@ -1710,18 +1733,29 @@
             </div>
         </div>
     </div>
-    <div class="recv-summary grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
-            <div id="recvTotalDue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+    <div class="recv-summary">
+        <div class="recv-summary-money">
+            <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="text-[11px] text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
+                <div id="recvTotalDue" class="text-lg font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+            </div>
+            <div class="bg-white px-3 py-3 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
+                <div class="text-[11px] text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
+                <div id="recvCollected" class="text-lg font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+            </div>
+            <div class="bg-white px-3 py-3 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
+                <div class="text-[11px] text-amber-700 font-bold mb-1" data-i18n="ui.remaining">المتبقي</div>
+                <div id="recvRemaining" class="text-lg font-bold text-amber-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+            </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
-            <div class="text-xs text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
-            <div id="recvCollected" class="text-2xl font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
-            <div class="text-xs text-amber-700 font-bold mb-1" data-i18n="ui.remaining">المتبقي</div>
-            <div id="recvRemaining" class="text-2xl font-bold text-amber-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        <div class="recv-trip-card bg-white px-3 py-3 rounded-2xl border border-blue-100 bg-blue-50/30 shadow-sm flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="text-[11px] text-blue-700 font-bold mb-1" data-i18n="ui.tripCount">عدد الرحلات</div>
+                <div id="recvTripCount" class="text-2xl font-bold text-blue-800 font-mono leading-none">0</div>
+            </div>
+            <div class="w-9 h-9 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                <i class="fa-solid fa-route"></i>
+            </div>
         </div>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
@@ -6224,6 +6258,8 @@ async function generateReceivablesReport() {
         if (totalEl) totalEl.innerHTML = formatSAR(money.total);
         if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
         if (remainingEl) remainingEl.innerHTML = formatSAR(money.remaining);
+        const tripsEl = document.getElementById('recvTripCount');
+        if (tripsEl) tripsEl.textContent = tripsInView.length.toLocaleString('en-US');
 
         if (!tbody) return;
         if (!rows.length) {
@@ -6256,6 +6292,8 @@ async function generateReceivablesReport() {
         }).join('');
     } catch (err) {
         console.error('خطأ في تقرير المستحقات:', err);
+        const tripsEl = document.getElementById('recvTripCount');
+        if (tripsEl) tripsEl.textContent = '0';
         if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
     }
 }
@@ -8698,6 +8736,7 @@ const I18N = {
         'ui.collected': 'المبالغ المحصلة',
         'ui.uncollected': 'المبالغ غير المحصلة',
         'ui.totalReceivables': 'إجمالي المستحقات',
+        'ui.tripCount': 'عدد الرحلات',
         'ui.overdue': 'المتأخرات',
         'ui.allClients': 'جميع العملاء',
         'ui.receivablesDetails': 'تفاصيل متابعة التحصيل',
@@ -9312,6 +9351,7 @@ const I18N = {
         'ui.collected': 'Collected',
         'ui.uncollected': 'Outstanding',
         'ui.totalReceivables': 'Total receivables',
+        'ui.tripCount': 'Trips',
         'ui.overdue': 'Overdue',
         'ui.allClients': 'All clients',
         'ui.receivablesDetails': 'Collection follow-up details',
