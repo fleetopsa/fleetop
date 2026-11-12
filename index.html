@@ -3719,7 +3719,8 @@ async function loadPlatformDashboard() {
                     <td class="p-3 font-mono">${escapeHtml(c.subscription_ends_at ? String(c.subscription_ends_at).slice(0, 10) : '—')}</td>
                     <td class="p-3 text-center whitespace-nowrap">
                         <button type="button" onclick="openSubscriptionEditModal(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg ml-1" style="background:#c4a35a;color:#0b2a4a">${escapeHtml(t('sub.edit'))}</button>
-                        <button type="button" onclick="enterSupportCompany(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg" style="background:rgba(255,255,255,0.12);color:#e8d5a3">${escapeHtml(t('platform.enterSupport'))}</button>
+                        <button type="button" onclick="enterSupportCompany(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg ml-1" style="background:rgba(255,255,255,0.12);color:#e8d5a3">${escapeHtml(t('platform.enterSupport'))}</button>
+                        <button type="button" onclick="deletePlatformCompany(${Number(c.id)})" class="font-bold text-xs px-2.5 py-1.5 rounded-lg bg-rose-500/20 text-rose-200">${escapeHtml(t('platform.deleteCompany'))}</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -3811,6 +3812,37 @@ async function deleteSubscriptionPayment(id) {
         await loadSubscriptionPayments();
     } catch (err) {
         alert(err.message || t('sub.loadFailed'));
+    }
+}
+
+async function deletePlatformCompany(companyId) {
+    if (!isSuperAdminUser()) return;
+    const row = (subscriptionsCache || []).find((c) => Number(c.id) === Number(companyId));
+    if (!row) {
+        alert(t('platform.deleteCompanyMissing'));
+        return;
+    }
+    const label = `${row.name || ''} (${row.company_code || companyId})`;
+    if (!confirm(t('platform.deleteCompanyConfirm').replace('{name}', label))) return;
+    const typed = prompt(t('platform.deleteCompanyTypeCode').replace('{code}', row.company_code || String(companyId)));
+    if (typed == null) return;
+    if (String(typed).trim() !== String(row.company_code || companyId).trim()) {
+        alert(t('platform.deleteCompanyCodeMismatch'));
+        return;
+    }
+    try {
+        const { error } = await client.rpc('admin_delete_company', { p_company_id: Number(companyId) });
+        if (error) throw error;
+        if (String(localStorage.getItem('fleetop_support_company_id') || '') === String(companyId)) {
+            localStorage.removeItem('fleetop_support_company_id');
+        }
+        alert(t('platform.deleteCompanyDone'));
+        await loadPlatformDashboard();
+    } catch (err) {
+        const msg = err?.message || '';
+        alert(/Could not find the function|does not exist|42883|admin_delete_company/i.test(msg)
+            ? t('platform.deleteCompanySqlMissing')
+            : (msg || t('sub.loadFailed')));
     }
 }
 
@@ -7876,6 +7908,13 @@ const I18N = {
         'platform.companiesHint': 'لا يظهر حساب المنصة داخل سجلات الشركات، والإدارة تتم من هنا فقط.',
         'platform.refresh': 'تحديث',
         'platform.enterSupport': 'دخول للدعم',
+        'platform.deleteCompany': 'حذف',
+        'platform.deleteCompanyConfirm': 'حذف الشركة نهائياً؟\n{name}\nسيتم حذف المستخدمين والبيانات المرتبطة ولا يمكن التراجع.',
+        'platform.deleteCompanyTypeCode': 'للتأكيد اكتب معرف الشركة:\n{code}',
+        'platform.deleteCompanyCodeMismatch': 'معرف الشركة غير مطابق. لم يتم الحذف.',
+        'platform.deleteCompanyDone': 'تم حذف الشركة.',
+        'platform.deleteCompanyMissing': 'الشركة غير موجودة في القائمة.',
+        'platform.deleteCompanySqlMissing': 'نفّذ ملف fleetop-admin-delete-company.sql ثم أعد المحاولة.',
         'platform.backToPanel': 'العودة للوحة المنصة',
         'platform.paymentsTitle': 'تحصيل الاشتراكات',
         'platform.paymentsHint': 'سجّل المدفوعات واعرض الإجمالي حسب الشركة أو الفترة.',
@@ -8456,6 +8495,13 @@ const I18N = {
         'platform.companiesHint': 'The platform account never appears in company activity logs. Manage everything here.',
         'platform.refresh': 'Refresh',
         'platform.enterSupport': 'Enter support',
+        'platform.deleteCompany': 'Delete',
+        'platform.deleteCompanyConfirm': 'Permanently delete this company?\n{name}\nUsers and related data will be removed. This cannot be undone.',
+        'platform.deleteCompanyTypeCode': 'To confirm, type the company code:\n{code}',
+        'platform.deleteCompanyCodeMismatch': 'Company code did not match. Nothing was deleted.',
+        'platform.deleteCompanyDone': 'Company deleted.',
+        'platform.deleteCompanyMissing': 'Company not found in the list.',
+        'platform.deleteCompanySqlMissing': 'Run fleetop-admin-delete-company.sql then try again.',
         'platform.backToPanel': 'Back to platform panel',
         'platform.paymentsTitle': 'Subscription collections',
         'platform.paymentsHint': 'Record payments and view totals by company or period.',
