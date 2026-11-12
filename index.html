@@ -2417,7 +2417,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.date">التاريخ</label>
-                                        <input type="date" id="payReqDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                        <input type="date" id="payReqDate" dir="ltr" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 text-left">
                                     </div>
                                     <div class="sm:col-span-2">
                                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.plan">الخطة</label>
@@ -4289,7 +4289,7 @@ async function loadCompanySubscriptionCard() {
     }
     if (isAdminUser() || isSupportMode()) {
         const dateEl = document.getElementById('payReqDate');
-        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+        if (dateEl && !dateEl.value) dateEl.value = todayDateInput();
         await loadCompanyPaymentRequests();
     }
 }
@@ -4397,7 +4397,7 @@ async function submitCompanyPaymentRequest(e) {
         lastPaymentRequestId = data;
         document.getElementById('companyPaymentRequestForm')?.reset();
         const dateEl = document.getElementById('payReqDate');
-        if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+        if (dateEl) dateEl.value = todayDateInput();
         await loadCompanyPaymentRequests();
         alert(t('payreq.submitted'));
         if (confirm(t('payreq.whatsappNotify') + '?')) openSupportWhatsapp('renew');
