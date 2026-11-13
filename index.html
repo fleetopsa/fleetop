@@ -1449,36 +1449,12 @@
                             <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">التراخيص والاشتراكات</span>
                             </button>
-                            <div>
-                                <button type="button" onclick="toggleVehiclesMenu()" id="tabVehiclesBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
-                                    <i class="fa-solid fa-car-side" style="color:#c4a35a"></i>
-                                    <span class="flex-1 text-start" data-i18n="nav.vehicles">المركبات</span>
-                                    <i id="vehiclesMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
-                                </button>
-                                <div id="vehiclesSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
-                                    <button onclick="switchTab('trucks')" data-nav="trucks" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-truck-moving ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.trucks">الشاحنات</span>
-                                    </button>
-                                    <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-van-shuttle ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <button type="button" onclick="toggleStaffMenu()" id="tabStaffBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
-                                    <i class="fa-solid fa-id-card-clip" style="color:#c4a35a"></i>
-                                    <span class="flex-1 text-start" data-i18n="nav.staff">الموظفين</span>
-                                    <i id="staffMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
-                                </button>
-                                <div id="staffSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
-                                    <button onclick="switchTab('drivers')" data-nav="drivers" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-id-badge ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.drivers">السائقين</span>
-                                    </button>
-                                    <button onclick="switchTab('employees')" data-nav="employees" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-user-tie ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.employees">الموظفين الإداريين</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <button onclick="switchTab('trucks')" id="tabVehiclesBtn" data-nav="trucks" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-car-side ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.vehicles">المركبات</span>
+                            </button>
+                            <button onclick="switchTab('employees')" id="tabStaffBtn" data-nav="employees" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-id-card-clip ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.staff">الموظفين</span>
+                            </button>
                         </div>
                     </div>
                     <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
@@ -2317,21 +2293,30 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="truckFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addTruck">إضافة شاحنة جديدة</span>
+                        <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addVehicle">إضافة مركبة</span>
                     </h3>
                     <form onsubmit="saveTruck(event)" class="space-y-3.5">
                         <input type="hidden" id="truckId">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.vehicleKind">نوع المركبة</label>
+                            <select id="truckKindSelect" onchange="onTruckKindChange()" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.chooseVehicleKind">اختر نوع المركبة</option>
+                                <option value="شاحنة" data-i18n="ui.cargoTruck">شاحنة</option>
+                                <option value="أخرى" data-i18n="ui.adminVehicle">مركبة إدارية</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.plate">رقم اللوحة </label>
                             <input type="text" id="truckPlate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="ادخل رقم اللوحة">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.model">الموديل / النوع</label>
-                            <input type="text" id="truckModel" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل موديل الشاحنة و نوعها">
+                            <input type="text" id="truckModel" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل موديل المركبة ونوعها">
                         </div>
                         <div>
-                            <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truckStatus">حالة الشاحنة</label>
-                            <select id="truckStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.vehicleStatus">حالة المركبة</label>
+                            <select id="truckStatus" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.chooseVehicleStatus">اختر حالة المركبة</option>
                                 <option value="جاهزة للعمل" data-i18n="ui.readyWork">جاهزة للعمل</option>
                                 <option id="truckStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
                                 <option value="صيانة دورية" data-i18n="ui.maint">صيانة دورية</option>
@@ -2369,14 +2354,24 @@
                     </form>
                 </div>
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                    <h3 id="trucksListTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> <span data-i18n="ui.trucksList">الشاحنات المسجلة في الأسطول</span>
-                    </h3>
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                        <h3 id="trucksListTitle" class="font-bold text-slate-900 text-sm flex items-center">
+                            <i class="fa-solid fa-car-side text-amber-500 ml-2"></i> <span data-i18n="ui.vehiclesList">المركبات المسجلة</span>
+                        </h3>
+                        <div id="vehicleKindFilterWrap">
+                            <select id="vehicleKindFilter" onchange="loadTrucks()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.allVehicles">كل المركبات</option>
+                                <option value="شاحنة" data-i18n="ui.cargoTruck">شاحنة</option>
+                                <option value="أخرى" data-i18n="ui.adminVehicle">مركبة إدارية</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto flex-grow">
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
                                     <th class="p-3.5 rounded-r-xl" data-i18n="th.plate">رقم اللوحة</th>
+                                    <th class="p-3.5" data-i18n="ui.vehicleKind">النوع</th>
                                     <th class="p-3.5" data-i18n="th.model">الموديل</th>
                                     <th class="p-3.5" data-i18n="th.status">الحالة</th>
                                     <th class="p-3.5" data-i18n="th.docExpiry">انتهاء الوثائق</th>
@@ -2384,7 +2379,7 @@
                                 </tr>
                             </thead>
                             <tbody id="trucksTable" class="divide-y divide-slate-100">
-                                <tr><td colspan="5" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2504,18 +2499,19 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                     <h3 id="driverFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
-                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addDriver">إضافة سائق جديد</span>
+                        <i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addEmployee">إضافة موظف</span>
                     </h3>
                     <form onsubmit="saveDriver(event)" class="space-y-3.5">
                         <input type="hidden" id="driverId">
                         <div>
-                            <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.driverName">اسم السائق</label>
-                            <input type="text" id="driverName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم السائق">
+                            <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.employeeName">اسم الموظف</label>
+                            <input type="text" id="driverName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="ادخل اسم الموظف">
                         </div>
-                        <div id="staffJobWrap" class="hidden">
+                        <div id="staffJobWrap">
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.job">الوظيفة</label>
-                            <select id="staffJobTitle" onchange="toggleStaffJobOther()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <select id="staffJobTitle" onchange="onStaffJobChange()" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 <option value="" data-i18n="ui.chooseJob">اختر الوظيفة</option>
+                                <option value="سائق شاحنة" data-i18n="ui.truckDriverJob">سائق شاحنة</option>
                                 <option value="مشرف تشغيل" data-i18n="ui.opsSupervisor">مشرف تشغيل</option>
                                 <option value="مشرف صيانة" data-i18n="ui.maintSupervisor">مشرف صيانة</option>
                                 <option value="محاسب" data-i18n="ui.accountant">محاسب</option>
@@ -2529,7 +2525,7 @@
                             <input type="text" id="driverPhone" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="ادخل رقم الجوال">
                         </div>
                         <div>
-                            <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driverStatus">حالة السائق</label>
+                            <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.employeeStatus">حالة الموظف</label>
                             <select id="driverStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 <option value="متوفر" data-i18n="ui.available">متوفر</option>
                                 <option id="driverStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
@@ -2588,9 +2584,9 @@
                 <div class="xl:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <h3 id="driversListTitle" class="font-bold text-slate-900 text-sm flex items-center">
-                            <i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.driversList">السائقين المسجلين في الأسطول</span>
+                            <i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.employeesList">الموظفين المسجلين</span>
                         </h3>
-                        <div id="staffJobFilterWrap" class="hidden">
+                        <div id="staffJobFilterWrap">
                             <select id="staffJobFilter" onchange="loadDrivers()" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold outline-none focus:border-amber-500">
                                 <option value="" data-i18n="ui.allJobs">كل الوظائف</option>
                             </select>
@@ -2600,8 +2596,8 @@
                         <table class="w-full text-right text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
                                 <tr>
-                                    <th class="p-3.5 rounded-r-xl" data-i18n="th.driverName">اسم السائق</th>
-                                    <th id="staffJobColHead" class="p-3.5 hidden" data-i18n="ui.job">الوظيفة</th>
+                                    <th class="p-3.5 rounded-r-xl" data-i18n="ui.employeeName">اسم الموظف</th>
+                                    <th id="staffJobColHead" class="p-3.5" data-i18n="ui.job">الوظيفة</th>
                                     <th class="p-3.5" data-i18n="ui.phone">رقم الجوال</th>
                                     <th class="p-3.5" data-i18n="th.status">الحالة</th>
                                     <th class="p-3.5" data-i18n="th.docExpiry">انتهاء الوثائق</th>
@@ -2609,7 +2605,7 @@
                                 </tr>
                             </thead>
                             <tbody id="driversTable" class="divide-y divide-slate-100">
-                                <tr><td colspan="5" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -5751,6 +5747,10 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('staffJobFilter', '');
         return;
     }
+    if (id === 'trucks' || id === 'otherVehicles') {
+        setFilterValue('vehicleKindFilter', '');
+        return;
+    }
     if (id === 'analytics' || id === 'analyticsSection') {
         setFilterValue('expirySearchQuery', '');
         setFilterValue('expiryEntityGroup', '');
@@ -8185,19 +8185,15 @@ function toggleFacilityMenu(forceOpen) {
 
 function toggleVehiclesMenu(forceOpen) {
     if (forceOpen !== false) toggleFacilityMenu(true);
-    toggleSidebarSubmenu('vehiclesSubMenu', 'vehiclesMenuChevron', forceOpen);
 }
 
 function toggleStaffMenu(forceOpen) {
     if (forceOpen !== false) toggleFacilityMenu(true);
-    toggleSidebarSubmenu('staffSubMenu', 'staffMenuChevron', forceOpen);
 }
 
 function collapseSidebarSubmenus() {
     [
         ['facilitySubMenu', 'facilityMenuChevron'],
-        ['vehiclesSubMenu', 'vehiclesMenuChevron'],
-        ['staffSubMenu', 'staffMenuChevron'],
         ['reportsSubMenu', 'reportsMenuChevron'],
         ['opsReportsSubMenu', 'opsReportsMenuChevron'],
         ['financialSubMenu', 'financialMenuChevron'],
@@ -8213,11 +8209,7 @@ function openCurrentSidebarPath() {
         toggleOpsReportsMenu(true);
     } else if (tabId === 'analytics' || tabId === 'analyticsSection') {
         toggleReportsMenu(true);
-    } else if (tabId === 'trucks' || tabId === 'otherVehicles') {
-        toggleVehiclesMenu(true);
-    } else if (tabId === 'drivers' || tabId === 'employees') {
-        toggleStaffMenu(true);
-    } else if (tabId === 'facility') {
+    } else if (tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'drivers' || tabId === 'employees' || tabId === 'facility') {
         toggleFacilityMenu(true);
     } else if (tabId === 'settings' || tabId === 'activityLog' || tabId === 'activityLogSection') {
         toggleSystemMenu(true);
@@ -9078,7 +9070,13 @@ async function deleteMaintenance(id) {
     await refreshOpenMaintenanceScreens();
 }
 
+function isTruckDriverJob(job) {
+    const value = String(job || '').trim();
+    return value === 'سائق شاحنة' || value === 'سائق';
+}
+
 function isTripDriver(row) {
+    if (isTruckDriverJob(row?.job_title)) return true;
     return String(row?.staff_kind || 'سائق').trim() !== 'موظف';
 }
 
@@ -9690,63 +9688,92 @@ async function deleteFacilityDocument(id) {
     if (typeof loadDashboardData === 'function') loadDashboardData();
 }
 
+function syncTruckKindUi() {
+    const kindSelect = document.getElementById('truckKindSelect');
+    const kind = kindSelect?.value || '';
+    const other = kind === 'أخرى';
+    const isTruck = kind === 'شاحنة';
+    currentVehicleKind = other ? 'أخرى' : (isTruck ? 'شاحنة' : '');
+    // بطاقة التشغيل وخيار «في رحلة» للشاحنة فقط؛ قبل الاختيار تبقى مخفية
+    document.querySelectorAll('.truck-operation-only').forEach(el => el.classList.toggle('hidden', !isTruck));
+    const tripOption = document.getElementById('truckStatusTripOption');
+    if (tripOption) {
+        tripOption.classList.toggle('hidden', !isTruck);
+        if (!isTruck && document.getElementById('truckStatus')?.value === 'في رحلة') {
+            document.getElementById('truckStatus').value = '';
+        }
+    }
+    const statusLabel = document.getElementById('truckStatusLabel');
+    if (statusLabel) statusLabel.textContent = t('ui.vehicleStatus');
+    const modelInput = document.getElementById('truckModel');
+    if (modelInput) modelInput.placeholder = 'ادخل موديل المركبة ونوعها';
+}
+
+function onTruckKindChange() {
+    syncTruckKindUi();
+}
+
 function applyVehicleScreenLabels() {
-    const other = currentVehicleKind === 'أخرى';
+    if (currentNavTab === 'trucks' || currentNavTab === 'otherVehicles') {
+        setPageHeader('trucks');
+    }
     const listTitle = document.getElementById('trucksListTitle');
     const formTitle = document.getElementById('truckFormTitle');
-    const statusLabel = document.getElementById('truckStatusLabel');
-    if (currentNavTab === 'trucks' || currentNavTab === 'otherVehicles') {
-        setPageHeader(other ? 'otherVehicles' : 'trucks');
-    }
-    if (listTitle) listTitle.innerHTML = other
-        ? `<i class="fa-solid fa-van-shuttle text-amber-500 ml-2"></i> ${t('ui.otherVehiclesList')}`
-        : `<i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> ${t('ui.trucksList')}`;
+    if (listTitle) listTitle.innerHTML = `<i class="fa-solid fa-car-side text-amber-500 ml-2"></i> ${t('ui.vehiclesList')}`;
     if (formTitle && !document.getElementById('truckId')?.value) {
-        formTitle.innerHTML = other
-            ? `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addOtherVehicle')}`
-            : `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addTruck')}`;
+        formTitle.innerHTML = `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addVehicle')}`;
     }
-    if (statusLabel) statusLabel.textContent = other ? t('ui.vehicleStatus') : t('ui.truckStatus');
-    document.querySelectorAll('.truck-operation-only').forEach(el => el.classList.toggle('hidden', other));
-    const tripOption = document.getElementById('truckStatusTripOption');
-    if (tripOption) tripOption.classList.toggle('hidden', other);
-    const modelInput = document.getElementById('truckModel');
-    if (modelInput) modelInput.placeholder = other ? 'ادخل موديل المركبة ونوعها' : 'ادخل موديل الشاحنة و نوعها';
+    const kindSelect = document.getElementById('truckKindSelect');
+    if (kindSelect && !document.getElementById('truckId')?.value) {
+        kindSelect.value = '';
+    }
+    syncTruckKindUi();
+}
+
+function syncStaffDriverFields() {
+    const selectVal = document.getElementById('staffJobTitle')?.value || '';
+    const job = selectedStaffJobTitle() || selectVal;
+    const isDriver = isTruckDriverJob(job) || selectVal === 'سائق شاحنة';
+    // حقول رخصة القيادة وبطاقة السائق تظهر لسائق الشاحنة
+    document.querySelectorAll('.staff-driver-only').forEach(el => {
+        el.classList.toggle('hidden', !isDriver);
+        el.style.display = isDriver ? '' : 'none';
+    });
+    const tripOption = document.getElementById('driverStatusTripOption');
+    if (tripOption) {
+        tripOption.classList.toggle('hidden', !isDriver);
+        if (!isDriver && document.getElementById('driverStatus')?.value === 'في رحلة') {
+            document.getElementById('driverStatus').value = 'متوفر';
+        }
+    }
 }
 
 function applyStaffScreenLabels() {
-    const employee = currentStaffKind === 'موظف';
+    if (currentNavTab === 'drivers' || currentNavTab === 'employees') {
+        setPageHeader('employees');
+    }
     const listTitle = document.getElementById('driversListTitle');
     const formTitle = document.getElementById('driverFormTitle');
     const nameLabel = document.getElementById('driverNameLabel');
     const statusLabel = document.getElementById('driverStatusLabel');
     const nameHead = document.querySelector('#driversSection thead th');
-    if (currentNavTab === 'drivers' || currentNavTab === 'employees') {
-        setPageHeader(employee ? 'employees' : 'drivers');
+    if (listTitle) listTitle.innerHTML = `<i class="fa-solid fa-users text-amber-500 ml-2"></i> ${t('ui.employeesList')}`;
+    if (formTitle && !document.getElementById('driverId')?.value) {
+        formTitle.innerHTML = `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addEmployee')}`;
     }
+    if (nameLabel) nameLabel.textContent = t('ui.employeeName');
+    if (statusLabel) statusLabel.textContent = t('ui.employeeStatus');
+    if (nameHead) nameHead.textContent = t('ui.employeeName');
     const jobWrap = document.getElementById('staffJobWrap');
     const jobHead = document.getElementById('staffJobColHead');
     const jobFilterWrap = document.getElementById('staffJobFilterWrap');
-    const tripOption = document.getElementById('driverStatusTripOption');
-    if (listTitle) listTitle.innerHTML = employee
-        ? `<i class="fa-solid fa-user-tie text-amber-500 ml-2"></i> ${t('ui.employeesByJob')}`
-        : `<i class="fa-solid fa-id-badge text-amber-500 ml-2"></i> ${t('ui.driversList')}`;
-    if (formTitle && !document.getElementById('driverId')?.value) {
-        formTitle.innerHTML = employee
-            ? `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addEmployee')}`
-            : `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addDriver')}`;
-    }
-    if (nameLabel) nameLabel.textContent = employee ? t('ui.employeeName') : t('ui.driverName');
-    if (statusLabel) statusLabel.textContent = employee ? t('ui.employeeStatus') : t('ui.driverStatus');
-    if (nameHead) nameHead.textContent = employee ? t('ui.employeeName') : t('ui.driverName');
-    if (jobWrap) jobWrap.classList.toggle('hidden', !employee);
-    if (jobHead) jobHead.classList.toggle('hidden', !employee);
-    if (jobFilterWrap) jobFilterWrap.classList.toggle('hidden', !employee);
-    if (tripOption) tripOption.classList.toggle('hidden', employee);
-    document.querySelectorAll('.staff-driver-only').forEach(el => el.classList.toggle('hidden', employee));
+    if (jobWrap) jobWrap.classList.remove('hidden');
+    if (jobHead) jobHead.classList.remove('hidden');
+    if (jobFilterWrap) jobFilterWrap.classList.remove('hidden');
     const jobSelect = document.getElementById('staffJobTitle');
-    if (jobSelect) jobSelect.required = employee;
-    if (employee) toggleStaffJobOther();
+    if (jobSelect) jobSelect.required = true;
+    toggleStaffJobOther();
+    syncStaffDriverFields();
 }
 
 function toggleStaffJobOther() {
@@ -9758,8 +9785,12 @@ function toggleStaffJobOther() {
     other.required = show;
 }
 
+function onStaffJobChange() {
+    toggleStaffJobOther();
+    syncStaffDriverFields();
+}
+
 function selectedStaffJobTitle() {
-    if (currentStaffKind !== 'موظف') return 'سائق';
     const select = document.getElementById('staffJobTitle');
     const other = document.getElementById('staffJobTitleOther');
     const value = select?.value || '';
@@ -9771,18 +9802,19 @@ function setStaffJobTitle(job) {
     const select = document.getElementById('staffJobTitle');
     const other = document.getElementById('staffJobTitleOther');
     if (!select) return;
-    const known = ['مشرف تشغيل', 'مشرف صيانة', 'محاسب', 'إداري', 'أخرى'];
-    if (!job) {
+    const normalized = job === 'سائق' ? 'سائق شاحنة' : job;
+    const known = ['سائق شاحنة', 'مشرف تشغيل', 'مشرف صيانة', 'محاسب', 'إداري', 'أخرى'];
+    if (!normalized) {
         select.value = '';
         if (other) other.value = '';
-    } else if (known.includes(job) && job !== 'أخرى') {
-        select.value = job;
+    } else if (known.includes(normalized) && normalized !== 'أخرى') {
+        select.value = normalized;
         if (other) other.value = '';
     } else {
         select.value = 'أخرى';
-        if (other) other.value = job === 'أخرى' ? '' : job;
+        if (other) other.value = normalized === 'أخرى' ? '' : normalized;
     }
-    toggleStaffJobOther();
+    onStaffJobChange();
 }
 
 let currentLang = localStorage.getItem('fleetop_lang') || 'ar';
@@ -10020,10 +10052,10 @@ const I18N = {
         'page.payoutsSub': 'عمولة كل سائق، وما تم صرفه، والمتبقي له',
         'page.facility': 'التراخيص والاشتراكات',
         'page.facilitySub': 'السجلات والتراخيص وتواريخ انتهائها',
-        'page.trucks': 'الشاحنات',
-        'page.trucksSub': 'شاحنات النقل المستخدمة في الرحلات اليومية',
-        'page.otherVehicles': 'المركبات الأخرى',
-        'page.otherVehiclesSub': 'سيارات ومركبات الاستخدام اليومي',
+        'page.trucks': 'المركبات',
+        'page.trucksSub': 'الشاحنات والمركبات الأخرى في الأسطول',
+        'page.otherVehicles': 'المركبات',
+        'page.otherVehiclesSub': 'الشاحنات والمركبات الأخرى في الأسطول',
         'page.maintenance': 'إدارة الصيانة',
         'page.maintenanceSub': 'إدخال وتعديل سجلات صيانة الشاحنات والمركبات',
         'page.maintenanceReport': 'تقرير حركة الصيانة',
@@ -10033,10 +10065,10 @@ const I18N = {
         'maint.byVehicle': 'ملخص حسب المركبة',
         'maint.byType': 'ملخص حسب النوع',
         'maint.detailReport': 'تفاصيل الصيانات',
-        'page.drivers': 'السائقين',
-        'page.driversSub': 'إضافة السائقين ومتابعة توفرهم للرحلات',
-        'page.employees': 'الموظفين الإداريين',
-        'page.employeesSub': 'مشرفو التشغيل والصيانة والمحاسبون والوظائف الإدارية',
+        'page.drivers': 'الموظفين',
+        'page.driversSub': 'السائقون والموظفون الإداريون ووثائقهم',
+        'page.employees': 'الموظفين',
+        'page.employeesSub': 'السائقون والموظفون الإداريون ووثائقهم',
         'page.users': 'المستخدمين',
         'page.usersSub': 'حسابات الدخول والصلاحيات',
         'page.activityLog': 'سجل نشاط المستخدمين',
@@ -10224,7 +10256,7 @@ const I18N = {
         'maint.chooseType': 'اختر نوع الصيانة',
         'maint.vehicleKind': 'نوع المركبة',
         'maint.chooseVehicleKind': 'اختر نوع المركبة',
-        'maint.otherVehicle': 'مركبة أخرى',
+        'maint.otherVehicle': 'مركبة إدارية',
         'maint.type': 'نوع الصيانة',
         'maint.allTypes': 'جميع الأنواع',
         'maint.typeOtherPh': 'اكتب نوع الصيانة',
@@ -10405,7 +10437,20 @@ const I18N = {
         'ui.addOtherVehicle': 'إضافة مركبة أخرى',
         'ui.vehicleStatus': 'حالة المركبة',
         'ui.employeesByJob': 'الموظفين حسب الوظيفة',
-        'ui.addEmployee': 'إضافة موظف جديد',
+        'ui.employeesList': 'الموظفين المسجلين',
+        'ui.addEmployee': 'إضافة موظف',
+        'ui.editEmployee': 'تعديل بيانات الموظف',
+        'ui.truckDriverJob': 'سائق شاحنة',
+        'ui.vehicleKind': 'نوع المركبة',
+        'ui.cargoTruck': 'شاحنة',
+        'ui.otherVehicleKind': 'مركبة إدارية',
+        'ui.adminVehicle': 'مركبة إدارية',
+        'ui.chooseVehicleKind': 'اختر نوع المركبة',
+        'ui.chooseVehicleStatus': 'اختر حالة المركبة',
+        'ui.allVehicles': 'كل المركبات',
+        'ui.vehiclesList': 'المركبات المسجلة',
+        'ui.addVehicle': 'إضافة مركبة',
+        'ui.editVehicle': 'تعديل بيانات المركبة',
         'ui.employeeStatus': 'حالة الموظف',
         'v.ترخيص': 'ترخيص',
         'dash.totalPrefix': 'إجمالي: {n}',
@@ -10494,6 +10539,7 @@ const I18N = {
         'v.شاحنة': 'شاحنة',
         'v.مركبة': 'مركبة',
         'v.سائق': 'سائق',
+        'v.سائق شاحنة': 'سائق شاحنة',
         'v.موظف': 'موظف',
         'v.الاستمارة': 'الاستمارة',
         'v.الفحص الدوري': 'الفحص الدوري',
@@ -10734,10 +10780,10 @@ const I18N = {
         'page.payoutsSub': 'Earned, paid and remaining commission by driver',
         'page.facility': 'Licenses and subscriptions',
         'page.facilitySub': 'Licenses, records and expiry dates',
-        'page.trucks': 'Trucks',
-        'page.trucksSub': 'Transport trucks used for daily trips',
-        'page.otherVehicles': 'Other vehicles',
-        'page.otherVehiclesSub': 'Cars and vehicles for daily use',
+        'page.trucks': 'Vehicles',
+        'page.trucksSub': 'Trucks and other fleet vehicles',
+        'page.otherVehicles': 'Vehicles',
+        'page.otherVehiclesSub': 'Trucks and other fleet vehicles',
         'page.maintenance': 'Maintenance management',
         'page.maintenanceSub': 'Enter and edit truck and vehicle maintenance records',
         'page.maintenanceReport': 'Maintenance movement report',
@@ -10747,10 +10793,10 @@ const I18N = {
         'maint.byVehicle': 'Summary by vehicle',
         'maint.byType': 'Summary by type',
         'maint.detailReport': 'Maintenance details',
-        'page.drivers': 'Drivers',
-        'page.driversSub': 'Add drivers and track trip availability',
-        'page.employees': 'Office staff',
-        'page.employeesSub': 'Operations, maintenance, accounting and admin roles',
+        'page.drivers': 'Employees',
+        'page.driversSub': 'Drivers and office staff with their documents',
+        'page.employees': 'Employees',
+        'page.employeesSub': 'Drivers and office staff with their documents',
         'page.users': 'Users',
         'page.usersSub': 'Login accounts and permissions',
         'page.activityLog': 'User activity log',
@@ -10938,7 +10984,7 @@ const I18N = {
         'maint.chooseType': 'Choose the maintenance type',
         'maint.vehicleKind': 'Vehicle group',
         'maint.chooseVehicleKind': 'Choose the vehicle group',
-        'maint.otherVehicle': 'Other vehicle',
+        'maint.otherVehicle': 'Administrative vehicle',
         'maint.type': 'Maintenance type',
         'maint.allTypes': 'All types',
         'maint.typeOtherPh': 'Type the maintenance name',
@@ -11107,6 +11153,7 @@ const I18N = {
         'v.سمكرة ودهان': 'Body and paint',
         'v.مركبة': 'Vehicle',
         'v.سائق': 'Driver',
+        'v.سائق شاحنة': 'Truck driver',
         'v.موظف': 'Staff',
         'v.الاستمارة': 'Registration',
         'v.الفحص الدوري': 'Inspection',
@@ -11123,7 +11170,20 @@ const I18N = {
         'ui.addOtherVehicle': 'Add other vehicle',
         'ui.vehicleStatus': 'Vehicle status',
         'ui.employeesByJob': 'Staff by job title',
+        'ui.employeesList': 'Registered employees',
         'ui.addEmployee': 'Add employee',
+        'ui.editEmployee': 'Edit employee',
+        'ui.truckDriverJob': 'Truck driver',
+        'ui.vehicleKind': 'Vehicle type',
+        'ui.cargoTruck': 'Truck',
+        'ui.otherVehicleKind': 'Administrative vehicle',
+        'ui.adminVehicle': 'Administrative vehicle',
+        'ui.chooseVehicleKind': 'Choose vehicle type',
+        'ui.chooseVehicleStatus': 'Choose vehicle status',
+        'ui.allVehicles': 'All vehicles',
+        'ui.vehiclesList': 'Registered vehicles',
+        'ui.addVehicle': 'Add vehicle',
+        'ui.editVehicle': 'Edit vehicle',
         'ui.employeeStatus': 'Employee status',
         'v.ترخيص': 'License',
         'ui.chooseDriver': 'Select driver',
@@ -11205,6 +11265,7 @@ const I18N = {
         'v.شاحنة': 'Truck',
         'v.مركبة': 'Vehicle',
         'v.سائق': 'Driver',
+        'v.سائق شاحنة': 'Truck driver',
         'v.موظف': 'Employee',
         'v.الاستمارة': 'Registration',
         'v.الفحص الدوري': 'Periodic inspection',
@@ -11499,9 +11560,9 @@ function setActiveNav(tabId) {
     const facilityBtn = document.getElementById('tabFacilityBtn');
     if (facilityBtn) facilityBtn.classList.toggle('nav-open', facilityOpen);
     const vehiclesBtn = document.getElementById('tabVehiclesBtn');
-    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles');
+    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-active', tabId === 'trucks' || tabId === 'otherVehicles');
     const staffBtn = document.getElementById('tabStaffBtn');
-    if (staffBtn) staffBtn.classList.toggle('nav-open', tabId === 'drivers' || tabId === 'employees');
+    if (staffBtn) staffBtn.classList.toggle('nav-active', tabId === 'drivers' || tabId === 'employees');
     const systemBtn = document.getElementById('tabSystemGroupBtn');
     if (systemBtn) systemBtn.classList.toggle('nav-open', tabId === 'settings' || tabId === 'activityLog');
 }
@@ -11599,8 +11660,11 @@ function switchTab(tabId) {
     }
 
     if (tabId === 'trucks' || tabId === 'otherVehicles') {
-        currentVehicleKind = tabId === 'otherVehicles' ? 'أخرى' : 'شاحنة';
-        toggleVehiclesMenu(true);
+        currentNavTab = 'trucks';
+        currentVehicleKind = '';
+        setActiveNav('trucks');
+        setPageHeader('trucks');
+        toggleFacilityMenu(true);
         applyVehicleScreenLabels();
         resetTruckForm();
         const trucksSection = document.getElementById('trucksSection');
@@ -11612,8 +11676,11 @@ function switchTab(tabId) {
         return;
     }
     if (tabId === 'drivers' || tabId === 'employees') {
-        currentStaffKind = tabId === 'employees' ? 'موظف' : 'سائق';
-        toggleStaffMenu(true);
+        currentNavTab = 'employees';
+        currentStaffKind = 'موظف';
+        setActiveNav('employees');
+        setPageHeader('employees');
+        toggleFacilityMenu(true);
         applyStaffScreenLabels();
         resetDriverForm();
         const driversSection = document.getElementById('driversSection');
@@ -12915,12 +12982,15 @@ async function saveEditTrip(e) {
                 const assignments = await alignFleetWithActiveTrips(trucks || [], [], activeTrips || []);
                 allTrucksById = {};
                 (trucks || []).forEach(tr => { allTrucksById[tr.id] = tr; });
-                const other = currentVehicleKind === 'أخرى';
-                const visible = (trucks || []).filter(tr => other ? !isCargoTruck(tr) : isCargoTruck(tr));
+                let visible = trucks || [];
+                const kindFilter = document.getElementById('vehicleKindFilter')?.value || '';
+                if (kindFilter === 'شاحنة') visible = visible.filter(tr => isCargoTruck(tr));
+                else if (kindFilter === 'أخرى') visible = visible.filter(tr => !isCargoTruck(tr));
 
                 if (visible.length > 0) {
                     const sorted = [...visible].sort((a, b) => Number(isInactiveFleetVehicle(a)) - Number(isInactiveFleetVehicle(b)));
                     table.innerHTML = sorted.map(tr => {
+                        const cargo = isCargoTruck(tr);
                         const shownStatus = truckStatusForTrips(tr, assignments);
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
@@ -12929,17 +12999,19 @@ async function saveEditTrip(e) {
                         if (shownStatus === 'خارج الخدمة') badgeColor = 'bg-slate-100 text-slate-600 border border-slate-200';
                         if (shownStatus === 'مباعة') badgeColor = 'bg-violet-50 text-violet-700 border border-violet-200';
                         const rowDim = isInactiveFleetVehicle(tr) ? 'opacity-70' : '';
+                        const kindLabel = cargo ? t('ui.cargoTruck') : t('ui.adminVehicle');
 
                         return `
                             <tr class="hover:bg-slate-50 transition ${rowDim}">
                                 <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
+                                <td class="p-3.5 font-bold text-amber-700">${escapeHtml(kindLabel)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في الصيانة' ? 'صيانة دورية' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml([
                                     { label: 'الاستمارة', date: tr.istimara_expiry },
                                     { label: 'الفحص', date: tr.inspection_expiry },
                                     { label: 'التأمين', date: tr.insurance_expiry },
-                                    ...(other ? [] : [{ label: 'بطاقة التشغيل', date: tr.operation_card_expiry }])
+                                    ...(cargo ? [{ label: 'بطاقة التشغيل', date: tr.operation_card_expiry }] : [])
                                 ])}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
 <button onclick="editTruck(${tr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
@@ -12951,11 +13023,11 @@ async function saveEditTrip(e) {
                         `;
                     }).join('');
                 } else {
-                    table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">${other ? 'لا توجد مركبات أخرى مسجلة حالياً' : 'لا توجد شاحنات مسجلة حالياً'}</td></tr>`;
+                    table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${escapeHtml(currentLang === 'en' ? 'No vehicles registered yet' : 'لا توجد مركبات مسجلة حالياً')}</td></tr>`;
                 }
             } catch (err) {
                 console.error(err);
-                table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-600">حدث خطأ أثناء تحميل المركبات.</td></tr>`;
+                table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">حدث خطأ أثناء تحميل المركبات.</td></tr>`;
             }
         }
 async function cancelTrip(tripNo) {
@@ -13005,12 +13077,23 @@ async function cancelTrip(tripNo) {
             const model = document.getElementById('truckModel').value.trim();
             const status = document.getElementById('truckStatus').value;
 
-            const other = currentVehicleKind === 'أخرى';
+            const kindRaw = document.getElementById('truckKindSelect')?.value || '';
+            if (kindRaw !== 'شاحنة' && kindRaw !== 'أخرى') {
+                alert(t('ui.chooseVehicleKind'));
+                return;
+            }
+            if (!status) {
+                alert(t('ui.chooseVehicleStatus'));
+                return;
+            }
+            const kind = kindRaw === 'أخرى' ? 'أخرى' : 'شاحنة';
+            currentVehicleKind = kind;
+            const other = kind === 'أخرى';
             const payload = withCompany({
                 plate,
                 model,
                 status: other && status === 'في رحلة' ? 'جاهزة للعمل' : status,
-                vehicle_kind: other ? 'أخرى' : 'شاحنة',
+                vehicle_kind: kind,
                 istimara_expiry: dateField('truckIstimaraExpiry'),
                 inspection_expiry: dateField('truckInspectionExpiry'),
                 insurance_expiry: dateField('truckInsuranceExpiry'),
@@ -13037,6 +13120,10 @@ async function cancelTrip(tripNo) {
     const plateInput = document.getElementById('truckPlate');
     const modelInput = document.getElementById('truckModel');
     const statusInput = document.getElementById('truckStatus');
+    const kindSelect = document.getElementById('truckKindSelect');
+    currentVehicleKind = isCargoTruck(tr) ? 'شاحنة' : 'أخرى';
+    if (kindSelect) kindSelect.value = currentVehicleKind;
+    syncTruckKindUi();
 
     if (plateInput) {
         plateInput.value = tr.plate || '';
@@ -13053,7 +13140,7 @@ async function cancelTrip(tripNo) {
     setField('truckInsuranceExpiry', tr.insurance_expiry);
     setField('truckOperationExpiry', tr.operation_card_expiry);
     setField('truckOperationCardNo', tr.operation_card_no);
-    document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${currentVehicleKind === 'أخرى' ? 'تعديل بيانات المركبة' : 'تعديل بيانات الشاحنة'}`;
+    document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${t('ui.editVehicle')}`;
     document.getElementById('saveTruckBtn').innerText = 'تحديث';
     document.getElementById('cancelTruckBtn').classList.remove('hidden');
 }
@@ -13062,7 +13149,13 @@ async function cancelTrip(tripNo) {
             document.querySelector('#trucksSection form').reset();
             const plateInput = document.getElementById('truckPlate');
             if (plateInput) plateInput.readOnly = false;
-            document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${currentVehicleKind === 'أخرى' ? 'إضافة مركبة أخرى' : 'إضافة شاحنة جديدة'}`;
+            const kindSelect = document.getElementById('truckKindSelect');
+            if (kindSelect) kindSelect.value = '';
+            const statusInput = document.getElementById('truckStatus');
+            if (statusInput) statusInput.value = '';
+            currentVehicleKind = '';
+            syncTruckKindUi();
+            document.getElementById('truckFormTitle').innerHTML = `<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> ${t('ui.addVehicle')}`;
             document.getElementById('saveTruckBtn').innerText = 'حفظ';
             document.getElementById('cancelTruckBtn').classList.add('hidden');
         }
@@ -13080,9 +13173,7 @@ async function cancelTrip(tripNo) {
         async function loadDrivers() {
             const table = document.getElementById('driversTable');
             applyStaffScreenLabels();
-            const employee = currentStaffKind === 'موظف';
-            const cols = employee ? 6 : 5;
-            table.innerHTML = `<tr><td colspan="${cols}" class="text-center p-8 text-slate-400">${employee ? 'جاري تحميل الموظفين...' : 'جاري تحميل السائقين...'}</td></tr>`;
+            table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${escapeHtml(t('ui.loading'))}</td></tr>`;
             try {
                 const [{ data: drivers, error }, { data: activeTrips }] = await Promise.all([
                     client.from('drivers').select('*').order('id', { ascending: false }),
@@ -13092,42 +13183,55 @@ async function cancelTrip(tripNo) {
                 const assignments = await alignFleetWithActiveTrips([], drivers || [], activeTrips || []);
                 allDriversById = {};
                 (drivers || []).forEach(dr => { allDriversById[dr.id] = dr; });
-                let visible = (drivers || []).filter(dr => employee ? !isTripDriver(dr) : isTripDriver(dr));
+                let visible = drivers || [];
                 const jobFilter = document.getElementById('staffJobFilter');
-                if (employee && jobFilter) {
-                    const jobs = [...new Set(visible.map(dr => String(dr.job_title || '').trim()).filter(Boolean))].sort();
+                if (jobFilter) {
+                    const jobs = [...new Set(visible.map(dr => {
+                        const job = String(dr.job_title || '').trim();
+                        if (job) return job === 'سائق' ? 'سائق شاحنة' : job;
+                        return isTripDriver(dr) ? 'سائق شاحنة' : '';
+                    }).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
                     const current = jobFilter.value;
-                    jobFilter.innerHTML = '<option value="">كل الوظائف</option>' + jobs.map(job => `<option value="${escapeHtml(job)}">${escapeHtml(job)}</option>`).join('');
+                    jobFilter.innerHTML = `<option value="">${escapeHtml(t('ui.allJobs'))}</option>` + jobs.map(job => `<option value="${escapeHtml(job)}">${escapeHtml(tv(job))}</option>`).join('');
                     if (jobs.includes(current)) jobFilter.value = current;
-                    if (jobFilter.value) visible = visible.filter(dr => String(dr.job_title || '').trim() === jobFilter.value);
+                    if (jobFilter.value) {
+                        visible = visible.filter(dr => {
+                            const job = String(dr.job_title || '').trim();
+                            const normalized = job === 'سائق' || (!job && isTripDriver(dr)) ? 'سائق شاحنة' : job;
+                            return normalized === jobFilter.value;
+                        });
+                    }
                 }
 
                 if (visible.length > 0) {
                     table.innerHTML = visible.map(dr => {
+                        const tripDriver = isTripDriver(dr);
                         const shownStatus = driverStatusForTrips(dr, assignments);
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
                         if (shownStatus === 'إجازة' || shownStatus === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
                         if (shownStatus === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
-                        const jobCell = employee ? `<td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(dr.job_title) || '—')}</td>` : '';
-                        const docs = employee
+                        const jobLabel = String(dr.job_title || '').trim() === 'سائق' || (!String(dr.job_title || '').trim() && tripDriver)
+                            ? 'سائق شاحنة'
+                            : (dr.job_title || '—');
+                        const docs = tripDriver
                             ? [
                                 { label: 'الإقامة', date: dr.iqama_expiry },
                                 { label: 'الجواز', date: dr.passport_expiry },
+                                { label: 'الرخصة', date: dr.license_expiry },
+                                { label: 'بطاقة السائق', date: dr.driver_card_expiry },
                                 { label: 'التأمين الصحي', date: dr.health_insurance_expiry }
                             ]
                             : [
                                 { label: 'الإقامة', date: dr.iqama_expiry },
                                 { label: 'الجواز', date: dr.passport_expiry },
-                                { label: 'الرخصة', date: dr.license_expiry },
-                                { label: 'بطاقة السائق', date: dr.driver_card_expiry },
                                 { label: 'التأمين الصحي', date: dr.health_insurance_expiry }
                             ];
 
                         return `
                             <tr class="hover:bg-slate-50 transition">
                                 <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
-                                ${jobCell}
+                                <td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(jobLabel))}</td>
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في إجازة' ? 'إجازة' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
@@ -13139,11 +13243,11 @@ async function cancelTrip(tripNo) {
                         `;
                     }).join('');
                 } else {
-                    table.innerHTML = `<tr><td colspan="${cols}" class="text-center p-8 text-slate-400">${employee ? 'لا توجد موظفين مسجلين حالياً' : 'لا توجد سائقين مسجلين حالياً'}</td></tr>`;
+                    table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">${escapeHtml(currentLang === 'en' ? 'No employees registered yet' : 'لا يوجد موظفون مسجلون حالياً')}</td></tr>`;
                 }
             } catch (err) {
                 console.error("Error loading drivers:", err);
-                table.innerHTML = `<tr><td colspan="${employee ? 6 : 5}" class="text-center p-8 text-rose-600">حدث خطأ أثناء التحميل.</td></tr>`;
+                table.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-600">حدث خطأ أثناء التحميل.</td></tr>`;
             }
         }
 
@@ -13154,12 +13258,19 @@ async function cancelTrip(tripNo) {
             const phone = document.getElementById('driverPhone').value.trim();
             const status = document.getElementById('driverStatus').value;
 
+            const jobTitle = selectedStaffJobTitle();
+            if (!jobTitle) {
+                alert(t('ui.chooseJob'));
+                return;
+            }
+            const tripDriver = isTruckDriverJob(jobTitle);
+            currentStaffKind = tripDriver ? 'سائق' : 'موظف';
             const payload = withCompany({
                 name,
                 phone,
-                status,
-                staff_kind: currentStaffKind === 'موظف' ? 'موظف' : 'سائق',
-                job_title: selectedStaffJobTitle(),
+                status: (!tripDriver && status === 'في رحلة') ? 'متوفر' : status,
+                staff_kind: tripDriver ? 'سائق' : 'موظف',
+                job_title: jobTitle,
                 iqama_no: emptyToNull(document.getElementById('staffIqamaNo')?.value),
                 iqama_expiry: dateField('staffIqamaExpiry'),
                 passport_no: emptyToNull(document.getElementById('staffPassportNo')?.value),
@@ -13191,7 +13302,9 @@ async function cancelTrip(tripNo) {
             document.getElementById('driverName').value = dr.name || '';
             document.getElementById('driverPhone').value = dr.phone || '';
             document.getElementById('driverStatus').value = dr.status === 'في إجازة' ? 'إجازة' : dr.status;
-            setStaffJobTitle(dr.job_title);
+            const job = String(dr.job_title || '').trim() || (isTripDriver(dr) ? 'سائق شاحنة' : '');
+            setStaffJobTitle(job === 'سائق' ? 'سائق شاحنة' : job);
+            syncStaffDriverFields();
             setField('staffIqamaNo', dr.iqama_no);
             setField('staffIqamaExpiry', dr.iqama_expiry);
             setField('staffPassportNo', dr.passport_no);
@@ -13202,7 +13315,7 @@ async function cancelTrip(tripNo) {
             setField('staffDriverCardExpiry', dr.driver_card_expiry);
             setField('staffHealthNo', dr.health_insurance_no);
             setField('staffHealthExpiry', dr.health_insurance_expiry);
-            document.getElementById('driverFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${currentStaffKind === 'موظف' ? 'تعديل بيانات الموظف' : 'تعديل بيانات السائق'}`;
+            document.getElementById('driverFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${t('ui.editEmployee')}`;
             document.getElementById('driverSaveBtn').innerText = 'تحديث';
             document.getElementById('driverCancelBtn').classList.remove('hidden');
         }
@@ -13212,7 +13325,7 @@ async function cancelTrip(tripNo) {
             document.querySelector('#driversSection form').reset();
             setStaffJobTitle('');
             applyStaffScreenLabels();
-            document.getElementById('driverFormTitle').innerHTML = `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${currentStaffKind === 'موظف' ? 'إضافة موظف جديد' : 'إضافة سائق جديد'}`;
+            document.getElementById('driverFormTitle').innerHTML = `<i class="fa-solid fa-user-plus text-amber-500 ml-2"></i> ${t('ui.addEmployee')}`;
             document.getElementById('driverSaveBtn').innerText = 'حفظ';
             document.getElementById('driverCancelBtn').classList.add('hidden');
         }
