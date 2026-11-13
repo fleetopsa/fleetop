@@ -247,13 +247,193 @@
             line-height: 1.25 !important;
         }
         body.is-printing #receivablesSection > .recv-summary {
-            margin-bottom: 3mm !important;
-            gap: 2mm !important;
+            display: flex !important;
+            align-items: stretch !important;
+            margin-bottom: 2.5mm !important;
+            gap: 1.5mm !important;
+        }
+        body.is-printing #receivablesSection .recv-summary-money {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 1.5mm !important;
+        }
+        body.is-printing #receivablesSection .recv-summary-money > div,
+        body.is-printing #receivablesSection .recv-trip-card {
+            padding: 1.5mm 2mm !important;
+            border-radius: 1mm !important;
+            box-shadow: none !important;
+        }
+        body.is-printing #receivablesSection .recv-summary-money > div > div:first-child,
+        body.is-printing #receivablesSection .recv-trip-card .min-w-0 > div:first-child {
+            font-size: 7pt !important;
+            margin-bottom: 0.5mm !important;
+            line-height: 1.2 !important;
+        }
+        body.is-printing #receivablesSection #recvTotalDue,
+        body.is-printing #receivablesSection #recvCollected,
+        body.is-printing #receivablesSection #recvRemaining,
+        body.is-printing #receivablesSection #recvTripCount {
+            font-size: 9pt !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+        }
+        body.is-printing #receivablesSection .recv-trip-card {
+            flex: 0 0 28mm !important;
+            width: 28mm !important;
+        }
+        body.is-printing #receivablesSection .recv-trip-card .w-9 {
+            display: none !important;
         }
         body.is-printing #receivablesSection > .recv-table-card { padding: 0 !important; }
         body.is-printing #receivablesSection > .recv-table-card h3 {
             margin-bottom: 1mm !important;
             padding-bottom: 1mm !important;
+            font-size: 9pt !important;
+        }
+        body.is-printing #commissionReportSection > div.grid.gap-4 {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 1.5mm !important;
+            margin: 0 0 2.5mm !important;
+        }
+        body.is-printing #commissionReportSection > div.grid.gap-4 > div {
+            padding: 1.5mm 2mm !important;
+            border-radius: 1mm !important;
+            box-shadow: none !important;
+        }
+        body.is-printing #commissionReportSection > div.grid.gap-4 > div > span {
+            font-size: 7pt !important;
+            line-height: 1.2 !important;
+        }
+        body.is-printing #commissionReportSection #commTotalAmountDisplay,
+        body.is-printing #commissionReportSection #commPaidDisplay,
+        body.is-printing #commissionReportSection #commRemainingDisplay,
+        body.is-printing #commissionReportSection #commTotalTripsDisplay {
+            font-size: 9pt !important;
+            line-height: 1.2 !important;
+            margin-top: 0.5mm !important;
+        }
+        body.is-printing #commissionReportSection > .bg-white.p-6,
+        body.is-printing #commissionReportSection > div.bg-white.rounded-2xl {
+            padding: 1mm 0 !important;
+            box-shadow: none !important;
+        }
+        body.is-printing #commissionReportSection > div.bg-white.rounded-2xl > h3 {
+            font-size: 9pt !important;
+            margin-bottom: 1mm !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target,
+        body.is-printing #maintenanceReportSection.print-target > *,
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail-card,
+        body.is-printing #maintenanceReportSection.print-target .overflow-x-auto,
+        body.is-printing #maintenanceReportSection.print-target table,
+        body.is-printing #maintenanceReportSection.print-target thead,
+        body.is-printing #maintenanceReportSection.print-target tbody,
+        body.is-printing #maintenanceReportSection.print-target tr {
+            break-before: auto !important;
+            break-after: auto !important;
+            break-inside: auto !important;
+            page-break-before: auto !important;
+            page-break-after: auto !important;
+            page-break-inside: auto !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target {
+            display: block !important;
+            gap: 2.5mm !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-rep-kpis {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 2mm !important;
+            margin-bottom: 2mm !important;
+            justify-content: flex-start !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-kpi {
+            padding: 1mm 1.8mm !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-kpi-value { font-size: 9pt !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail-card {
+            display: block !important;
+            flex: none !important;
+            height: auto !important;
+            padding: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail-card h3 {
+            margin-bottom: 1.5mm !important;
+            padding-bottom: 1mm !important;
+            font-size: 10pt !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .overflow-x-auto {
+            display: block !important;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target table.maint-report-detail {
+            display: table !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail thead { display: table-header-group !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail tbody { display: table-row-group !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail tr { display: table-row !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th,
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td {
+            display: table-cell !important;
+            padding: 1.2mm 1mm !important;
+            font-size: 8pt !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+            word-break: break-word !important;
+            border-bottom: 0.3pt solid #cbd5e1 !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-print-hide {
+            display: none !important;
+        }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th:nth-child(2),
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td:nth-child(2) { width: 13% !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th:nth-child(3),
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td:nth-child(3) { width: 14% !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th:nth-child(4),
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td:nth-child(4) { width: 14% !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th:nth-child(5),
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td:nth-child(5) { width: 44% !important; }
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail th:nth-child(6),
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail td:nth-child(6) { width: 15% !important; }
+        body.is-printing #analyticsSection .expiry-profile-card {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 4mm !important;
+            border: 0.4pt solid #cbd5e1 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        body.is-printing #analyticsSection .expiry-report-table {
+            display: table !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+        }
+        body.is-printing #analyticsSection .expiry-report-table thead { display: table-header-group !important; }
+        body.is-printing #analyticsSection .expiry-report-table tbody { display: table-row-group !important; }
+        body.is-printing #analyticsSection .expiry-report-table tr { display: table-row !important; }
+        body.is-printing #analyticsSection .expiry-report-table th,
+        body.is-printing #analyticsSection .expiry-report-table td {
+            display: table-cell !important;
+            padding: 1.2mm 1mm !important;
+            font-size: 8pt !important;
+            line-height: 1.3 !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+            border-bottom: 0.3pt solid #cbd5e1 !important;
         }
         body.is-printing #mainDashboard > .flex-grow {
             display: block !important;
@@ -661,21 +841,6 @@
             border: 0;
         }
         #settleDriversTable tr.driver-block-start td { border-top: 3px solid #0f172a; }
-        .maint-action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            width: 100%;
-            max-width: 100%;
-        }
-        .maint-action-grid > button,
-        .maint-action-grid > div {
-            min-width: 0;
-        }
-        .maint-action-grid > button {
-            white-space: normal;
-            line-height: 1.25;
-        }
         .maint-col-tight {
             width: 1%;
             white-space: nowrap;
@@ -687,6 +852,71 @@
             white-space: pre-wrap;
             overflow-wrap: anywhere;
         }
+        .maint-rep-kpis {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            justify-content: flex-end;
+        }
+        .maint-kpi {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 0.2rem;
+            border-radius: 0.7rem;
+            padding: 0.45rem 0.75rem;
+            min-height: 2.85rem;
+            min-width: 7.25rem;
+            line-height: 1.15;
+            border: 1px solid transparent;
+        }
+        .maint-kpi-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .maint-kpi-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Cairo', 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .maint-kpi-cost {
+            background: #f8f1e3;
+            border-color: #e6d3a8;
+        }
+        .maint-kpi-cost .maint-kpi-label { color: #8a6a2f; }
+        .maint-kpi-cost .maint-kpi-value { color: #0b2a4a; }
+        .maint-kpi-count {
+            background: #eef3f8;
+            border-color: #c9d6e4;
+        }
+        .maint-kpi-count .maint-kpi-label { color: #4a6280; }
+        .maint-kpi-count .maint-kpi-value { color: #0b2a4a; }
+        .maint-report-detail { table-layout: fixed; width: 100%; }
+        .maint-report-detail th,
+        .maint-report-detail td { vertical-align: top; }
+        .maint-report-detail th:nth-child(1),
+        .maint-report-detail td:nth-child(1) { width: 14%; }
+        .maint-report-detail th:nth-child(2),
+        .maint-report-detail td:nth-child(2) { width: 11%; }
+        .maint-report-detail th:nth-child(3),
+        .maint-report-detail td:nth-child(3) { width: 12%; }
+        .maint-report-detail th:nth-child(4),
+        .maint-report-detail td:nth-child(4) { width: 12%; }
+        .maint-report-detail th:nth-child(5),
+        .maint-report-detail td:nth-child(5) { width: 33%; }
+        .maint-report-detail th:nth-child(6),
+        .maint-report-detail td:nth-child(6) { width: 10%; }
+        .maint-report-detail th:nth-child(7),
+        .maint-report-detail td:nth-child(7) { width: 8%; }
         #appContent > main {
             min-width: 0;
             max-width: 100%;
@@ -701,6 +931,9 @@
         #activityLogSection table {
             min-width: 48rem;
         }
+        #maintenanceReportSection table.maint-report-detail {
+            min-width: 0;
+        }
         @media (max-width: 767px) {
             #appContent > main {
                 padding-left: 0.75rem !important;
@@ -714,9 +947,6 @@
                 max-width: calc(100vw - 1.25rem);
                 max-height: min(92dvh, 100%);
             }
-        }
-        @media (min-width: 768px) {
-            .maint-action-grid { width: 20rem; }
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
@@ -734,6 +964,7 @@
         #appContent > header { flex-wrap: wrap; align-items: center; }
         #dashboardSection > .grid,
         #analyticsSection .grid,
+        #chartsSection .grid,
         #settingsSection .grid {
             align-items: start;
         }
@@ -1205,11 +1436,8 @@
                     <button onclick="switchTab('dashboard')" id="tabDashboardBtn" data-nav="dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition nav-active">
                         <i class="fa-solid fa-chart-pie text-base"></i> <span data-i18n="nav.dashboard">لوحة التحكم</span>
                     </button>
-                    <button onclick="switchTab('analytics')" id="tabAnalyticsBtn" data-nav="analytics" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-chart-column text-base"></i> <span data-i18n="nav.analytics">المتابعة والرسوم</span>
-                    </button>
-                    <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
-                        <i class="fa-solid fa-route text-base"></i> <span data-i18n="nav.trips">إدارة الرحلات</span>
+                    <button onclick="switchTab('charts')" id="tabChartsBtn" data-nav="charts" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-chart-column text-base"></i> <span data-i18n="nav.charts">المتابعة والرسوم</span>
                     </button>
                     <div>
                         <button type="button" onclick="toggleFacilityMenu()" id="tabFacilityBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
@@ -1234,9 +1462,6 @@
                                     <button onclick="switchTab('otherVehicles')" data-nav="otherVehicles" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-van-shuttle ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.otherVehicles">المركبات الأخرى</span>
                                     </button>
-                                    <button onclick="switchTab('maintenance')" data-nav="maintenance" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                        <i class="fa-solid fa-screwdriver-wrench ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.maintenance">الصيانة العامة</span>
-                                    </button>
                                 </div>
                             </div>
                             <div>
@@ -1256,6 +1481,12 @@
                             </div>
                         </div>
                     </div>
+                    <button onclick="switchTab('trips')" id="tabTripsBtn" data-nav="trips" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-route text-base"></i> <span data-i18n="nav.trips">إدارة الرحلات</span>
+                    </button>
+                    <button onclick="switchTab('maintenance')" id="tabMaintenanceBtn" data-nav="maintenance" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-screwdriver-wrench text-base"></i> <span data-i18n="nav.maintenance">إدارة الصيانة</span>
+                    </button>
                     <div>
                         <button type="button" onclick="toggleReportsMenu()" id="tabReportsGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-chart-line text-base"></i>
@@ -1263,9 +1494,24 @@
                             <i id="reportsMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
                         <div id="reportsSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-clipboard-check ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.reports">التقارير التشغيلية</span>
+                            <button onclick="switchTab('analytics')" id="tabGeneralReportsBtn" data-nav="analytics" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                <i class="fa-solid fa-chart-pie ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.generalReports">التقارير العامة</span>
                             </button>
+                            <div>
+                                <button type="button" onclick="toggleOpsReportsMenu()" id="tabOpsReportsBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
+                                    <i class="fa-solid fa-clipboard-check" style="color:#c4a35a"></i>
+                                    <span class="flex-1 text-start" data-i18n="nav.opsReports">التقارير التشغيلية</span>
+                                    <i id="opsReportsMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+                                </button>
+                                <div id="opsReportsSubMenu" class="hidden ms-3 mt-0.5 space-y-0.5 border-s pr-2" style="border-color:rgba(196,163,90,0.25)">
+                                    <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-route ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.opsMovement">تقرير حركة التشغيل</span>
+                                    </button>
+                                    <button onclick="switchTab('maintenanceReport')" data-nav="maintenanceReport" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-screwdriver-wrench ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.maintReports">تقرير حركة الصيانة</span>
+                                    </button>
+                                </div>
+                            </div>
                             <div id="financialMenu" class="hidden">
                                 <button type="button" onclick="toggleFinancialMenu()" id="tabFinancialBtn" class="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs font-bold transition">
                                     <i class="fa-solid fa-coins" style="color:#c4a35a"></i>
@@ -1279,9 +1525,9 @@
                                     <button onclick="switchTab('receivablesSection')" data-nav="receivablesSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-file-invoice ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.receivables">تقرير متابعة التحصيل</span>
                                     </button>
-                            <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
-                            </button>
+                                    <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1478,7 +1724,41 @@
                 </div>
             </main>
 <main id="analyticsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
-    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+            <div class="min-w-0 flex-1">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                    <i class="fa-solid fa-id-card text-amber-500 ml-2"></i>
+                    <span data-i18n="expiry.reportTitle">تقرير الموظفين والمركبات والسجلات</span>
+                </h3>
+                <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="expiry.reportSub">ابحث بالاسم أو رقم الإقامة أو اللوحة ثم اضغط إدخال لعرض التقرير المفصّل</p>
+                <div class="mt-2.5 w-full max-w-md">
+                    <input type="text" id="expirySearchQuery" onkeydown="if(event.key==='Enter'){event.preventDefault();renderExpiryReport();}" autocomplete="off" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="expiry.searchPh" placeholder="اسم الموظف / رقم الإقامة / رقم اللوحة">
+                    <label class="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-600 cursor-pointer select-none">
+                        <input type="checkbox" id="expiryNearOnly" onchange="onExpiryNearOnlyChange()" class="rounded border-slate-300 text-amber-500 focus:ring-amber-500 flex-shrink-0">
+                        <span data-i18n="expiry.nearOnly">إظهار الوثائق التي شارفت على الانتهاء</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 w-full sm:w-auto shrink-0">
+                <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap" style="background:#0b2a4a;color:#c4a35a">
+                    <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                </button>
+                <button type="button" onclick="resetExpiryReportFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                </button>
+                <button type="button" onclick="renderExpiryReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="expiryReportProfiles" class="space-y-3">
+        <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold" data-i18n="expiry.searchHint">اكتب الاسم أو رقم الإقامة ثم اضغط إدخال</div>
+    </div>
+</main>
+<main id="chartsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
+    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
@@ -2048,6 +2328,8 @@
                                 <option id="truckStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
                                 <option value="صيانة دورية" data-i18n="ui.maint">صيانة دورية</option>
                                 <option value="عطلانة" data-i18n="ui.broken">عطلانة</option>
+                                <option value="خارج الخدمة" data-i18n="ui.retired">خارج الخدمة</option>
+                                <option value="مباعة" data-i18n="ui.sold">مباعة</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -2102,54 +2384,17 @@
                 </div>
             </main>
 
-            <main id="maintenanceSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
-                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 min-w-0">
-                    <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-3 min-w-0">
-                        <div class="min-w-0 w-full flex-1">
-                            <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenance">الصيانة العامة</h2>
-                            <p class="text-xs text-slate-500 mb-3" data-i18n="page.maintenanceSub">تقرير صيانة الشاحنات والمركبات الأخرى</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 w-full no-print">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
-                                    <input type="date" id="maintStartDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
-                                    <input type="date" id="maintEndDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicle">المركبة</label>
-                                    <select id="maintVehicleFilter" onchange="renderMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                        <option value="" data-i18n="maint.allVehicles">جميع المركبات</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.type">نوع الصيانة</label>
-                                    <select id="maintTypeFilter" onchange="renderMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                        <option value="" data-i18n="maint.allTypes">جميع الأنواع</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="maint-action-grid shrink-0 xl:ms-2">
-                            <button type="button" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 no-print">
-                                <i class="fa-solid fa-plus"></i> <span data-i18n="maint.add">إضافة صيانة</span>
-                            </button>
-                            <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 no-print" style="background:#0b2a4a;color:#c4a35a">
-                                <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
-                            </button>
-                            <div class="rounded-2xl border border-amber-200 bg-amber-50 flex flex-col items-center justify-center text-center px-3 py-2 min-h-[4.5rem]">
-                                <span class="text-[10px] font-bold text-amber-700 leading-tight" data-i18n="maint.totalCost">إجمالي التكاليف</span>
-                                <span id="maintTotalCost" class="text-sm font-black text-slate-900 font-mono leading-tight mt-1 whitespace-nowrap">0.00</span>
-                            </div>
-                            <div class="rounded-2xl border border-blue-200 bg-blue-50 flex flex-col items-center justify-center text-center px-3 py-2 min-h-[4.5rem]">
-                                <span class="text-[10px] font-bold text-blue-700 leading-tight" data-i18n="maint.count">عدد الصيانات</span>
-                                <span id="maintTotalCount" class="text-lg font-black text-blue-700 font-mono leading-none mt-1 whitespace-nowrap">0</span>
-                            </div>
-                        </div>
+            <main id="maintenanceSection" class="hidden px-3 sm:px-6 md:px-8 pt-2 sm:pt-3 pb-3 sm:pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
+                <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <div class="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 no-print">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                            <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="maint.recordsList">سجلات الصيانة</span>
+                            <span class="ms-2 text-[11px] font-bold text-slate-500">(<span id="maintManageCount">0</span>)</span>
+                        </h3>
+                        <button type="button" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="maint.add">إضافة صيانة</span>
+                        </button>
                     </div>
-                </div>
-                <div class="bg-white p-3 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
                     <div class="overflow-x-auto flex-grow min-w-0">
                         <table class="w-full text-center text-xs text-slate-700">
                             <thead class="bg-slate-100 text-slate-700">
@@ -2161,11 +2406,85 @@
                                     <th class="p-3" data-i18n="maint.details">تفاصيل الإصلاح</th>
                                     <th class="maint-col-tight p-3" data-i18n="maint.cost">التكلفة</th>
                                     <th class="maint-col-tight p-3" data-i18n="maint.attachments">المرفقات</th>
-                                    <th id="maintActionsHead" class="maint-col-tight p-3 rounded-l-xl hidden no-print" data-i18n="th.actions">إجراءات</th>
+                                    <th class="maint-col-tight p-3 rounded-l-xl no-print" data-i18n="th.actions">إجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="maintenanceTable">
+                            <tbody id="maintenanceManageTable">
                                 <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <main id="maintenanceReportSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
+                        <div class="no-print min-w-0">
+                            <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenanceReport">تقرير حركة الصيانة</h2>
+                            <p class="text-xs text-slate-500 mt-0.5" data-i18n="page.maintenanceReportSub">عرض مخرجات وتكاليف الصيانة للطباعة والمتابعة</p>
+                        </div>
+                        <div class="maint-rep-kpis shrink-0">
+                            <div class="maint-kpi maint-kpi-cost">
+                                <span class="maint-kpi-label" data-i18n="maint.totalCost">إجمالي التكاليف</span>
+                                <span id="maintTotalCost" class="maint-kpi-value">0.00</span>
+                            </div>
+                            <div class="maint-kpi maint-kpi-count">
+                                <span class="maint-kpi-label" data-i18n="maint.count">عدد الصيانات</span>
+                                <span id="maintTotalCount" class="maint-kpi-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 min-w-0 no-print">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                            <input type="date" id="maintRepStartDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                            <input type="date" id="maintRepEndDate" onchange="loadMaintenanceReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.vehicle">المركبة</label>
+                            <select id="maintRepVehicleFilter" onchange="renderMaintenanceReportView()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="maint.allVehicles">جميع المركبات</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="maint.type">نوع الصيانة</label>
+                            <select id="maintRepTypeFilter" onchange="renderMaintenanceReportView()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="maint.allTypes">جميع الأنواع</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap justify-end gap-2 mt-2.5 no-print">
+                        <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                            <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                        </button>
+                        <button type="button" onclick="loadMaintenanceReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="maint-report-detail-card bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <h3 class="font-bold text-slate-900 text-sm mb-2 border-b pb-2 flex items-center">
+                        <i class="fa-solid fa-table-list ml-2 text-amber-500"></i> <span data-i18n="maint.detailReport">تفاصيل الصيانات</span>
+                    </h3>
+                    <div class="overflow-x-auto flex-grow min-w-0">
+                        <table class="maint-report-detail w-full text-center text-xs text-slate-700">
+                            <thead class="bg-slate-800 text-slate-200">
+                                <tr>
+                                    <th class="maint-print-hide p-2.5" data-i18n="maint.enteredAt">تاريخ الإدخال</th>
+                                    <th class="p-2.5" data-i18n="maint.serviceDate">تاريخ الصيانة</th>
+                                    <th class="p-2.5" data-i18n="maint.vehicle">المركبة</th>
+                                    <th class="p-2.5" data-i18n="maint.type">نوع الصيانة</th>
+                                    <th class="p-2.5" data-i18n="maint.details">تفاصيل الإصلاح</th>
+                                    <th class="p-2.5" data-i18n="maint.cost">التكلفة</th>
+                                    <th class="p-2.5 no-print" data-i18n="maint.attachments">المرفقات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maintenanceReportTable">
+                                <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2533,8 +2852,8 @@
                 </div>
             </main>
             <main id="settingsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
-                <div class="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-                    <div class="xl:col-span-7 min-w-0 space-y-4">
+                <div class="w-full grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+                    <div class="xl:col-span-6 min-w-0">
                         <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
                             <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
                                 <i class="fa-solid fa-building text-amber-500 ml-2"></i>
@@ -2608,15 +2927,18 @@
                                 <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
                             </form>
                         </div>
+                    </div>
+
+                    <div class="xl:col-span-6 min-w-0 space-y-4">
                         <div id="companySubscriptionCard" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                             <div class="mb-3">
                                 <h3 class="font-bold text-slate-900 text-sm flex items-center">
                                     <i class="fa-solid fa-file-contract text-amber-500 ml-2"></i>
-                                    <span data-i18n="sub.companyTitle">اشتراك الشركة</span>
+                                    <span data-i18n="sub.companyTitle">اشتراك المنشأة</span>
                                 </h3>
                                 <p class="text-[11px] text-slate-500 mt-1" data-i18n="sub.companyHint">حالة الاشتراك وتنبيه قرب الانتهاء.</p>
                             </div>
-                            <div id="companySubscriptionAlert" class="rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-slate-50 text-slate-600 border-slate-200">
+                            <div id="companySubscriptionAlert" class="rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-slate-50 text-slate-600 border-slate-200 leading-relaxed whitespace-normal break-words">
                                 <span data-i18n="sub.loading">جاري تحميل حالة الاشتراك...</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-xs">
@@ -2638,9 +2960,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="xl:col-span-5 min-w-0">
                         <div id="companyPaymentRequestCard" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                             <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center">
                                 <i class="fa-solid fa-receipt text-amber-500 ml-2"></i>
@@ -4611,13 +4930,14 @@ function paintCompanySubscriptionCard(row) {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
     };
+    const alertBase = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 leading-relaxed whitespace-normal break-words';
     if (!row) {
         setText('companySubPlan', '—');
         setText('companySubStatus', '—');
         setText('companySubStarts', '—');
         setText('companySubEnds', '—');
         if (alertBox) {
-            alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-slate-50 text-slate-600 border-slate-200';
+            alertBox.className = `${alertBase} bg-slate-50 text-slate-600 border-slate-200`;
             alertBox.textContent = t('sub.alertUnknown');
         }
         return;
@@ -4632,18 +4952,18 @@ function paintCompanySubscriptionCard(row) {
     setText('companySubEnds', ends || '—');
     if (!alertBox) return;
     if (!ok) {
-        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-rose-50 text-rose-700 border-rose-200';
+        alertBox.className = `${alertBase} bg-rose-50 text-rose-700 border-rose-200`;
         alertBox.textContent = t('sub.alertExpired');
         return;
     }
     if (days != null && days <= 7) {
-        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-rose-50 text-rose-700 border-rose-200';
+        alertBox.className = `${alertBase} bg-rose-50 text-rose-700 border-rose-200`;
         alertBox.textContent = t('sub.alertUrgent').replace('{days}', String(Math.max(days, 0))).replace('{date}', ends);
     } else if (days != null && days <= 30) {
-        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-amber-50 text-amber-800 border-amber-200';
+        alertBox.className = `${alertBase} bg-amber-50 text-amber-800 border-amber-200`;
         alertBox.textContent = t('sub.alertSoon').replace('{days}', String(days)).replace('{date}', ends);
     } else {
-        alertBox.className = 'rounded-xl px-3.5 py-3 text-xs font-bold border mb-3 bg-emerald-50 text-emerald-800 border-emerald-200';
+        alertBox.className = `${alertBase} bg-emerald-50 text-emerald-800 border-emerald-200`;
         alertBox.textContent = t('sub.alertOk').replace('{days}', days != null ? String(days) : '—');
     }
 }
@@ -4830,7 +5150,7 @@ async function loadCompanyPaymentRequests() {
                 <td class="p-2.5 font-mono">${escapeHtml(row.paid_at ? String(row.paid_at).slice(0, 10) : '—')}</td>
                 <td class="p-2.5 font-bold">${escapeHtml(Number(row.amount || 0).toLocaleString('en-US'))}</td>
                 <td class="p-2.5 font-bold ${tone}">${escapeHtml(paymentRequestStatusLabel(row.status))}</td>
-                <td class="p-2.5">${escapeHtml(row.notes || row.receipt_name || '—')}</td>
+                <td class="p-2.5 whitespace-normal break-words max-w-[18rem]">${escapeHtml(row.notes || row.receipt_name || '—')}</td>
             </tr>`;
         }).join('');
     } catch (err) {
@@ -5424,6 +5744,12 @@ function resetFiltersForScreen(tabId) {
         return;
     }
     if (id === 'analytics' || id === 'analyticsSection') {
+        setFilterValue('expirySearchQuery', '');
+        const nearOnly = document.getElementById('expiryNearOnly');
+        if (nearOnly) nearOnly.checked = false;
+        return;
+    }
+    if (id === 'charts' || id === 'chartsSection') {
         setFilterValue('analyticsStartDate', '');
         setFilterValue('analyticsEndDate', '');
         setFilterValue('analyticsPeriodPreset', 'all');
@@ -5435,11 +5761,11 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('activityLogUser', '');
         return;
     }
-    if (id === 'maintenance' || id === 'maintenanceSection') {
-        setFilterValue('maintStartDate', '');
-        setFilterValue('maintEndDate', '');
-        setFilterValue('maintVehicleFilter', '');
-        setFilterValue('maintTypeFilter', '');
+    if (id === 'maintenanceReport' || id === 'maintenanceReportSection') {
+        setFilterValue('maintRepStartDate', '');
+        setFilterValue('maintRepEndDate', '');
+        setFilterValue('maintRepVehicleFilter', '');
+        setFilterValue('maintRepTypeFilter', '');
     }
 }
 
@@ -6378,7 +6704,8 @@ function activeAssignmentSets(trips) {
 
 function truckStatusForTrips(truck, assignments) {
     const plate = String(truck?.plate || '').trim();
-    const blocked = truck?.status === 'صيانة دورية' || truck?.status === 'في الصيانة' || truck?.status === 'عطلانة';
+    if (isInactiveFleetVehicle(truck)) return truck?.status;
+    const blocked = isBlockedFleetVehicle(truck);
     if (isCargoTruck(truck) && plate && assignments.plates.has(plate) && !blocked) return 'في رحلة';
     return truck?.status;
 }
@@ -7227,7 +7554,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     const driverBusy = driverIdentifier && others.some(t => sameFleetValue(t.driver_name, driverIdentifier));
 
     if (truckIdentifier && !truckBusy) {
-        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
+        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim()).eq('status', 'في رحلة');
         if (error) console.error('خطأ في تحرير الشاحنة:', error);
     }
     if (driverIdentifier && !driverBusy) {
@@ -7427,7 +7754,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => (
                 typeof generateCommissionReport === 'function' ? generateCommissionReport() : null
             )) : null,
-            typeof loadMaintenanceReport === 'function' ? loadMaintenanceReport() : null
+            typeof loadMaintenanceManage === 'function' ? loadMaintenanceManage() : null
         ]).catch(err => console.error(err));
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
@@ -7475,7 +7802,8 @@ async function initReportFilters() {
                 const ends = sub.subscription_ends_at ? String(sub.subscription_ends_at).slice(0, 10) : '';
                 const days = typeof daysUntilDate === 'function' ? daysUntilDate(ends) : null;
                 const ok = sub.access_ok !== false && typeof subscriptionAccessOk === 'function' && subscriptionAccessOk(sub);
-                if (!ok || (days != null && days <= EXPIRY_SOON_DAYS)) {
+                const soonDays = (typeof EXPIRY_SOON_DAYS === 'number' ? EXPIRY_SOON_DAYS : 30);
+                if (!ok || (days != null && days <= soonDays)) {
                     alerts.unshift({
                         category: currentLang === 'en' ? 'Subscription' : 'الاشتراك',
                         name: sub.company_name || (currentLang === 'en' ? 'Company' : 'الشركة'),
@@ -7564,7 +7892,7 @@ async function initReportFilters() {
                 setText('dashTotalTrips', trips ? trips.filter(isCompletedTrip).length : 0);
 
                 const assignments = await alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
-                const fleetTrucks = (trucks || []).filter(isCargoTruck);
+                const fleetTrucks = (trucks || []).filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t));
                 const totalTrucks = fleetTrucks.length;
                 const readyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'جاهزة للعمل').length;
                 const busyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'في رحلة').length;
@@ -7730,7 +8058,9 @@ async function resetTripCounter() {
         const busyPlates = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.truck_plate || '').trim()).filter(Boolean));
         const busyDrivers = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.driver_name || '').trim()).filter(Boolean));
         const { data: onTripTrucks } = await client.from('trucks').select('id, plate, status').eq('status', 'في رحلة');
-        const freeTruckIds = (onTripTrucks || []).filter(tr => !busyPlates.has(String(tr.plate || '').trim())).map(tr => tr.id);
+        const freeTruckIds = (onTripTrucks || [])
+            .filter(tr => !isInactiveFleetVehicle(tr) && !busyPlates.has(String(tr.plate || '').trim()))
+            .map(tr => tr.id);
         if (freeTruckIds.length) await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeTruckIds);
         const { data: onTripDrivers } = await client.from('drivers').select('id, name, status').eq('status', 'في رحلة');
         const freeDriverIds = (onTripDrivers || []).filter(dr => !busyDrivers.has(String(dr.name || '').trim())).map(dr => dr.id);
@@ -7824,6 +8154,11 @@ function toggleReportsMenu(forceOpen) {
     toggleSidebarSubmenu('reportsSubMenu', 'reportsMenuChevron', forceOpen);
 }
 
+function toggleOpsReportsMenu(forceOpen) {
+    if (forceOpen !== false) toggleReportsMenu(true);
+    toggleSidebarSubmenu('opsReportsSubMenu', 'opsReportsMenuChevron', forceOpen);
+}
+
 function toggleSystemMenu(forceOpen) {
     toggleSidebarSubmenu('systemSubMenu', 'systemMenuChevron', forceOpen);
 }
@@ -7855,6 +8190,7 @@ function collapseSidebarSubmenus() {
         ['vehiclesSubMenu', 'vehiclesMenuChevron'],
         ['staffSubMenu', 'staffMenuChevron'],
         ['reportsSubMenu', 'reportsMenuChevron'],
+        ['opsReportsSubMenu', 'opsReportsMenuChevron'],
         ['financialSubMenu', 'financialMenuChevron'],
         ['systemSubMenu', 'systemMenuChevron']
     ].forEach(([subId, chevronId]) => toggleSidebarSubmenu(subId, chevronId, false));
@@ -7864,9 +8200,11 @@ function openCurrentSidebarPath() {
     const tabId = currentNavTab || '';
     if (['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId)) {
         toggleFinancialMenu(true);
-    } else if (tabId === 'reports' || tabId === 'reportsSection') {
+    } else if (tabId === 'reports' || tabId === 'reportsSection' || tabId === 'maintenanceReport') {
+        toggleOpsReportsMenu(true);
+    } else if (tabId === 'analytics' || tabId === 'analyticsSection') {
         toggleReportsMenu(true);
-    } else if (tabId === 'maintenance' || tabId === 'trucks' || tabId === 'otherVehicles') {
+    } else if (tabId === 'trucks' || tabId === 'otherVehicles') {
         toggleVehiclesMenu(true);
     } else if (tabId === 'drivers' || tabId === 'employees') {
         toggleStaffMenu(true);
@@ -7900,13 +8238,29 @@ function isCargoTruck(row) {
     return String(row?.vehicle_kind || 'شاحنة').trim() !== 'أخرى';
 }
 
+function isInactiveFleetVehicle(row) {
+    const status = String(row?.status || '').trim();
+    return status === 'خارج الخدمة' || status === 'مباعة';
+}
+
+function isBlockedFleetVehicle(row) {
+    const status = String(row?.status || '').trim();
+    return status === 'صيانة دورية' || status === 'في الصيانة' || status === 'عطلانة' || isInactiveFleetVehicle(row);
+}
+
 const MAINTENANCE_TYPES = ['ميكانيكا', 'كهرباء', 'هواء', 'غيار كفر جديد', 'بنشر', 'زيوت وفلاتر', 'فرامل', 'تكييف', 'سمكرة ودهان', 'أخرى'];
+let currentMaintenanceMode = 'manage'; // manage | report
 const MAINT_INVOICE_BUCKET = 'maintenance-invoices';
 const MAINT_INVOICE_MAX = 8 * 1024 * 1024;
 let maintenanceCache = [];
+let maintenanceReportCache = [];
 let maintenanceVehicles = [];
 let maintPendingFiles = [];
 let attachPendingFiles = [];
+
+function isMaintenanceManageMode() {
+    return currentMaintenanceMode !== 'report';
+}
 
 function maintenanceTypeLabel(type) {
     const value = String(type || '').trim();
@@ -7927,8 +8281,8 @@ function fillMaintenanceTypeSelect(select, includeAll) {
     if (current && [...select.options].some(option => option.value === current)) select.value = current;
 }
 
-function fillMaintenanceFilterVehicles() {
-    const select = document.getElementById('maintVehicleFilter');
+function fillMaintenanceVehicleFilterSelect(selectId) {
+    const select = document.getElementById(selectId);
     if (!select) return;
     const current = select.value;
     const options = maintenanceVehicles.map(row => {
@@ -7939,6 +8293,60 @@ function fillMaintenanceFilterVehicles() {
     }).join('');
     select.innerHTML = `<option value="">${escapeHtml(t('maint.allVehicles'))}</option>` + options;
     if (current && [...select.options].some(option => option.value === current)) select.value = current;
+}
+
+function fillMaintenanceFilterVehicles() {
+    fillMaintenanceVehicleFilterSelect('maintRepVehicleFilter');
+}
+
+function maintenanceEnteredAt(row) {
+    return row.created_at ? new Date(row.created_at).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
+        numberingSystem: 'latn',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : '—';
+}
+
+function filterMaintenanceRows(rows, vehicleFilterId, typeFilterId) {
+    const vehicle = document.getElementById(vehicleFilterId)?.value || '';
+    const type = document.getElementById(typeFilterId)?.value || '';
+    return (rows || []).filter(row => {
+        if (vehicle) {
+            const kind = String(row.vehicle_kind || 'شاحنة').trim() === 'أخرى' ? 'أخرى' : 'شاحنة';
+            if (`${kind}::${row.vehicle_plate || ''}` !== vehicle) return false;
+        }
+        if (type) {
+            const rowType = String(row.maintenance_type || '').trim();
+            if (type === 'أخرى') {
+                if (MAINTENANCE_TYPES.includes(rowType) && rowType !== 'أخرى') return false;
+            } else if (rowType !== type) return false;
+        }
+        return true;
+    });
+}
+
+async function ensureMaintenanceVehicles() {
+    const { data } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
+    maintenanceVehicles = data || [];
+}
+
+function findMaintenanceRow(id) {
+    const num = Number(id);
+    return maintenanceCache.find(item => Number(item.id) === num)
+        || maintenanceReportCache.find(item => Number(item.id) === num)
+        || null;
+}
+
+async function refreshOpenMaintenanceScreens() {
+    if (!document.getElementById('maintenanceSection')?.classList.contains('hidden')) {
+        await loadMaintenanceManage();
+    }
+    if (!document.getElementById('maintenanceReportSection')?.classList.contains('hidden')) {
+        await loadMaintenanceReport();
+    }
 }
 
 function toggleMaintenanceTypeOther() {
@@ -8171,7 +8579,7 @@ async function openMaintenanceAttachmentFile(path, name) {
 }
 
 async function openMaintenanceInvoice(id) {
-    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    const row = findMaintenanceRow(id);
     const files = parseMaintenanceAttachments(row);
     if (!files.length) return;
     openMaintenanceViewer(files, 0);
@@ -8212,14 +8620,18 @@ function renderMaintenanceAttachList(row) {
 
 function openMaintenanceAttachAt(index) {
     const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
-    const row = maintenanceCache.find(item => Number(item.id) === rowId);
+    const row = findMaintenanceRow(rowId);
     const files = parseMaintenanceAttachments(row);
     if (!files.length) return;
     openMaintenanceViewer(files, index);
 }
 
 function openMaintenanceAttachModal(id) {
-    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    if (!isMaintenanceManageMode()) {
+        openMaintenanceInvoice(id);
+        return;
+    }
+    const row = findMaintenanceRow(id);
     if (!row) return;
     const idInput = document.getElementById('maintAttachRowId');
     if (idInput) idInput.value = String(row.id);
@@ -8281,7 +8693,7 @@ async function writeMaintenanceAttachments(rowId, files) {
 
 async function saveMaintenanceAttachments() {
     const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
-    const row = maintenanceCache.find(item => Number(item.id) === Number(rowId));
+    const row = findMaintenanceRow(rowId);
     if (!rowId || !row) return;
     if (!attachPendingFiles.length) {
         closeMaintenanceAttachModal();
@@ -8298,7 +8710,7 @@ async function saveMaintenanceAttachments() {
         await writeMaintenanceAttachments(rowId, files);
         logActivity('maintenance.attach', 'صيانة', row.vehicle_plate || '', `${newFiles.length}`);
         closeMaintenanceAttachModal();
-        await loadMaintenanceReport();
+        await refreshOpenMaintenanceScreens();
     } catch (err) {
         console.error(err);
         for (const file of uploaded) await deleteMaintenanceInvoiceFile(file.path);
@@ -8329,11 +8741,12 @@ async function fillMaintenanceVehicleOptions(keepPlate) {
 }
 
 async function openMaintenanceModal(id) {
+    currentMaintenanceMode = 'manage';
     const modal = document.getElementById('maintenanceModal');
     if (!modal) return;
     showMaintenanceError('');
     resetMaintenanceInvoiceForm();
-    const row = id ? maintenanceCache.find(item => Number(item.id) === Number(id)) : null;
+    const row = id ? findMaintenanceRow(id) : null;
     const editing = Boolean(row);
     const title = document.getElementById('maintModalTitle');
     if (title) title.textContent = t(editing ? 'maint.edit' : 'maint.add');
@@ -8394,97 +8807,118 @@ function closeMaintenanceModal() {
     document.getElementById('maintenanceModal')?.classList.add('hidden');
 }
 
-function maintenanceRowsForView() {
-    const vehicle = document.getElementById('maintVehicleFilter')?.value || '';
-    const type = document.getElementById('maintTypeFilter')?.value || '';
-    return maintenanceCache.filter(row => {
-        if (vehicle) {
-            const kind = String(row.vehicle_kind || 'شاحنة').trim() === 'أخرى' ? 'أخرى' : 'شاحنة';
-            if (`${kind}::${row.vehicle_plate || ''}` !== vehicle) return false;
-        }
-        if (type) {
-            const rowType = String(row.maintenance_type || '').trim();
-            if (type === 'أخرى') {
-                if (MAINTENANCE_TYPES.includes(rowType) && rowType !== 'أخرى') return false;
-            } else if (rowType !== type) return false;
-        }
-        return true;
-    });
-}
-
-function renderMaintenanceReport() {
-    const tbody = document.getElementById('maintenanceTable');
-    const costEl = document.getElementById('maintTotalCost');
-    const countEl = document.getElementById('maintTotalCount');
-    const actionsHead = document.getElementById('maintActionsHead');
+function renderMaintenanceManage() {
+    const tbody = document.getElementById('maintenanceManageTable');
+    const countEl = document.getElementById('maintManageCount');
     if (!tbody) return;
     const admin = typeof isAdminUser === 'function' && isAdminUser();
-    if (actionsHead) actionsHead.classList.remove('hidden');
-    const rows = maintenanceRowsForView();
-    const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
-    if (costEl) costEl.innerHTML = formatSAR(total);
+    const rows = maintenanceCache || [];
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
         return;
     }
     tbody.innerHTML = rows.map(row => {
-        const entered = row.created_at ? new Date(row.created_at).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
-            numberingSystem: 'latn',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : '—';
-        const actions = `<td class="p-3 text-center no-print">
-                    <div class="flex items-center justify-center gap-2">
-                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${admin ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
-                    </div>
-               </td>`;
         const hasInvoice = parseMaintenanceAttachments(row).length > 0;
-        const invoiceCell = `<td class="maint-col-tight p-3 no-print">
-            <div class="flex flex-col items-center gap-1">
-                ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : ''}
-                <button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>
-            </div>
-        </td>`;
         return `
             <tr class="hover:bg-slate-50 align-top">
-                <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(entered)}</td>
+                <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(maintenanceEnteredAt(row))}</td>
                 <td class="maint-col-tight p-3 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(row.vehicle_plate || '—')}</td>
                 <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
                 <td class="p-3 text-center text-slate-600 maint-details-cell">${escapeHtml(row.details || '—')}</td>
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
-                ${invoiceCell}
-                ${actions}
+                <td class="maint-col-tight p-3 no-print">
+                    <div class="flex flex-col items-center gap-1">
+                        ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : ''}
+                        <button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>
+                    </div>
+                </td>
+                <td class="p-3 text-center no-print">
+                    <div class="flex items-center justify-center gap-2">
+                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${admin ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
+                    </div>
+                </td>
             </tr>`;
     }).join('');
 }
 
-async function loadMaintenanceReport() {
-    const tbody = document.getElementById('maintenanceTable');
-    fillMaintenanceTypeSelect(document.getElementById('maintTypeFilter'), true);
+function renderMaintenanceReportView() {
+    const tbody = document.getElementById('maintenanceReportTable');
+    const costEl = document.getElementById('maintTotalCost');
+    const countEl = document.getElementById('maintTotalCount');
+    if (!tbody) return;
+    const rows = filterMaintenanceRows(maintenanceReportCache, 'maintRepVehicleFilter', 'maintRepTypeFilter');
+    const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
+    if (costEl) costEl.innerHTML = formatSAR(total);
+    if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = rows.map(row => {
+        const hasInvoice = parseMaintenanceAttachments(row).length > 0;
+        return `
+            <tr class="hover:bg-slate-50 align-top">
+                <td class="maint-print-hide p-2.5 font-mono text-slate-500">${escapeHtml(maintenanceEnteredAt(row))}</td>
+                <td class="p-2.5 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
+                <td class="p-2.5 font-bold text-slate-800">${escapeHtml(row.vehicle_plate || '—')}</td>
+                <td class="p-2.5">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
+                <td class="p-2.5 text-center text-slate-600 maint-details-cell">${escapeHtml(row.details || '—')}</td>
+                <td class="p-2.5 font-bold text-amber-700">${formatSAR(row.cost)}</td>
+                <td class="p-2.5 no-print">
+                    ${hasInvoice
+                        ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>`
+                        : `<span class="text-slate-400">—</span>`}
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function renderMaintenanceReport() {
+    if (isMaintenanceManageMode()) renderMaintenanceManage();
+    else renderMaintenanceReportView();
+}
+
+async function loadMaintenanceManage() {
+    const tbody = document.getElementById('maintenanceManageTable');
     try {
-        const { data: trucks } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
-        maintenanceVehicles = trucks || [];
-        fillMaintenanceFilterVehicles();
-        const start = document.getElementById('maintStartDate')?.value || '';
-        const end = document.getElementById('maintEndDate')?.value || '';
-        let query = client.from('vehicle_maintenance').select('*').order('service_date', { ascending: false }).order('created_at', { ascending: false });
-        if (start) query = query.gte('service_date', start);
-        if (end) query = query.lte('service_date', end);
-        const { data, error } = await query;
+        const { data, error } = await client.from('vehicle_maintenance').select('*').order('service_date', { ascending: false }).order('created_at', { ascending: false });
         if (error) throw error;
         maintenanceCache = data || [];
-        renderMaintenanceReport();
+        renderMaintenanceManage();
     } catch (err) {
         console.error(err);
         maintenanceCache = [];
         const missing = /vehicle_maintenance|schema cache|relation/i.test(err?.message || '');
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'maint.missingTable' : 'maint.saveFailed'))}</td></tr>`;
+        const countEl = document.getElementById('maintManageCount');
+        if (countEl) countEl.textContent = '0';
+    }
+}
+
+async function loadMaintenanceReport() {
+    const tbody = document.getElementById('maintenanceReportTable');
+    fillMaintenanceTypeSelect(document.getElementById('maintRepTypeFilter'), true);
+    try {
+        await ensureMaintenanceVehicles();
+        fillMaintenanceVehicleFilterSelect('maintRepVehicleFilter');
+        const start = document.getElementById('maintRepStartDate')?.value || '';
+        const end = document.getElementById('maintRepEndDate')?.value || '';
+        let query = client.from('vehicle_maintenance').select('*').order('service_date', { ascending: false }).order('created_at', { ascending: false });
+        if (start) query = query.gte('service_date', start);
+        if (end) query = query.lte('service_date', end);
+        const { data, error } = await query;
+        if (error) throw error;
+        maintenanceReportCache = data || [];
+        maintenanceCache = data || [];
+        renderMaintenanceReportView();
+    } catch (err) {
+        console.error(err);
+        maintenanceReportCache = [];
+        const missing = /vehicle_maintenance|schema cache|relation/i.test(err?.message || '');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'maint.missingTable' : 'maint.saveFailed'))}</td></tr>`;
         const costEl = document.getElementById('maintTotalCost');
         const countEl = document.getElementById('maintTotalCount');
         if (costEl) costEl.innerHTML = formatSAR(0);
@@ -8493,10 +8927,10 @@ async function loadMaintenanceReport() {
 }
 
 async function resetMaintenanceFilters() {
-    setFilterValue('maintStartDate', '');
-    setFilterValue('maintEndDate', '');
-    setFilterValue('maintVehicleFilter', '');
-    setFilterValue('maintTypeFilter', '');
+    setFilterValue('maintRepStartDate', '');
+    setFilterValue('maintRepEndDate', '');
+    setFilterValue('maintRepVehicleFilter', '');
+    setFilterValue('maintRepTypeFilter', '');
     await loadMaintenanceReport();
 }
 
@@ -8578,7 +9012,7 @@ async function saveMaintenance(event) {
         if (pendingFiles.length) {
             uploaded.push(...await uploadMaintenanceFiles(pendingFiles));
         }
-        const existingRow = editId ? maintenanceCache.find(item => Number(item.id) === Number(editId)) : null;
+        const existingRow = editId ? findMaintenanceRow(editId) : null;
         const files = (editId ? parseMaintenanceAttachments(existingRow) : []).concat(uploaded);
         Object.assign(payload, attachmentPayload(files));
         if (!editId) payload.entered_by = currentLoggedInUser?.employee_name || currentLoggedInUser?.username || '';
@@ -8606,7 +9040,7 @@ async function saveMaintenance(event) {
             : `${type} · ${serviceDate}`;
         logActivity(editId ? 'maintenance.edit' : 'maintenance.add', 'صيانة', plate, detailsText);
         closeMaintenanceModal();
-        await loadMaintenanceReport();
+        await refreshOpenMaintenanceScreens();
     } catch (err) {
         console.error(err);
         for (const file of uploaded) await deleteMaintenanceInvoiceFile(file.path);
@@ -8624,7 +9058,7 @@ async function deleteMaintenance(id) {
         cancelLabel: t('ui.cancel')
     });
     if (!ok) return;
-    const row = maintenanceCache.find(item => Number(item.id) === Number(id));
+    const row = findMaintenanceRow(id);
     const { error } = await client.from('vehicle_maintenance').delete().eq('id', id);
     if (error) {
         alert(t('maint.saveFailed'));
@@ -8632,7 +9066,7 @@ async function deleteMaintenance(id) {
     }
     for (const file of parseMaintenanceAttachments(row)) await deleteMaintenanceInvoiceFile(file.path);
     logActivity('maintenance.delete', 'صيانة', row?.vehicle_plate || '', row?.maintenance_type || '');
-    await loadMaintenanceReport();
+    await refreshOpenMaintenanceScreens();
 }
 
 function isTripDriver(row) {
@@ -8722,38 +9156,327 @@ function compactExpiryHtml(items) {
 }
 
 function collectExpiryAlerts(docs, trucks, drivers) {
+    return collectExpiryReportItems(docs, trucks, drivers).map(item => ({
+        category: item.category,
+        name: item.name,
+        label: item.label,
+        date: item.date,
+        days: item.days,
+        tab: item.tab
+    }));
+}
+
+let expiryReportCache = [];
+let expiryProfileCache = { docs: [], trucks: [], drivers: [], subscription: null };
+
+function collectExpiryReportItems(docs, trucks, drivers) {
     const items = [];
-    const push = (category, name, label, date, tab) => {
+    const push = ({ category, name, label, date, tab, ref = '', searchBlob = '' }) => {
         const days = daysUntilDate(date);
         if (days === null || days > EXPIRY_SOON_DAYS) return;
-        items.push({ category, name, label, date: String(date).slice(0, 10), days, tab });
+        const cleanName = String(name || '').trim() || '—';
+        const cleanRef = String(ref || '').trim();
+        const cleanLabel = String(label || '').trim() || '—';
+        items.push({
+            category,
+            name: cleanName,
+            label: cleanLabel,
+            date: String(date).slice(0, 10),
+            days,
+            tab,
+            ref: cleanRef,
+            searchBlob: `${cleanName} ${cleanRef} ${cleanLabel} ${category} ${searchBlob}`.toLowerCase()
+        });
     };
-    (docs || []).forEach(doc => push('المنشأة', doc.title, doc.doc_type || 'ترخيص', doc.expiry_date, 'facility'));
+    (docs || []).forEach(doc => {
+        const title = doc.title || '—';
+        const number = doc.doc_number || '';
+        push({
+            category: 'المنشأة',
+            name: title,
+            label: doc.doc_type || 'ترخيص',
+            date: doc.expiry_date,
+            tab: 'facility',
+            ref: number,
+            searchBlob: `${title} ${number} ${doc.doc_type || ''}`
+        });
+    });
     (trucks || []).forEach(truck => {
+        if (isInactiveFleetVehicle(truck)) return;
         const cargo = isCargoTruck(truck);
         const tab = cargo ? 'trucks' : 'otherVehicles';
         const category = cargo ? 'شاحنة' : 'مركبة';
-        const name = truck.plate || category;
-        push(category, name, 'الاستمارة', truck.istimara_expiry, tab);
-        push(category, name, 'الفحص الدوري', truck.inspection_expiry, tab);
-        push(category, name, 'التأمين', truck.insurance_expiry, tab);
-        if (cargo) push(category, name, 'بطاقة التشغيل', truck.operation_card_expiry, tab);
+        const plate = String(truck.plate || '').trim();
+        const model = String(truck.model || '').trim();
+        const blob = `${plate} ${model}`;
+        push({ category, name: plate || category, label: 'الاستمارة', date: truck.istimara_expiry, tab, ref: plate, searchBlob: blob });
+        push({ category, name: plate || category, label: 'الفحص الدوري', date: truck.inspection_expiry, tab, ref: plate, searchBlob: blob });
+        push({ category, name: plate || category, label: 'التأمين', date: truck.insurance_expiry, tab, ref: plate, searchBlob: blob });
+        if (cargo) push({ category, name: plate || category, label: 'بطاقة التشغيل', date: truck.operation_card_expiry, tab, ref: plate, searchBlob: blob });
     });
     (drivers || []).forEach(person => {
         const tripDriver = isTripDriver(person);
         const tab = tripDriver ? 'drivers' : 'employees';
         const category = tripDriver ? 'سائق' : 'موظف';
         const name = person.name || category;
-        push(category, name, 'الإقامة', person.iqama_expiry, tab);
-        push(category, name, 'الجواز', person.passport_expiry, tab);
+        const iqama = String(person.iqama_no || '').trim();
+        const blob = `${name} ${iqama} ${person.phone || ''} ${person.passport_no || ''} ${person.license_no || ''} ${person.driver_card_no || ''}`;
+        push({ category, name, label: 'الإقامة', date: person.iqama_expiry, tab, ref: iqama, searchBlob: blob });
+        push({ category, name, label: 'الجواز', date: person.passport_expiry, tab, ref: String(person.passport_no || '').trim() || iqama, searchBlob: blob });
         if (tripDriver) {
-            push(category, name, 'رخصة القيادة', person.license_expiry, tab);
-            push(category, name, 'بطاقة السائق', person.driver_card_expiry, tab);
+            push({ category, name, label: 'رخصة القيادة', date: person.license_expiry, tab, ref: String(person.license_no || '').trim() || iqama, searchBlob: blob });
+            push({ category, name, label: 'بطاقة السائق', date: person.driver_card_expiry, tab, ref: String(person.driver_card_no || '').trim() || iqama, searchBlob: blob });
         }
-        push(category, name, 'التأمين الصحي', person.health_insurance_expiry, tab);
+        push({ category, name, label: 'التأمين الصحي', date: person.health_insurance_expiry, tab, ref: String(person.health_insurance_no || '').trim() || iqama, searchBlob: blob });
     });
-    items.sort((a, b) => a.days - b.days);
+    items.sort((a, b) => a.days - b.days || String(a.name).localeCompare(String(b.name), 'ar'));
     return items;
+}
+
+function expiryDocRowsFromFields(fields) {
+    return (fields || []).map(field => {
+        const days = daysUntilDate(field.date);
+        return {
+            label: field.label,
+            number: String(field.number || '').trim(),
+            date: field.date ? String(field.date).slice(0, 10) : '',
+            days
+        };
+    });
+}
+
+function buildExpiryProfiles() {
+    const profiles = [];
+    const sub = expiryProfileCache.subscription;
+    if (sub) {
+        const ends = sub.subscription_ends_at ? String(sub.subscription_ends_at).slice(0, 10) : '';
+        const days = daysUntilDate(ends);
+        const ok = sub.access_ok !== false && typeof subscriptionAccessOk === 'function' && subscriptionAccessOk(sub);
+        const companyName = sub.company_name || sub.name || (currentLang === 'en' ? 'Company' : 'الشركة');
+        profiles.push({
+            category: 'الاشتراك',
+            title: companyName,
+            subtitle: subscriptionPlanLabel(sub.subscription_plan || ''),
+            meta: [
+                { label: t('th.status'), value: subscriptionStatusLabel(sub.subscription_status || '') }
+            ],
+            docs: [{
+                label: 'اشتراك المنصة',
+                number: '',
+                date: ends,
+                days: ok ? days : (days === null ? -1 : Math.min(days, -1))
+            }],
+            searchBlob: `${companyName} اشتراك المنصة subscription`.toLowerCase()
+        });
+    }
+    (expiryProfileCache.docs || []).forEach(doc => {
+        const docs = expiryDocRowsFromFields([{
+            label: doc.doc_type || 'ترخيص',
+            number: doc.doc_number || '',
+            date: doc.expiry_date
+        }]);
+        profiles.push({
+            category: 'المنشأة',
+            title: doc.title || '—',
+            subtitle: doc.doc_type || '',
+            meta: [],
+            docs,
+            searchBlob: `${doc.title || ''} ${doc.doc_number || ''} ${doc.doc_type || ''}`.toLowerCase()
+        });
+    });
+    (expiryProfileCache.trucks || []).forEach(truck => {
+        if (isInactiveFleetVehicle(truck)) return;
+        const cargo = isCargoTruck(truck);
+        const plate = String(truck.plate || '').trim();
+        const fields = [
+            { label: 'الاستمارة', number: plate, date: truck.istimara_expiry },
+            { label: 'الفحص الدوري', number: '', date: truck.inspection_expiry },
+            { label: 'التأمين', number: '', date: truck.insurance_expiry }
+        ];
+        if (cargo) fields.push({ label: 'بطاقة التشغيل', number: truck.operation_card_no || '', date: truck.operation_card_expiry });
+        profiles.push({
+            category: cargo ? 'شاحنة' : 'مركبة',
+            title: plate || '—',
+            subtitle: truck.model || '',
+            meta: [
+                { label: t('th.status'), value: tv(truck.status || '—') }
+            ],
+            docs: expiryDocRowsFromFields(fields),
+            searchBlob: `${plate} ${truck.model || ''} ${truck.status || ''}`.toLowerCase()
+        });
+    });
+    (expiryProfileCache.drivers || []).forEach(person => {
+        const tripDriver = isTripDriver(person);
+        const name = String(person.name || '').trim() || '—';
+        const iqama = String(person.iqama_no || '').trim();
+        const fields = [
+            { label: 'الإقامة', number: iqama, date: person.iqama_expiry },
+            { label: 'الجواز', number: person.passport_no || '', date: person.passport_expiry },
+            { label: 'التأمين الصحي', number: person.health_insurance_no || '', date: person.health_insurance_expiry }
+        ];
+        if (tripDriver) {
+            fields.splice(2, 0,
+                { label: 'رخصة القيادة', number: person.license_no || '', date: person.license_expiry },
+                { label: 'بطاقة السائق', number: person.driver_card_no || '', date: person.driver_card_expiry }
+            );
+        }
+        const meta = [
+            { label: t('ui.iqamaNo'), value: iqama || '—' },
+            { label: t('ui.phone'), value: person.phone || '—' },
+            { label: t('th.status'), value: tv(person.status || '—') }
+        ];
+        if (!tripDriver && person.job_title) meta.splice(1, 0, { label: t('ui.job'), value: person.job_title });
+        profiles.push({
+            category: tripDriver ? 'سائق' : 'موظف',
+            title: name,
+            subtitle: '',
+            meta,
+            docs: expiryDocRowsFromFields(fields),
+            searchBlob: `${name} ${iqama} ${person.phone || ''} ${person.passport_no || ''} ${person.license_no || ''} ${person.driver_card_no || ''} ${person.health_insurance_no || ''} ${person.job_title || ''}`.toLowerCase()
+        });
+    });
+    return profiles;
+}
+
+function profileSoonestDays(profile) {
+    const daysList = (profile.docs || []).map(doc => doc.days).filter(days => days !== null);
+    if (!daysList.length) return Number.POSITIVE_INFINITY;
+    return Math.min(...daysList);
+}
+
+function filteredExpiryProfiles() {
+    const query = String(document.getElementById('expirySearchQuery')?.value || '').trim().toLowerCase();
+    const nearOnly = !!document.getElementById('expiryNearOnly')?.checked;
+    const profiles = buildExpiryProfiles().flatMap(profile => {
+        if (query && !profile.searchBlob.includes(query)) return [];
+        let docs = profile.docs || [];
+        if (nearOnly) {
+            // أي وثيقة/اشتراك متبقٍ له ٣٠ يوماً أو أقل (يشمل المنتهية)
+            docs = docs.filter(doc => doc.days !== null && doc.days <= EXPIRY_SOON_DAYS);
+            if (!docs.length) return [];
+            docs = docs.slice().sort((a, b) => a.days - b.days);
+        } else if (!query) {
+            return [];
+        }
+        return [{ ...profile, docs }];
+    });
+    if (nearOnly) {
+        profiles.sort((a, b) => profileSoonestDays(a) - profileSoonestDays(b) || String(a.title).localeCompare(String(b.title), 'ar'));
+    }
+    return profiles;
+}
+
+function onExpiryNearOnlyChange() {
+    const nearOnly = document.getElementById('expiryNearOnly');
+    if (nearOnly?.checked) setFilterValue('expirySearchQuery', '');
+    renderExpiryReport();
+}
+
+function expiryDaysCell(days) {
+    if (days === null) return `<span class="text-slate-400">—</span>`;
+    if (days < 0) return `<span class="text-rose-700 font-bold">${escapeHtml(tf('expiry.overdueDays', Math.abs(days)))}</span>`;
+    if (days === 0) return `<span class="text-rose-700 font-bold">${escapeHtml(t('expiry.today'))}</span>`;
+    if (days <= EXPIRY_SOON_DAYS) return `<span class="text-amber-700 font-bold">${escapeHtml(tf('expiry.leftDays', days))}</span>`;
+    return `<span class="text-emerald-700 font-bold">${escapeHtml(tf('expiry.leftDays', days))}</span>`;
+}
+
+function renderExpiryProfileCard(profile) {
+    const metaHtml = (profile.meta || [])
+        .filter(item => item.value && item.value !== '—')
+        .map(item => `<span class="text-[11px] text-slate-600"><span class="font-bold text-slate-500">${escapeHtml(item.label)}:</span> ${escapeHtml(item.value)}</span>`)
+        .join('<span class="text-slate-300 mx-1">|</span>');
+    const docsHtml = (profile.docs || []).map(doc => `
+        <tr class="border-b border-slate-100 last:border-0">
+            <td class="p-2.5 font-bold text-slate-800">${escapeHtml(tv(doc.label))}</td>
+            <td class="p-2.5 font-mono text-slate-700">${escapeHtml(doc.number || '—')}</td>
+            <td class="p-2.5 font-mono font-bold text-slate-900">${escapeHtml(doc.date || '—')}</td>
+            <td class="p-2.5">${expiryDaysCell(doc.days)}</td>
+        </tr>
+    `).join('');
+    return `
+        <article class="expiry-profile-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-2" style="background:#f8fafc">
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-amber-700 mb-0.5">${escapeHtml(tv(profile.category))}</div>
+                    <h4 class="text-sm font-black text-slate-900">${escapeHtml(profile.title)}</h4>
+                    ${profile.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(profile.subtitle)}</p>` : ''}
+                    ${metaHtml ? `<div class="mt-1.5 flex flex-wrap items-center gap-y-1">${metaHtml}</div>` : ''}
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs expiry-report-table">
+                    <thead class="bg-slate-800 text-slate-200">
+                        <tr>
+                            <th class="p-2.5" data-i18n="expiry.docType">${escapeHtml(t('expiry.docType'))}</th>
+                            <th class="p-2.5" data-i18n="expiry.ref">${escapeHtml(t('expiry.ref'))}</th>
+                            <th class="p-2.5" data-i18n="expiry.expiryDate">${escapeHtml(t('expiry.expiryDate'))}</th>
+                            <th class="p-2.5" data-i18n="expiry.daysLeft">${escapeHtml(t('expiry.daysLeft'))}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${docsHtml || `<tr><td colspan="4" class="p-6 text-center text-slate-400">${escapeHtml(t('expiry.noDocs'))}</td></tr>`}</tbody>
+                </table>
+            </div>
+        </article>
+    `;
+}
+
+function renderExpiryReport() {
+    const box = document.getElementById('expiryReportProfiles');
+    if (!box) return;
+    const query = String(document.getElementById('expirySearchQuery')?.value || '').trim();
+    const nearOnly = !!document.getElementById('expiryNearOnly')?.checked;
+    if (!query && !nearOnly) {
+        box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t('expiry.searchHint'))}</div>`;
+        return;
+    }
+    const profiles = filteredExpiryProfiles();
+    if (!profiles.length) {
+        box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t(query ? 'expiry.emptySearch' : 'expiry.emptyReport'))}</div>`;
+        return;
+    }
+    // عند البحث: ملف واحد مفصل لكل نتيجة (كل الوثائق: إقامة، جواز، تأمين…)
+    box.innerHTML = profiles.map(renderExpiryProfileCard).join('');
+}
+
+async function loadExpiryReport() {
+    const box = document.getElementById('expiryReportProfiles');
+    if (box) box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t('expiry.loading'))}</div>`;
+    try {
+        const [{ data: docs }, { data: trucks }, { data: drivers }] = await Promise.all([
+            client.from('facility_documents').select('*'),
+            client.from('trucks').select('*'),
+            client.from('drivers').select('*')
+        ]);
+        let subscription = (typeof companySubscriptionInfo !== 'undefined' && companySubscriptionInfo) ? companySubscriptionInfo : null;
+        if (!subscription) {
+            try {
+                const { data: subRow } = await client.rpc('get_company_subscription', {});
+                subscription = Array.isArray(subRow) ? subRow[0] : subRow;
+            } catch (_) {
+                subscription = null;
+            }
+        }
+        expiryProfileCache = {
+            docs: docs || [],
+            trucks: trucks || [],
+            drivers: drivers || [],
+            subscription: subscription || null
+        };
+        expiryReportCache = collectExpiryReportItems(docs || [], trucks || [], drivers || []);
+        renderExpiryReport();
+    } catch (err) {
+        console.error(err);
+        expiryProfileCache = { docs: [], trucks: [], drivers: [], subscription: null };
+        expiryReportCache = [];
+        if (box) box.innerHTML = `<div class="bg-white rounded-2xl border border-rose-200 p-8 text-center text-rose-500 text-xs font-bold">${escapeHtml(t('expiry.loadFailed'))}</div>`;
+    }
+}
+
+async function resetExpiryReportFilters() {
+    setFilterValue('expirySearchQuery', '');
+    const nearOnly = document.getElementById('expiryNearOnly');
+    if (nearOnly) nearOnly.checked = false;
+    await loadExpiryReport();
 }
 
 function renderExpiryAlerts(targetId, items, emptyText) {
@@ -8810,37 +9533,60 @@ async function loadFacilityDocuments() {
     const table = document.getElementById('facilityDocsTable');
     const box = document.getElementById('facilityExpiryBox');
     if (!table) return;
-    table.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>';
-    const { data, error } = await client.from('facility_documents').select('*').order('expiry_date', { ascending: true });
-    if (error) {
-        table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-600">نفّذ ملف facility-expiry.sql ثم حدّث الصفحة. ${escapeHtml(error.message)}</td></tr>`;
-        return;
+    table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">${escapeHtml(t('ui.loading'))}</td></tr>`;
+    try {
+        let { data, error } = await client.from('facility_documents').select('*').order('expiry_date', { ascending: true });
+        if (error) {
+            // إن فشل الترتيب لأي سبب، نجلب بدون ترتيب
+            const fallback = await client.from('facility_documents').select('*');
+            data = fallback.data;
+            error = fallback.error;
+        }
+        if (error) {
+            table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-600">نفّذ ملف facility-expiry.sql ثم حدّث الصفحة. ${escapeHtml(error.message)}</td></tr>`;
+            return;
+        }
+        allFacilityDocs = (data || []).slice().sort((a, b) => {
+            const da = String(a?.expiry_date || '');
+            const db = String(b?.expiry_date || '');
+            return da.localeCompare(db);
+        });
+        if (!allFacilityDocs.length) {
+            table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">${escapeHtml(currentLang === 'en' ? 'No licenses or subscriptions yet' : 'لا توجد سجلات أو تراخيص بعد')}</td></tr>`;
+        } else {
+            table.innerHTML = allFacilityDocs.map(doc => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(doc.title)}</td>
+                    <td class="p-3.5">${escapeHtml(tv(doc.doc_type || '—'))}</td>
+                    <td class="p-3.5 font-mono">${escapeHtml(doc.doc_number || '—')}</td>
+                    <td class="p-3.5">${expiryBadgeHtml(doc.expiry_date)}</td>
+                    <td class="p-3.5 text-center">
+                        <button type="button" onclick="editFacilityDocument(${doc.id})" class="text-amber-600 font-bold p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" onclick="deleteFacilityDocument(${doc.id})" class="text-rose-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        try {
+            if (typeof applyDashboardExpiryCache === 'function') {
+                applyDashboardExpiryCache(undefined, undefined, allFacilityDocs, true);
+            }
+            const alerts = typeof collectExpiryAlerts === 'function'
+                ? collectExpiryAlerts(allFacilityDocs, [], [])
+                : [];
+            if (box) {
+                box.classList.toggle('hidden', !alerts.length);
+                if (typeof renderExpiryAlerts === 'function') {
+                    renderExpiryAlerts('facilityExpiryList', alerts, '');
+                }
+            }
+        } catch (sideErr) {
+            console.error('facility docs side effects:', sideErr);
+        }
+    } catch (err) {
+        console.error('loadFacilityDocuments:', err);
+        table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-600">${escapeHtml(err?.message || (currentLang === 'en' ? 'Failed to load documents' : 'تعذر تحميل الوثائق'))}</td></tr>`;
     }
-    allFacilityDocs = data || [];
-    if (typeof applyDashboardExpiryCache === 'function') {
-        applyDashboardExpiryCache(undefined, undefined, allFacilityDocs, true);
-    }
-    const alerts = collectExpiryAlerts(allFacilityDocs, [], []);
-    if (box) {
-        box.classList.toggle('hidden', alerts.length === 0);
-        renderExpiryAlerts('facilityExpiryList', alerts, '');
-    }
-    if (!allFacilityDocs.length) {
-        table.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد سجلات أو تراخيص بعد</td></tr>';
-        return;
-    }
-    table.innerHTML = allFacilityDocs.map(doc => `
-        <tr class="hover:bg-slate-50">
-            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(doc.title)}</td>
-            <td class="p-3.5">${escapeHtml(doc.doc_type || '—')}</td>
-            <td class="p-3.5 font-mono">${escapeHtml(doc.doc_number || '—')}</td>
-            <td class="p-3.5">${expiryBadgeHtml(doc.expiry_date)}</td>
-            <td class="p-3.5 text-center">
-                <button type="button" onclick="editFacilityDocument(${doc.id})" class="text-amber-600 font-bold p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button type="button" onclick="deleteFacilityDocument(${doc.id})" class="text-rose-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
-            </td>
-        </tr>
-    `).join('');
 }
 
 async function saveFacilityDocument(e) {
@@ -9064,7 +9810,7 @@ const I18N = {
         'platform.paymentSaved': 'تم تسجيل الدفعة.',
         'platform.paymentsSqlMissing': 'نفّذ ملف fleetop-subscription-payments.sql ثم أعد المحاولة.',
         'support.whatsapp': 'الدعم الفني',
-        'sub.companyTitle': 'اشتراك الشركة',
+        'sub.companyTitle': 'اشتراك المنشأة',
         'sub.companyHint': 'حالة الاشتراك وتنبيه قرب الانتهاء.',
         'sub.loading': 'جاري تحميل حالة الاشتراك...',
         'sub.alertOk': 'الاشتراك ساري. متبقٍ {days} يومًا.',
@@ -9148,18 +9894,23 @@ const I18N = {
         'login.submit': 'تسجيل الدخول',
         'nav.dashboard': 'لوحة التحكم',
         'nav.analytics': 'المتابعة والرسوم',
+        'nav.charts': 'المتابعة والرسوم',
         'nav.trips': 'إدارة الرحلات',
         'nav.facility': 'إدارة المنشأة',
         'nav.facilityDocs': 'التراخيص والاشتراكات',
         'nav.vehicles': 'المركبات',
         'nav.trucks': 'الشاحنات',
         'nav.otherVehicles': 'المركبات الأخرى',
-        'nav.maintenance': 'الصيانة العامة',
+        'nav.maintenance': 'إدارة الصيانة',
         'nav.staff': 'الموظفين',
         'nav.drivers': 'السائقين',
         'nav.employees': 'الموظفين الإداريين',
         'nav.reportsGroup': 'التقارير',
-        'nav.reports': 'التقارير التشغيلية',
+        'nav.generalReports': 'التقارير العامة',
+        'nav.opsReports': 'التقارير التشغيلية',
+        'nav.opsMovement': 'تقرير حركة التشغيل',
+        'nav.maintReports': 'تقرير حركة الصيانة',
+        'nav.reports': 'تقرير حركة التشغيل',
         'nav.financial': 'التقارير المالية',
         'nav.revenue': 'تقرير الإيرادات',
         'nav.receivables': 'تقرير متابعة التحصيل',
@@ -9196,8 +9947,10 @@ const I18N = {
         'header.refreshing': 'جارٍ التحديث...',
         'page.dashboard': 'لوحة التحكم',
         'page.dashboardSub': 'ملخص الإيرادات وحالة الأسطول والرحلات الجارية',
-        'page.analytics': 'المتابعة والرسوم البيانية',
-        'page.analyticsSub': 'مقارنة الأداء والإنتاجية والإيرادات والعمولات حسب الفترة',
+        'page.analytics': 'التقارير العامة',
+        'page.analyticsSub': 'تقرير الوثائق القريبة من الانتهاء والبحث بالموظف أو المركبة',
+        'page.charts': 'المتابعة والرسوم البيانية',
+        'page.chartsSub': 'مقارنة الأداء والإنتاجية والإيرادات والعمولات حسب الفترة',
         'ui.thisMonth': 'الشهر الحالي',
         'analytics.period': 'الفترة',
         'analytics.allPeriod': 'كل الفترة',
@@ -9213,7 +9966,7 @@ const I18N = {
         'analytics.tripsCount': '{n} رحلة',
         'page.trips': 'إدارة الرحلات',
         'page.tripsSub': 'سجل الرحلات الجارية والمكتملة والملغاة',
-        'page.reports': 'التقارير التشغيلية',
+        'page.reports': 'تقرير حركة التشغيل',
         'page.reportsSub': 'الشاحنات والسائقين والرحلات التشغيلية',
         'page.revenue': 'تقرير الإيرادات',
         'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
@@ -9231,8 +9984,15 @@ const I18N = {
         'page.trucksSub': 'شاحنات النقل المستخدمة في الرحلات اليومية',
         'page.otherVehicles': 'المركبات الأخرى',
         'page.otherVehiclesSub': 'سيارات ومركبات الاستخدام اليومي',
-        'page.maintenance': 'الصيانة العامة',
-        'page.maintenanceSub': 'تقرير صيانة الشاحنات والمركبات الأخرى',
+        'page.maintenance': 'إدارة الصيانة',
+        'page.maintenanceSub': 'إدخال وتعديل سجلات صيانة الشاحنات والمركبات',
+        'page.maintenanceReport': 'تقرير حركة الصيانة',
+        'page.maintenanceReportSub': 'عرض مخرجات وتكاليف الصيانة للطباعة والمتابعة',
+        'maint.recordsList': 'سجلات الصيانة',
+        'maint.records': 'سجل',
+        'maint.byVehicle': 'ملخص حسب المركبة',
+        'maint.byType': 'ملخص حسب النوع',
+        'maint.detailReport': 'تفاصيل الصيانات',
         'page.drivers': 'السائقين',
         'page.driversSub': 'إضافة السائقين ومتابعة توفرهم للرحلات',
         'page.employees': 'الموظفين الإداريين',
@@ -9325,6 +10085,8 @@ const I18N = {
         'ui.onTrip': 'في رحلة',
         'ui.maint': 'صيانة دورية',
         'ui.broken': 'عطلانة',
+        'ui.retired': 'خارج الخدمة',
+        'ui.sold': 'مباعة',
         'ui.available': 'متوفر',
         'ui.leave': 'إجازة',
         'ui.suspended': 'موقوف',
@@ -9529,6 +10291,8 @@ const I18N = {
         'v.صيانة دورية': 'صيانة دورية',
         'v.في الصيانة': 'في الصيانة',
         'v.عطلانة': 'عطلانة',
+        'v.خارج الخدمة': 'خارج الخدمة',
+        'v.مباعة': 'مباعة',
         'v.متوفر': 'متوفر',
         'v.إجازة': 'إجازة',
         'v.في إجازة': 'في إجازة',
@@ -9571,6 +10335,8 @@ const I18N = {
         'v.رخصة بلدية': 'رخصة بلدية',
         'v.اشتراك غرفة': 'اشتراك غرفة',
         'v.المنشأة': 'المنشأة',
+        'v.الاشتراك': 'الاشتراك',
+        'v.اشتراك المنصة': 'اشتراك المنصة',
         'v.شاحنة': 'شاحنة',
         'v.ميكانيكا': 'ميكانيكا',
         'v.كهرباء': 'كهرباء',
@@ -9647,7 +10413,53 @@ const I18N = {
         'expiry.expiredSince': 'منتهي/ة منذ {n} يوم',
         'expiry.leftDays': 'متبقٍ {n} يوم',
         'expiry.days': '{n} يوم',
-        'expiry.none': 'لا تنبيهات'
+        'expiry.none': 'لا تنبيهات',
+        'expiry.reportTitle': 'تقرير الموظفين والمركبات والسجلات',
+        'expiry.reportSub': 'ابحث بالاسم أو رقم الإقامة أو اللوحة ثم اضغط إدخال لعرض التقرير المفصّل',
+        'expiry.nearCount': 'قريبة من الانتهاء',
+        'expiry.expiredCount': 'منتهية',
+        'expiry.search': 'بحث',
+        'expiry.searchPh': 'اسم الموظف / رقم الإقامة / رقم اللوحة',
+        'expiry.nearOnly': 'إظهار الوثائق التي شارفت على الانتهاء',
+        'expiry.searchHint': 'اكتب الاسم أو رقم الإقامة ثم اضغط إدخال',
+        'expiry.emptySearch': 'لا توجد نتائج مطابقة للبحث',
+        'expiry.noDocs': 'لا توجد وثائق مسجلة',
+        'expiry.ok': 'سارية',
+        'expiry.entity': 'الجهة',
+        'expiry.allEntities': 'كل الجهات',
+        'expiry.facility': 'المنشأة',
+        'expiry.subscription': 'الاشتراك',
+        'expiry.truck': 'شاحنة',
+        'expiry.vehicle': 'مركبة',
+        'expiry.driver': 'سائق',
+        'expiry.employee': 'موظف',
+        'expiry.docType': 'نوع الوثيقة',
+        'expiry.allDocs': 'كل الوثائق',
+        'expiry.entityName': 'الاسم / اللوحة',
+        'expiry.ref': 'المرجع',
+        'expiry.expiryDate': 'تاريخ الانتهاء',
+        'expiry.daysLeft': 'المتبقي',
+        'expiry.loading': 'جاري تحميل تقرير الوثائق...',
+        'expiry.emptyReport': 'لا توجد وثائق متبقي لها ٣٠ يوماً أو أقل',
+        'expiry.loadFailed': 'تعذر تحميل تقرير الوثائق',
+        'expiry.today': 'ينتهي اليوم',
+        'expiry.overdueDays': 'متأخر {n} يوم',
+        'v.المنشأة': 'المنشأة',
+        'v.الاشتراك': 'الاشتراك',
+        'v.اشتراك المنصة': 'اشتراك المنصة',
+        'v.شاحنة': 'شاحنة',
+        'v.مركبة': 'مركبة',
+        'v.سائق': 'سائق',
+        'v.موظف': 'موظف',
+        'v.الاستمارة': 'الاستمارة',
+        'v.الفحص الدوري': 'الفحص الدوري',
+        'v.التأمين': 'التأمين',
+        'v.بطاقة التشغيل': 'بطاقة التشغيل',
+        'v.الإقامة': 'الإقامة',
+        'v.الجواز': 'الجواز',
+        'v.رخصة القيادة': 'رخصة القيادة',
+        'v.بطاقة السائق': 'بطاقة السائق',
+        'v.التأمين الصحي': 'التأمين الصحي'
     },
     en: {
         'login.tagline': 'Fleet and trip management platform',
@@ -9708,7 +10520,7 @@ const I18N = {
         'platform.paymentSaved': 'Payment recorded.',
         'platform.paymentsSqlMissing': 'Run fleetop-subscription-payments.sql then try again.',
         'support.whatsapp': 'Technical support',
-        'sub.companyTitle': 'Company subscription',
+        'sub.companyTitle': 'Facility subscription',
         'sub.companyHint': 'Subscription status and expiry alerts.',
         'sub.loading': 'Loading subscription status…',
         'sub.alertOk': 'Subscription is active. {days} days remaining.',
@@ -9791,6 +10603,7 @@ const I18N = {
         'login.error': 'Incorrect company ID, username, or password.',
         'login.submit': 'Sign in',
         'nav.dashboard': 'Dashboard',
+        'nav.charts': 'Analytics & charts',
         'nav.analytics': 'Analytics',
         'nav.trips': 'Trips',
         'nav.facility': 'Organization',
@@ -9798,12 +10611,16 @@ const I18N = {
         'nav.vehicles': 'Vehicles',
         'nav.trucks': 'Trucks',
         'nav.otherVehicles': 'Other vehicles',
-        'nav.maintenance': 'General maintenance',
+        'nav.maintenance': 'Maintenance',
         'nav.staff': 'Staff',
         'nav.drivers': 'Drivers',
         'nav.employees': 'Office staff',
         'nav.reportsGroup': 'Reports',
-        'nav.reports': 'Operations reports',
+        'nav.generalReports': 'General reports',
+        'nav.opsReports': 'Operations reports',
+        'nav.opsMovement': 'Operations movement report',
+        'nav.maintReports': 'Maintenance movement report',
+        'nav.reports': 'Operations movement report',
         'nav.financial': 'Financial reports',
         'nav.revenue': 'Revenue report',
         'nav.receivables': 'Collection follow-up',
@@ -9840,8 +10657,10 @@ const I18N = {
         'header.refreshing': 'Refreshing...',
         'page.dashboard': 'Dashboard',
         'page.dashboardSub': 'Revenue summary, fleet status and active trips',
-        'page.analytics': 'Analytics and charts',
-        'page.analyticsSub': 'Compare performance, productivity, revenue and commissions by period',
+        'page.analytics': 'General reports',
+        'page.analyticsSub': 'Documents nearing expiry — search by employee or vehicle',
+        'page.charts': 'Analytics and charts',
+        'page.chartsSub': 'Compare performance, productivity, revenue and commissions by period',
         'ui.thisMonth': 'Current month',
         'analytics.period': 'Period',
         'analytics.allPeriod': 'All time',
@@ -9857,7 +10676,7 @@ const I18N = {
         'analytics.tripsCount': '{n} trips',
         'page.trips': 'Trip management',
         'page.tripsSub': 'Active, completed and cancelled trips',
-        'page.reports': 'Operations reports',
+        'page.reports': 'Operations movement report',
         'page.reportsSub': 'Trucks, drivers and operational trips',
         'page.revenue': 'Revenue report',
         'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
@@ -9875,8 +10694,15 @@ const I18N = {
         'page.trucksSub': 'Transport trucks used for daily trips',
         'page.otherVehicles': 'Other vehicles',
         'page.otherVehiclesSub': 'Cars and vehicles for daily use',
-        'page.maintenance': 'General maintenance',
-        'page.maintenanceSub': 'Maintenance report for trucks and other vehicles',
+        'page.maintenance': 'Maintenance management',
+        'page.maintenanceSub': 'Enter and edit truck and vehicle maintenance records',
+        'page.maintenanceReport': 'Maintenance movement report',
+        'page.maintenanceReportSub': 'View maintenance outputs and costs for print and follow-up',
+        'maint.recordsList': 'Maintenance records',
+        'maint.records': 'records',
+        'maint.byVehicle': 'Summary by vehicle',
+        'maint.byType': 'Summary by type',
+        'maint.detailReport': 'Maintenance details',
         'page.drivers': 'Drivers',
         'page.driversSub': 'Add drivers and track trip availability',
         'page.employees': 'Office staff',
@@ -9968,7 +10794,9 @@ const I18N = {
         'ui.readyWork': 'Ready',
         'ui.onTrip': 'On trip',
         'ui.maint': 'Scheduled maintenance',
-        'ui.broken': 'Out of service',
+        'ui.broken': 'Broken down',
+        'ui.retired': 'Retired',
+        'ui.sold': 'Sold',
         'ui.available': 'Available',
         'ui.leave': 'On leave',
         'ui.suspended': 'Suspended',
@@ -10179,7 +11007,9 @@ const I18N = {
         'v.في رحلة': 'On trip',
         'v.صيانة دورية': 'Scheduled maintenance',
         'v.في الصيانة': 'In maintenance',
-        'v.عطلانة': 'Out of service',
+        'v.عطلانة': 'Broken down',
+        'v.خارج الخدمة': 'Retired',
+        'v.مباعة': 'Sold',
         'v.متوفر': 'Available',
         'v.إجازة': 'On leave',
         'v.في إجازة': 'On leave',
@@ -10290,7 +11120,53 @@ const I18N = {
         'expiry.expiredSince': 'Expired {n} days ago',
         'expiry.leftDays': '{n} days left',
         'expiry.days': '{n} days',
-        'expiry.none': 'No alerts'
+        'expiry.none': 'No alerts',
+        'expiry.reportTitle': 'Employees, vehicles & records report',
+        'expiry.reportSub': 'Search by name, iqama or plate then press Enter for the detailed report',
+        'expiry.nearCount': 'Nearing expiry',
+        'expiry.expiredCount': 'Expired',
+        'expiry.search': 'Search',
+        'expiry.searchPh': 'Employee name / iqama / plate',
+        'expiry.nearOnly': 'Show documents nearing expiry',
+        'expiry.searchHint': 'Type a name or iqama then press Enter',
+        'expiry.emptySearch': 'No matching results',
+        'expiry.noDocs': 'No documents recorded',
+        'expiry.ok': 'Valid',
+        'expiry.entity': 'Entity',
+        'expiry.allEntities': 'All entities',
+        'expiry.facility': 'Facility',
+        'expiry.subscription': 'Subscription',
+        'expiry.truck': 'Truck',
+        'expiry.vehicle': 'Vehicle',
+        'expiry.driver': 'Driver',
+        'expiry.employee': 'Employee',
+        'expiry.docType': 'Document type',
+        'expiry.allDocs': 'All documents',
+        'expiry.entityName': 'Name / plate',
+        'expiry.ref': 'Reference',
+        'expiry.expiryDate': 'Expiry date',
+        'expiry.daysLeft': 'Remaining',
+        'expiry.loading': 'Loading documents report...',
+        'expiry.emptyReport': 'No documents with 30 days or less remaining',
+        'expiry.loadFailed': 'Could not load documents report',
+        'expiry.today': 'Expires today',
+        'expiry.overdueDays': '{n} days overdue',
+        'v.المنشأة': 'Facility',
+        'v.الاشتراك': 'Subscription',
+        'v.اشتراك المنصة': 'Platform subscription',
+        'v.شاحنة': 'Truck',
+        'v.مركبة': 'Vehicle',
+        'v.سائق': 'Driver',
+        'v.موظف': 'Employee',
+        'v.الاستمارة': 'Registration',
+        'v.الفحص الدوري': 'Periodic inspection',
+        'v.التأمين': 'Insurance',
+        'v.بطاقة التشغيل': 'Operating card',
+        'v.الإقامة': 'Iqama',
+        'v.الجواز': 'Passport',
+        'v.رخصة القيادة': 'Driving license',
+        'v.بطاقة السائق': 'Driver card',
+        'v.التأمين الصحي': 'Health insurance'
     }
 };
 
@@ -10299,6 +11175,8 @@ const PAGE_HEADER_KEYS = {
     dashboardSection: ['page.dashboard', 'page.dashboardSub'],
     analytics: ['page.analytics', 'page.analyticsSub'],
     analyticsSection: ['page.analytics', 'page.analyticsSub'],
+    charts: ['page.charts', 'page.chartsSub'],
+    chartsSection: ['page.charts', 'page.chartsSub'],
     trips: ['page.trips', 'page.tripsSub'],
     tripsSection: ['page.trips', 'page.tripsSub'],
     reports: ['page.reports', 'page.reportsSub'],
@@ -10312,7 +11190,9 @@ const PAGE_HEADER_KEYS = {
     trucks: ['page.trucks', 'page.trucksSub'],
     otherVehicles: ['page.otherVehicles', 'page.otherVehiclesSub'],
     maintenance: ['page.maintenance', 'page.maintenanceSub'],
+    maintenanceReport: ['page.maintenanceReport', 'page.maintenanceReportSub'],
     maintenanceSection: ['page.maintenance', 'page.maintenanceSub'],
+    maintenanceReportSection: ['page.maintenanceReport', 'page.maintenanceReportSub'],
     drivers: ['page.drivers', 'page.driversSub'],
     employees: ['page.employees', 'page.employeesSub'],
     users: ['page.users', 'page.usersSub'],
@@ -10387,11 +11267,13 @@ function setAppLang(lang) {
         if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
         if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
+        if (typeof renderExpiryReport === 'function') renderExpiryReport();
         if (typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
         if (typeof fillMaintenanceTypeSelect === 'function') {
-            fillMaintenanceTypeSelect(document.getElementById('maintTypeFilter'), true);
+            fillMaintenanceTypeSelect(document.getElementById('maintRepTypeFilter'), true);
             fillMaintenanceFilterVehicles();
-            renderMaintenanceReport();
+            if (typeof renderMaintenanceManage === 'function') renderMaintenanceManage();
+            if (typeof renderMaintenanceReportView === 'function') renderMaintenanceReportView();
         }
         if (typeof syncSidebarToggleBtn === 'function') syncSidebarToggleBtn();
     }
@@ -10557,16 +11439,19 @@ function setActiveNav(tabId) {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
     const financialOpen = ['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
-    const reportsOpen = tabId === 'reports' || financialOpen;
+    const opsReportsOpen = tabId === 'reports' || tabId === 'maintenanceReport';
+    const reportsOpen = tabId === 'analytics' || opsReportsOpen || financialOpen;
     const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
     if (reportsGroupBtn) reportsGroupBtn.classList.toggle('nav-open', reportsOpen);
+    const opsReportsBtn = document.getElementById('tabOpsReportsBtn');
+    if (opsReportsBtn) opsReportsBtn.classList.toggle('nav-open', opsReportsOpen);
     const financialBtn = document.getElementById('tabFinancialBtn');
     if (financialBtn) financialBtn.classList.toggle('nav-open', financialOpen);
-    const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance' || tabId === 'drivers' || tabId === 'employees';
+    const facilityOpen = tabId === 'facility' || tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'drivers' || tabId === 'employees';
     const facilityBtn = document.getElementById('tabFacilityBtn');
     if (facilityBtn) facilityBtn.classList.toggle('nav-open', facilityOpen);
     const vehiclesBtn = document.getElementById('tabVehiclesBtn');
-    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'maintenance');
+    if (vehiclesBtn) vehiclesBtn.classList.toggle('nav-open', tabId === 'trucks' || tabId === 'otherVehicles');
     const staffBtn = document.getElementById('tabStaffBtn');
     if (staffBtn) staffBtn.classList.toggle('nav-open', tabId === 'drivers' || tabId === 'employees');
     const systemBtn = document.getElementById('tabSystemGroupBtn');
@@ -10643,8 +11528,20 @@ function switchTab(tabId) {
     }
 
     if (tabId === 'maintenance') {
-        toggleVehiclesMenu(true);
+        currentMaintenanceMode = 'manage';
         const section = document.getElementById('maintenanceSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadMaintenanceManage === 'function') loadMaintenanceManage();
+        return;
+    }
+
+    if (tabId === 'maintenanceReport') {
+        currentMaintenanceMode = 'report';
+        toggleOpsReportsMenu(true);
+        const section = document.getElementById('maintenanceReportSection');
         if (section) {
             section.classList.remove('hidden');
             section.scrollTop = 0;
@@ -10693,11 +11590,15 @@ function switchTab(tabId) {
             if (typeof loadUsers === 'function') loadUsers();
         }
         if (tabId === 'reports' || tabId === 'reportsSection') {
-            toggleReportsMenu(true);
+            toggleOpsReportsMenu(true);
             if (typeof generateReport === 'function') generateReport();
         }
-        if ((tabId === 'analytics' || tabId === 'analyticsSection') && typeof renderAnalyticsDashboard === 'function') {
-            renderAnalyticsDashboard();
+        if (tabId === 'analytics' || tabId === 'analyticsSection') {
+            toggleReportsMenu(true);
+            if (typeof loadExpiryReport === 'function') loadExpiryReport();
+        }
+        if (tabId === 'charts' || tabId === 'chartsSection') {
+            if (typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
         }
         if (tabId === 'dashboard' || tabId === 'dashboardSection') {
             if (typeof paintDashboardExpiryAlerts === 'function') paintDashboardExpiryAlerts();
@@ -11063,7 +11964,7 @@ async function renderAnalyticsDashboard() {
             const truckSelect = document.getElementById('tripTruck');
             const driverSelect = document.getElementById('tripDriver');
 
-            const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
+            const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t) && t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
             const availableDrivers = drivers ? drivers.filter(d => isTripDriver(d) && d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
 
             truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
@@ -11696,10 +12597,13 @@ async function fillEditFleetOptions(trip) {
     const { data: drivers } = await client.from('drivers').select('name, status, staff_kind').order('name');
     const truckSelect = document.getElementById('editTripTruck');
     const driverSelect = document.getElementById('editTripDriver');
-    const plates = (trucks || []).filter(isCargoTruck).map(t => String(t.plate || '').trim()).filter(Boolean);
-    const names = (drivers || []).filter(isTripDriver).map(d => String(d.name || '').trim()).filter(Boolean);
     const currentPlate = String(trip.truck_plate || '').trim();
     const currentDriver = String(trip.driver_name || '').trim();
+    const plates = (trucks || [])
+        .filter(t => isCargoTruck(t) && (!isInactiveFleetVehicle(t) || String(t.plate || '').trim() === currentPlate))
+        .map(t => String(t.plate || '').trim())
+        .filter(Boolean);
+    const names = (drivers || []).filter(isTripDriver).map(d => String(d.name || '').trim()).filter(Boolean);
     if (currentPlate && !plates.includes(currentPlate)) plates.unshift(currentPlate);
     if (currentDriver && !names.includes(currentDriver)) names.unshift(currentDriver);
     truckSelect.innerHTML = plates.map(plate => {
@@ -11967,15 +12871,19 @@ async function saveEditTrip(e) {
                 const visible = (trucks || []).filter(tr => other ? !isCargoTruck(tr) : isCargoTruck(tr));
 
                 if (visible.length > 0) {
-                    table.innerHTML = visible.map(tr => {
+                    const sorted = [...visible].sort((a, b) => Number(isInactiveFleetVehicle(a)) - Number(isInactiveFleetVehicle(b)));
+                    table.innerHTML = sorted.map(tr => {
                         const shownStatus = truckStatusForTrips(tr, assignments);
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
                         if (shownStatus === 'صيانة دورية' || shownStatus === 'في الصيانة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
                         if (shownStatus === 'عطلانة') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'خارج الخدمة') badgeColor = 'bg-slate-100 text-slate-600 border border-slate-200';
+                        if (shownStatus === 'مباعة') badgeColor = 'bg-violet-50 text-violet-700 border border-violet-200';
+                        const rowDim = isInactiveFleetVehicle(tr) ? 'opacity-70' : '';
 
                         return `
-                            <tr class="hover:bg-slate-50 transition">
+                            <tr class="hover:bg-slate-50 transition ${rowDim}">
                                 <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في الصيانة' ? 'صيانة دورية' : shownStatus))}</span></td>
@@ -12030,7 +12938,7 @@ async function cancelTrip(tripNo) {
     const truckIdentifier = tripData.truck_plate || tripData.truck;
     const driverIdentifier = tripData.driver_name || tripData.driver;
     if (truckIdentifier) {
-        const { error: truckError } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim());
+        const { error: truckError } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim()).eq('status', 'في رحلة');
         if (truckError) console.error('خطأ في تحرير الشاحنة:', truckError);
     }
     if (driverIdentifier) {
@@ -12559,8 +13467,23 @@ async function loadUsers(options = {}) {
         }
 
         function printCurrentReport() {
-            const section = document.querySelector('#mainDashboard main:not(.hidden)');
-            if (!section) return;
+            const byTab = {
+                reports: 'reportsSection',
+                reportsSection: 'reportsSection',
+                maintenanceReport: 'maintenanceReportSection',
+                analytics: 'analyticsSection',
+                analyticsSection: 'analyticsSection',
+                charts: 'chartsSection',
+                chartsSection: 'chartsSection',
+                financialOverviewSection: 'financialOverviewSection',
+                receivablesSection: 'receivablesSection',
+                financialDetailsSection: 'financialDetailsSection',
+                commissionReportSection: 'commissionReportSection'
+            };
+            const mappedId = byTab[currentNavTab] || '';
+            const section = (mappedId && document.getElementById(mappedId))
+                || document.querySelector('#mainDashboard main:not(.hidden)');
+            if (!section || section.classList.contains('hidden')) return;
             document.querySelectorAll('main.print-target').forEach(node => node.classList.remove('print-target'));
             section.classList.add('print-target');
 
