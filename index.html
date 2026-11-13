@@ -8547,11 +8547,50 @@ function removeMaintenancePendingFile(index) {
     renderPendingFileList('maintInvoiceFileList', maintPendingFiles, 'removeMaintenancePendingFile');
 }
 
+const maintSignedUrlCache = new Map(); // path -> { url, expiresAt }
+let maintViewerReq = 0;
+const maintViewerUrlWarm = new Set();
+
 async function maintenanceInvoiceSignedUrl(path) {
     if (!path) return '';
+    const cached = maintSignedUrlCache.get(path);
+    if (cached && cached.expiresAt > Date.now() && cached.url) return cached.url;
     const { data, error } = await client.storage.from(MAINT_INVOICE_BUCKET).createSignedUrl(path, 3600);
     if (error) throw error;
-    return data?.signedUrl || '';
+    const url = data?.signedUrl || '';
+    if (url) {
+        // إعادة استخدام نفس الرابط حتى لا يعيد المتصفح تنزيل الملف عند كل تنقّل
+        maintSignedUrlCache.set(path, { url, expiresAt: Date.now() + 50 * 60 * 1000 });
+    }
+    return url;
+}
+
+function warmMaintenanceViewerAsset(url, isPdf) {
+    if (!url || maintViewerUrlWarm.has(url)) return;
+    maintViewerUrlWarm.add(url);
+    if (isPdf) {
+        // جلب مسبق لملف PDF في الخلفية
+        fetch(url, { mode: 'cors', credentials: 'omit', cache: 'force-cache' }).catch(() => {});
+        return;
+    }
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = url;
+}
+
+async function prefetchMaintenanceViewerAround(centerIndex) {
+    if (!maintViewerFiles.length) return;
+    const len = maintViewerFiles.length;
+    const targets = [centerIndex, centerIndex + 1, centerIndex - 1]
+        .map(i => ((i % len) + len) % len);
+    await Promise.all([...new Set(targets)].map(async (i) => {
+        const file = maintViewerFiles[i];
+        if (!file?.path) return;
+        try {
+            const url = await maintenanceInvoiceSignedUrl(file.path);
+            warmMaintenanceViewerAsset(url, isMaintenanceInvoicePdf(file.name, file.path));
+        } catch (err) { /* تجاهل فشل التحميل المسبق */ }
+    }));
 }
 
 async function uploadMaintenanceInvoice(file) {
@@ -8583,38 +8622,60 @@ let maintViewerIndex = 0;
 
 async function showMaintenanceViewerAt(index) {
     if (!maintViewerFiles.length) return;
-    maintViewerIndex = (index + maintViewerFiles.length) % maintViewerFiles.length;
+    const len = maintViewerFiles.length;
+    maintViewerIndex = ((index % len) + len) % len;
     const file = maintViewerFiles[maintViewerIndex];
+    const req = ++maintViewerReq;
     const viewer = document.getElementById('maintenanceInvoiceViewer');
     const img = document.getElementById('maintenanceInvoiceViewerImg');
     const frame = document.getElementById('maintenanceInvoiceViewerFrame');
     const caption = document.getElementById('maintViewerCaption');
     const prev = document.getElementById('maintViewerPrev');
     const next = document.getElementById('maintViewerNext');
-    const many = maintViewerFiles.length > 1;
+    const many = len > 1;
     prev?.classList.toggle('hidden', !many);
     next?.classList.toggle('hidden', !many);
+    const label = file.name || `${t('maint.attachments')} ${maintViewerIndex + 1}`;
+    if (caption) {
+        caption.textContent = many
+            ? `${maintViewerIndex + 1} / ${len} · ${label}`
+            : label;
+    }
+    viewer?.classList.remove('hidden');
     try {
         const url = await maintenanceInvoiceSignedUrl(file.path);
+        if (req !== maintViewerReq) return;
         if (!url) return;
         const pdf = isMaintenanceInvoicePdf(file.name, file.path);
-        if (img) {
-            img.classList.toggle('hidden', pdf);
-            img.src = pdf ? '' : url;
-            img.alt = file.name || '';
+        if (pdf) {
+            if (img) {
+                img.classList.add('hidden');
+                // لا نفرّغ src فوراً حتى لا يُفقد الكاش أثناء التنقل السريع
+            }
+            if (frame) {
+                frame.classList.remove('hidden');
+                if (frame.dataset.maintUrl !== url) {
+                    frame.dataset.maintUrl = url;
+                    frame.src = url;
+                }
+            }
+        } else {
+            if (frame) {
+                frame.classList.add('hidden');
+            }
+            if (img) {
+                img.classList.remove('hidden');
+                img.alt = file.name || '';
+                if (img.dataset.maintUrl !== url) {
+                    img.dataset.maintUrl = url;
+                    img.src = url;
+                }
+            }
         }
-        if (frame) {
-            frame.classList.toggle('hidden', !pdf);
-            frame.src = pdf ? url : '';
-        }
-        if (caption) {
-            const label = file.name || `${t('maint.attachments')} ${maintViewerIndex + 1}`;
-            caption.textContent = many
-                ? `${maintViewerIndex + 1} / ${maintViewerFiles.length} · ${label}`
-                : label;
-        }
-        viewer?.classList.remove('hidden');
+        // جهّز المرفق التالي/السابق مسبقاً لتنقّل فوري
+        prefetchMaintenanceViewerAround(maintViewerIndex);
     } catch (err) {
+        if (req !== maintViewerReq) return;
         console.error(err);
         alert(t('maint.invoiceUploadFailed'));
     }
@@ -8628,7 +8689,15 @@ function stepMaintenanceViewer(step) {
 function openMaintenanceViewer(files, index) {
     maintViewerFiles = (files || []).filter(file => file && file.path);
     if (!maintViewerFiles.length) return;
-    showMaintenanceViewerAt(Number(index) || 0);
+    const start = Number(index) || 0;
+    showMaintenanceViewerAt(start);
+    // حمّل روابط كل المرفقات في الخلفية لتسريع التنقل
+    Promise.all(maintViewerFiles.map(async (file) => {
+        try {
+            const url = await maintenanceInvoiceSignedUrl(file.path);
+            warmMaintenanceViewerAsset(url, isMaintenanceInvoicePdf(file.name, file.path));
+        } catch (err) { /* تجاهل */ }
+    }));
 }
 
 async function openMaintenanceAttachmentFile(path, name) {
@@ -8647,8 +8716,15 @@ function closeMaintenanceInvoiceViewer() {
     const viewer = document.getElementById('maintenanceInvoiceViewer');
     const img = document.getElementById('maintenanceInvoiceViewerImg');
     const frame = document.getElementById('maintenanceInvoiceViewerFrame');
-    if (img) img.src = '';
-    if (frame) frame.src = '';
+    maintViewerReq += 1;
+    if (img) {
+        img.src = '';
+        delete img.dataset.maintUrl;
+    }
+    if (frame) {
+        frame.src = '';
+        delete frame.dataset.maintUrl;
+    }
     maintViewerFiles = [];
     maintViewerIndex = 0;
     viewer?.classList.add('hidden');
