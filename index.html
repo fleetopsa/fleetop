@@ -2378,14 +2378,15 @@
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
                             <th class="p-3.5 rounded-r-xl" data-i18n="th.date">التاريخ</th>
+                            <th class="p-3.5" data-i18n="ui.payoutNo">رقم الصرف</th>
                             <th class="p-3.5" data-i18n="ui.driver">السائق</th>
-                            <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
-                            <th class="p-3.5" data-i18n="ui.note">ملاحظة</th>
+                            <th class="p-3.5" data-i18n="ui.paidAmount">المدفوع</th>
+                            <th class="p-3.5" data-i18n="ui.notes">ملاحظات</th>
                             <th class="p-3.5 rounded-l-xl text-center no-print" data-i18n="th.action">إجراء</th>
                         </tr>
                     </thead>
                     <tbody id="commissionPayoutTable" class="divide-y divide-slate-100">
-                        <tr><td colspan="5" class="text-center p-8 text-slate-400">لا توجد دفعات مسجلة</td></tr>
+                        <tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد دفعات مسجلة</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2779,6 +2780,49 @@
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">المبلغ المتبقي (تلقائي)</label>
                     <input type="text" id="remainingAmount" readonly class="w-full p-3 bg-slate-100 text-rose-600 border border-slate-200 rounded-xl text-xs font-black font-mono" value="0">
+                </div>
+                <div id="tripAdvancePayFields" class="hidden space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
+                            <select id="tripPaymentMethod" onchange="syncPaymentDetail('trip')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.choosePayMethod">اختر طريقة السداد...</option>
+                                <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                                <option value="آجل" data-i18n="ui.credit">آجل</option>
+                                <option value="تحويل بنكي" data-i18n="ui.bankTransfer">تحويل بنكي</option>
+                                <option value="أخرى" data-i18n="ui.otherPay">أخرى</option>
+                            </select>
+                        </div>
+                        <div id="tripBankWrap" class="hidden">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bank">البنك</label>
+                            <select id="tripBankName" onchange="syncPaymentDetail('trip')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.chooseBank">اختر البنك</option>
+                                <option value="الراجحي">الراجحي</option>
+                                <option value="الأهلي">الأهلي</option>
+                                <option value="الرياض">الرياض</option>
+                                <option value="الإنماء">الإنماء</option>
+                                <option value="البلاد">البلاد</option>
+                                <option value="العربي">العربي</option>
+                                <option value="ساب">ساب</option>
+                                <option value="الفرنسي">الفرنسي</option>
+                                <option value="الجزيرة">الجزيرة</option>
+                                <option value="الاستثمار">الاستثمار</option>
+                                <option value="__other__" data-i18n="ui.otherBank">بنك آخر</option>
+                            </select>
+                        </div>
+                        <div id="tripBankOtherWrap" class="hidden">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bankName">اسم البنك</label>
+                            <input type="text" id="tripBankOther" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.bankNamePh" placeholder="اكتب اسم البنك">
+                        </div>
+                        <div id="tripOtherWrap" class="hidden">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payDetail">نوع السداد</label>
+                            <input type="text" id="tripOtherDetail" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.payDetailPh" placeholder="مثال: شيك">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل</label>
+                        <input type="date" id="tripCollectionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ الرحلة</button>
@@ -5284,9 +5328,7 @@ function formatSAR(amount) {
 }
 
 function formatCommissionNet(amount) {
-    const value = roundMoney(amount);
-    if (value < -0.009) return formatSAR(Math.abs(value));
-    return formatSAR(Math.max(0, value));
+    return formatSAR(roundMoney(amount));
 }
 
 function fillSelectOptions(selectId, items, allLabel) {
@@ -5436,7 +5478,39 @@ async function populateCommissionFilters() {
 
 let commissionTripsByNo = new Map();
 
-function renderCommissionPayoutLog(payouts) {
+function isAdvanceCreditNote(note) {
+    return /^(رصيد مقدم|Advance credit)\b/i.test(String(note || '').trim());
+}
+
+function payoutNoteForDisplay(note, creditCleared) {
+    const text = String(note || '').trim();
+    if (!text) return '—';
+    if (creditCleared && isAdvanceCreditNote(text)) return '—';
+    return text;
+}
+
+async function clearCoveredAdvanceCreditNotes(payouts, finalRemainingByDriver) {
+    const targets = (payouts || []).filter(payout => {
+        if (!isAdvanceCreditNote(payout?.payment_method) && String(payout?.payment_status || '').trim() !== 'رصيد مقدم') return false;
+        const name = String(payout?.driver_name || '').trim() || (currentLang === 'en' ? 'Unspecified' : 'غير محدد');
+        return roundMoney(finalRemainingByDriver.get(name) || 0) >= -0.009;
+    });
+    for (const payout of targets) {
+        if (!payout?.id) continue;
+        const { error } = await client.from('trips').update({
+            payment_method: null,
+            payment_status: 'مصروف'
+        }).eq('id', payout.id).eq('status', 'صرف عمولة');
+        if (error) {
+            console.error('تعذر مسح ملاحظة الرصيد المقدم:', error);
+            continue;
+        }
+        payout.payment_method = null;
+        payout.payment_status = 'مصروف';
+    }
+}
+
+function renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver) {
     const payoutBody = document.getElementById('commissionPayoutTable');
     if (!payoutBody) return;
     const payoutTime = (payout) => {
@@ -5444,17 +5518,26 @@ function renderCommissionPayoutLog(payouts) {
         const time = Date.parse(raw);
         return Number.isFinite(time) ? time : 0;
     };
-    const sortedPayouts = [...payouts].sort((a, b) => {
+    if (lifetimeRemainingByDriver instanceof Map) {
+        clearCoveredAdvanceCreditNotes(payouts, lifetimeRemainingByDriver).catch(err => console.error(err));
+    }
+    const sortedPayouts = [...(payouts || [])].sort((a, b) => {
         const diff = payoutTime(b) - payoutTime(a);
         if (diff) return diff;
         return (Number(b.id) || 0) - (Number(a.id) || 0);
     });
-    payoutBody.innerHTML = sortedPayouts.length ? sortedPayouts.map(payout => `
+    payoutBody.innerHTML = sortedPayouts.length ? sortedPayouts.map(payout => {
+        const name = String(payout?.driver_name || '').trim() || (currentLang === 'en' ? 'Unspecified' : 'غير محدد');
+        const creditCleared = lifetimeRemainingByDriver instanceof Map
+            ? roundMoney(lifetimeRemainingByDriver.get(name) || 0) >= -0.009
+            : false;
+        return `
         <tr class="hover:bg-slate-50 transition">
             <td class="p-3.5 font-mono text-slate-600">${escapeHtml(dateOnly(payout.departure_date) || '---')}</td>
-            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(payout.driver_name || 'غير محدد')}</td>
+            <td class="p-3.5 font-mono font-bold text-amber-600">${escapeHtml(payout.trip_no || '—')}</td>
+            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(name)}</td>
             <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
-            <td class="p-3.5 text-slate-600">${escapeHtml(payout.payment_method || '—')}</td>
+            <td class="p-3.5 text-slate-600">${escapeHtml(payoutNoteForDisplay(payout.payment_method, creditCleared))}</td>
             <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
                 <button type="button" onclick="openEditPayoutModal(${JSON.stringify(payout.id)})" class="text-amber-600 hover:text-amber-800 font-bold" title="${t('ui.edit')}">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -5463,8 +5546,8 @@ function renderCommissionPayoutLog(payouts) {
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </td>
-        </tr>
-    `).join('') : `<tr><td colspan="5" class="text-center p-8 text-slate-400">${t('ui.noPayouts') || 'لا توجد مبالغ مصروفة في هذه الفترة'}</td></tr>`;
+        </tr>`;
+    }).join('') : `<tr><td colspan="6" class="text-center p-8 text-slate-400">${t('ui.noPayouts') || 'لا توجد مبالغ مصروفة في هذه الفترة'}</td></tr>`;
 }
 
 async function generateCommissionReport() {
@@ -5496,11 +5579,26 @@ async function generateCommissionReport() {
         const paidEl = document.getElementById('commPaidDisplay');
         const remainingEl = document.getElementById('commRemainingDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
+        const net = roundMoney(earned - paid);
         if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
         if (paidEl) paidEl.innerHTML = formatSAR(paid);
-        if (remainingEl) remainingEl.innerHTML = formatCommissionNet(earned - paid);
+        if (remainingEl) {
+            remainingEl.innerHTML = formatCommissionNet(net);
+            remainingEl.classList.toggle('text-rose-600', net < -0.009);
+            remainingEl.classList.toggle('text-emerald-600', net >= -0.009);
+        }
         if (tripsEl) tripsEl.innerText = activeTrips.filter(isCompletedTrip).length.toLocaleString('en-US');
-        renderCommissionPayoutLog(payouts);
+        const lifetimeRemainingByDriver = new Map();
+        (trips || []).forEach(trip => {
+            const name = String(trip?.driver_name || '').trim();
+            if (!name) return;
+            const amount = commissionAmount(trip);
+            if (!lifetimeRemainingByDriver.has(name)) lifetimeRemainingByDriver.set(name, 0);
+            if (isCommissionPayout(trip)) lifetimeRemainingByDriver.set(name, lifetimeRemainingByDriver.get(name) - amount);
+            else if (isCommissionEarnedTrip(trip)) lifetimeRemainingByDriver.set(name, lifetimeRemainingByDriver.get(name) + amount);
+        });
+        lifetimeRemainingByDriver.forEach((value, name) => lifetimeRemainingByDriver.set(name, roundMoney(value)));
+        renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver);
 
         if (!tbody) return;
         if (!activeTrips.length) {
@@ -5567,7 +5665,7 @@ async function generateCommissionReport() {
         console.error('خطأ في جلب العمولات:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
         const payoutBody = document.getElementById('commissionPayoutTable');
-        if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
+        if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
     }
 }
 
@@ -5744,7 +5842,9 @@ async function generateCommissionSettlement() {
 }
 
 async function driverCommissionBalance(driverName) {
-    const { data, error } = await client.from('trips').select('status, driver_commission').eq('driver_name', driverName);
+    const { data, error } = await client.from('trips')
+        .select('status, driver_commission, trip_no, trip_type, client_name')
+        .eq('driver_name', driverName);
     if (error) throw error;
     let earned = 0;
     let paid = 0;
@@ -5753,7 +5853,7 @@ async function driverCommissionBalance(driverName) {
         if (isCommissionPayout(trip)) paid += amount;
         else if (isCommissionEarnedTrip(trip)) earned += amount;
     });
-    return earned - paid;
+    return roundMoney(earned - paid);
 }
 
 async function generatePayoutNo() {
@@ -5841,7 +5941,8 @@ async function saveCommissionPayout(e) {
                 { okLabel: currentLang === 'en' ? 'Continue' : 'استمرار', cancelLabel: currentLang === 'en' ? 'Cancel' : 'إلغاء' }
             );
             if (!ok) return;
-            if (!note) note = (currentLang === 'en' ? 'Advance credit ' : 'رصيد مقدم ') + formatMoney(extra);
+            const advanceNote = (currentLang === 'en' ? 'Advance credit ' : 'رصيد مقدم ') + formatMoney(extra);
+            note = note && !isAdvanceCreditNote(note) ? `${note} · ${advanceNote}` : advanceNote;
         }
 
         if (payoutId) {
@@ -5849,6 +5950,7 @@ async function saveCommissionPayout(e) {
                 driver_name: driverName,
                 driver_commission: amount,
                 departure_date: payoutDate,
+                payment_status: extra > 0.009 ? 'رصيد مقدم' : 'مصروف',
                 payment_method: note || null
             }).eq('id', payoutId).eq('status', 'صرف عمولة');
             if (error) throw error;
@@ -6665,7 +6767,12 @@ function sortTripsByNoDesc(list) {
 }
 
 function isCommissionPayout(trip) {
-    return String(trip?.status || '').trim() === 'صرف عمولة';
+    if (String(trip?.status || '').trim() !== 'صرف عمولة') return false;
+    if (isCompletedTrip(trip) || isCancelledTrip(trip) || isSettlementRecord(trip) || isOpeningBalance(trip)) return false;
+    const tripNo = String(trip?.trip_no || '').trim().toUpperCase();
+    if (tripNo.startsWith('PAY-')) return true;
+    return String(trip?.client_name || '').trim() === 'صرف عمولة'
+        && String(trip?.trip_type || '').trim() === 'صرف عمولة';
 }
 
 function isSettlementRecord(trip) {
@@ -6861,15 +6968,46 @@ function paymentLineItems(trip) {
     if (stored.length && paid - recorded > 0.009) {
         stored.unshift({
             paid_amount: roundMoney(paid - recorded),
-            payment_method: 'دفعة سابقة',
-            collection_date: ''
+            payment_method: trip?.payment_method || 'دفعة سابقة',
+            collection_date: trip?.collection_date || ''
         });
     }
-    if (stored.length) return stored;
+    if (stored.length) {
+        return stored.map(line => ({
+            ...line,
+            payment_method: String(line.payment_method || '').trim() || trip?.payment_method || null,
+            collection_date: line.collection_date || trip?.collection_date || null
+        }));
+    }
     if (paid > 0 || trip?.payment_method || trip?.collection_date) {
         return [{ paid_amount: paid, payment_method: trip?.payment_method, collection_date: trip?.collection_date }];
     }
     return [];
+}
+
+async function syncTripSettlementDetails(tripNo, method, collectionDate, paidAmount) {
+    const key = String(tripNo || '').trim();
+    if (!key) return;
+    const rows = (settlementsByTrip.get(key) || []).slice();
+    const paid = roundMoney(paidAmount || 0);
+    if (!rows.length) {
+        if (paid > 0 && method) {
+            await recordSettlementPayment(key, paid, method, collectionDate || '');
+        }
+        return;
+    }
+    const targets = rows.length === 1
+        ? rows
+        : rows.filter(row => !String(row.payment_method || '').trim());
+    for (const row of targets) {
+        if (!row?.id) continue;
+        const payload = {};
+        if (method) payload.payment_method = method;
+        if (collectionDate) payload.collection_date = collectionDate;
+        if (!Object.keys(payload).length) continue;
+        const { error } = await client.from('trips').update(payload).eq('id', row.id).eq('status', 'دفعة سداد');
+        if (error) console.error('تعذر تحديث دفعة السداد:', error);
+    }
 }
 
 function formatPaymentLines(trip) {
@@ -7497,6 +7635,36 @@ function renderAdminControls() {
     }
 }
 
+function previewYearEndOpening(trips) {
+    const keepKeys = yearResetKeepKeys(trips);
+    const kept = [];
+    const removed = [];
+    (trips || []).forEach(trip => {
+        if (shouldKeepAfterYearReset(trip, keepKeys)) kept.push(trip);
+        else removed.push(trip);
+    });
+    const openingByDriver = new Map();
+    removed.forEach(trip => {
+        if (!isCompletedTrip(trip)) return;
+        const name = String(trip.driver_name || '').trim();
+        const amount = roundMoney(commissionAmount(trip));
+        if (!name || amount <= 0.009) return;
+        openingByDriver.set(name, roundMoney((openingByDriver.get(name) || 0) + amount));
+    });
+    return {
+        keepKeys,
+        kept,
+        removed,
+        openingRows: [...openingByDriver.entries()]
+            .map(([name, amount]) => [name, roundMoney(amount)])
+            .filter(([, amount]) => amount > 0.009)
+            .sort((a, b) => a[0].localeCompare(b[0], 'ar')),
+        activeCount: kept.filter(isActiveOperationalTrip).length,
+        unpaidCount: kept.filter(isOpenReceivableTrip).length,
+        payoutCount: kept.filter(isCommissionPayout).length
+    };
+}
+
 async function resetTripCounter() {
     if (!isAdminUser()) {
         alert(currentLang === 'en'
@@ -7505,34 +7673,23 @@ async function resetTripCounter() {
         return;
     }
     const ar = currentLang !== 'en';
-    if (!confirm(ar
-        ? 'تصفير نهاية العام:\n• الرحلات الجارية تبقى حتى إنهائها في العام الجديد\n• الرحلات المنتهية وغير المسددة تبقى لتحصيلها لاحقاً\n• الرحلات المسددة بالكامل والملغاة تُحذف\n• عمولات الرحلات المحذوفة تُرحّل رصيد افتتاحي\n• الشاحنات المرتبطة برحلة جارية تبقى في رحلة\nهل تريد المتابعة؟'
-        : 'Year-end reset:\n• Active trips stay until completed in the new year\n• Completed unpaid trips stay so they can be collected later\n• Fully paid and cancelled trips are deleted\n• Commissions from deleted trips are carried as opening balance\n• Trucks still on an active trip remain on trip\nContinue?')) {
-        return;
-    }
-
     try {
         const { data: currentTrips, error: loadError } = await client.from('trips').select('*');
         if (loadError) throw loadError;
         const trips = currentTrips || [];
-        const keepKeys = yearResetKeepKeys(trips);
-        const kept = [];
-        const removed = [];
-        trips.forEach(trip => {
-            if (shouldKeepAfterYearReset(trip, keepKeys)) kept.push(trip);
-            else removed.push(trip);
-        });
+        const preview = previewYearEndOpening(trips);
+        const openingLines = preview.openingRows.length
+            ? preview.openingRows.map(([name, amount]) => `• ${name}: ${formatMoney(amount)}`).join('\n')
+            : (ar ? '• لا يوجد رصيد عمولة مرحّل من الرحلات المغلقة' : '• No commission opening balance from closed trips');
+        const ok = await appConfirm(
+            ar
+                ? `تصفير نهاية العام للانتقال إلى 2027:\n\nيبقى:\n• الرحلات الجارية: ${preview.activeCount} (تُنهى وتحصَّل في العام الجديد)\n• المكتملة غير المسددة: ${preview.unpaidCount} (تحصيل العميل في 2027)\n• سجل صرف العمولات: ${preview.payoutCount} دفعة (تبقى لمطابقة الرصيد)\n\nيُحذف:\n• المكتملة المسددة بالكامل والملغاة\n\nرصيد افتتاحي للعمولات من الرحلات المغلقة:\n${openingLines}\n\nعمولة الرحلات المتبقية تبقى على الرحلة نفسها.\nالرحلات الجديدة تُرقَّم TRP-27-....\nهل تريد المتابعة؟`
+                : `Year-end reset for 2027:\n\nKeep:\n• Active trips: ${preview.activeCount}\n• Completed unpaid trips: ${preview.unpaidCount}\n• Commission payouts: ${preview.payoutCount}\n\nDelete fully paid and cancelled trips.\n\nOpening commission from closed trips:\n${openingLines}\n\nContinue?`,
+            { okLabel: ar ? 'تصفير وإغلاق العام' : 'Close year', cancelLabel: ar ? 'إلغاء' : 'Cancel' }
+        );
+        if (!ok) return;
 
-        const openingByDriver = new Map();
-        removed.forEach(trip => {
-            if (!isCompletedTrip(trip)) return;
-            const name = String(trip.driver_name || '').trim();
-            const amount = roundMoney(commissionAmount(trip));
-            if (!name || amount <= 0.009) return;
-            openingByDriver.set(name, roundMoney((openingByDriver.get(name) || 0) + amount));
-        });
-        const openingRows = [...openingByDriver.entries()].filter(([, amount]) => amount > 0.009);
-
+        const { kept, removed, openingRows } = preview;
         const removeIds = removed.map(trip => trip.id).filter(id => id != null);
         if (removeIds.length) await deleteTripRowsByIds(removeIds);
 
@@ -7541,7 +7698,7 @@ async function resetTripCounter() {
             const openDate = openingBalanceDate();
             const year = openDate.slice(0, 4);
             const existingOpen = kept.filter(isOpeningBalance).length;
-            const rows = openingRows.map(([name, amount], index) => ({
+            const rows = openingRows.map(([name, amount], index) => withCompany({
                 trip_no: `OPEN-${year}-${existingOpen + index + 1}`,
                 client_name: ar ? 'رصيد افتتاحي' : 'Opening balance',
                 from_city: '-',
@@ -9250,6 +9407,9 @@ const I18N = {
         'ui.issueDate': 'تاريخ الإصدار',
         'ui.expiryDate': 'تاريخ الانتهاء',
         'ui.note': 'ملاحظة',
+        'ui.notes': 'ملاحظات',
+        'ui.dueAmount': 'المبلغ المستحق',
+        'ui.paidAmount': 'المدفوع',
         'ui.save': 'حفظ',
         'ui.cancel': 'إلغاء',
         'ui.delete': 'حذف',
@@ -9334,6 +9494,7 @@ const I18N = {
         'ui.totalCommAmount': 'إجمالي مبلغ العمولات',
         'ui.totalComms': 'إجمالي العمولات',
         'ui.payoutLog': 'سجل المبالغ المصروفة',
+        'ui.payoutNo': 'رقم الصرف',
         'th.date': 'التاريخ',
         'th.note': 'ملاحظة',
         'th.action': 'إجراء',
@@ -9890,6 +10051,9 @@ const I18N = {
         'ui.issueDate': 'Issue date',
         'ui.expiryDate': 'Expiry date',
         'ui.note': 'Note',
+        'ui.notes': 'Notes',
+        'ui.dueAmount': 'Amount due',
+        'ui.paidAmount': 'Paid',
         'ui.save': 'Save',
         'ui.cancel': 'Cancel',
         'ui.delete': 'Delete',
@@ -9974,6 +10138,7 @@ const I18N = {
         'ui.totalCommAmount': 'Total commission amount',
         'ui.totalComms': 'Total commissions',
         'ui.payoutLog': 'Paid commission log',
+        'ui.payoutNo': 'Payout no.',
         'th.date': 'Date',
         'th.note': 'Note',
         'th.action': 'Action',
@@ -10879,6 +11044,7 @@ async function renderAnalyticsDashboard() {
             const paid = parseFloat(document.getElementById('paidAmount').value) || 0;
             const remaining = total - paid;
             document.getElementById('remainingAmount').value = remaining >= 0 ? roundMoney(remaining) : 0;
+            if (typeof syncTripAdvancePayFields === 'function') syncTripAdvancePayFields();
             const breakdown = document.getElementById('vatBreakdown');
             if (!breakdown) return;
             breakdown.innerHTML = inclusive
@@ -11358,7 +11524,18 @@ function openAddTripModal() {
     loadTripSuggestions();
     bindTripSuggestions();
     paintCommissionFieldLabels();
+    applyPaymentMethodFields('trip', '');
+    const collect = document.getElementById('tripCollectionDate');
+    if (collect) collect.value = '';
+    syncTripAdvancePayFields();
     document.getElementById('addTripModal').classList.remove('hidden');
+}
+
+function syncTripAdvancePayFields() {
+    const paid = roundMoney(parseFloat(document.getElementById('paidAmount')?.value) || 0);
+    const box = document.getElementById('tripAdvancePayFields');
+    if (box) box.classList.toggle('hidden', paid <= 0);
+    if (paid <= 0) applyPaymentMethodFields('trip', '');
 }
 // 2. إغلاق نافذة إضافة رحلة جديدة وتصفير النموذج بالكامل
 function closeAddTripModal() {
@@ -11396,6 +11573,19 @@ function closeAddTripModal() {
     const remaining_amount = roundMoney(total_amount - paid_amount);
     const status = 'جارية';
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
+    const paymentEntry = composePaymentMethod('trip', paid_amount > 0);
+    if (!paymentEntry.ok) {
+        alert(paymentEntry.message);
+        document.getElementById('tripPaymentMethod')?.focus();
+        return;
+    }
+    const payment_method = paymentEntry.value || null;
+    const collection_date = document.getElementById('tripCollectionDate')?.value.trim() || '';
+    if (paid_amount > 0 && !collection_date) {
+        alert(currentLang === 'en' ? 'Enter the collection date.' : 'يجب تسجيل تاريخ التحصيل');
+        document.getElementById('tripCollectionDate')?.focus();
+        return;
+    }
 
     let activeTrips = [];
     try {
@@ -11416,6 +11606,8 @@ function closeAddTripModal() {
     const tripPayload = withCompany({
         trip_no, client_name, from_city, to_city, trip_type, departure_date, truck_plate, driver_name, driver_commission,
         paid_amount, remaining_amount, status, payment_status,
+        payment_method: paid_amount > 0 ? payment_method : null,
+        collection_date: paid_amount > 0 ? collection_date : null,
         ...tripVatPayloadFromBreakdown(amountParts)
     });
     const { error } = await writeIgnoringUnknownColumns(
@@ -11428,7 +11620,7 @@ function closeAddTripModal() {
         revealSuggestion('city', from_city);
         revealSuggestion('city', to_city);
         if (paid_amount > 0) {
-            const settlement = await recordSettlementPayment(trip_no, paid_amount, '', departure_date);
+            const settlement = await recordSettlementPayment(trip_no, paid_amount, payment_method || '', collection_date || departure_date);
             if (settlement.error) console.error('تعذر حفظ دفعة الإنشاء:', settlement.error);
         }
         const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
@@ -11745,10 +11937,18 @@ async function saveEditTrip(e) {
     revealSuggestion('client', client_name);
     revealSuggestion('city', from_city);
     revealSuggestion('city', to_city);
+    await syncTripSettlementDetails(trip.trip_no, payment_method, collection_date, paid_amount);
     closeEditTripModal();
     logActivity('trip.edit', 'رحلة', trip.trip_no, diffDetails);
+    if (typeof loadTripsData === 'function') await loadTripsData();
+    if (typeof loadDashboardData === 'function') loadDashboardData();
+    if (typeof generateFinancialReport === 'function' && !document.getElementById('financialOverviewSection')?.classList.contains('hidden')) {
+        await generateFinancialReport();
+    }
+    if (typeof generateReceivablesReport === 'function' && !document.getElementById('receivablesSection')?.classList.contains('hidden')) {
+        await generateReceivablesReport();
+    }
     alert('تم حفظ تعديل الرحلة ' + trip.trip_no);
-    if (typeof loadAllData === 'function') loadAllData();
 }
 
         async function loadTrucks() {
