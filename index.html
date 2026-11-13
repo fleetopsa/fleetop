@@ -6187,7 +6187,19 @@ async function generateFinancialReport() {
 
         let activeTrips = filterCompletedTripsForPeriod(trips, startDate, endDate);
         const paymentRows = expandTripsByPaymentLines(activeTrips, { method: selectedMethod });
-        const tripsInView = [...new Map(paymentRows.map(row => [row.trip.id || row.trip.trip_no, row.trip])).values()];
+        const tripRows = [];
+        const seenTrips = new Map();
+        paymentRows.forEach(row => {
+            const key = String(row.trip?.trip_no || row.trip?.id || '');
+            let group = seenTrips.get(key);
+            if (!group) {
+                group = { trip: row.trip, lines: [] };
+                seenTrips.set(key, group);
+                tripRows.push(group);
+            }
+            if (row.line) group.lines.push(row.line);
+        });
+        const tripsInView = tripRows.map(row => row.trip);
         const money = selectedMethod
             ? {
                 total: paymentRows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
@@ -6202,18 +6214,24 @@ async function generateFinancialReport() {
         if (totalEl) totalEl.innerHTML = formatSAR(money.total);
         if (collectedEl) collectedEl.innerHTML = formatSAR(money.collected);
         if (pendingEl) pendingEl.innerHTML = formatSAR(money.remaining);
-        if (tripsEl) tripsEl.innerText = tripsInView.length.toLocaleString('en-US');
+        if (tripsEl) tripsEl.innerText = tripRows.length.toLocaleString('en-US');
 
         if (!tbody) return;
-        if (!paymentRows.length) {
+        if (!tripRows.length) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = paymentRows.map(({ trip: tr, line }) => {
-            const amount = line ? formatSAR(line.paid_amount || 0) : formatSAR(tr.total_amount || 0);
-            const method = line ? escapeHtml(paymentMethodLabel(line.payment_method)) : '—';
-            const collectDate = line ? escapeHtml(dateOnly(line.collection_date) || '—') : '---';
+        tbody.innerHTML = tripRows.map(({ trip: tr, lines }) => {
+            const amount = lines.length
+                ? stackReportCell(lines.map(line => formatSAR(line.paid_amount || 0)))
+                : formatSAR(tr.total_amount || 0);
+            const method = lines.length
+                ? stackReportCell(lines.map(line => escapeHtml(paymentMethodLabel(line.payment_method))))
+                : '—';
+            const collectDate = lines.length
+                ? stackReportCell(lines.map(line => escapeHtml(dateOnly(line.collection_date) || '—')))
+                : '---';
             return `
             <tr class="hover:bg-slate-50 transition">
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
