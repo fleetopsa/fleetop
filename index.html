@@ -28,12 +28,17 @@
             gap: 1rem;
             width: 100%;
             min-width: 0;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-        }
-        .stat-grid:not(.stats-with-money) {
             grid-template-columns: minmax(0, 1fr);
-            max-width: 20rem;
         }
+        #financialCardsContainer {
+            display: grid;
+            grid-column: 1 / -1;
+            gap: 1rem;
+            min-width: 0;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+        }
+        #financialCardsContainer.hidden { display: none !important; }
+        .stat-card-trips { width: 100%; max-width: 22rem; }
         .stat-card-money, .stat-card-trips { min-width: 0; overflow: hidden; }
         .stat-card-money h3, .stat-card-trips h3 {
             overflow-wrap: anywhere;
@@ -123,10 +128,10 @@
             flex: 0 0 10.5rem;
             width: 10.5rem;
         }
-        @media (max-width: 767px) {
+        @media (max-width: 1024px) {
             .recv-summary { flex-direction: column; }
-            .recv-summary-money { grid-template-columns: 1fr; }
-            .recv-trip-card { width: 100%; flex-basis: auto; }
+            .recv-summary-money { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+            .recv-trip-card { width: 100%; flex: 1 1 auto; }
         }
         .dash-side-card {
             height: 16rem;
@@ -724,6 +729,34 @@
             #activityLogSection table { min-width: 0; }
             .maint-col-tight { white-space: normal; }
         }
+        #appContent > header { flex-wrap: wrap; align-items: center; }
+        #dashboardSection > .grid,
+        #analyticsSection .grid,
+        #settingsSection .grid {
+            align-items: start;
+        }
+        #dashboardSection .dash-side-card {
+            height: auto;
+            max-height: none;
+            min-height: 16rem;
+        }
+        @media (max-width: 1023px) {
+            #mainDashboard {
+                height: 100dvh;
+                max-height: 100dvh;
+            }
+            #dashboardSection .grid.xl\:grid-cols-3 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+        @media (min-width: 1024px) and (max-width: 1535px) {
+            #dashboardSection .grid.xl\:grid-cols-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            #dashboardSection .dash-alerts-card {
+                grid-column: 1 / -1;
+            }
+        }
         .riyal-symbol {
             height: 0.9em;
             width: auto;
@@ -963,7 +996,7 @@
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
                 <div class="rounded-2xl border p-4" style="background:rgba(255,255,255,0.06);border-color:rgba(196,163,90,0.3)">
                     <p class="text-[11px] font-bold" style="color:#e8d5a3" data-i18n="platform.totalCompanies">إجمالي الشركات</p>
                     <p id="platformStatTotal" class="text-2xl font-black mt-1" style="color:#f5ead0">0</p>
@@ -1307,7 +1340,7 @@
         <div class="stat-grid-wrap">
         <div id="dashboardStatGrid" class="stat-grid">
         <!-- البطاقات المالية (تظهر للأدمن والمحاسب فقط، وتختفي عن المستخدم العادي) -->
-        <div id="financialCardsContainer" class="contents hidden">
+        <div id="financialCardsContainer" class="hidden">
             <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</span>
@@ -1689,8 +1722,9 @@
                 <select id="finPaymentMethodFilter" onchange="generateFinancialReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
                     <option value="نقدي" data-i18n="ui.cash">نقدي</option>
-                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
-                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
+                    <option value="آجل" data-i18n="ui.credit">آجل</option>
+                    <option value="تحويل بنكي" data-i18n="ui.bankTransfer">تحويل بنكي</option>
+                    <option value="أخرى" data-i18n="ui.otherPay">أخرى</option>
                 </select>
             </div>
         </div>
@@ -1789,8 +1823,9 @@
                 <select id="recvPayMethodFilter" onchange="generateReceivablesReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                     <option value="" data-i18n="ui.allMethods">جميع الطرق</option>
                     <option value="نقدي" data-i18n="ui.cash">نقدي</option>
-                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
-                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
+                    <option value="آجل" data-i18n="ui.credit">آجل</option>
+                    <option value="تحويل بنكي" data-i18n="ui.bankTransfer">تحويل بنكي</option>
+                    <option value="أخرى" data-i18n="ui.otherPay">أخرى</option>
                 </select>
             </div>
             <div>
@@ -2543,6 +2578,20 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs font-black text-slate-800" data-i18n="settings.commissionTitle">إعدادات العمولة</p>
+                                        <p class="text-[11px] text-slate-500 mt-1" data-i18n="settings.commissionHint">اختر إن كانت عمولة السائق اختيارية أو إجبارية لهذه الشركة.</p>
+                                    </div>
+                                    <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="radio" name="commissionMode" value="optional" checked class="mt-0.5 accent-amber-500">
+                                        <span data-i18n="settings.commissionOptional">اختياري</span>
+                                    </label>
+                                    <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="radio" name="commissionMode" value="required" class="mt-0.5 accent-amber-500">
+                                        <span data-i18n="settings.commissionRequired">إجباري</span>
+                                    </label>
+                                </div>
                                 <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
                             </form>
                         </div>
@@ -2690,8 +2739,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">عمولة السائق (اختياري عند الإنشاء)</label>
-                    <input type="number" id="driverCommissionInput" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="أدخل مبلغ العمولة إن وجدت">
+                    <label id="driverCommissionLabel" class="block text-[11px] font-bold text-slate-600 mb-1">عمولة السائق</label>
+                    <input type="number" id="driverCommissionInput" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -2773,7 +2822,7 @@
                     <select id="editTripDriver" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500"></select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">عمولة السائق</label>
+                    <label id="editDriverCommissionLabel" class="block text-[11px] font-bold text-slate-600 mb-1">عمولة السائق</label>
                     <input type="number" id="editDriverCommission" min="0" step="0.01" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -2813,14 +2862,42 @@
                         <input type="date" id="editCollectionDate" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
-                    <select id="editPaymentMethod" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                        <option value="" data-i18n="ui.none">بدون</option>
-                        <option value="نقدي" data-i18n="ui.cash">نقدي</option>
-                        <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
-                        <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
-                    </select>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد</label>
+                        <select id="editPaymentMethod" onchange="syncPaymentDetail('edit')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="" data-i18n="ui.none">بدون</option>
+                            <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                            <option value="آجل" data-i18n="ui.credit">آجل</option>
+                            <option value="تحويل بنكي" data-i18n="ui.bankTransfer">تحويل بنكي</option>
+                            <option value="أخرى" data-i18n="ui.otherPay">أخرى</option>
+                        </select>
+                    </div>
+                    <div id="editBankWrap" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bank">البنك</label>
+                        <select id="editBankName" onchange="syncPaymentDetail('edit')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="" data-i18n="ui.chooseBank">اختر البنك</option>
+                            <option value="الراجحي">الراجحي</option>
+                            <option value="الأهلي">الأهلي</option>
+                            <option value="الرياض">الرياض</option>
+                            <option value="الإنماء">الإنماء</option>
+                            <option value="البلاد">البلاد</option>
+                            <option value="العربي">العربي</option>
+                            <option value="ساب">ساب</option>
+                            <option value="الفرنسي">الفرنسي</option>
+                            <option value="الجزيرة">الجزيرة</option>
+                            <option value="الاستثمار">الاستثمار</option>
+                            <option value="__other__" data-i18n="ui.otherBank">بنك آخر</option>
+                        </select>
+                    </div>
+                    <div id="editBankOtherWrap" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bankName">اسم البنك</label>
+                        <input type="text" id="editBankOther" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.bankNamePh" placeholder="اكتب اسم البنك">
+                    </div>
+                    <div id="editOtherWrap" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payDetail">نوع السداد</label>
+                        <input type="text" id="editOtherDetail" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.payDetailPh" placeholder="مثال: شيك">
+                    </div>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition">حفظ التعديل</button>
@@ -2855,19 +2932,47 @@
                 <input type="number" id="modalPaymentInput" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="0">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1 text-amber-600">عمولة السائق المستحقة (إجباري عند الإنهاء)</label>
-                <input type="number" id="modalDriverCommission" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="أدخل عمولة السائق النهائية">
+                <label id="modalDriverCommissionLabel" class="block text-[11px] font-bold text-slate-600 mb-1 text-amber-600">عمولة السائق</label>
+                <input type="number" id="modalDriverCommission" min="0" step="0.01" inputmode="decimal" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
             </div>
             
             <!-- خانة طريقة السداد الإجبارية -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد </label>
-                <select id="modalPaymentMethod"  class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="" data-i18n="ui.choosePayMethod">اختر طريقة السداد...</option>
-                    <option value="نقدي" data-i18n="ui.cash">نقدي</option>
-                    <option value="تحويل على الراجحي" data-i18n="ui.rajhi">تحويل على الراجحي</option>
-                    <option value="تحويل على الأهلي" data-i18n="ui.ahli">تحويل على الأهلي</option>
-                </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payMethod">طريقة السداد </label>
+                    <select id="modalPaymentMethod" onchange="syncPaymentDetail('modal')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="" data-i18n="ui.choosePayMethod">اختر طريقة السداد...</option>
+                        <option value="نقدي" data-i18n="ui.cash">نقدي</option>
+                        <option value="آجل" data-i18n="ui.credit">آجل</option>
+                        <option value="تحويل بنكي" data-i18n="ui.bankTransfer">تحويل بنكي</option>
+                        <option value="أخرى" data-i18n="ui.otherPay">أخرى</option>
+                    </select>
+                </div>
+                <div id="modalBankWrap" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bank">البنك</label>
+                    <select id="modalBankName" onchange="syncPaymentDetail('modal')" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="" data-i18n="ui.chooseBank">اختر البنك</option>
+                        <option value="الراجحي">الراجحي</option>
+                        <option value="الأهلي">الأهلي</option>
+                        <option value="الرياض">الرياض</option>
+                        <option value="الإنماء">الإنماء</option>
+                        <option value="البلاد">البلاد</option>
+                        <option value="العربي">العربي</option>
+                        <option value="ساب">ساب</option>
+                        <option value="الفرنسي">الفرنسي</option>
+                        <option value="الجزيرة">الجزيرة</option>
+                        <option value="الاستثمار">الاستثمار</option>
+                        <option value="__other__" data-i18n="ui.otherBank">بنك آخر</option>
+                    </select>
+                </div>
+                <div id="modalBankOtherWrap" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.bankName">اسم البنك</label>
+                    <input type="text" id="modalBankOther" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.bankNamePh" placeholder="اكتب اسم البنك">
+                </div>
+                <div id="modalOtherWrap" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.payDetail">نوع السداد</label>
+                    <input type="text" id="modalOtherDetail" maxlength="40" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="ui.payDetailPh" placeholder="مثال: شيك">
+                </div>
             </div>
 
             <div>
@@ -4306,6 +4411,66 @@ function normalizeWhatsappDigits(value) {
     };
     return String(value || '').replace(/[٠-٩۰-۹]/g, (d) => map[d] || d);
 }
+
+function writeLatinDigits(el, text, caret) {
+    el.value = text;
+    if (typeof caret === 'number') {
+        try { el.setSelectionRange(caret, caret); } catch (err) {}
+    }
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+const numberFieldSelection = new WeakMap();
+
+document.addEventListener('mousedown', (event) => {
+    if (event.target?.type === 'number') numberFieldSelection.delete(event.target);
+}, true);
+
+document.addEventListener('select', (event) => {
+    const el = event.target;
+    if (!el || el.type !== 'number') return;
+    numberFieldSelection.set(el, { start: 0, end: String(el.value || '').length });
+});
+
+document.addEventListener('beforeinput', (event) => {
+    const data = event.data;
+    if (!data || !/[٠-٩۰-۹]/.test(data)) return;
+    const el = event.target;
+    if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+    event.preventDefault();
+    const converted = normalizeWhatsappDigits(data);
+    let start = null;
+    let end = null;
+    try {
+        start = el.selectionStart;
+        end = el.selectionEnd;
+    } catch (err) {}
+    if (el.type === 'number') {
+        const marked = numberFieldSelection.get(el);
+        if (marked && marked.end > marked.start) {
+            start = marked.start;
+            end = marked.end;
+        }
+        numberFieldSelection.delete(el);
+    }
+    const current = normalizeWhatsappDigits(el.value);
+    if (start == null || end == null) {
+        writeLatinDigits(el, current + converted, null);
+        return;
+    }
+    const next = current.slice(0, start) + converted + current.slice(end);
+    writeLatinDigits(el, next, start + converted.length);
+});
+
+document.addEventListener('input', (event) => {
+    const el = event.target;
+    if (!el || typeof el.value !== 'string' || !/[٠-٩۰-۹]/.test(el.value)) return;
+    const pos = el.selectionStart;
+    el.value = normalizeWhatsappDigits(el.value);
+    if (typeof pos === 'number') {
+        try { el.setSelectionRange(pos, pos); } catch (err) {}
+    }
+}, true);
 
 function supportWhatsappNumber() {
     let n = normalizeWhatsappDigits(FLEETOP_SUPPORT_WHATSAPP).replace(/[^\d]/g, '');
@@ -5914,12 +6079,15 @@ function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmou
         modalPaymentInput.value = 0; // افتراضياً يبدأ الصفر
     }
     
+    paintCommissionFieldLabels();
     const modalDriverCommission = document.getElementById('modalDriverCommission');
-    if (modalDriverCommission) modalDriverCommission.value = driverCommission || 0;
+    if (modalDriverCommission) {
+        const recorded = driverCommission !== null && driverCommission !== undefined && driverCommission !== '' && Number.isFinite(Number(driverCommission));
+        modalDriverCommission.value = recorded ? driverCommission : '';
+    }
     
     // تفريغ حقول طريقة السداد وتاريخ التحصيل افتراضياً عند فتح النافذة
-    const modalPaymentMethod = document.getElementById('modalPaymentMethod');
-    if (modalPaymentMethod) modalPaymentMethod.value = '';
+    applyPaymentMethodFields('modal', '');
     
     const modalCollectionDate = document.getElementById('modalCollectionDate');
     if (modalCollectionDate) modalCollectionDate.value = '';
@@ -5962,8 +6130,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('modalCollectionDate');
             
             if (val <= 0) {
-                if (methodSelect) methodSelect.value = ''; // جعل طريقة السداد فارغة
-                if (dateInput) dateInput.value = ''; // جعل التاريخ فارغاً
+                if (methodSelect) methodSelect.value = '';
+                applyPaymentMethodFields('modal', '');
+                if (dateInput) dateInput.value = '';
             }
         });
     }
@@ -5978,15 +6147,6 @@ async function populateFinancialFilters() {
         const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
         fillSelectOptions('finDriverFilter', tripDriverNameList(drivers), t('ui.allDrivers'));
         fillSelectOptions('finTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
-
-        const paymentSelect = document.getElementById('finPaymentMethodFilter');
-        if (paymentSelect) {
-            const current = paymentSelect.value;
-            const defaultMethods = ['نقدي', 'تحويل على الراجحي', 'تحويل على الأهلي'];
-            paymentSelect.innerHTML = `<option value="">${t('ui.allMethods')}</option>` +
-                defaultMethods.map(method => `<option value="${method}">${tv(method)}</option>`).join('');
-            if (current) paymentSelect.value = current;
-        }
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر التقرير المالي:', err);
     }
@@ -6040,7 +6200,7 @@ async function generateFinancialReport() {
 
         tbody.innerHTML = paymentRows.map(({ trip: tr, line }) => {
             const amount = line ? formatSAR(line.paid_amount || 0) : formatSAR(tr.total_amount || 0);
-            const method = line ? escapeHtml(tv(line.payment_method || 'بدون طريقة')) : '—';
+            const method = line ? escapeHtml(paymentMethodLabel(line.payment_method)) : '—';
             const collectDate = line ? escapeHtml(dateOnly(line.collection_date) || '—') : '---';
             return `
             <tr class="hover:bg-slate-50 transition">
@@ -6211,7 +6371,7 @@ function tripPaymentMethods(trip) {
 function paymentLinesForMethod(trip, selectedMethod) {
     const lines = paymentLineItems(trip);
     if (!selectedMethod) return lines;
-    return lines.filter(line => String(line.payment_method || '').trim() === selectedMethod);
+    return lines.filter(line => paymentMethodMatches(line.payment_method, selectedMethod));
 }
 
 function expandTripsByPaymentLines(trips, options = {}) {
@@ -6271,14 +6431,6 @@ async function populateReceivablesFilters(trips) {
             .map(trip => String(trip.client_name || '').trim())
             .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
         fillSelectOptions('recvClientFilter', clients, t('ui.allClients'));
-        const methodSelect = document.getElementById('recvPayMethodFilter');
-        if (methodSelect) {
-            const current = methodSelect.value;
-            const defaultMethods = ['نقدي', 'تحويل على الراجحي', 'تحويل على الأهلي'];
-            methodSelect.innerHTML = `<option value="">${t('ui.allMethods')}</option>` +
-                defaultMethods.map(method => `<option value="${method}">${tv(method)}</option>`).join('');
-            if (current) methodSelect.value = current;
-        }
     } catch (err) {
         console.error('خطأ في تعبئة فلاتر المستحقات:', err);
     }
@@ -6345,7 +6497,7 @@ async function generateReceivablesReport() {
                 ? escapeHtml(dateOnly(line.collection_date) || '—')
                 : '—';
             const method = line
-                ? escapeHtml(tv(line.payment_method || 'بدون طريقة'))
+                ? escapeHtml(paymentMethodLabel(line.payment_method))
                 : '—';
             const amount = line
                 ? formatSAR(line.paid_amount || 0)
@@ -6694,7 +6846,7 @@ function formatPaymentLines(trip) {
     const lines = paymentLineItems(trip);
     if (!lines.length) return '—';
     return lines.map((line, index) => {
-        const method = tv(line.payment_method || 'بدون طريقة');
+        const method = paymentMethodLabel(line.payment_method);
         const date = line.collection_date || t('ui.noDate');
         return `<div>${index + 1}. ${formatSAR(line.paid_amount)} — ${escapeHtml(method)} — ${escapeHtml(date)}</div>`;
     }).join('');
@@ -6719,7 +6871,7 @@ function formatRevenuePaymentCells(trip) {
         amount: lines.length > 1
             ? stackReportCell(lines.map(line => formatSAR(line.paid_amount)))
             : formatSAR(trip.total_amount || 0),
-        method: stackReportCell(lines.map(line => escapeHtml(tv(line.payment_method || 'بدون طريقة')))),
+        method: stackReportCell(lines.map(line => escapeHtml(paymentMethodLabel(line.payment_method)))),
         date: stackReportCell(lines.map(line => escapeHtml(line.collection_date || '—')))
     };
 }
@@ -6765,6 +6917,133 @@ function commissionAmount(trip) {
     return parseFloat(trip?.driver_commission || trip?.commission || 0) || 0;
 }
 
+function commissionMode() {
+    return String(companySettings?.commission_mode || 'optional') === 'required' ? 'required' : 'optional';
+}
+
+const PAYMENT_BANKS = ['الراجحي', 'الأهلي', 'الرياض', 'الإنماء', 'البلاد', 'العربي', 'ساب', 'الفرنسي', 'الجزيرة', 'الاستثمار'];
+
+function paymentMethodParts(value) {
+    const raw = String(value || '').trim();
+    if (raw === 'تحويل على الراجحي') return { kind: 'تحويل بنكي', detail: 'الراجحي' };
+    if (raw === 'تحويل على الأهلي') return { kind: 'تحويل بنكي', detail: 'الأهلي' };
+    const bank = raw.match(/^تحويل بنكي:\s*(.+)$/);
+    if (bank) return { kind: 'تحويل بنكي', detail: bank[1].trim() };
+    const other = raw.match(/^أخرى:\s*(.+)$/);
+    if (other) return { kind: 'أخرى', detail: other[1].trim() };
+    if (raw === 'نقدي' || raw === 'آجل' || raw === 'تحويل بنكي' || raw === 'أخرى') return { kind: raw, detail: '' };
+    return { kind: '', detail: '' };
+}
+
+function paymentMethodMatches(stored, filter) {
+    if (!filter) return true;
+    const parts = paymentMethodParts(stored);
+    if (parts.kind) return parts.kind === filter;
+    return String(stored || '').trim() === filter;
+}
+
+function paymentMethodLabel(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return tv('بدون طريقة');
+    const parts = paymentMethodParts(raw);
+    if (!parts.kind) return tv(raw);
+    if (!parts.detail) return tv(parts.kind);
+    return `${tv(parts.kind)} — ${tv(parts.detail)}`;
+}
+
+function syncPaymentDetail(prefix) {
+    const kind = document.getElementById(prefix + 'PaymentMethod')?.value || '';
+    const bank = document.getElementById(prefix + 'BankName')?.value || '';
+    document.getElementById(prefix + 'BankWrap')?.classList.toggle('hidden', kind !== 'تحويل بنكي');
+    document.getElementById(prefix + 'OtherWrap')?.classList.toggle('hidden', kind !== 'أخرى');
+    document.getElementById(prefix + 'BankOtherWrap')?.classList.toggle('hidden', kind !== 'تحويل بنكي' || bank !== '__other__');
+    if (prefix === 'modal' && (kind === 'نقدي' || kind === 'تحويل بنكي' || kind === 'أخرى')) {
+        const input = document.getElementById('modalPaymentInput');
+        const due = roundMoney(parseFloat(document.getElementById('modalDisplayRemaining')?.value) || 0);
+        const current = roundMoney(parseFloat(input?.value) || 0);
+        if (input && current <= 0 && due > 0) input.value = due;
+    }
+}
+
+function applyPaymentMethodFields(prefix, stored) {
+    const parts = paymentMethodParts(stored);
+    const method = document.getElementById(prefix + 'PaymentMethod');
+    const bank = document.getElementById(prefix + 'BankName');
+    const bankOther = document.getElementById(prefix + 'BankOther');
+    const other = document.getElementById(prefix + 'OtherDetail');
+    if (method) method.value = parts.kind;
+    if (bank) {
+        bank.value = parts.kind === 'تحويل بنكي' && PAYMENT_BANKS.includes(parts.detail)
+            ? parts.detail
+            : (parts.kind === 'تحويل بنكي' && parts.detail ? '__other__' : '');
+    }
+    if (bankOther) bankOther.value = parts.kind === 'تحويل بنكي' && !PAYMENT_BANKS.includes(parts.detail) ? parts.detail : '';
+    if (other) other.value = parts.kind === 'أخرى' ? parts.detail : '';
+    syncPaymentDetail(prefix);
+}
+
+function composePaymentMethod(prefix, requireKind) {
+    const kind = document.getElementById(prefix + 'PaymentMethod')?.value.trim() || '';
+    if (!kind) {
+        return requireKind
+            ? { ok: false, message: currentLang === 'en' ? 'Choose a payment method.' : 'يجب اختيار طريقة السداد' }
+            : { ok: true, value: '' };
+    }
+    if (kind === 'تحويل بنكي') {
+        const bank = document.getElementById(prefix + 'BankName')?.value || '';
+        const typed = document.getElementById(prefix + 'BankOther')?.value.trim() || '';
+        const name = bank === '__other__' ? typed : bank;
+        if (!name) return { ok: false, message: currentLang === 'en' ? 'Choose the bank.' : 'يجب اختيار البنك' };
+        return { ok: true, value: `تحويل بنكي: ${name}` };
+    }
+    if (kind === 'أخرى') {
+        const detail = document.getElementById(prefix + 'OtherDetail')?.value.trim() || '';
+        if (!detail) return { ok: false, message: currentLang === 'en' ? 'Enter the payment type.' : 'اكتب نوع طريقة السداد' };
+        return { ok: true, value: `أخرى: ${detail}` };
+    }
+    return { ok: true, value: kind };
+}
+
+function commissionFieldLabel() {
+    return currentLang === 'en' ? 'Driver commission' : 'عمولة السائق';
+}
+
+function paintCommissionFieldLabels() {
+    const createLabel = document.getElementById('driverCommissionLabel');
+    const editLabel = document.getElementById('editDriverCommissionLabel');
+    const completeLabel = document.getElementById('modalDriverCommissionLabel');
+    if (createLabel) createLabel.textContent = commissionFieldLabel('create');
+    if (editLabel) editLabel.textContent = commissionFieldLabel('edit');
+    if (completeLabel) completeLabel.textContent = commissionFieldLabel('complete');
+}
+
+function readCommissionAmount(input, allowEmpty) {
+    const raw = normalizeWhatsappDigits(input?.value).trim();
+    const required = commissionMode() === 'required';
+    const en = currentLang === 'en';
+    if (raw === '') {
+        if (allowEmpty) return { ok: true, value: null };
+        return {
+            ok: false,
+            message: en ? 'Driver commission is required.' : 'يجب تسجيل عمولة السائق'
+        };
+    }
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) {
+        return {
+            ok: false,
+            message: en ? 'Enter a valid commission amount.' : 'أدخل مبلغ عمولة صحيحاً'
+        };
+    }
+    if (required && !(amount > 1)) {
+        return {
+            ok: false,
+            message: en ? 'Driver commission must be greater than 1.' : 'يجب أن تكون عمولة السائق أكبر من 1'
+        };
+    }
+    return { ok: true, value: roundMoney(amount) };
+}
+
 async function fetchActiveTrips() {
     const { data, error } = await client.from('trips').select('trip_no, truck_plate, driver_name, status').eq('status', 'جارية');
     if (error) throw error;
@@ -6804,12 +7083,42 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
       async function confirmCompleteTrip(e) {
     if (e) e.preventDefault();
     if (completeTripBusy) return;
+
+    const tripId = document.getElementById('modalTripId').value;
+    const tripPreview = (typeof allTripsCache !== 'undefined' ? allTripsCache : []).find(item => String(item.trip_no) === String(tripId));
+    const endingNow = !tripPreview || String(tripPreview.status || '').trim() === 'جارية';
+    const commissionEntry = readCommissionAmount(document.getElementById('modalDriverCommission'), !endingNow);
+    if (!commissionEntry.ok) {
+        alert(currentLang === 'en' ? 'Driver commission is required.' : 'يجب تسجيل عمولة السائق');
+        document.getElementById('modalDriverCommission')?.focus();
+        return;
+    }
+    const driverCommission = commissionEntry.value;
+    const commissionRaw = commissionEntry.value == null ? '' : String(commissionEntry.value);
+    const paymentNow = roundMoney(parseFloat(document.getElementById('modalPaymentInput').value) || 0);
+    const paymentKind = document.getElementById('modalPaymentMethod')?.value.trim() || '';
+    if ((paymentKind === 'نقدي' || paymentKind === 'تحويل بنكي' || paymentKind === 'أخرى') && paymentNow <= 0) {
+        alert(currentLang === 'en' ? 'Enter the amount being paid.' : 'يجب تسجيل مبلغ السداد');
+        document.getElementById('modalPaymentInput')?.focus();
+        return;
+    }
+    const paymentEntry = composePaymentMethod('modal', paymentNow > 0);
+    if (!paymentEntry.ok) {
+        alert(paymentEntry.message);
+        document.getElementById('modalPaymentMethod')?.focus();
+        return;
+    }
+    const collectionDateNow = document.getElementById('modalCollectionDate')?.value.trim() || '';
+    if (paymentNow > 0 && !collectionDateNow) {
+        alert(currentLang === 'en' ? 'Enter the collection date.' : 'يجب تسجيل تاريخ التحصيل');
+        document.getElementById('modalCollectionDate')?.focus();
+        return;
+    }
+
     setCompleteTripBusy(true);
     
     try {
-        const tripId = document.getElementById('modalTripId').value;
         const additionalPayment = roundMoney(parseFloat(document.getElementById('modalPaymentInput').value) || 0);
-        const driverCommission = parseFloat(document.getElementById('modalDriverCommission').value) || 0;
         
         if (!tripId) {
             alert('رقم الرحلة غير موجود.');
@@ -6835,7 +7144,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         const newRemainingAmount = roundMoney(totalAmount - newPaidAmount);
         const paymentStatus = newRemainingAmount === 0 ? 'مسدد بالكامل' : (newPaidAmount > 0 ? 'سداد جزئي' : currentTrip.payment_status);
         
-        const paymentMethodVal = document.getElementById('modalPaymentMethod').value;
+        const paymentMethodVal = paymentEntry.value;
         const collectionDateVal = document.getElementById('modalCollectionDate').value;
         const completionDateVal = document.getElementById('modalCompletionDate')?.value || todayDateInput();
 
@@ -6852,13 +7161,13 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
        let updateData = {
             paid_amount: newPaidAmount,
             remaining_amount: newRemainingAmount,
-            payment_status: paymentStatus,
-            driver_commission: driverCommission
+            payment_status: paymentStatus
         };
+        if (commissionRaw !== '') updateData.driver_commission = driverCommission;
         if (endingActiveTrip) {
             updateData.status = 'مكتملة';
             updateData.completion_date = completionDateVal;
-            updateData.payment_method = paymentMethodVal ? paymentMethodVal.trim() : null;
+            updateData.payment_method = paymentMethodVal || null;
             updateData.collection_date = collectionDateVal ? collectionDateVal.trim() : null;
         }
         Object.keys(updateData).forEach(key => {
@@ -8766,7 +9075,7 @@ const I18N = {
         'log.trip.create': 'إضافة رحلة',
         'log.trip.edit': 'تعديل رحلة',
         'log.trip.complete': 'إنهاء رحلة',
-        'log.trip.settle': 'تسوية متبقي رحلة',
+        'log.trip.settle': 'تحصيل متبقي رحلة',
         'log.trip.cancel': 'إلغاء رحلة',
         'log.payout.create': 'صرف عمولة',
         'log.payout.edit': 'تعديل صرف عمولة',
@@ -8801,6 +9110,10 @@ const I18N = {
         'settings.logo': 'شعار الشركة',
         'settings.save': 'حفظ إعدادات الشركة',
         'settings.saved': 'تم حفظ بيانات الشركة.',
+        'settings.commissionTitle': 'إعدادات العمولة',
+        'settings.commissionHint': 'اختر إن كانت عمولة السائق اختيارية أو إجبارية لهذه الشركة.',
+        'settings.commissionOptional': 'اختياري',
+        'settings.commissionRequired': 'إجباري',
         'print.by': 'طُبع بواسطة: ',
         'print.at': 'تاريخ الطباعة: ',
         'role.admin': 'مدير',
@@ -8871,8 +9184,16 @@ const I18N = {
         'ui.payMethod': 'طريقة السداد',
         'ui.allMethods': 'جميع الطرق',
         'ui.cash': 'نقدي',
-        'ui.rajhi': 'تحويل على الراجحي',
-        'ui.ahli': 'تحويل على الأهلي',
+        'ui.credit': 'آجل',
+        'ui.bankTransfer': 'تحويل بنكي',
+        'ui.otherPay': 'أخرى',
+        'ui.bank': 'البنك',
+        'ui.chooseBank': 'اختر البنك',
+        'ui.otherBank': 'بنك آخر',
+        'ui.bankName': 'اسم البنك',
+        'ui.bankNamePh': 'اكتب اسم البنك',
+        'ui.payDetail': 'نوع السداد',
+        'ui.payDetailPh': 'مثال: شيك',
         'ui.runFilter': 'تشغيل الفلتر',
         'ui.revenueDetails': 'تفاصيل الإيرادات',
         'th.tripDate': 'تاريخ الرحلة',
@@ -9024,8 +9345,21 @@ const I18N = {
         'v.غير مسدد': 'غير مسدد',
         'v.ساقط من الحساب': 'ساقط من الحساب',
         'v.نقدي': 'نقدي',
-        'v.تحويل على الراجحي': 'تحويل على الراجحي',
-        'v.تحويل على الأهلي': 'تحويل على الأهلي',
+        'v.آجل': 'آجل',
+        'v.تحويل بنكي': 'تحويل بنكي',
+        'v.أخرى': 'أخرى',
+        'v.الراجحي': 'الراجحي',
+        'v.الأهلي': 'الأهلي',
+        'v.الرياض': 'الرياض',
+        'v.الإنماء': 'الإنماء',
+        'v.البلاد': 'البلاد',
+        'v.العربي': 'العربي',
+        'v.ساب': 'ساب',
+        'v.الفرنسي': 'الفرنسي',
+        'v.الجزيرة': 'الجزيرة',
+        'v.الاستثمار': 'الاستثمار',
+        'v.تحويل على الراجحي': 'تحويل بنكي — الراجحي',
+        'v.تحويل على الأهلي': 'تحويل بنكي — الأهلي',
         'v.بدون طريقة': 'بدون طريقة',
         'v.دفعة سابقة': 'دفعة سابقة',
         'ui.choosePayMethod': 'اختر طريقة السداد...',
@@ -9111,7 +9445,7 @@ const I18N = {
         'ui.edit': 'تعديل',
         'ui.finishSettle': 'إنهاء وتسوية',
         'ui.cancelTrip': 'إلغاء',
-        'ui.settleRemain': 'تسوية المتبقي',
+        'ui.settleRemain': 'تحصيل المتبقي',
         'ui.cancelledTrip': 'رحلة ملغاة',
         'ui.donePaid': 'منتهية ومسددة',
         'ui.amountDropped': 'المبلغ: ساقط',
@@ -9381,7 +9715,7 @@ const I18N = {
         'log.trip.create': 'Add trip',
         'log.trip.edit': 'Edit trip',
         'log.trip.complete': 'Complete trip',
-        'log.trip.settle': 'Settle remaining',
+        'log.trip.settle': 'Collect balance',
         'log.trip.cancel': 'Cancel trip',
         'log.payout.create': 'Pay commission',
         'log.payout.edit': 'Edit commission payout',
@@ -9416,6 +9750,10 @@ const I18N = {
         'settings.logo': 'Company logo',
         'settings.save': 'Save company settings',
         'settings.saved': 'Company details saved.',
+        'settings.commissionTitle': 'Commission settings',
+        'settings.commissionHint': 'Choose whether driver commission is optional or required for this company.',
+        'settings.commissionOptional': 'Optional',
+        'settings.commissionRequired': 'Required',
         'print.by': 'Printed by: ',
         'print.at': 'Printed on: ',
         'role.admin': 'Admin',
@@ -9486,8 +9824,16 @@ const I18N = {
         'ui.payMethod': 'Payment method',
         'ui.allMethods': 'All methods',
         'ui.cash': 'Cash',
-        'ui.rajhi': 'Al Rajhi transfer',
-        'ui.ahli': 'Al Ahli transfer',
+        'ui.credit': 'Credit',
+        'ui.bankTransfer': 'Bank transfer',
+        'ui.otherPay': 'Other',
+        'ui.bank': 'Bank',
+        'ui.chooseBank': 'Choose a bank',
+        'ui.otherBank': 'Another bank',
+        'ui.bankName': 'Bank name',
+        'ui.bankNamePh': 'Type the bank name',
+        'ui.payDetail': 'Payment type',
+        'ui.payDetailPh': 'Example: cheque',
         'ui.runFilter': 'Apply filter',
         'ui.revenueDetails': 'Revenue details',
         'th.tripDate': 'Trip date',
@@ -9646,8 +9992,20 @@ const I18N = {
         'v.غير مسدد': 'Unpaid',
         'v.ساقط من الحساب': 'Written off',
         'v.نقدي': 'Cash',
-        'v.تحويل على الراجحي': 'Al Rajhi transfer',
-        'v.تحويل على الأهلي': 'Al Ahli transfer',
+        'v.آجل': 'Credit',
+        'v.تحويل بنكي': 'Bank transfer',
+        'v.الراجحي': 'Al Rajhi',
+        'v.الأهلي': 'Al Ahli',
+        'v.الرياض': 'Riyad',
+        'v.الإنماء': 'Alinma',
+        'v.البلاد': 'Albilad',
+        'v.العربي': 'Arab National',
+        'v.ساب': 'SAB',
+        'v.الفرنسي': 'Banque Saudi Fransi',
+        'v.الجزيرة': 'Bank AlJazira',
+        'v.الاستثمار': 'Saudi Investment Bank',
+        'v.تحويل على الراجحي': 'Bank transfer — Al Rajhi',
+        'v.تحويل على الأهلي': 'Bank transfer — Al Ahli',
         'v.بدون طريقة': 'No method',
         'v.دفعة سابقة': 'Previous payment',
         'ui.choosePayMethod': 'Choose payment method...',
@@ -9726,7 +10084,7 @@ const I18N = {
         'ui.edit': 'Edit',
         'ui.finishSettle': 'Complete and settle',
         'ui.cancelTrip': 'Cancel',
-        'ui.settleRemain': 'Settle remaining',
+        'ui.settleRemain': 'Collect balance',
         'ui.cancelledTrip': 'Cancelled trip',
         'ui.donePaid': 'Completed and paid',
         'ui.amountDropped': 'Amount: written off',
@@ -9911,6 +10269,12 @@ async function loadCompanySettings() {
         const { data, error } = await query;
         if (error) throw error;
         companySettings = data && data[0] ? data[0] : {};
+        try {
+            const cached = JSON.parse(localStorage.getItem(companySettingsStorageKey()) || '{}');
+            if (companySettings.commission_mode == null && cached.commission_mode) {
+                companySettings.commission_mode = cached.commission_mode;
+            }
+        } catch (cacheErr) {}
     } catch (err) {
         try {
             companySettings = JSON.parse(localStorage.getItem(companySettingsStorageKey()) || localStorage.getItem('fleetop_company') || '{}');
@@ -9920,6 +10284,7 @@ async function loadCompanySettings() {
     }
     fillCompanySettingsForm();
     applyCompanyBranding();
+    paintCommissionFieldLabels();
 }
 
 function fillCompanySettingsForm() {
@@ -9944,6 +10309,10 @@ function fillCompanySettingsForm() {
         preview.src = companySettings.logo_data || '';
         preview.classList.toggle('hidden', !companySettings.logo_data);
     }
+    const mode = commissionMode();
+    document.querySelectorAll('input[name="commissionMode"]').forEach(input => {
+        input.checked = input.value === mode;
+    });
 }
 
 async function saveCompanySettings(e) {
@@ -9960,6 +10329,7 @@ async function saveCompanySettings(e) {
         vat_number: emptyToNull(document.getElementById('companyVat')?.value),
         address: emptyToNull(document.getElementById('companyAddress')?.value),
         logo_data: companySettings.logo_data || null,
+        commission_mode: document.querySelector('input[name="commissionMode"]:checked')?.value === 'required' ? 'required' : 'optional',
         updated_at: new Date().toISOString()
     });
     const write = (data) => {
@@ -10623,7 +10993,7 @@ function renderTripsTable(trips) {
 
             if (tr.status === 'جارية') {
                 actionButtons = `
-                    <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.finishSettle')}">
+                    <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission == null || tr.driver_commission === '' ? 'null' : Number(tr.driver_commission)})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.finishSettle')}">
                         <i class="fa-solid fa-flag-checkered ml-1"></i> ${t('ui.finishSettle')}
                     </button>
                     <button onclick="cancelTrip('${tr.trip_no}')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.cancelTrip')}">
@@ -10635,7 +11005,7 @@ function renderTripsTable(trips) {
             } else {
                 if (currentRemaining > 0) {
                     actionButtons = `
-                        <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission || 0})" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.settleRemain')}">
+                        <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission == null || tr.driver_commission === '' ? 'null' : Number(tr.driver_commission)})" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.settleRemain')}">
                             <i class="fa-solid fa-wallet ml-1"></i> ${t('ui.settleRemain')}
                         </button>
                     `;
@@ -10664,7 +11034,7 @@ function renderTripsTable(trips) {
                         <div class="font-bold text-slate-900">${t('ui.total')}: ${formatSAR(tr.total_amount)}</div>
                         <div class="text-emerald-600">${t('ui.paid')}: ${formatSAR(tr.paid_amount)}</div>
                         <div class="text-rose-600">${t('ui.remaining')}: ${formatSAR(tr.remaining_amount)}</div>
-                        <div class="text-amber-600 font-bold mt-0.5">${t('ui.commission')}: ${formatSAR(tr.driver_commission || 0)}</div>
+                        <div class="text-amber-600 font-bold mt-0.5">${t('ui.commission')}: ${tr.driver_commission == null || tr.driver_commission === '' ? '—' : formatSAR(tr.driver_commission)}</div>
                         `}
                     </td>
                     <td class="p-3.5 space-y-1.5">
@@ -10955,6 +11325,7 @@ function openAddTripModal() {
     loadDropdowns();
     loadTripSuggestions();
     bindTripSuggestions();
+    paintCommissionFieldLabels();
     document.getElementById('addTripModal').classList.remove('hidden');
 }
 // 2. إغلاق نافذة إضافة رحلة جديدة وتصفير النموذج بالكامل
@@ -10978,7 +11349,13 @@ function closeAddTripModal() {
     const departure_date = document.getElementById('departureDate').value;
     const truck_plate = document.getElementById('tripTruck').value;
     const driver_name = document.getElementById('tripDriver').value;
-    const driver_commission = parseFloat(document.getElementById('driverCommissionInput').value) || 0;
+    const commissionEntry = readCommissionAmount(document.getElementById('driverCommissionInput'), true);
+    if (!commissionEntry.ok) {
+        alert(commissionEntry.message);
+        document.getElementById('driverCommissionInput')?.focus();
+        return;
+    }
+    const driver_commission = commissionEntry.value;
     const amountParts = tripAmountBreakdown();
     const { total: total_amount } = amountParts;
     let paid_amount = parseFloat(document.getElementById('paidAmount').value) || 0;
@@ -11209,7 +11586,7 @@ async function openEditTripModal(tripNo) {
         input.checked = input.value === tripType;
     });
     document.getElementById('editDepartureDate').value = dateInputValue(trip.departure_date);
-    document.getElementById('editDriverCommission').value = trip.driver_commission || 0;
+    document.getElementById('editDriverCommission').value = trip.driver_commission == null || trip.driver_commission === '' ? '' : trip.driver_commission;
     document.getElementById('editPaidAmount').value = trip.paid_amount || 0;
     const savedMode = String(trip.vat_mode || 'inclusive').toLowerCase() === 'exclusive' ? 'exclusive' : 'inclusive';
     document.querySelectorAll('input[name="editVatMode"]').forEach(input => {
@@ -11221,15 +11598,7 @@ async function openEditTripModal(tripNo) {
         : totalStored;
     document.getElementById('editTotalAmount').value = amountField;
     paintEditVatRecordedNote(trip);
-    const method = document.getElementById('editPaymentMethod');
-    [...method.options].forEach(option => {
-        if (option.dataset.extra) option.remove();
-    });
-    const knownMethod = [...method.options].some(option => option.value === (trip.payment_method || ''));
-    if (!knownMethod && trip.payment_method) {
-        method.insertAdjacentHTML('beforeend', `<option data-extra="1" value="${escapeHtml(trip.payment_method)}">${escapeHtml(tv(trip.payment_method))}</option>`);
-    }
-    method.value = trip.payment_method || '';
+    applyPaymentMethodFields('edit', trip.payment_method || '');
     document.getElementById('editCollectionDate').value = dateInputValue(trip.collection_date);
     const editCompletionDate = document.getElementById('editCompletionDate');
     if (editCompletionDate) {
@@ -11240,6 +11609,7 @@ async function openEditTripModal(tripNo) {
     calculateEditRemaining();
     loadTripSuggestions();
     bindTripSuggestions();
+    paintCommissionFieldLabels();
     document.getElementById('editTripModal').classList.remove('hidden');
 }
 
@@ -11261,7 +11631,14 @@ async function saveEditTrip(e) {
     const departure_date = document.getElementById('editDepartureDate').value;
     const truck_plate = document.getElementById('editTripTruck').value.trim();
     const driver_name = document.getElementById('editTripDriver').value.trim();
-    const driver_commission = roundMoney(parseFloat(document.getElementById('editDriverCommission').value) || 0);
+    const tripStillActive = String(trip.status || '').trim() === 'جارية';
+    const commissionEntry = readCommissionAmount(document.getElementById('editDriverCommission'), tripStillActive);
+    if (!commissionEntry.ok) {
+        alert(commissionEntry.message);
+        document.getElementById('editDriverCommission')?.focus();
+        return;
+    }
+    const driver_commission = commissionEntry.value;
     const amountParts = editAmountBreakdown();
     const { total: total_amount } = amountParts;
     let paid_amount = roundMoney(parseFloat(document.getElementById('editPaidAmount').value) || 0);
@@ -11271,7 +11648,13 @@ async function saveEditTrip(e) {
     }
     const remaining_amount = roundMoney(total_amount - paid_amount);
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
-    const payment_method = document.getElementById('editPaymentMethod').value.trim() || null;
+    const paymentEntry = composePaymentMethod('edit', paid_amount > 0);
+    if (!paymentEntry.ok) {
+        alert(paymentEntry.message);
+        document.getElementById('editPaymentMethod')?.focus();
+        return;
+    }
+    const payment_method = paymentEntry.value || null;
     const collection_date = document.getElementById('editCollectionDate').value || null;
     const completion_date = document.getElementById('editCompletionDate')?.value || null;
 
