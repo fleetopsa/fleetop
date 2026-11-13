@@ -4310,13 +4310,13 @@ function canViewFacilityDocs(user = currentLoggedInUser) {
     return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
 }
 
-/** المحاسب يعدّل ويحدّث فقط؛ الإضافة والحذف للمدير */
+/** المحاسب والمدير: عرض وإضافة وتعديل؛ الحذف للمدير فقط */
 function canEditFacilityDocs(user = currentLoggedInUser) {
     return canViewFacilityDocs(user);
 }
 
 function canAddFacilityDocs(user = currentLoggedInUser) {
-    return isAdminUser(user) || isSupportMode(user);
+    return canViewFacilityDocs(user);
 }
 
 function canDeleteFacilityDocs(user = currentLoggedInUser) {
