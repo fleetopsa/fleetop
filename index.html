@@ -1446,7 +1446,7 @@
                             <i id="facilityMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
                         <div id="facilitySubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('facility')" data-nav="facility" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                            <button onclick="switchTab('facility')" id="tabFacilityDocsBtn" data-nav="facility" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                 <i class="fa-solid fa-file-shield ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.facilityDocs">التراخيص والاشتراكات</span>
                             </button>
                             <button onclick="switchTab('trucks')" id="tabVehiclesBtn" data-nav="trucks" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
@@ -1483,7 +1483,7 @@
                                     <button onclick="switchTab('reports')" id="tabReportsBtn" data-nav="reports" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-route ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.opsMovement">تقرير حركة التشغيل</span>
                                     </button>
-                                    <button onclick="switchTab('maintenanceReport')" data-nav="maintenanceReport" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                    <button onclick="switchTab('maintenanceReport')" id="tabMaintReportBtn" data-nav="maintenanceReport" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-screwdriver-wrench ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.maintReports">تقرير حركة الصيانة</span>
                                     </button>
                                 </div>
@@ -4291,6 +4291,35 @@ function isAdminUser(user = currentLoggedInUser) {
     if (isSuperAdminUser(user)) return true;
     const role = String(user.role || '').trim().toLowerCase();
     return role === 'admin' || role === 'مدير';
+}
+
+function isAccountantUser(user = currentLoggedInUser) {
+    if (!user) return false;
+    const role = String(user.role || '').trim().toLowerCase();
+    return role === 'accountant' || role === 'محاسب';
+}
+
+/** تعديل/حذف المركبات والموظفين + التراخيص: مدير ودعم المنصة فقط */
+function canManageFleetRecords(user = currentLoggedInUser) {
+    return isAdminUser(user) || isSupportMode(user);
+}
+
+function canViewFacilityDocs(user = currentLoggedInUser) {
+    return canManageFleetRecords(user);
+}
+
+/** التقارير العامة وتقرير حركة الصيانة: ليست للمستخدم العادي */
+function canViewRestrictedReports(user = currentLoggedInUser) {
+    return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
+}
+
+function applyRoleBasedNav(user = currentLoggedInUser) {
+    const facilityDocsBtn = document.getElementById('tabFacilityDocsBtn');
+    if (facilityDocsBtn) facilityDocsBtn.classList.toggle('hidden', !canViewFacilityDocs(user));
+    const generalReportsBtn = document.getElementById('tabGeneralReportsBtn');
+    if (generalReportsBtn) generalReportsBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
+    const maintReportBtn = document.getElementById('tabMaintReportBtn');
+    if (maintReportBtn) maintReportBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
 }
 
 function updateSidebarIdentity(user = currentLoggedInUser) {
@@ -11366,6 +11395,7 @@ function setAppLang(lang) {
     applyCompanyBranding();
     if (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) {
         updateSidebarIdentity(currentLoggedInUser);
+        if (typeof applyRoleBasedNav === 'function') applyRoleBasedNav(currentLoggedInUser);
         if (isPlatformHomeUser(currentLoggedInUser)) {
             const platformBadge = document.getElementById('platformUserBadge');
             if (platformBadge) {
@@ -11568,6 +11598,19 @@ function setActiveNav(tabId) {
 }
 
 function switchTab(tabId) {
+    if (tabId === 'facility' && !canViewFacilityDocs()) {
+        alert(currentLang === 'en' ? 'This section is available to administrators only.' : 'هذا القسم متاح لصلاحيات المدير فقط.');
+        return;
+    }
+    if ((tabId === 'analytics' || tabId === 'analyticsSection') && !canViewRestrictedReports()) {
+        alert(currentLang === 'en' ? 'General reports are not available for your role.' : 'التقارير العامة غير متاحة لصلاحيتك.');
+        return;
+    }
+    if (tabId === 'maintenanceReport' && !canViewRestrictedReports()) {
+        alert(currentLang === 'en' ? 'Maintenance reports are not available for your role.' : 'تقرير حركة الصيانة غير متاح لصلاحيتك.');
+        return;
+    }
+
     currentNavTab = tabId;
     resetFiltersForScreen(tabId);
     setActiveNav(tabId);
@@ -13014,10 +13057,12 @@ async function saveEditTrip(e) {
                                     ...(cargo ? [{ label: 'بطاقة التشغيل', date: tr.operation_card_expiry }] : [])
                                 ])}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
+${canManageFleetRecords() ? `
 <button onclick="editTruck(${tr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
     <i class="fa-solid fa-pen-to-square"></i>
 </button>
 <button onclick="deleteTruck(${tr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+` : '<span class="text-slate-300">—</span>'}
                                 </td>
                             </tr>
                         `;
@@ -13073,6 +13118,10 @@ async function cancelTrip(tripNo) {
         async function saveTruck(e) {
             e.preventDefault();
             const id = document.getElementById('truckId').value;
+            if (id && !canManageFleetRecords()) {
+                alert(currentLang === 'en' ? 'Editing vehicles is available to administrators only.' : 'تعديل المركبات متاح لصلاحيات المدير فقط.');
+                return;
+            }
             const plate = document.getElementById('truckPlate').value.trim();
             const model = document.getElementById('truckModel').value.trim();
             const status = document.getElementById('truckStatus').value;
@@ -13114,6 +13163,10 @@ async function cancelTrip(tripNo) {
         }
 
    function editTruck(id) {
+    if (!canManageFleetRecords()) {
+        alert(currentLang === 'en' ? 'Editing vehicles is available to administrators only.' : 'تعديل المركبات متاح لصلاحيات المدير فقط.');
+        return;
+    }
     const tr = allTrucksById[id];
     if (!tr) return;
     document.getElementById('truckId').value = tr.id || '';
@@ -13161,6 +13214,10 @@ async function cancelTrip(tripNo) {
         }
 
         async function deleteTruck(id) {
+            if (!canManageFleetRecords()) {
+                alert(currentLang === 'en' ? 'Deleting vehicles is available to administrators only.' : 'حذف المركبات متاح لصلاحيات المدير فقط.');
+                return;
+            }
             if (confirm('هل أنت متأكد من الحذف؟')) {
                 const { error } = await client.from('trucks').delete().eq('id', id);
                 if (!error) {
@@ -13236,8 +13293,10 @@ async function cancelTrip(tripNo) {
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في إجازة' ? 'إجازة' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
+                                    ${canManageFleetRecords() ? `
                                     <button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button onclick="deleteDriver(${dr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+                                    ` : '<span class="text-slate-300">—</span>'}
                                 </td>
                             </tr>
                         `;
@@ -13254,6 +13313,10 @@ async function cancelTrip(tripNo) {
         async function saveDriver(e) {
             e.preventDefault();
             const id = document.getElementById('driverId').value;
+            if (id && !canManageFleetRecords()) {
+                alert(currentLang === 'en' ? 'Editing employees is available to administrators only.' : 'تعديل الموظفين متاح لصلاحيات المدير فقط.');
+                return;
+            }
             const name = document.getElementById('driverName').value.trim();
             const phone = document.getElementById('driverPhone').value.trim();
             const status = document.getElementById('driverStatus').value;
@@ -13296,6 +13359,10 @@ async function cancelTrip(tripNo) {
         }
 
         function editDriver(id) {
+            if (!canManageFleetRecords()) {
+                alert(currentLang === 'en' ? 'Editing employees is available to administrators only.' : 'تعديل الموظفين متاح لصلاحيات المدير فقط.');
+                return;
+            }
             const dr = allDriversById[id];
             if (!dr) return;
             document.getElementById('driverId').value = dr.id;
@@ -13331,6 +13398,10 @@ async function cancelTrip(tripNo) {
         }
 
         async function deleteDriver(id) {
+            if (!canManageFleetRecords()) {
+                alert(currentLang === 'en' ? 'Deleting employees is available to administrators only.' : 'حذف الموظفين متاح لصلاحيات المدير فقط.');
+                return;
+            }
             if (confirm('هل أنت متأكد من الحذف؟')) {
                 const { error } = await client.from('drivers').delete().eq('id', id);
                 if (!error) {
@@ -13726,6 +13797,7 @@ async function loadUsers(options = {}) {
             const systemMenu = document.getElementById('systemMenu');
             if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
             toggleSystemMenu(false);
+            if (typeof applyRoleBasedNav === 'function') applyRoleBasedNav(user);
             setAppLang(currentLang);
             updateSidebarIdentity(currentLoggedInUser);
             sessionEndFlushed = false;
