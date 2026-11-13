@@ -2220,11 +2220,12 @@
                     <div id="facilityExpiryList" class="space-y-1 text-xs"></div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                    <div class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                    <div id="facilityDocFormCard" class="xl:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
                         <h3 id="facilityFormTitle" class="font-bold text-slate-900 text-sm mb-4 flex items-center border-b border-slate-100 pb-3">
                             <i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> <span data-i18n="ui.addLicense">إضافة سجل أو ترخيص</span>
                         </h3>
-                        <form onsubmit="saveFacilityDocument(event)" class="space-y-3.5">
+                        <p id="facilityDocEditHint" class="hidden text-[11px] text-slate-500 mb-3">اضغط تعديل على أحد السجلات لتحديث بياناته.</p>
+                        <form id="facilityDocForm" onsubmit="saveFacilityDocument(event)" class="space-y-3.5">
                             <input type="hidden" id="facilityDocId">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.docName">اسم السجل / الترخيص</label>
@@ -4299,13 +4300,27 @@ function isAccountantUser(user = currentLoggedInUser) {
     return role === 'accountant' || role === 'محاسب';
 }
 
-/** تعديل/حذف المركبات والموظفين + التراخيص: مدير ودعم المنصة فقط */
+/** تعديل/حذف المركبات والموظفين: مدير ودعم المنصة فقط */
 function canManageFleetRecords(user = currentLoggedInUser) {
     return isAdminUser(user) || isSupportMode(user);
 }
 
+/** التراخيص والاشتراكات: المدير والمحاسب ودعم المنصة */
 function canViewFacilityDocs(user = currentLoggedInUser) {
-    return canManageFleetRecords(user);
+    return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
+}
+
+/** المحاسب يعدّل ويحدّث فقط؛ الإضافة والحذف للمدير */
+function canEditFacilityDocs(user = currentLoggedInUser) {
+    return canViewFacilityDocs(user);
+}
+
+function canAddFacilityDocs(user = currentLoggedInUser) {
+    return isAdminUser(user) || isSupportMode(user);
+}
+
+function canDeleteFacilityDocs(user = currentLoggedInUser) {
+    return isAdminUser(user) || isSupportMode(user);
 }
 
 /** التقارير العامة وتقرير حركة الصيانة: ليست للمستخدم العادي */
@@ -9627,9 +9642,10 @@ async function loadFacilityDocuments() {
                     <td class="p-3.5">${escapeHtml(tv(doc.doc_type || '—'))}</td>
                     <td class="p-3.5 font-mono">${escapeHtml(doc.doc_number || '—')}</td>
                     <td class="p-3.5">${expiryBadgeHtml(doc.expiry_date)}</td>
-                    <td class="p-3.5 text-center">
-                        <button type="button" onclick="editFacilityDocument(${doc.id})" class="text-amber-600 font-bold p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button type="button" onclick="deleteFacilityDocument(${doc.id})" class="text-rose-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    <td class="p-3.5 text-center space-x-1 space-x-reverse">
+                        ${canEditFacilityDocs() ? `<button type="button" onclick="editFacilityDocument(${doc.id})" class="text-amber-600 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+                        ${canDeleteFacilityDocs() ? `<button type="button" onclick="deleteFacilityDocument(${doc.id})" class="text-rose-500 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        ${!canEditFacilityDocs() && !canDeleteFacilityDocs() ? '<span class="text-slate-300">—</span>' : ''}
                     </td>
                 </tr>
             `).join('');
@@ -9656,9 +9672,39 @@ async function loadFacilityDocuments() {
     }
 }
 
+function syncFacilityDocsFormAccess(editing = false) {
+    const formCard = document.getElementById('facilityDocFormCard');
+    const form = document.getElementById('facilityDocForm');
+    const hint = document.getElementById('facilityDocEditHint');
+    const canEdit = canEditFacilityDocs();
+    const canAdd = canAddFacilityDocs();
+    if (!formCard) return;
+    if (!canEdit) {
+        formCard.classList.add('hidden');
+        return;
+    }
+    formCard.classList.remove('hidden');
+    if (canAdd) {
+        if (form) form.classList.remove('hidden');
+        if (hint) hint.classList.add('hidden');
+        return;
+    }
+    // محاسب: نموذج التعديل يظهر بعد الضغط على تعديل فقط
+    if (hint) hint.classList.toggle('hidden', !!editing);
+    if (form) form.classList.toggle('hidden', !editing);
+}
+
 async function saveFacilityDocument(e) {
     e.preventDefault();
+    if (!canEditFacilityDocs()) {
+        alert(currentLang === 'en' ? 'You do not have permission to update licenses.' : 'ليست لديك صلاحية تحديث التراخيص.');
+        return;
+    }
     const id = document.getElementById('facilityDocId').value;
+    if (!id && !canAddFacilityDocs()) {
+        alert(currentLang === 'en' ? 'Accountants can update existing licenses only.' : 'صلاحية المحاسب تقتصر على تعديل التراخيص الحالية فقط.');
+        return;
+    }
     const payload = withCompany({
         title: document.getElementById('facilityDocTitle').value.trim(),
         doc_type: document.getElementById('facilityDocType').value,
@@ -9685,8 +9731,13 @@ async function saveFacilityDocument(e) {
 }
 
 function editFacilityDocument(id) {
+    if (!canEditFacilityDocs()) {
+        alert(currentLang === 'en' ? 'You do not have permission to edit licenses.' : 'ليست لديك صلاحية تعديل التراخيص.');
+        return;
+    }
     const doc = allFacilityDocs.find(row => Number(row.id) === Number(id));
     if (!doc) return;
+    syncFacilityDocsFormAccess(true);
     document.getElementById('facilityDocId').value = doc.id;
     document.getElementById('facilityDocTitle').value = doc.title || '';
     document.getElementById('facilityDocType').value = doc.doc_type || 'أخرى';
@@ -9702,11 +9753,18 @@ function resetFacilityDocForm() {
     document.getElementById('facilityDocId').value = '';
     document.querySelector('#facilitySection form')?.reset();
     document.getElementById('facilityDocType').value = '';
-    document.getElementById('facilityFormTitle').innerHTML = '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة سجل أو ترخيص';
-    document.getElementById('saveFacilityDocBtn').innerText = 'حفظ';
+    document.getElementById('facilityFormTitle').innerHTML = canAddFacilityDocs()
+        ? '<i class="fa-solid fa-circle-plus text-amber-500 ml-2"></i> إضافة سجل أو ترخيص'
+        : '<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> تعديل سجل أو ترخيص';
+    document.getElementById('saveFacilityDocBtn').innerText = canAddFacilityDocs() ? 'حفظ' : 'تحديث';
+    syncFacilityDocsFormAccess(false);
 }
 
 async function deleteFacilityDocument(id) {
+    if (!canDeleteFacilityDocs()) {
+        alert(currentLang === 'en' ? 'Deleting licenses is available to administrators only.' : 'حذف التراخيص متاح لصلاحيات المدير فقط.');
+        return;
+    }
     if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
     const { error } = await client.from('facility_documents').delete().eq('id', id);
     if (error) {
@@ -11675,6 +11733,7 @@ function switchTab(tabId) {
             section.classList.remove('hidden');
             section.scrollTop = 0;
         }
+        if (typeof syncFacilityDocsFormAccess === 'function') syncFacilityDocsFormAccess(false);
         if (typeof loadFacilityDocuments === 'function') loadFacilityDocuments();
         return;
     }
