@@ -1732,9 +1732,17 @@
                     <span data-i18n="expiry.reportTitle">تقرير الموظفين والمركبات والسجلات</span>
                 </h3>
                 <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="expiry.reportSub">ابحث بالاسم أو رقم الإقامة أو اللوحة ثم اضغط إدخال لعرض التقرير المفصّل</p>
-                <div class="mt-2.5 w-full max-w-md">
-                    <input type="text" id="expirySearchQuery" onkeydown="if(event.key==='Enter'){event.preventDefault();renderExpiryReport();}" autocomplete="off" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="expiry.searchPh" placeholder="اسم الموظف / رقم الإقامة / رقم اللوحة">
-                    <label class="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-600 cursor-pointer select-none">
+                <div class="mt-2.5 w-full max-w-xl space-y-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="expirySearchQuery" onkeydown="if(event.key==='Enter'){event.preventDefault();renderExpiryReport();}" autocomplete="off" class="w-full sm:flex-1 min-w-0 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="expiry.searchPh" placeholder="اسم الموظف / رقم الإقامة / رقم اللوحة">
+                        <select id="expiryEntityGroup" onchange="renderExpiryReport()" class="w-full sm:w-48 shrink-0 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <option value="" data-i18n="expiry.allEntities">كل التصنيفات</option>
+                            <option value="staff" data-i18n="expiry.filterStaff">موظف</option>
+                            <option value="vehicle" data-i18n="expiry.filterVehicle">مركبة</option>
+                            <option value="facility" data-i18n="expiry.filterFacility">منشأة</option>
+                        </select>
+                    </div>
+                    <label class="flex items-center gap-2 text-[11px] font-bold text-slate-600 cursor-pointer select-none">
                         <input type="checkbox" id="expiryNearOnly" onchange="onExpiryNearOnlyChange()" class="rounded border-slate-300 text-amber-500 focus:ring-amber-500 flex-shrink-0">
                         <span data-i18n="expiry.nearOnly">إظهار الوثائق التي شارفت على الانتهاء</span>
                     </label>
@@ -5745,6 +5753,7 @@ function resetFiltersForScreen(tabId) {
     }
     if (id === 'analytics' || id === 'analyticsSection') {
         setFilterValue('expirySearchQuery', '');
+        setFilterValue('expiryEntityGroup', '');
         const nearOnly = document.getElementById('expiryNearOnly');
         if (nearOnly) nearOnly.checked = false;
         return;
@@ -9266,7 +9275,8 @@ function buildExpiryProfiles() {
                 date: ends,
                 days: ok ? days : (days === null ? -1 : Math.min(days, -1))
             }],
-            searchBlob: `${companyName} اشتراك المنصة subscription`.toLowerCase()
+            searchName: companyName.toLowerCase(),
+            searchKeys: ''
         });
     }
     (expiryProfileCache.docs || []).forEach(doc => {
@@ -9281,7 +9291,8 @@ function buildExpiryProfiles() {
             subtitle: doc.doc_type || '',
             meta: [],
             docs,
-            searchBlob: `${doc.title || ''} ${doc.doc_number || ''} ${doc.doc_type || ''}`.toLowerCase()
+            searchName: String(doc.title || '').toLowerCase(),
+            searchKeys: String(doc.doc_number || '').toLowerCase()
         });
     });
     (expiryProfileCache.trucks || []).forEach(truck => {
@@ -9302,7 +9313,8 @@ function buildExpiryProfiles() {
                 { label: t('th.status'), value: tv(truck.status || '—') }
             ],
             docs: expiryDocRowsFromFields(fields),
-            searchBlob: `${plate} ${truck.model || ''} ${truck.status || ''}`.toLowerCase()
+            searchName: plate.toLowerCase(),
+            searchKeys: plate.toLowerCase()
         });
     });
     (expiryProfileCache.drivers || []).forEach(person => {
@@ -9332,7 +9344,8 @@ function buildExpiryProfiles() {
             subtitle: '',
             meta,
             docs: expiryDocRowsFromFields(fields),
-            searchBlob: `${name} ${iqama} ${person.phone || ''} ${person.passport_no || ''} ${person.license_no || ''} ${person.driver_card_no || ''} ${person.health_insurance_no || ''} ${person.job_title || ''}`.toLowerCase()
+            searchName: name.toLowerCase(),
+            searchKeys: iqama.toLowerCase()
         });
     });
     return profiles;
@@ -9344,18 +9357,43 @@ function profileSoonestDays(profile) {
     return Math.min(...daysList);
 }
 
+function expiryProfileGroup(category) {
+    if (category === 'سائق' || category === 'موظف') return 'staff';
+    if (category === 'شاحنة' || category === 'مركبة') return 'vehicle';
+    if (category === 'المنشأة' || category === 'الاشتراك') return 'facility';
+    return '';
+}
+
+function profileMatchesExpiryQuery(profile, query, group) {
+    if (!query) return true;
+    const kind = expiryProfileGroup(profile.category);
+    const name = String(profile.searchName || '').toLowerCase();
+    const keys = String(profile.searchKeys || '').toLowerCase();
+    // البحث العام: اسم الموظف أو رقم الإقامة أو اللوحة فقط — بدون وثائق منشأة تحمل الاسم في عنوانها
+    if (kind === 'staff') return name.includes(query) || keys.includes(query);
+    if (kind === 'vehicle') return name.includes(query) || keys.includes(query);
+    if (kind === 'facility') {
+        // وثائق المنشأة تظهر بالبحث فقط عند اختيار تصنيف منشأة
+        if (group !== 'facility') return false;
+        return name.includes(query) || keys.includes(query);
+    }
+    return false;
+}
+
 function filteredExpiryProfiles() {
     const query = String(document.getElementById('expirySearchQuery')?.value || '').trim().toLowerCase();
     const nearOnly = !!document.getElementById('expiryNearOnly')?.checked;
+    const group = document.getElementById('expiryEntityGroup')?.value || '';
     const profiles = buildExpiryProfiles().flatMap(profile => {
-        if (query && !profile.searchBlob.includes(query)) return [];
+        if (group && expiryProfileGroup(profile.category) !== group) return [];
+        if (!profileMatchesExpiryQuery(profile, query, group)) return [];
         let docs = profile.docs || [];
         if (nearOnly) {
             // أي وثيقة/اشتراك متبقٍ له ٣٠ يوماً أو أقل (يشمل المنتهية)
             docs = docs.filter(doc => doc.days !== null && doc.days <= EXPIRY_SOON_DAYS);
             if (!docs.length) return [];
             docs = docs.slice().sort((a, b) => a.days - b.days);
-        } else if (!query) {
+        } else if (!query && !group) {
             return [];
         }
         return [{ ...profile, docs }];
@@ -9425,16 +9463,17 @@ function renderExpiryReport() {
     if (!box) return;
     const query = String(document.getElementById('expirySearchQuery')?.value || '').trim();
     const nearOnly = !!document.getElementById('expiryNearOnly')?.checked;
-    if (!query && !nearOnly) {
+    const group = document.getElementById('expiryEntityGroup')?.value || '';
+    if (!query && !nearOnly && !group) {
         box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t('expiry.searchHint'))}</div>`;
         return;
     }
     const profiles = filteredExpiryProfiles();
     if (!profiles.length) {
-        box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t(query ? 'expiry.emptySearch' : 'expiry.emptyReport'))}</div>`;
+        const emptyKey = query ? 'expiry.emptySearch' : (nearOnly ? 'expiry.emptyReport' : 'expiry.emptyGroup');
+        box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-xs font-bold">${escapeHtml(t(emptyKey))}</div>`;
         return;
     }
-    // عند البحث: ملف واحد مفصل لكل نتيجة (كل الوثائق: إقامة، جواز، تأمين…)
     box.innerHTML = profiles.map(renderExpiryProfileCard).join('');
 }
 
@@ -9474,6 +9513,7 @@ async function loadExpiryReport() {
 
 async function resetExpiryReportFilters() {
     setFilterValue('expirySearchQuery', '');
+    setFilterValue('expiryEntityGroup', '');
     const nearOnly = document.getElementById('expiryNearOnly');
     if (nearOnly) nearOnly.checked = false;
     await loadExpiryReport();
@@ -10426,7 +10466,10 @@ const I18N = {
         'expiry.noDocs': 'لا توجد وثائق مسجلة',
         'expiry.ok': 'سارية',
         'expiry.entity': 'الجهة',
-        'expiry.allEntities': 'كل الجهات',
+        'expiry.allEntities': 'كل التصنيفات',
+        'expiry.filterStaff': 'موظف',
+        'expiry.filterVehicle': 'مركبة',
+        'expiry.filterFacility': 'منشأة',
         'expiry.facility': 'المنشأة',
         'expiry.subscription': 'الاشتراك',
         'expiry.truck': 'شاحنة',
@@ -10441,6 +10484,7 @@ const I18N = {
         'expiry.daysLeft': 'المتبقي',
         'expiry.loading': 'جاري تحميل تقرير الوثائق...',
         'expiry.emptyReport': 'لا توجد وثائق متبقي لها ٣٠ يوماً أو أقل',
+        'expiry.emptyGroup': 'لا توجد سجلات ضمن الجهة المحددة',
         'expiry.loadFailed': 'تعذر تحميل تقرير الوثائق',
         'expiry.today': 'ينتهي اليوم',
         'expiry.overdueDays': 'متأخر {n} يوم',
@@ -11133,7 +11177,10 @@ const I18N = {
         'expiry.noDocs': 'No documents recorded',
         'expiry.ok': 'Valid',
         'expiry.entity': 'Entity',
-        'expiry.allEntities': 'All entities',
+        'expiry.allEntities': 'All categories',
+        'expiry.filterStaff': 'Employee',
+        'expiry.filterVehicle': 'Vehicle',
+        'expiry.filterFacility': 'Facility',
         'expiry.facility': 'Facility',
         'expiry.subscription': 'Subscription',
         'expiry.truck': 'Truck',
@@ -11148,6 +11195,7 @@ const I18N = {
         'expiry.daysLeft': 'Remaining',
         'expiry.loading': 'Loading documents report...',
         'expiry.emptyReport': 'No documents with 30 days or less remaining',
+        'expiry.emptyGroup': 'No records for the selected entity',
         'expiry.loadFailed': 'Could not load documents report',
         'expiry.today': 'Expires today',
         'expiry.overdueDays': '{n} days overdue',
