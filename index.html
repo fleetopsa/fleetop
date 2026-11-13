@@ -28,17 +28,19 @@
             gap: 1rem;
             width: 100%;
             min-width: 0;
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: minmax(0, 22rem);
         }
-        #financialCardsContainer {
-            display: grid;
-            grid-column: 1 / -1;
-            gap: 1rem;
-            min-width: 0;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+        .stat-grid.stats-with-money {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
-        #financialCardsContainer.hidden { display: none !important; }
-        .stat-card-trips { width: 100%; max-width: 22rem; }
+        .stat-card-trips { width: 100%; max-width: none; }
+        @media (max-width: 1100px) {
+            .stat-grid.stats-with-money { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 640px) {
+            .stat-grid,
+            .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr); }
+        }
         .stat-card-money, .stat-card-trips { min-width: 0; overflow: hidden; }
         .stat-card-money h3, .stat-card-trips h3 {
             overflow-wrap: anywhere;
@@ -1349,8 +1351,7 @@
         <div class="stat-grid-wrap">
         <div id="dashboardStatGrid" class="stat-grid">
         <!-- البطاقات المالية (تظهر للأدمن والمحاسب فقط، وتختفي عن المستخدم العادي) -->
-        <div id="financialCardsContainer" class="hidden">
-            <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
+            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</span>
                     <h3 id="dashTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
@@ -1360,7 +1361,7 @@
                 </div>
             </div>
             
-            <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
+            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.collected">المبالغ المحصلة</span>
                     <h3 id="dashCollectedAmount" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
@@ -1370,7 +1371,7 @@
                 </div>
             </div>
             
-            <div class="stat-card-money bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
+            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
                 <div class="min-w-0">
                     <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.uncollected">المبالغ غير المحصلة</span>
                     <h3 id="dashRemainingAmount" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
@@ -1379,7 +1380,6 @@
                     <i class="fa-solid fa-clock-rotate-left"></i>
                 </div>
             </div>
-        </div>
 
         <div class="stat-card-trips bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
             <div class="min-w-0">
@@ -12411,13 +12411,11 @@ async function loadUsers(options = {}) {
             if (financialMenu) financialMenu.classList.toggle('hidden', !canSeeFinance);
             toggleFinancialMenu(false);
 
-            const financialCardsContainer = document.getElementById('financialCardsContainer');
             const dashboardStatGrid = document.getElementById('dashboardStatGrid');
-            if (financialCardsContainer) {
-                financialCardsContainer.classList.toggle('hidden', !canSeeFinance);
-                financialCardsContainer.classList.toggle('contents', canSeeFinance);
-                if (dashboardStatGrid) dashboardStatGrid.classList.toggle('stats-with-money', canSeeFinance);
-            }
+            document.querySelectorAll('#dashboardStatGrid .finance-stat').forEach(card => {
+                card.classList.toggle('hidden', !canSeeFinance);
+            });
+            if (dashboardStatGrid) dashboardStatGrid.classList.toggle('stats-with-money', canSeeFinance);
 
             const tabUsersBtn = document.getElementById('tabUsersBtn');
             if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
