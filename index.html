@@ -2395,7 +2395,7 @@
                             <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="maint.recordsList">سجلات الصيانة</span>
                             <span class="ms-2 text-[11px] font-bold text-slate-500">(<span id="maintManageCount">0</span>)</span>
                         </h3>
-                        <button type="button" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
+                        <button type="button" id="maintAddBtn" onclick="openMaintenanceModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
                             <i class="fa-solid fa-plus"></i> <span data-i18n="maint.add">إضافة صيانة</span>
                         </button>
                     </div>
@@ -4323,6 +4323,18 @@ function canDeleteFacilityDocs(user = currentLoggedInUser) {
     return isAdminUser(user) || isSupportMode(user);
 }
 
+/** إدارة الصيانة: المحاسب اطلاع فقط (بدون إضافة/تعديل) */
+function canWriteMaintenance(user = currentLoggedInUser) {
+    if (isAdminUser(user) || isSupportMode(user)) return true;
+    if (isAccountantUser(user)) return false;
+    return !!user;
+}
+
+function syncMaintenanceManageAccess(user = currentLoggedInUser) {
+    const addBtn = document.getElementById('maintAddBtn');
+    if (addBtn) addBtn.classList.toggle('hidden', !canWriteMaintenance(user));
+}
+
 /** التقارير العامة وتقرير حركة الصيانة: ليست للمستخدم العادي */
 function canViewRestrictedReports(user = currentLoggedInUser) {
     return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
@@ -4335,6 +4347,7 @@ function applyRoleBasedNav(user = currentLoggedInUser) {
     if (generalReportsBtn) generalReportsBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
     const maintReportBtn = document.getElementById('tabMaintReportBtn');
     if (maintReportBtn) maintReportBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
+    syncMaintenanceManageAccess(user);
 }
 
 function updateSidebarIdentity(user = currentLoggedInUser) {
@@ -8676,6 +8689,10 @@ function openMaintenanceAttachModal(id) {
         openMaintenanceInvoice(id);
         return;
     }
+    if (!canWriteMaintenance()) {
+        alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
+        return;
+    }
     const row = findMaintenanceRow(id);
     if (!row) return;
     const idInput = document.getElementById('maintAttachRowId');
@@ -8737,6 +8754,10 @@ async function writeMaintenanceAttachments(rowId, files) {
 }
 
 async function saveMaintenanceAttachments() {
+    if (!canWriteMaintenance()) {
+        alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
+        return;
+    }
     const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
     const row = findMaintenanceRow(rowId);
     if (!rowId || !row) return;
@@ -8786,6 +8807,10 @@ async function fillMaintenanceVehicleOptions(keepPlate) {
 }
 
 async function openMaintenanceModal(id) {
+    if (!canWriteMaintenance()) {
+        alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
+        return;
+    }
     currentMaintenanceMode = 'manage';
     const modal = document.getElementById('maintenanceModal');
     if (!modal) return;
@@ -8856,7 +8881,9 @@ function renderMaintenanceManage() {
     const tbody = document.getElementById('maintenanceManageTable');
     const countEl = document.getElementById('maintManageCount');
     if (!tbody) return;
+    const canWrite = canWriteMaintenance();
     const admin = typeof isAdminUser === 'function' && isAdminUser();
+    syncMaintenanceManageAccess();
     const rows = maintenanceCache || [];
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
     if (!rows.length) {
@@ -8875,14 +8902,15 @@ function renderMaintenanceManage() {
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
                 <td class="maint-col-tight p-3 no-print">
                     <div class="flex flex-col items-center gap-1">
-                        ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : ''}
-                        <button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>
+                        ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : (!canWrite ? '<span class="text-slate-300">—</span>' : '')}
+                        ${canWrite ? `<button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>` : ''}
                     </div>
                 </td>
                 <td class="p-3 text-center no-print">
                     <div class="flex items-center justify-center gap-2">
-                        <button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${canWrite ? `<button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
                         ${admin ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
+                        ${!canWrite && !admin ? '<span class="text-slate-300">—</span>' : ''}
                     </div>
                 </td>
             </tr>`;
@@ -9011,6 +9039,10 @@ function buildMaintenanceEditDiff(before, after) {
 
 async function saveMaintenance(event) {
     event.preventDefault();
+    if (!canWriteMaintenance()) {
+        alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
+        return;
+    }
     showMaintenanceError('');
     const editId = Number(document.getElementById('maintId')?.value || 0);
     const serviceDate = document.getElementById('maintServiceDate')?.value || '';
