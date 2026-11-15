@@ -1656,7 +1656,7 @@
                         </div>
                         <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-emerald-50 px-2.5 rounded-xl border border-emerald-100">
-                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.readyWork">جاهزة للعمل</span>
+                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.readyLoad">جاهزة للتحميل</span>
                                 <span id="dashReadyTrucks" class="text-lg font-bold text-emerald-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-blue-50 px-2.5 rounded-xl border border-blue-100">
@@ -1668,7 +1668,7 @@
                                 <span id="dashMaintTrucks" class="text-lg font-bold text-amber-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.broken">عطلانة</span>
+                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.broken">متعطلة</span>
                                 <span id="dashBrokenTrucks" class="text-lg font-bold text-rose-800">0</span>
                             </div>
                         </div>
@@ -1693,7 +1693,7 @@
                                 <span id="dashLeaveDrivers" class="text-lg font-bold text-amber-800">0</span>
                             </div>
                             <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.suspended">موقوف</span>
+                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.suspendedWork">موقوف عن العمل</span>
                                 <span id="dashSuspendedDrivers" class="text-lg font-bold text-rose-800">0</span>
                             </div>
                         </div>
@@ -2352,12 +2352,6 @@
                             <label id="truckStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.vehicleStatus">حالة المركبة</label>
                             <select id="truckStatus" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                                 <option value="" data-i18n="ui.chooseVehicleStatus">اختر حالة المركبة</option>
-                                <option value="جاهزة للعمل" data-i18n="ui.readyWork">جاهزة للعمل</option>
-                                <option id="truckStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
-                                <option value="صيانة دورية" data-i18n="ui.maint">صيانة دورية</option>
-                                <option value="عطلانة" data-i18n="ui.broken">عطلانة</option>
-                                <option value="خارج الخدمة" data-i18n="ui.retired">خارج الخدمة</option>
-                                <option value="مباعة" data-i18n="ui.sold">مباعة</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -2562,10 +2556,13 @@
                         <div>
                             <label id="driverStatusLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.employeeStatus">حالة الموظف</label>
                             <select id="driverStatus" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.chooseEmployeeStatus">اختر حالة الموظف</option>
                                 <option value="متوفر" data-i18n="ui.available">متوفر</option>
                                 <option id="driverStatusTripOption" value="في رحلة" data-i18n="ui.onTrip">في رحلة</option>
                                 <option value="إجازة" data-i18n="ui.leave">إجازة</option>
-                                <option value="موقوف" data-i18n="ui.suspended">موقوف</option>
+                                <option value="متوقف مؤقتاً" data-i18n="ui.pausedTemp">متوقف مؤقتاً</option>
+                                <option value="موقوف عن العمل" data-i18n="ui.suspendedWork">موقوف عن العمل</option>
+                                <option value="مستقيل" data-i18n="ui.resigned">مستقيل</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -7262,7 +7259,7 @@ function truckStatusForTrips(truck, assignments) {
 
 function driverStatusForTrips(driver, assignments) {
     const name = normalizeFleetKey(driver?.name);
-    const blocked = driver?.status === 'إجازة' || driver?.status === 'في إجازة' || driver?.status === 'موقوف';
+    const blocked = isStaffBlockedStatus(driver?.status);
     if (isTripDriver(driver) && name && assignments.drivers.has(name) && !blocked) return 'في رحلة';
     return driver?.status;
 }
@@ -7305,11 +7302,20 @@ async function alignFleetWithActiveTrips(trucks, drivers, trips) {
         }
     }
     if (freeTruckIds.length) {
-        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeTruckIds);
-        if (!error) {
-            freeTruckIds.forEach(id => {
+        const freeCargoIds = freeTruckIds.filter(id => isCargoTruck(trucks.find(t => t.id === id)));
+        const freeAdminIds = freeTruckIds.filter(id => !isCargoTruck(trucks.find(t => t.id === id)));
+        if (freeCargoIds.length) {
+            const { error } = await client.from('trucks').update({ status: 'جاهزة للتحميل' }).in('id', freeCargoIds);
+            if (!error) freeCargoIds.forEach(id => {
                 const row = trucks.find(truck => truck.id === id);
-                if (row) row.status = 'جاهزة للعمل';
+                if (row) row.status = 'جاهزة للتحميل';
+            });
+        }
+        if (freeAdminIds.length) {
+            const { error } = await client.from('trucks').update({ status: 'مستخدمة إدارياً' }).in('id', freeAdminIds);
+            if (!error) freeAdminIds.forEach(id => {
+                const row = trucks.find(truck => truck.id === id);
+                if (row) row.status = 'مستخدمة إدارياً';
             });
         }
     }
@@ -8150,20 +8156,15 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             const { data: allTrucks } = await client.from('trucks').select('id, plate, status');
             matched = (allTrucks || []).filter(tr => sameFleetValue(tr.plate, truckIdentifier));
         }
-        const freeIds = (matched || [])
+        const toFree = (matched || [])
             .filter(tr => !isInactiveFleetVehicle(tr))
-            .filter(tr => {
-                const st = String(tr.status || '').trim();
-                // حرر المربوطة برحلة؛ لا تلمس صيانة/عطل/مباعة
-                return st === 'في رحلة' || st === 'جاهزة للعمل';
-            })
-            .filter(tr => String(tr.status || '').trim() === 'في رحلة')
-            .map(tr => tr.id)
-            .filter(id => id != null);
-        if (freeIds.length) {
-            const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeIds);
+            .filter(tr => String(tr.status || '').trim() === 'في رحلة');
+        for (const tr of toFree) {
+            const nextStatus = truckIdleStatusFor(tr);
+            const { error } = await client.from('trucks').update({ status: nextStatus }).eq('id', tr.id);
             if (error) console.error('خطأ في تحرير الشاحنة:', error);
-        } else if (!(matched || []).length) {
+        }
+        if (!toFree.length && !(matched || []).length) {
             console.warn('تحرير الشاحنة: لم يُعثر على لوحة مطابقة', truckIdentifier);
         }
     }
@@ -8521,10 +8522,10 @@ async function initReportFilters() {
                 const assignments = await alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
                 const fleetTrucks = (trucks || []).filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t));
                 const totalTrucks = fleetTrucks.length;
-                const readyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'جاهزة للعمل').length;
+                const readyTrucks = fleetTrucks.filter(t => isCargoReadyStatus(truckStatusForTrips(t, assignments))).length;
                 const busyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'في رحلة').length;
                 const maintTrucks = fleetTrucks.filter(t => t.status === 'صيانة دورية' || t.status === 'في الصيانة').length;
-                const brokenTrucks = fleetTrucks.filter(t => t.status === 'عطلانة').length;
+                const brokenTrucks = fleetTrucks.filter(t => isBrokenVehicleStatus(t.status)).length;
 
                 setText('dashTotalTrucksBadge', tf('dash.totalPrefix', totalTrucks));
                 setText('dashReadyTrucks', readyTrucks);
@@ -8537,7 +8538,10 @@ async function initReportFilters() {
                 const readyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'متوفر').length;
                 const busyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'في رحلة').length;
                 const leaveDrivers = fleetDrivers.filter(d => d.status === 'إجازة' || d.status === 'في إجازة').length;
-                const suspendedDrivers = fleetDrivers.filter(d => d.status === 'موقوف').length;
+                const suspendedDrivers = fleetDrivers.filter(d => {
+                    const s = String(d.status || '').trim();
+                    return s === 'موقوف' || s === 'موقوف عن العمل' || s === 'متوقف مؤقتاً' || s === 'مستقيل';
+                }).length;
 
                 setText('dashTotalDriversBadge', tf('dash.totalPrefix', totalDrivers));
                 setText('dashReadyDrivers', readyDrivers);
@@ -8684,11 +8688,12 @@ async function resetTripCounter() {
 
         const busyPlates = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.truck_plate || '').trim()).filter(Boolean));
         const busyDrivers = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.driver_name || '').trim()).filter(Boolean));
-        const { data: onTripTrucks } = await client.from('trucks').select('id, plate, status').eq('status', 'في رحلة');
-        const freeTruckIds = (onTripTrucks || [])
-            .filter(tr => !isInactiveFleetVehicle(tr) && !busyPlates.has(String(tr.plate || '').trim()))
-            .map(tr => tr.id);
-        if (freeTruckIds.length) await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeTruckIds);
+        const { data: onTripTrucks } = await client.from('trucks').select('id, plate, status, vehicle_kind').eq('status', 'في رحلة');
+        const freeOnTrip = (onTripTrucks || []).filter(tr => !isInactiveFleetVehicle(tr) && !busyPlates.has(String(tr.plate || '').trim()));
+        const freeCargoIds = freeOnTrip.filter(isCargoTruck).map(tr => tr.id);
+        const freeAdminIds = freeOnTrip.filter(tr => !isCargoTruck(tr)).map(tr => tr.id);
+        if (freeCargoIds.length) await client.from('trucks').update({ status: 'جاهزة للتحميل' }).in('id', freeCargoIds);
+        if (freeAdminIds.length) await client.from('trucks').update({ status: 'مستخدمة إدارياً' }).in('id', freeAdminIds);
         const { data: onTripDrivers } = await client.from('drivers').select('id, name, status').eq('status', 'في رحلة');
         const freeDriverIds = (onTripDrivers || []).filter(dr => !busyDrivers.has(String(dr.name || '').trim())).map(dr => dr.id);
         if (freeDriverIds.length) await client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds);
@@ -8862,9 +8867,90 @@ function isInactiveFleetVehicle(row) {
     return status === 'خارج الخدمة' || status === 'مباعة';
 }
 
+function isBrokenVehicleStatus(status) {
+    const s = String(status || '').trim();
+    return s === 'متعطلة' || s === 'عطلانة';
+}
+
+function isCargoReadyStatus(status) {
+    const s = String(status || '').trim();
+    return s === 'جاهزة للتحميل' || s === 'جاهزة للعمل';
+}
+
+function truckIdleStatusFor(truckOrKind) {
+    const cargo = typeof truckOrKind === 'string'
+        ? truckOrKind !== 'أخرى'
+        : isCargoTruck(truckOrKind);
+    return cargo ? 'جاهزة للتحميل' : 'مستخدمة إدارياً';
+}
+
+function normalizeVehicleStatusValue(status, isCargo) {
+    let s = String(status || '').trim();
+    if (s === 'في الصيانة') s = 'صيانة دورية';
+    if (s === 'عطلانة') s = 'متعطلة';
+    if (s === 'جاهزة للعمل' || s === 'جاهزة للتحميل' || s === 'مستخدمة إدارياً') {
+        return isCargo ? 'جاهزة للتحميل' : 'مستخدمة إدارياً';
+    }
+    return s;
+}
+
+function displayVehicleStatus(status) {
+    const s = String(status || '').trim();
+    if (s === 'جاهزة للعمل') return 'جاهزة للتحميل';
+    if (s === 'عطلانة') return 'متعطلة';
+    if (s === 'في الصيانة') return 'صيانة دورية';
+    return s;
+}
+
+function isStaffBlockedStatus(status) {
+    const s = String(status || '').trim();
+    return s === 'إجازة' || s === 'في إجازة'
+        || s === 'موقوف' || s === 'موقوف عن العمل'
+        || s === 'متوقف مؤقتاً' || s === 'مستقيل';
+}
+
+function normalizeStaffStatusValue(status) {
+    const s = String(status || '').trim();
+    if (s === 'موقوف') return 'موقوف عن العمل';
+    if (s === 'في إجازة') return 'إجازة';
+    return s;
+}
+
+function displayStaffStatus(status) {
+    return normalizeStaffStatusValue(status);
+}
+
 function isBlockedFleetVehicle(row) {
     const status = String(row?.status || '').trim();
-    return status === 'صيانة دورية' || status === 'في الصيانة' || status === 'عطلانة' || isInactiveFleetVehicle(row);
+    return status === 'صيانة دورية' || status === 'في الصيانة' || isBrokenVehicleStatus(status) || isInactiveFleetVehicle(row);
+}
+
+function fillTruckStatusOptions(kind, selected) {
+    const select = document.getElementById('truckStatus');
+    if (!select) return;
+    const isTruck = kind === 'شاحنة';
+    const isAdmin = kind === 'أخرى';
+    const options = [{ value: '', label: t('ui.chooseVehicleStatus') }];
+    if (isTruck || isAdmin) {
+        const readyValue = isAdmin ? 'مستخدمة إدارياً' : 'جاهزة للتحميل';
+        const readyLabel = isAdmin ? t('ui.adminInUse') : t('ui.readyLoad');
+        options.push({ value: readyValue, label: readyLabel });
+        if (isTruck) options.push({ value: 'في رحلة', label: t('ui.onTrip'), id: 'truckStatusTripOption' });
+        options.push(
+            { value: 'صيانة دورية', label: t('ui.maint') },
+            { value: 'متعطلة', label: t('ui.broken') },
+            { value: 'خارج الخدمة', label: t('ui.retired') },
+            { value: 'مباعة', label: t('ui.sold') }
+        );
+    }
+    const current = selected != null ? selected : select.value;
+    select.innerHTML = options.map(opt => {
+        const idAttr = opt.id ? ` id="${opt.id}"` : '';
+        return `<option value="${escapeHtml(opt.value)}"${idAttr}>${escapeHtml(opt.label)}</option>`;
+    }).join('');
+    const normalized = normalizeVehicleStatusValue(current, isTruck);
+    if (normalized && [...select.options].some(o => o.value === normalized)) select.value = normalized;
+    else select.value = '';
 }
 
 const MAINTENANCE_TYPES = ['ميكانيكا', 'كهرباء', 'هواء', 'غيار كفر جديد', 'بنشر', 'زيوت وفلاتر', 'فرامل', 'تكييف', 'سمكرة ودهان', 'أخرى'];
@@ -10021,7 +10107,7 @@ function buildExpiryProfiles() {
             title: plate || '—',
             subtitle: truck.model || '',
             meta: [
-                { label: t('th.status'), value: tv(truck.status || '—') }
+                { label: t('th.status'), value: tv(displayVehicleStatus(normalizeVehicleStatusValue(truck.status, cargo)) || '—') }
             ],
             docs: expiryDocRowsFromFields(fields),
             searchName: plate.toLowerCase(),
@@ -10051,7 +10137,7 @@ function buildExpiryProfiles() {
             { label: t('ui.iqamaNo'), value: iqama || '—' },
             { label: t('ui.job'), value: tv(jobLabel) },
             { label: t('ui.phone'), value: person.phone || '—' },
-            { label: t('th.status'), value: tv(person.status || '—') }
+            { label: t('th.status'), value: tv(displayStaffStatus(person.status) || '—') }
         ];
         profiles.push({
             category: tripDriver ? 'سائق' : 'موظف',
@@ -10453,14 +10539,12 @@ function syncTruckKindUi() {
     const other = kind === 'أخرى';
     const isTruck = kind === 'شاحنة';
     currentVehicleKind = other ? 'أخرى' : (isTruck ? 'شاحنة' : '');
-    // بطاقة التشغيل وخيار «في رحلة» للشاحنة فقط؛ قبل الاختيار تبقى مخفية
     document.querySelectorAll('.truck-operation-only').forEach(el => el.classList.toggle('hidden', !isTruck));
-    const tripOption = document.getElementById('truckStatusTripOption');
-    if (tripOption) {
-        tripOption.classList.toggle('hidden', !isTruck);
-        if (!isTruck && document.getElementById('truckStatus')?.value === 'في رحلة') {
-            document.getElementById('truckStatus').value = '';
-        }
+    const prevStatus = document.getElementById('truckStatus')?.value || '';
+    if (kind === 'شاحنة' || kind === 'أخرى') {
+        fillTruckStatusOptions(kind, prevStatus === 'في رحلة' && other ? '' : prevStatus);
+    } else {
+        fillTruckStatusOptions('', '');
     }
     const statusLabel = document.getElementById('truckStatusLabel');
     if (statusLabel) statusLabel.textContent = t('ui.vehicleStatus');
@@ -10950,14 +11034,20 @@ const I18N = {
         'ui.trucks': 'الشاحنات',
         'ui.drivers': 'السائقين',
         'ui.readyWork': 'جاهزة للعمل',
+        'ui.readyLoad': 'جاهزة للتحميل',
+        'ui.adminInUse': 'مستخدمة إدارياً',
         'ui.onTrip': 'في رحلة',
         'ui.maint': 'صيانة دورية',
-        'ui.broken': 'عطلانة',
+        'ui.broken': 'متعطلة',
         'ui.retired': 'خارج الخدمة',
         'ui.sold': 'مباعة',
         'ui.available': 'متوفر',
         'ui.leave': 'إجازة',
         'ui.suspended': 'موقوف',
+        'ui.suspendedWork': 'موقوف عن العمل',
+        'ui.pausedTemp': 'متوقف مؤقتاً',
+        'ui.resigned': 'مستقيل',
+        'ui.chooseEmployeeStatus': 'اختر حالة الموظف',
         'ui.expiryAlerts': 'تنبيهات الوثائق القريبة من الانتهاء',
         'ui.expiryHint': 'اضغط التنبيه لفتح شاشة السجل المرتبط به',
         'ui.checkingDates': 'جاري فحص التواريخ...',
@@ -11154,17 +11244,23 @@ const I18N = {
         'v.مكتملة': 'مكتملة',
         'v.منتهية': 'منتهية',
         'v.ملغاة': 'ملغاة',
-        'v.جاهزة للعمل': 'جاهزة للعمل',
+        'v.جاهزة للعمل': 'جاهزة للتحميل',
+        'v.جاهزة للتحميل': 'جاهزة للتحميل',
+        'v.مستخدمة إدارياً': 'مستخدمة إدارياً',
         'v.في رحلة': 'في رحلة',
         'v.صيانة دورية': 'صيانة دورية',
-        'v.في الصيانة': 'في الصيانة',
-        'v.عطلانة': 'عطلانة',
+        'v.في الصيانة': 'صيانة دورية',
+        'v.عطلانة': 'متعطلة',
+        'v.متعطلة': 'متعطلة',
         'v.خارج الخدمة': 'خارج الخدمة',
         'v.مباعة': 'مباعة',
         'v.متوفر': 'متوفر',
         'v.إجازة': 'إجازة',
-        'v.في إجازة': 'في إجازة',
-        'v.موقوف': 'موقوف',
+        'v.في إجازة': 'إجازة',
+        'v.موقوف': 'موقوف عن العمل',
+        'v.موقوف عن العمل': 'موقوف عن العمل',
+        'v.متوقف مؤقتاً': 'متوقف مؤقتاً',
+        'v.مستقيل': 'مستقيل',
         'v.مسدد': 'مسدد',
         'v.سداد جزئي': 'سداد جزئي',
         'v.غير مسدد': 'غير مسدد',
@@ -11715,14 +11811,20 @@ const I18N = {
         'ui.trucks': 'Trucks',
         'ui.drivers': 'Drivers',
         'ui.readyWork': 'Ready',
+        'ui.readyLoad': 'Ready to load',
+        'ui.adminInUse': 'In administrative use',
         'ui.onTrip': 'On trip',
         'ui.maint': 'Scheduled maintenance',
-        'ui.broken': 'Broken down',
+        'ui.broken': 'Out of service',
         'ui.retired': 'Retired',
         'ui.sold': 'Sold',
         'ui.available': 'Available',
         'ui.leave': 'On leave',
         'ui.suspended': 'Suspended',
+        'ui.suspendedWork': 'Suspended from work',
+        'ui.pausedTemp': 'Temporarily paused',
+        'ui.resigned': 'Resigned',
+        'ui.chooseEmployeeStatus': 'Choose employee status',
         'ui.expiryAlerts': 'Documents nearing expiry',
         'ui.expiryHint': 'Tap an alert to open its related screen',
         'ui.checkingDates': 'Checking dates...',
@@ -11926,17 +12028,23 @@ const I18N = {
         'v.مكتملة': 'Completed',
         'v.منتهية': 'Completed',
         'v.ملغاة': 'Cancelled',
-        'v.جاهزة للعمل': 'Ready',
+        'v.جاهزة للعمل': 'Ready to load',
+        'v.جاهزة للتحميل': 'Ready to load',
+        'v.مستخدمة إدارياً': 'In administrative use',
         'v.في رحلة': 'On trip',
         'v.صيانة دورية': 'Scheduled maintenance',
-        'v.في الصيانة': 'In maintenance',
-        'v.عطلانة': 'Broken down',
+        'v.في الصيانة': 'Scheduled maintenance',
+        'v.عطلانة': 'Out of service',
+        'v.متعطلة': 'Out of service',
         'v.خارج الخدمة': 'Retired',
         'v.مباعة': 'Sold',
         'v.متوفر': 'Available',
         'v.إجازة': 'On leave',
         'v.في إجازة': 'On leave',
-        'v.موقوف': 'Suspended',
+        'v.موقوف': 'Suspended from work',
+        'v.موقوف عن العمل': 'Suspended from work',
+        'v.متوقف مؤقتاً': 'Temporarily paused',
+        'v.مستقيل': 'Resigned',
         'v.مسدد': 'Paid',
         'v.سداد جزئي': 'Partial',
         'v.غير مسدد': 'Unpaid',
@@ -12970,7 +13078,7 @@ async function renderAnalyticsDashboard() {
             const truckSelect = document.getElementById('tripTruck');
             const driverSelect = document.getElementById('tripDriver');
 
-            const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t) && t.status === 'جاهزة للعمل' && !busyPlates.has(String(t.plate || '').trim())) : [];
+            const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t) && isCargoReadyStatus(t.status) && !busyPlates.has(String(t.plate || '').trim())) : [];
             const availableDrivers = drivers ? drivers.filter(d => isTripDriver(d) && d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
 
             truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
@@ -13882,13 +13990,14 @@ async function saveEditTrip(e) {
                     const sorted = [...visible].sort((a, b) => Number(isInactiveFleetVehicle(a)) - Number(isInactiveFleetVehicle(b)));
                     table.innerHTML = sorted.map(tr => {
                         const cargo = isCargoTruck(tr);
-                        const shownStatus = truckStatusForTrips(tr, assignments);
+                        const shownStatus = displayVehicleStatus(normalizeVehicleStatusValue(truckStatusForTrips(tr, assignments), cargo));
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
-                        if (shownStatus === 'صيانة دورية' || shownStatus === 'في الصيانة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
-                        if (shownStatus === 'عطلانة') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'صيانة دورية') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        if (isBrokenVehicleStatus(shownStatus)) badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
                         if (shownStatus === 'خارج الخدمة') badgeColor = 'bg-slate-100 text-slate-600 border border-slate-200';
                         if (shownStatus === 'مباعة') badgeColor = 'bg-violet-50 text-violet-700 border border-violet-200';
+                        if (shownStatus === 'مستخدمة إدارياً') badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         const rowDim = isInactiveFleetVehicle(tr) ? 'opacity-70' : '';
                         const kindLabel = cargo ? t('ui.cargoTruck') : t('ui.adminVehicle');
 
@@ -13897,7 +14006,7 @@ async function saveEditTrip(e) {
                                 <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
                                 <td class="p-3.5 font-bold text-amber-700">${escapeHtml(kindLabel)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في الصيانة' ? 'صيانة دورية' : shownStatus))}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml([
                                     { label: 'الاستمارة', date: tr.istimara_expiry },
                                     { label: 'الفحص', date: tr.inspection_expiry },
@@ -13982,7 +14091,7 @@ async function cancelTrip(tripNo) {
             const payload = withCompany({
                 plate,
                 model,
-                status: other && status === 'في رحلة' ? 'جاهزة للعمل' : status,
+                status: other && status === 'في رحلة' ? 'مستخدمة إدارياً' : status,
                 vehicle_kind: kind,
                 istimara_expiry: dateField('truckIstimaraExpiry'),
                 inspection_expiry: dateField('truckInspectionExpiry'),
@@ -14027,7 +14136,9 @@ async function cancelTrip(tripNo) {
         modelInput.value = tr.model || '';
     }
     if (statusInput) {
-        statusInput.value = tr.status === 'في الصيانة' ? 'صيانة دورية' : tr.status;
+        const normalized = normalizeVehicleStatusValue(tr.status, isCargoTruck(tr));
+        if ([...statusInput.options].some(o => o.value === normalized)) statusInput.value = normalized;
+        else statusInput.value = '';
     }
     setField('truckIstimaraExpiry', tr.istimara_expiry);
     setField('truckInspectionExpiry', tr.inspection_expiry);
@@ -14104,11 +14215,13 @@ async function cancelTrip(tripNo) {
                 if (visible.length > 0) {
                     table.innerHTML = visible.map(dr => {
                         const tripDriver = isTripDriver(dr);
-                        const shownStatus = driverStatusForTrips(dr, assignments);
+                        const shownStatus = displayStaffStatus(driverStatusForTrips(dr, assignments));
                         let badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                         if (shownStatus === 'في رحلة') badgeColor = 'bg-blue-50 text-blue-700 border border-blue-200';
-                        if (shownStatus === 'إجازة' || shownStatus === 'في إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
-                        if (shownStatus === 'موقوف') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'إجازة') badgeColor = 'bg-amber-50 text-amber-700 border border-amber-200';
+                        if (shownStatus === 'متوقف مؤقتاً') badgeColor = 'bg-orange-50 text-orange-700 border border-orange-200';
+                        if (shownStatus === 'موقوف عن العمل') badgeColor = 'bg-rose-50 text-rose-700 border border-rose-200';
+                        if (shownStatus === 'مستقيل') badgeColor = 'bg-slate-100 text-slate-600 border border-slate-200';
                         const jobLabel = String(dr.job_title || '').trim() === 'سائق' || (!String(dr.job_title || '').trim() && tripDriver)
                             ? 'سائق شاحنة'
                             : (dr.job_title || '—');
@@ -14131,7 +14244,7 @@ async function cancelTrip(tripNo) {
                                 <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
                                 <td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(jobLabel))}</td>
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
-                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في إجازة' ? 'إجازة' : shownStatus))}</span></td>
+                                <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     ${(hasPerm('staff', 'edit') || hasPerm('staff', 'delete')) ? `
@@ -14165,6 +14278,10 @@ async function cancelTrip(tripNo) {
             const name = document.getElementById('driverName').value.trim();
             const phone = document.getElementById('driverPhone').value.trim();
             const status = document.getElementById('driverStatus').value;
+            if (!status) {
+                alert(t('ui.chooseEmployeeStatus'));
+                return;
+            }
 
             const jobTitle = selectedStaffJobTitle();
             if (!jobTitle) {
@@ -14213,7 +14330,7 @@ async function cancelTrip(tripNo) {
             document.getElementById('driverId').value = dr.id;
             document.getElementById('driverName').value = dr.name || '';
             document.getElementById('driverPhone').value = dr.phone || '';
-            document.getElementById('driverStatus').value = dr.status === 'في إجازة' ? 'إجازة' : dr.status;
+            document.getElementById('driverStatus').value = normalizeStaffStatusValue(dr.status);
             const job = String(dr.job_title || '').trim() || (isTripDriver(dr) ? 'سائق شاحنة' : '');
             setStaffJobTitle(job === 'سائق' ? 'سائق شاحنة' : job);
             syncStaffDriverFields();
