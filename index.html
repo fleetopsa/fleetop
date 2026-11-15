@@ -173,6 +173,19 @@
             height: 16rem;
             max-height: 16rem;
         }
+        .dash-fleet-card {
+            height: 16rem;
+            max-height: 16rem;
+            min-height: 16rem;
+        }
+        .dash-fleet-card .dash-status-grid {
+            flex: 1 1 auto;
+            min-height: 0;
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+        }
+        .dash-fleet-card .dash-status-grid > div {
+            min-height: 0;
+        }
         .dash-alerts-card #dashExpiryAlerts {
             scrollbar-width: thin;
         }
@@ -1002,9 +1015,9 @@
         #settingsSection .grid {
             align-items: start;
         }
-        #dashboardSection .dash-side-card {
-            height: auto;
-            max-height: none;
+        #dashboardSection .dash-side-card.dash-fleet-card {
+            height: 16rem;
+            max-height: 16rem;
             min-height: 16rem;
         }
         #dashboardSection .dash-alerts-card {
@@ -1648,53 +1661,69 @@
         </div>
         </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 items-start min-w-0">
-                    <div class="dash-side-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 items-stretch min-w-0">
+                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
                             <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> <span data-i18n="ui.trucks">الشاحنات</span></h4>
                             <span id="dashTotalTrucksBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
-                        <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-emerald-50 px-2.5 rounded-xl border border-emerald-100">
-                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.readyLoad">جاهزة للتحميل</span>
-                                <span id="dashReadyTrucks" class="text-lg font-bold text-emerald-800">0</span>
+                        <div class="dash-status-grid grid grid-cols-2 gap-1.5">
+                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0">
+                                <span class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="ui.readyLoad">جاهزة للتحميل</span>
+                                <span id="dashReadyTrucks" class="text-base font-bold text-emerald-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-blue-50 px-2.5 rounded-xl border border-blue-100">
-                                <span class="text-[11px] font-bold text-blue-700" data-i18n="ui.onTrip">في رحلة</span>
-                                <span id="dashBusyTrucks" class="text-lg font-bold text-blue-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0">
+                                <span class="text-[10px] font-bold text-blue-700 truncate" data-i18n="ui.onTrip">في رحلة</span>
+                                <span id="dashBusyTrucks" class="text-base font-bold text-blue-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-amber-50 px-2.5 rounded-xl border border-amber-100">
-                                <span class="text-[11px] font-bold text-amber-700" data-i18n="ui.maint">صيانة دورية</span>
-                                <span id="dashMaintTrucks" class="text-lg font-bold text-amber-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0">
+                                <span class="text-[10px] font-bold text-amber-700 truncate" data-i18n="ui.maint">صيانة دورية</span>
+                                <span id="dashMaintTrucks" class="text-base font-bold text-amber-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.broken">متعطلة</span>
-                                <span id="dashBrokenTrucks" class="text-lg font-bold text-rose-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0">
+                                <span class="text-[10px] font-bold text-rose-700 truncate" data-i18n="ui.broken">متعطلة</span>
+                                <span id="dashBrokenTrucks" class="text-base font-bold text-rose-800 tabular-nums shrink-0">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0">
+                                <span class="text-[10px] font-bold text-slate-600 truncate" data-i18n="ui.retired">خارج الخدمة</span>
+                                <span id="dashRetiredTrucks" class="text-base font-bold text-slate-700 tabular-nums shrink-0">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 bg-violet-50 px-2.5 rounded-lg border border-violet-100 min-w-0">
+                                <span class="text-[10px] font-bold text-violet-700 truncate" data-i18n="ui.sold">مباعة</span>
+                                <span id="dashSoldTrucks" class="text-base font-bold text-violet-800 tabular-nums shrink-0">0</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="dash-side-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
+                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
                             <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.drivers">السائقين</span></h4>
                             <span id="dashTotalDriversBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
-                        <div class="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-emerald-50 px-2.5 rounded-xl border border-emerald-100">
-                                <span class="text-[11px] font-bold text-emerald-700" data-i18n="ui.available">متوفر</span>
-                                <span id="dashReadyDrivers" class="text-lg font-bold text-emerald-800">0</span>
+                        <div class="dash-status-grid grid grid-cols-2 gap-1.5">
+                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0">
+                                <span class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="ui.available">متوفر</span>
+                                <span id="dashReadyDrivers" class="text-base font-bold text-emerald-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-blue-50 px-2.5 rounded-xl border border-blue-100">
-                                <span class="text-[11px] font-bold text-blue-700" data-i18n="ui.onTrip">في رحلة</span>
-                                <span id="dashBusyDrivers" class="text-lg font-bold text-blue-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0">
+                                <span class="text-[10px] font-bold text-blue-700 truncate" data-i18n="ui.onTrip">في رحلة</span>
+                                <span id="dashBusyDrivers" class="text-base font-bold text-blue-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-amber-50 px-2.5 rounded-xl border border-amber-100">
-                                <span class="text-[11px] font-bold text-amber-700" data-i18n="ui.leave">إجازة</span>
-                                <span id="dashLeaveDrivers" class="text-lg font-bold text-amber-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0">
+                                <span class="text-[10px] font-bold text-amber-700 truncate" data-i18n="ui.leave">إجازة</span>
+                                <span id="dashLeaveDrivers" class="text-base font-bold text-amber-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex-1 min-h-0 flex items-center justify-between gap-2 bg-rose-50 px-2.5 rounded-xl border border-rose-100">
-                                <span class="text-[11px] font-bold text-rose-700" data-i18n="ui.suspendedWork">موقوف عن العمل</span>
-                                <span id="dashSuspendedDrivers" class="text-lg font-bold text-rose-800">0</span>
+                            <div class="flex items-center justify-between gap-1.5 bg-orange-50 px-2.5 rounded-lg border border-orange-100 min-w-0">
+                                <span class="text-[10px] font-bold text-orange-700 truncate" data-i18n="ui.pausedTemp">متوقف مؤقتاً</span>
+                                <span id="dashPausedDrivers" class="text-base font-bold text-orange-800 tabular-nums shrink-0">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0">
+                                <span class="text-[10px] font-bold text-rose-700 truncate" data-i18n="ui.suspendedWork">موقوف عن العمل</span>
+                                <span id="dashSuspendedDrivers" class="text-base font-bold text-rose-800 tabular-nums shrink-0">0</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0">
+                                <span class="text-[10px] font-bold text-slate-600 truncate" data-i18n="ui.resigned">مستقيل</span>
+                                <span id="dashResignedDrivers" class="text-base font-bold text-slate-700 tabular-nums shrink-0">0</span>
                             </div>
                         </div>
                     </div>
@@ -7254,6 +7283,8 @@ function truckStatusForTrips(truck, assignments) {
     if (isInactiveFleetVehicle(truck)) return truck?.status;
     const blocked = isBlockedFleetVehicle(truck);
     if (isCargoTruck(truck) && plate && assignments.plates.has(plate) && !blocked) return 'في رحلة';
+    // عرض فوري: إن بقيت «في رحلة» في القاعدة بلا رحلة جارية لا ننتظر المزامنة
+    if (String(truck?.status || '').trim() === 'في رحلة') return truckIdleStatusFor(truck);
     return truck?.status;
 }
 
@@ -7261,20 +7292,30 @@ function driverStatusForTrips(driver, assignments) {
     const name = normalizeFleetKey(driver?.name);
     const blocked = isStaffBlockedStatus(driver?.status);
     if (isTripDriver(driver) && name && assignments.drivers.has(name) && !blocked) return 'في رحلة';
+    if (String(driver?.status || '').trim() === 'في رحلة') return 'متوفر';
     return driver?.status;
 }
 
-async function alignFleetWithActiveTrips(trucks, drivers, trips) {
-    const assignments = activeAssignmentSets(trips);
+let fleetSyncChain = Promise.resolve();
+
+async function syncFleetStatusesToDb(trucks, drivers, assignments) {
     const truckIds = (trucks || [])
-        .filter(truck => truckStatusForTrips(truck, assignments) === 'في رحلة' && truck.status !== 'في رحلة')
+        .filter(truck => {
+            if (isInactiveFleetVehicle(truck) || isBlockedFleetVehicle(truck)) return false;
+            if (!isCargoTruck(truck)) return false;
+            const plate = normalizeFleetKey(truck.plate);
+            return plate && assignments.plates.has(plate) && String(truck.status || '').trim() !== 'في رحلة';
+        })
         .map(truck => truck.id)
         .filter(id => id != null);
     const driverIds = (drivers || [])
-        .filter(driver => driverStatusForTrips(driver, assignments) === 'في رحلة' && driver.status !== 'في رحلة')
+        .filter(driver => {
+            if (isStaffBlockedStatus(driver?.status) || !isTripDriver(driver)) return false;
+            const name = normalizeFleetKey(driver.name);
+            return name && assignments.drivers.has(name) && String(driver.status || '').trim() !== 'في رحلة';
+        })
         .map(driver => driver.id)
         .filter(id => id != null);
-    // تحرير من بقي «في رحلة» في القاعدة بلا رحلة جارية
     const freeTruckIds = (trucks || [])
         .filter(truck => {
             if (isInactiveFleetVehicle(truck)) return false;
@@ -7292,51 +7333,67 @@ async function alignFleetWithActiveTrips(trucks, drivers, trips) {
         })
         .map(driver => driver.id)
         .filter(id => id != null);
+
+    if (!truckIds.length && !driverIds.length && !freeTruckIds.length && !freeDriverIds.length) return;
+
+    const writes = [];
     if (truckIds.length) {
-        const { error } = await client.from('trucks').update({ status: 'في رحلة' }).in('id', truckIds);
-        if (!error) {
-            truckIds.forEach(id => {
+        writes.push(client.from('trucks').update({ status: 'في رحلة' }).in('id', truckIds).then(({ error }) => {
+            if (!error) truckIds.forEach(id => {
                 const row = trucks.find(truck => truck.id === id);
                 if (row) row.status = 'في رحلة';
             });
-        }
+        }));
     }
     if (freeTruckIds.length) {
         const freeCargoIds = freeTruckIds.filter(id => isCargoTruck(trucks.find(t => t.id === id)));
         const freeAdminIds = freeTruckIds.filter(id => !isCargoTruck(trucks.find(t => t.id === id)));
         if (freeCargoIds.length) {
-            const { error } = await client.from('trucks').update({ status: 'جاهزة للتحميل' }).in('id', freeCargoIds);
-            if (!error) freeCargoIds.forEach(id => {
-                const row = trucks.find(truck => truck.id === id);
-                if (row) row.status = 'جاهزة للتحميل';
-            });
+            writes.push(client.from('trucks').update({ status: 'جاهزة للتحميل' }).in('id', freeCargoIds).then(({ error }) => {
+                if (!error) freeCargoIds.forEach(id => {
+                    const row = trucks.find(truck => truck.id === id);
+                    if (row) row.status = 'جاهزة للتحميل';
+                });
+            }));
         }
         if (freeAdminIds.length) {
-            const { error } = await client.from('trucks').update({ status: 'مستخدمة إدارياً' }).in('id', freeAdminIds);
-            if (!error) freeAdminIds.forEach(id => {
-                const row = trucks.find(truck => truck.id === id);
-                if (row) row.status = 'مستخدمة إدارياً';
-            });
+            writes.push(client.from('trucks').update({ status: 'مستخدمة إدارياً' }).in('id', freeAdminIds).then(({ error }) => {
+                if (!error) freeAdminIds.forEach(id => {
+                    const row = trucks.find(truck => truck.id === id);
+                    if (row) row.status = 'مستخدمة إدارياً';
+                });
+            }));
         }
     }
     if (driverIds.length) {
-        const { error } = await client.from('drivers').update({ status: 'في رحلة' }).in('id', driverIds);
-        if (!error) {
-            driverIds.forEach(id => {
+        writes.push(client.from('drivers').update({ status: 'في رحلة' }).in('id', driverIds).then(({ error }) => {
+            if (!error) driverIds.forEach(id => {
                 const row = drivers.find(driver => driver.id === id);
                 if (row) row.status = 'في رحلة';
             });
-        }
+        }));
     }
     if (freeDriverIds.length) {
-        const { error } = await client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds);
-        if (!error) {
-            freeDriverIds.forEach(id => {
+        writes.push(client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds).then(({ error }) => {
+            if (!error) freeDriverIds.forEach(id => {
                 const row = drivers.find(driver => driver.id === id);
                 if (row) row.status = 'متوفر';
             });
-        }
+        }));
     }
+    await Promise.all(writes);
+}
+
+/** يعيد التعيينات فوراً للعرض. المزامنة مع القاعدة متسلسلة في الخلفية (wait: true عند حفظ الرحلة). */
+async function alignFleetWithActiveTrips(trucks, drivers, trips, { wait = false } = {}) {
+    const assignments = activeAssignmentSets(trips);
+    const trucksSnap = trucks || [];
+    const driversSnap = drivers || [];
+    fleetSyncChain = fleetSyncChain
+        .catch(() => {})
+        .then(() => syncFleetStatusesToDb(trucksSnap, driversSnap, assignments))
+        .catch(err => console.error('مزامنة الأسطول:', err));
+    if (wait) await fleetSyncChain;
     return assignments;
 }
 
@@ -8149,11 +8206,11 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     if (truckIdentifier && !truckBusy) {
         let { data: matched, error: findError } = await client
             .from('trucks')
-            .select('id, plate, status')
+            .select('id, plate, status, vehicle_kind')
             .eq('plate', truckIdentifier);
         if (findError) console.error('خطأ في جلب الشاحنة للتحرير:', findError);
         if (!(matched || []).length) {
-            const { data: allTrucks } = await client.from('trucks').select('id, plate, status');
+            const { data: allTrucks } = await client.from('trucks').select('id, plate, status, vehicle_kind');
             matched = (allTrucks || []).filter(tr => sameFleetValue(tr.plate, truckIdentifier));
         }
         const toFree = (matched || [])
@@ -8350,7 +8407,11 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         setCompleteTripBusy(false);
     }
 }
+        let loadAllDataInFlight = null;
+
         async function loadAllData() {
+    if (loadAllDataInFlight) return loadAllDataInFlight;
+
     const refreshBtn = document.getElementById('refreshDataBtn');
     const refreshIcon = document.getElementById('refreshDataIcon');
     const refreshLabel = document.getElementById('refreshDataLabel');
@@ -8358,6 +8419,7 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
     if (refreshIcon) refreshIcon.classList.add('fa-spin');
     if (refreshLabel) refreshLabel.textContent = t('header.refreshing');
 
+    loadAllDataInFlight = (async () => {
     try {
         const core = [];
         if (typeof loadCompanySettings === 'function') core.push(loadCompanySettings());
@@ -8388,7 +8450,10 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         if (refreshLabel) refreshLabel.textContent = t('header.refresh');
         if (refreshBtn) refreshBtn.disabled = false;
+        loadAllDataInFlight = null;
     }
+    })();
+    return loadAllDataInFlight;
 }
 
 async function initReportFilters() {
@@ -8463,7 +8528,8 @@ async function initReportFilters() {
 
         async function loadDashboardData() {
             const seq = ++dashboardLoadSeq;
-            const tripsReq = client.from('trips').select('*');
+            const dashTripCols = 'trip_no,status,client_name,truck_plate,driver_name,total_amount,paid_amount,remaining_amount,from_city,to_city,trip_type';
+            const tripsReq = client.from('trips').select(dashTripCols);
             const trucksReq = client.from('trucks').select('*');
             const driversReq = client.from('drivers').select('*');
             const docsReq = client.from('facility_documents').select('*');
@@ -8519,35 +8585,50 @@ async function initReportFilters() {
                 setHtml('dashRemainingAmount', formatSAR(remaining));
                 setText('dashTotalTrips', trips ? trips.filter(isCompletedTrip).length : 0);
 
-                const assignments = await alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
-                const fleetTrucks = (trucks || []).filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t));
+                const assignments = activeAssignmentSets(trips || []);
+                void alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
+                const fleetTrucks = (trucks || []).filter(t => isCargoTruck(t));
                 const totalTrucks = fleetTrucks.length;
-                const readyTrucks = fleetTrucks.filter(t => isCargoReadyStatus(truckStatusForTrips(t, assignments))).length;
-                const busyTrucks = fleetTrucks.filter(t => truckStatusForTrips(t, assignments) === 'في رحلة').length;
-                const maintTrucks = fleetTrucks.filter(t => t.status === 'صيانة دورية' || t.status === 'في الصيانة').length;
+                const readyTrucks = fleetTrucks.filter(t => !isInactiveFleetVehicle(t) && isCargoReadyStatus(truckStatusForTrips(t, assignments))).length;
+                const busyTrucks = fleetTrucks.filter(t => !isInactiveFleetVehicle(t) && truckStatusForTrips(t, assignments) === 'في رحلة').length;
+                const maintTrucks = fleetTrucks.filter(t => {
+                    const s = String(t.status || '').trim();
+                    return s === 'صيانة دورية' || s === 'في الصيانة';
+                }).length;
                 const brokenTrucks = fleetTrucks.filter(t => isBrokenVehicleStatus(t.status)).length;
+                const retiredTrucks = fleetTrucks.filter(t => String(t.status || '').trim() === 'خارج الخدمة').length;
+                const soldTrucks = fleetTrucks.filter(t => String(t.status || '').trim() === 'مباعة').length;
 
                 setText('dashTotalTrucksBadge', tf('dash.totalPrefix', totalTrucks));
                 setText('dashReadyTrucks', readyTrucks);
                 setText('dashBusyTrucks', busyTrucks);
                 setText('dashMaintTrucks', maintTrucks);
                 setText('dashBrokenTrucks', brokenTrucks);
+                setText('dashRetiredTrucks', retiredTrucks);
+                setText('dashSoldTrucks', soldTrucks);
 
                 const fleetDrivers = (drivers || []).filter(isTripDriver);
                 const totalDrivers = fleetDrivers.length;
                 const readyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'متوفر').length;
                 const busyDrivers = fleetDrivers.filter(d => driverStatusForTrips(d, assignments) === 'في رحلة').length;
-                const leaveDrivers = fleetDrivers.filter(d => d.status === 'إجازة' || d.status === 'في إجازة').length;
+                const leaveDrivers = fleetDrivers.filter(d => {
+                    const s = String(d.status || '').trim();
+                    return s === 'إجازة' || s === 'في إجازة';
+                }).length;
+                const pausedDrivers = fleetDrivers.filter(d => String(d.status || '').trim() === 'متوقف مؤقتاً').length;
                 const suspendedDrivers = fleetDrivers.filter(d => {
                     const s = String(d.status || '').trim();
-                    return s === 'موقوف' || s === 'موقوف عن العمل' || s === 'متوقف مؤقتاً' || s === 'مستقيل';
+                    return s === 'موقوف' || s === 'موقوف عن العمل';
                 }).length;
+                const resignedDrivers = fleetDrivers.filter(d => String(d.status || '').trim() === 'مستقيل').length;
 
                 setText('dashTotalDriversBadge', tf('dash.totalPrefix', totalDrivers));
                 setText('dashReadyDrivers', readyDrivers);
                 setText('dashBusyDrivers', busyDrivers);
                 setText('dashLeaveDrivers', leaveDrivers);
+                setText('dashPausedDrivers', pausedDrivers);
                 setText('dashSuspendedDrivers', suspendedDrivers);
+                setText('dashResignedDrivers', resignedDrivers);
 
                 if (activeTable) {
                     if (activeTripsList.length > 0) {
@@ -13640,7 +13721,7 @@ function closeAddTripModal() {
         }
         const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
         const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
-        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }]);
+        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }], { wait: true });
 
         closeAddTripModal();
         logActivity('trip.create', 'رحلة', trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
@@ -13949,7 +14030,7 @@ async function saveEditTrip(e) {
         }
         const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
         const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
-        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }]);
+        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }], { wait: true });
     }
 
     revealSuggestion('client', client_name);
@@ -13978,7 +14059,8 @@ async function saveEditTrip(e) {
                     client.from('trips').select('truck_plate, driver_name, status').eq('status', 'جارية')
                 ]);
                 if (error) throw error;
-                const assignments = await alignFleetWithActiveTrips(trucks || [], [], activeTrips || []);
+                const assignments = activeAssignmentSets(activeTrips || []);
+                void alignFleetWithActiveTrips(trucks || [], [], activeTrips || []);
                 allTrucksById = {};
                 (trucks || []).forEach(tr => { allTrucksById[tr.id] = tr; });
                 let visible = trucks || [];
@@ -14189,7 +14271,8 @@ async function cancelTrip(tripNo) {
                     client.from('trips').select('truck_plate, driver_name, status').eq('status', 'جارية')
                 ]);
                 if (error) throw error;
-                const assignments = await alignFleetWithActiveTrips([], drivers || [], activeTrips || []);
+                const assignments = activeAssignmentSets(activeTrips || []);
+                void alignFleetWithActiveTrips([], drivers || [], activeTrips || []);
                 allDriversById = {};
                 (drivers || []).forEach(dr => { allDriversById[dr.id] = dr; });
                 let visible = drivers || [];
