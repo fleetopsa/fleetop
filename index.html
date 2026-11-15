@@ -6,11 +6,45 @@
     <title>فليتوب FleetOp — إدارة الأسطول والرحلات</title>
     <link rel="icon" href="fleetop-logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // محاذاة amber مع ذهب الهوية (#c4a35a) بدل البرتقالي الفاتح الافتراضي
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50:  '#faf6ee',
+                            100: '#f3ead7',
+                            200: '#e8d5a3',
+                            300: '#d9c07a',
+                            400: '#cfa968',
+                            500: '#c4a35a',
+                            600: '#a88748',
+                            700: '#8a6d3a',
+                            800: '#6f5730',
+                            900: '#5a4728',
+                            950: '#3d301c'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style> 
+        :root {
+            --brand-navy: #0b2a4a;
+            --brand-gold: #c4a35a;
+            --brand-gold-soft: #e8d5a3;
+            accent-color: var(--brand-gold);
+        }
         body { font-family: 'Cairo', 'Inter', sans-serif; background: #faf7f2; }
+        input[type="checkbox"],
+        input[type="radio"] {
+            accent-color: var(--brand-gold);
+        }
         html[lang="en"] body { font-family: 'Inter', 'Cairo', sans-serif; }
         .truck-cards-few { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
         .truck-cards-many {
@@ -2687,7 +2721,7 @@
                         </tr>
                     </thead>
                     <tbody id="commissionReportTable" class="divide-y divide-slate-100">
-                        <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
+                        <tr><td colspan="7" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2851,6 +2885,40 @@
                             </thead>
                             <tbody id="activityLogTable" class="divide-y divide-slate-100">
                                 <tr><td colspan="7" class="text-center p-8 text-slate-400">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <main id="permissionsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                                <i class="fa-solid fa-user-lock text-amber-500 ml-2"></i>
+                                <span data-i18n="perm.title">توزيع الصلاحيات</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-1" data-i18n="perm.hint">فعّل القراءة والإضافة والتعديل والحذف والطباعة لهذا المستخدم. المدير صلاحياته كاملة دائماً.</p>
+                            <p id="permissionsUserLabel" class="mt-2 text-xs font-black text-slate-800"></p>
+                        </div>
+                        <div class="flex flex-wrap items-end gap-2">
+                            <button type="button" onclick="resetPermissionsDraftToRole()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-xs transition" data-i18n="perm.resetRole">الافتراضي</button>
+                            <button type="button" onclick="savePermissionsDraft()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition" data-i18n="perm.save">حفظ</button>
+                            <button type="button" onclick="closePermissionsScreen()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold w-10 h-10 rounded-xl text-sm transition flex items-center justify-center" title="خروج" aria-label="خروج">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p id="permissionsAdminNote" class="hidden text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mb-3" data-i18n="perm.adminNote">حساب المدير يمتلك كل الصلاحيات ولا يُقيَّد من هذه الصفحة.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center text-xs text-slate-700 min-w-[640px]">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr id="permissionsTableHead">
+                                    <th class="p-3 text-start rounded-r-xl" data-i18n="perm.module">القسم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permissionsMatrixBody">
+                                <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="perm.chooseFirst">اختر مستخدماً لعرض الصلاحيات</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3965,7 +4033,7 @@
         let currentLoggedInUser = null;
         let loginBusy = false;
         let appUsersById = {};
-        const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id, company_id';
+        const APP_USER_FIELDS = 'id, username, employee_name, role, status, auth_id, company_id, permissions';
         const PRESENCE_ONLINE_MS = 5 * 60 * 1000;
         const PRESENCE_BEAT_MS = 30000;
         const PRESENCE_TOUCH_MIN_MS = 20000;
@@ -4300,54 +4368,461 @@ function isAccountantUser(user = currentLoggedInUser) {
     return role === 'accountant' || role === 'محاسب';
 }
 
-/** تعديل/حذف المركبات والموظفين: مدير ودعم المنصة فقط */
+const PERM_ACTIONS = ['view', 'create', 'edit', 'delete', 'print'];
+const PERM_MODULES = [
+    { id: 'dashboard', actions: ['view'] },
+    { id: 'charts', actions: ['view'] },
+    { id: 'facility', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'vehicles', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'staff', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'trips', actions: ['view', 'create', 'edit', 'delete', 'print'] },
+    { id: 'maintenance', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'reports_general', actions: ['view', 'print'] },
+    { id: 'reports_ops', actions: ['view', 'print'] },
+    { id: 'reports_maint', actions: ['view', 'print'] },
+    { id: 'reports_finance', actions: ['view', 'print'] },
+    { id: 'users', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'settings', actions: ['view', 'edit'] },
+    { id: 'activity_log', actions: ['view', 'delete'] },
+    { id: 'permissions', actions: ['view', 'edit'] }
+];
+
+let permissionsDraft = null;
+let permissionsDraftUserId = null;
+let pendingPermissionsUserId = null;
+
+function permModuleLabel(id) {
+    return t('perm.mod.' + id);
+}
+
+function permActionLabel(action) {
+    return t('perm.act.' + action);
+}
+
+function buildFullPermissions(enabled) {
+    const out = {};
+    PERM_MODULES.forEach(mod => {
+        out[mod.id] = {};
+        mod.actions.forEach(act => { out[mod.id][act] = !!enabled; });
+    });
+    return out;
+}
+
+function normalizePermissions(raw) {
+    const base = buildFullPermissions(false);
+    if (!raw || typeof raw !== 'object') return base;
+    PERM_MODULES.forEach(mod => {
+        const src = raw[mod.id];
+        if (!src || typeof src !== 'object') return;
+        mod.actions.forEach(act => {
+            if (Object.prototype.hasOwnProperty.call(src, act)) {
+                base[mod.id][act] = !!src[act];
+            }
+        });
+    });
+    return base;
+}
+
+function parsePermissions(raw) {
+    if (raw == null || raw === '') return null;
+    if (typeof raw === 'object') return normalizePermissions(raw);
+    try {
+        return normalizePermissions(JSON.parse(String(raw)));
+    } catch (err) {
+        return null;
+    }
+}
+
+function roleDefaultPermissions(role) {
+    const r = String(role || '').trim().toLowerCase();
+    if (r === 'admin' || r === 'مدير') return buildFullPermissions(true);
+    const base = buildFullPermissions(false);
+    base.dashboard.view = true;
+    base.charts.view = true;
+    if (r === 'accountant' || r === 'محاسب') {
+        Object.assign(base.facility, { view: true, create: true, edit: true, delete: false });
+        base.vehicles.view = true;
+        base.staff.view = true;
+        Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
+        base.maintenance.view = true;
+        ['reports_general', 'reports_ops', 'reports_maint', 'reports_finance'].forEach(id => {
+            base[id].view = true;
+            base[id].print = true;
+        });
+        return base;
+    }
+    Object.assign(base.vehicles, { view: true, create: true, edit: false, delete: false });
+    Object.assign(base.staff, { view: true, create: true, edit: false, delete: false });
+    Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
+    Object.assign(base.maintenance, { view: true, create: true, edit: true, delete: false });
+    Object.assign(base.reports_ops, { view: true, print: true });
+    return base;
+}
+
+function resolveUserPermissions(user = currentLoggedInUser) {
+    if (!user) return buildFullPermissions(false);
+    if (isSuperAdminUser(user) || isSupportMode(user) || isAdminUser(user)) {
+        return buildFullPermissions(true);
+    }
+    if (user.permissions == null || user.permissions === '') {
+        return roleDefaultPermissions(user.role);
+    }
+    return parsePermissions(user.permissions) || roleDefaultPermissions(user.role);
+}
+
+function hasPerm(module, action, user = currentLoggedInUser) {
+    if (!user) return false;
+    if (isSuperAdminUser(user) || isSupportMode(user) || isAdminUser(user)) return true;
+    const perms = resolveUserPermissions(user);
+    return !!(perms[module] && perms[module][action]);
+}
+
 function canManageFleetRecords(user = currentLoggedInUser) {
-    return isAdminUser(user) || isSupportMode(user);
+    return hasPerm('vehicles', 'edit', user) || hasPerm('staff', 'edit', user);
 }
 
-/** التراخيص والاشتراكات: المدير والمحاسب ودعم المنصة */
 function canViewFacilityDocs(user = currentLoggedInUser) {
-    return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
+    return hasPerm('facility', 'view', user);
 }
 
-/** المحاسب والمدير: عرض وإضافة وتعديل؛ الحذف للمدير فقط */
 function canEditFacilityDocs(user = currentLoggedInUser) {
-    return canViewFacilityDocs(user);
+    return hasPerm('facility', 'edit', user);
 }
 
 function canAddFacilityDocs(user = currentLoggedInUser) {
-    return canViewFacilityDocs(user);
+    return hasPerm('facility', 'create', user);
 }
 
 function canDeleteFacilityDocs(user = currentLoggedInUser) {
-    return isAdminUser(user) || isSupportMode(user);
+    return hasPerm('facility', 'delete', user);
 }
 
-/** إدارة الصيانة: المحاسب اطلاع فقط (بدون إضافة/تعديل) */
 function canWriteMaintenance(user = currentLoggedInUser) {
-    if (isAdminUser(user) || isSupportMode(user)) return true;
-    if (isAccountantUser(user)) return false;
-    return !!user;
+    return hasPerm('maintenance', 'create', user) || hasPerm('maintenance', 'edit', user);
 }
 
 function syncMaintenanceManageAccess(user = currentLoggedInUser) {
     const addBtn = document.getElementById('maintAddBtn');
-    if (addBtn) addBtn.classList.toggle('hidden', !canWriteMaintenance(user));
+    if (addBtn) addBtn.classList.toggle('hidden', !hasPerm('maintenance', 'create', user));
 }
 
-/** التقارير العامة وتقرير حركة الصيانة: ليست للمستخدم العادي */
 function canViewRestrictedReports(user = currentLoggedInUser) {
-    return isAdminUser(user) || isAccountantUser(user) || isSupportMode(user);
+    return hasPerm('reports_general', 'view', user) || hasPerm('reports_maint', 'view', user);
+}
+
+function syncFleetFormAccess(user = currentLoggedInUser) {
+    const truckForm = document.querySelector('#trucksSection form')?.closest('.xl\\:col-span-4, [class*="col-span-4"]');
+    const truckCard = document.querySelector('#trucksSection .xl\\:col-span-4');
+    if (truckCard) truckCard.classList.toggle('hidden', !hasPerm('vehicles', 'create', user) && !hasPerm('vehicles', 'edit', user));
+    const staffCard = document.querySelector('#driversSection .xl\\:col-span-4');
+    if (staffCard) staffCard.classList.toggle('hidden', !hasPerm('staff', 'create', user) && !hasPerm('staff', 'edit', user));
 }
 
 function applyRoleBasedNav(user = currentLoggedInUser) {
     const facilityDocsBtn = document.getElementById('tabFacilityDocsBtn');
-    if (facilityDocsBtn) facilityDocsBtn.classList.toggle('hidden', !canViewFacilityDocs(user));
+    if (facilityDocsBtn) facilityDocsBtn.classList.toggle('hidden', !hasPerm('facility', 'view', user));
+    const vehiclesBtn = document.getElementById('tabVehiclesBtn');
+    if (vehiclesBtn) vehiclesBtn.classList.toggle('hidden', !hasPerm('vehicles', 'view', user));
+    const staffBtn = document.getElementById('tabStaffBtn');
+    if (staffBtn) staffBtn.classList.toggle('hidden', !hasPerm('staff', 'view', user));
+    const tripsBtn = document.getElementById('tabTripsBtn');
+    if (tripsBtn) tripsBtn.classList.toggle('hidden', !hasPerm('trips', 'view', user));
+    const maintBtn = document.getElementById('tabMaintenanceBtn');
+    if (maintBtn) maintBtn.classList.toggle('hidden', !hasPerm('maintenance', 'view', user));
+    const chartsBtn = document.getElementById('tabChartsBtn');
+    if (chartsBtn) chartsBtn.classList.toggle('hidden', !hasPerm('charts', 'view', user));
     const generalReportsBtn = document.getElementById('tabGeneralReportsBtn');
-    if (generalReportsBtn) generalReportsBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
+    if (generalReportsBtn) generalReportsBtn.classList.toggle('hidden', !hasPerm('reports_general', 'view', user));
+    const opsMovementBtn = document.getElementById('tabReportsBtn');
+    if (opsMovementBtn) opsMovementBtn.classList.toggle('hidden', !hasPerm('reports_ops', 'view', user));
     const maintReportBtn = document.getElementById('tabMaintReportBtn');
-    if (maintReportBtn) maintReportBtn.classList.toggle('hidden', !canViewRestrictedReports(user));
+    if (maintReportBtn) maintReportBtn.classList.toggle('hidden', !hasPerm('reports_maint', 'view', user));
+    const financialMenu = document.getElementById('financialMenu');
+    if (financialMenu) financialMenu.classList.toggle('hidden', !hasPerm('reports_finance', 'view', user));
+    const tabUsersBtn = document.getElementById('tabUsersBtn');
+    if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', !hasPerm('users', 'view', user));
+    const systemMenu = document.getElementById('systemMenu');
+    const showSystem = hasPerm('settings', 'view', user) || hasPerm('activity_log', 'view', user);
+    if (systemMenu) systemMenu.classList.toggle('hidden', !showSystem);
+    const settingsBtn = document.getElementById('tabSettingsBtn');
+    if (settingsBtn) settingsBtn.classList.toggle('hidden', !hasPerm('settings', 'view', user));
+    const activityBtn = document.getElementById('tabActivityLogBtn');
+    if (activityBtn) activityBtn.classList.toggle('hidden', !hasPerm('activity_log', 'view', user));
     syncMaintenanceManageAccess(user);
+    syncFleetFormAccess(user);
+}
+
+function clonePermissions(src) {
+    return normalizePermissions(JSON.parse(JSON.stringify(src || {})));
+}
+
+function permissionsTargetUserLabel(usr) {
+    if (!usr) return '';
+    const roleText = usr.role === 'admin' ? t('role.admin') : (usr.role === 'accountant' ? t('role.accountant') : t('role.user'));
+    return `${usr.employee_name || usr.username || ''} · ${usr.username || ''} · ${roleText}`;
+}
+
+async function loadPermissionsScreen() {
+    if (!hasPerm('permissions', 'view')) {
+        alert(currentLang === 'en' ? 'Not allowed.' : 'غير مصرح.');
+        return;
+    }
+    const labelEl = document.getElementById('permissionsUserLabel');
+    const note = document.getElementById('permissionsAdminNote');
+    const body = document.getElementById('permissionsMatrixBody');
+    const id = Number(pendingPermissionsUserId || permissionsDraftUserId || 0);
+    pendingPermissionsUserId = null;
+    if (!id) {
+        permissionsDraft = null;
+        permissionsDraftUserId = null;
+        if (labelEl) labelEl.textContent = '';
+        if (note) note.classList.add('hidden');
+        if (body) body.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('perm.openFromUsers'))}</td></tr>`;
+        return;
+    }
+    try {
+        let usr = appUsersById[id];
+        let { data, error } = await client.from('app_users').select(APP_USER_FIELDS).eq('id', id).maybeSingle();
+        if (error && /permissions/i.test(error.message || '')) {
+            ({ data, error } = await client.from('app_users')
+                .select('id, username, employee_name, role, status, auth_id, company_id')
+                .eq('id', id)
+                .maybeSingle());
+        }
+        if (error) throw error;
+        if (data) {
+            usr = { ...(appUsersById[id] || {}), ...data };
+            appUsersById[id] = usr;
+        }
+        if (!usr) {
+            if (labelEl) labelEl.textContent = '';
+            if (body) body.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-600">${escapeHtml(t('perm.userMissing'))}</td></tr>`;
+            return;
+        }
+        permissionsDraftUserId = id;
+        if (labelEl) labelEl.textContent = permissionsTargetUserLabel(usr);
+        renderPermissionsMatrixHead();
+        showPermissionsForUser(usr);
+    } catch (err) {
+        console.error(err);
+        if (body) body.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-600">${escapeHtml(err.message || 'تعذر التحميل')}</td></tr>`;
+    }
+}
+
+function renderPermissionsMatrixHead() {
+    const head = document.getElementById('permissionsTableHead');
+    if (!head) return;
+    // القسم · الكل (اختيار الصفحة في الرأس + اختيار الصف في الخلايا) · قراءة · ...
+    head.innerHTML = `<th class="p-3 text-start rounded-r-xl">${escapeHtml(t('perm.module'))}</th>
+        <th class="p-3 text-center w-12" title="${escapeHtml(t('perm.selectAllPage'))}">
+            <input type="checkbox" id="permissionsSelectAllPage" class="w-4 h-4 accent-amber-500" onchange="togglePermissionsSelectAllPage(this.checked)" aria-label="${escapeHtml(t('perm.selectAllPage'))}">
+        </th>` +
+        PERM_ACTIONS.map((act, i) => {
+            const round = i === PERM_ACTIONS.length - 1 ? ' rounded-l-xl' : '';
+            return `<th class="p-3${round}">${escapeHtml(permActionLabel(act))}</th>`;
+        }).join('');
+}
+
+function showPermissionsForUser(usr) {
+    const note = document.getElementById('permissionsAdminNote');
+    if (!usr) return;
+    permissionsDraftUserId = Number(usr.id);
+    const isAdminTarget = String(usr.role || '').toLowerCase() === 'admin' || String(usr.role || '') === 'مدير';
+    if (note) note.classList.toggle('hidden', !isAdminTarget);
+    if (isAdminTarget) {
+        permissionsDraft = buildFullPermissions(true);
+    } else if (usr.permissions == null || usr.permissions === '') {
+        permissionsDraft = clonePermissions(roleDefaultPermissions(usr.role));
+    } else {
+        permissionsDraft = clonePermissions(parsePermissions(usr.permissions));
+    }
+    renderPermissionsMatrixBody(isAdminTarget);
+}
+
+function isPermissionsMatrixLocked() {
+    const usr = permissionsDraftUserId ? appUsersById[permissionsDraftUserId] : null;
+    if (!usr) return true;
+    return String(usr.role || '').toLowerCase() === 'admin' || usr.role === 'مدير';
+}
+
+function renderPermissionsMatrixBody(locked) {
+    const body = document.getElementById('permissionsMatrixBody');
+    if (!body || !permissionsDraft) return;
+    const disabled = locked ? ' disabled' : '';
+    body.innerHTML = PERM_MODULES.map(mod => {
+        const rowAllChecked = mod.actions.every(act => !!permissionsDraft[mod.id]?.[act]);
+        const cells = PERM_ACTIONS.map(act => {
+            const supported = mod.actions.includes(act);
+            if (!supported) {
+                return `<td class="p-2.5 text-slate-300">—</td>`;
+            }
+            const checked = !!permissionsDraft[mod.id]?.[act];
+            return `<td class="p-2.5">
+                <input type="checkbox" class="w-4 h-4 accent-amber-500" data-perm-mod="${mod.id}" data-perm-act="${act}" ${checked ? 'checked' : ''}${disabled} onchange="onPermissionCheckboxChange(this)">
+            </td>`;
+        }).join('');
+        return `<tr class="hover:bg-slate-50 border-b border-slate-100" data-perm-row="${mod.id}">
+            <td class="p-3 text-start font-bold text-slate-800">${escapeHtml(permModuleLabel(mod.id))}</td>
+            <td class="p-2.5">
+                <input type="checkbox" class="w-4 h-4 accent-amber-500" data-perm-row-all="${mod.id}" title="${escapeHtml(t('perm.selectAllRow'))}" ${rowAllChecked ? 'checked' : ''}${disabled} onchange="togglePermissionsSelectAllRow('${mod.id}', this.checked)">
+            </td>
+            ${cells}
+        </tr>`;
+    }).join('');
+    syncPermissionsSelectAllStates();
+}
+
+function togglePermissionsSelectAllPage(checked) {
+    if (!permissionsDraft || isPermissionsMatrixLocked()) return;
+    PERM_MODULES.forEach(mod => {
+        if (!permissionsDraft[mod.id]) permissionsDraft[mod.id] = {};
+        mod.actions.forEach(act => {
+            permissionsDraft[mod.id][act] = !!checked;
+        });
+    });
+    renderPermissionsMatrixBody(false);
+}
+
+function togglePermissionsSelectAllRow(modId, checked) {
+    if (!permissionsDraft || isPermissionsMatrixLocked()) return;
+    const mod = PERM_MODULES.find(m => m.id === modId);
+    if (!mod) return;
+    if (!permissionsDraft[modId]) permissionsDraft[modId] = {};
+    mod.actions.forEach(act => {
+        permissionsDraft[modId][act] = !!checked;
+    });
+    mod.actions.forEach(act => {
+        const box = document.querySelector(`input[data-perm-mod="${modId}"][data-perm-act="${act}"]`);
+        if (box) box.checked = !!checked;
+    });
+    const rowAll = document.querySelector(`input[data-perm-row-all="${modId}"]`);
+    if (rowAll) rowAll.checked = !!checked;
+    syncPermissionsSelectAllStates();
+}
+
+function syncPermissionsSelectAllStates() {
+    if (!permissionsDraft) return;
+    const locked = isPermissionsMatrixLocked();
+    const pageBox = document.getElementById('permissionsSelectAllPage');
+    if (pageBox) {
+        const allOn = PERM_MODULES.every(mod => mod.actions.every(act => !!permissionsDraft[mod.id]?.[act]));
+        const anyOn = PERM_MODULES.some(mod => mod.actions.some(act => !!permissionsDraft[mod.id]?.[act]));
+        pageBox.checked = allOn;
+        pageBox.indeterminate = !allOn && anyOn;
+        pageBox.disabled = locked;
+    }
+    PERM_MODULES.forEach(mod => {
+        const rowAll = document.querySelector(`input[data-perm-row-all="${mod.id}"]`);
+        if (!rowAll) return;
+        const allOn = mod.actions.every(act => !!permissionsDraft[mod.id]?.[act]);
+        const anyOn = mod.actions.some(act => !!permissionsDraft[mod.id]?.[act]);
+        rowAll.checked = allOn;
+        rowAll.indeterminate = !allOn && anyOn;
+        rowAll.disabled = locked;
+    });
+}
+
+function onPermissionCheckboxChange(el) {
+    if (!permissionsDraft || !el) return;
+    const mod = el.getAttribute('data-perm-mod');
+    const act = el.getAttribute('data-perm-act');
+    if (!mod || !act) return;
+    if (!permissionsDraft[mod]) permissionsDraft[mod] = {};
+    permissionsDraft[mod][act] = !!el.checked;
+    if (act !== 'view' && el.checked) {
+        permissionsDraft[mod].view = true;
+        const viewBox = document.querySelector(`input[data-perm-mod="${mod}"][data-perm-act="view"]`);
+        if (viewBox) viewBox.checked = true;
+    }
+    syncPermissionsSelectAllStates();
+}
+
+function resetPermissionsDraftToRole() {
+    const id = permissionsDraftUserId;
+    const usr = id ? appUsersById[id] : null;
+    if (!usr) {
+        alert(t('perm.chooseFirst'));
+        return;
+    }
+    if (String(usr.role || '').toLowerCase() === 'admin' || usr.role === 'مدير') {
+        permissionsDraft = buildFullPermissions(true);
+        renderPermissionsMatrixBody(true);
+        return;
+    }
+    permissionsDraft = clonePermissions(roleDefaultPermissions(usr.role));
+    renderPermissionsMatrixBody(false);
+}
+
+async function savePermissionsDraft() {
+    if (!hasPerm('permissions', 'edit')) {
+        alert(currentLang === 'en' ? 'Not allowed.' : 'غير مصرح بحفظ الصلاحيات.');
+        return;
+    }
+    const id = permissionsDraftUserId;
+    const usr = id ? appUsersById[id] : null;
+    if (!usr || !permissionsDraft) {
+        alert(t('perm.chooseFirst'));
+        return;
+    }
+    if (String(usr.role || '').toLowerCase() === 'admin' || usr.role === 'مدير') {
+        alert(t('perm.adminNote'));
+        return;
+    }
+    const payload = normalizePermissions(permissionsDraft);
+    try {
+        let error = null;
+        const rpc = await client.rpc('admin_set_user_permissions', {
+            p_id: Number(id),
+            p_permissions: payload
+        });
+        error = rpc.error;
+        if (error && /Could not find the function|does not exist|42883|admin_set_user_permissions/i.test(error.message || '')) {
+            const upd = await client.from('app_users').update({ permissions: payload }).eq('id', Number(id));
+            error = upd.error;
+        }
+        if (error) {
+            alert((currentLang === 'en'
+                ? 'Could not save permissions. Run user-permissions.sql then retry. '
+                : 'تعذر حفظ الصلاحيات. نفّذ ملف user-permissions.sql ثم أعد المحاولة. ') + (error.message || ''));
+            return;
+        }
+        appUsersById[id] = { ...usr, permissions: payload };
+        if (currentLoggedInUser && Number(currentLoggedInUser.id) === Number(id)) {
+            currentLoggedInUser.permissions = payload;
+            applyRoleBasedNav(currentLoggedInUser);
+        }
+        logActivity('permissions.save', 'صلاحيات', usr.username || id, usr.employee_name || '');
+        alert(currentLang === 'en' ? 'Permissions saved.' : 'تم حفظ الصلاحيات بنجاح.');
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'تعذر الحفظ');
+    }
+}
+
+function openUserPermissions(userId) {
+    pendingPermissionsUserId = Number(userId) || null;
+    permissionsDraftUserId = pendingPermissionsUserId;
+    switchTab('permissions');
+}
+
+function closePermissionsScreen() {
+    permissionsDraft = null;
+    permissionsDraftUserId = null;
+    pendingPermissionsUserId = null;
+    const labelEl = document.getElementById('permissionsUserLabel');
+    if (labelEl) labelEl.textContent = '';
+    const body = document.getElementById('permissionsMatrixBody');
+    if (body) {
+        body.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('perm.openFromUsers'))}</td></tr>`;
+    }
+    document.getElementById('permissionsAdminNote')?.classList.add('hidden');
+    const pageBox = document.getElementById('permissionsSelectAllPage');
+    if (pageBox) {
+        pageBox.checked = false;
+        pageBox.indeterminate = false;
+    }
+    if (hasPerm('users', 'view')) switchTab('users');
+    else switchTab('dashboard');
 }
 
 function updateSidebarIdentity(user = currentLoggedInUser) {
@@ -4445,6 +4920,12 @@ function showLoginError(message, targetId = 'loginError') {
 
 async function loadAppProfile(authId) {
     let { data, error } = await client.from('app_users').select(APP_USER_FIELDS).eq('auth_id', authId).maybeSingle();
+    if (error && /permissions/i.test(error.message || '')) {
+        ({ data, error } = await client.from('app_users')
+            .select('id, username, employee_name, role, status, auth_id, company_id')
+            .eq('auth_id', authId)
+            .maybeSingle());
+    }
     if (error && /company_id/i.test(error.message || '')) {
         ({ data, error } = await client.from('app_users')
             .select('id, username, employee_name, role, status, auth_id')
@@ -5994,7 +6475,7 @@ async function generateCommissionReport() {
 
         if (!tbody) return;
         if (!activeTrips.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
             return;
         }
 
@@ -6032,7 +6513,7 @@ async function generateCommissionReport() {
                 const subtotal = list.reduce((sum, tr) => sum + commissionAmount(tr), 0);
                 return `
                     <tr class="bg-slate-900 text-white">
-                        <td colspan="8" class="px-3.5 py-2.5">
+                        <td colspan="7" class="px-3.5 py-2.5">
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="text-[10px] font-bold text-amber-300">${label}</span>
                                 <span class="font-black">${key}</span>
@@ -6055,7 +6536,7 @@ async function generateCommissionReport() {
         }
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
         const payoutBody = document.getElementById('commissionPayoutTable');
         if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
     }
@@ -6143,8 +6624,7 @@ function closeTripDetails() {
 }
 
 function canViewCommissionReports() {
-    const role = currentLoggedInUser?.role;
-    return role === 'admin' || role === 'accountant' || role === 'مدير' || role === 'محاسب';
+    return hasPerm('reports_finance', 'view');
 }
 
 function showAppSection(sectionId) {
@@ -8765,7 +9245,7 @@ function openMaintenanceAttachModal(id) {
         openMaintenanceInvoice(id);
         return;
     }
-    if (!canWriteMaintenance()) {
+    if (!hasPerm('maintenance', 'edit')) {
         alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
         return;
     }
@@ -8830,7 +9310,7 @@ async function writeMaintenanceAttachments(rowId, files) {
 }
 
 async function saveMaintenanceAttachments() {
-    if (!canWriteMaintenance()) {
+    if (!hasPerm('maintenance', 'edit')) {
         alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
         return;
     }
@@ -8883,7 +9363,7 @@ async function fillMaintenanceVehicleOptions(keepPlate) {
 }
 
 async function openMaintenanceModal(id) {
-    if (!canWriteMaintenance()) {
+    if ((id && !hasPerm('maintenance', 'edit')) || (!id && !hasPerm('maintenance', 'create'))) {
         alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
         return;
     }
@@ -8957,8 +9437,8 @@ function renderMaintenanceManage() {
     const tbody = document.getElementById('maintenanceManageTable');
     const countEl = document.getElementById('maintManageCount');
     if (!tbody) return;
-    const canWrite = canWriteMaintenance();
-    const admin = typeof isAdminUser === 'function' && isAdminUser();
+    const canEdit = hasPerm('maintenance', 'edit');
+    const canDelete = hasPerm('maintenance', 'delete');
     syncMaintenanceManageAccess();
     const rows = maintenanceCache || [];
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
@@ -8978,15 +9458,15 @@ function renderMaintenanceManage() {
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
                 <td class="maint-col-tight p-3 no-print">
                     <div class="flex flex-col items-center gap-1">
-                        ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : (!canWrite ? '<span class="text-slate-300">—</span>' : '')}
-                        ${canWrite ? `<button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>` : ''}
+                        ${hasInvoice ? `<button type="button" onclick="openMaintenanceInvoice(${Number(row.id)})" class="text-amber-700 hover:text-amber-800 font-bold">${escapeHtml(t('maint.invoiceView'))}</button>` : (!canEdit ? '<span class="text-slate-300">—</span>' : '')}
+                        ${canEdit ? `<button type="button" onclick="openMaintenanceAttachModal(${Number(row.id)})" class="text-slate-700 hover:text-amber-700 font-bold">${escapeHtml(t('maint.invoiceUpload'))}</button>` : ''}
                     </div>
                 </td>
                 <td class="p-3 text-center no-print">
                     <div class="flex items-center justify-center gap-2">
-                        ${canWrite ? `<button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
-                        ${admin ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
-                        ${!canWrite && !admin ? '<span class="text-slate-300">—</span>' : ''}
+                        ${canEdit ? `<button type="button" onclick="openMaintenanceModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}" aria-label="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+                        ${canDelete ? `<button type="button" onclick="deleteMaintenance(${Number(row.id)})" class="text-rose-600 hover:text-rose-700 font-bold">${escapeHtml(t('ui.delete'))}</button>` : ''}
+                        ${!canEdit && !canDelete ? '<span class="text-slate-300">—</span>' : ''}
                     </div>
                 </td>
             </tr>`;
@@ -9115,12 +9595,12 @@ function buildMaintenanceEditDiff(before, after) {
 
 async function saveMaintenance(event) {
     event.preventDefault();
-    if (!canWriteMaintenance()) {
+    const editId = Number(document.getElementById('maintId')?.value || 0);
+    if ((editId && !hasPerm('maintenance', 'edit')) || (!editId && !hasPerm('maintenance', 'create'))) {
         alert(currentLang === 'en' ? 'Maintenance is view-only for your role.' : 'إدارة الصيانة للاطلاع فقط حسب صلاحيتك.');
         return;
     }
     showMaintenanceError('');
-    const editId = Number(document.getElementById('maintId')?.value || 0);
     const serviceDate = document.getElementById('maintServiceDate')?.value || '';
     let type = document.getElementById('maintType')?.value || '';
     const customType = document.getElementById('maintTypeOther')?.value.trim() || '';
@@ -9205,7 +9685,7 @@ async function saveMaintenance(event) {
 }
 
 async function deleteMaintenance(id) {
-    if (!isAdminUser()) return;
+    if (!hasPerm('maintenance', 'delete')) return;
     const ok = await appConfirm(t('maint.deleteConfirm'), {
         okLabel: t('ui.delete'),
         cancelLabel: t('ui.cancel')
@@ -10206,6 +10686,43 @@ const I18N = {
         'sub.blocked': 'اشتراك الشركة منتهٍ أو موقوف. تواصل مع دعم فليتوب.',
         'sub.loadFailed': 'تعذر تحميل الاشتراكات.',
         'nav.activityLog': 'سجل النشاط',
+        'nav.permissions': 'توزيع الصلاحيات',
+        'perm.title': 'توزيع الصلاحيات',
+        'perm.hint': 'فعّل القراءة والإضافة والتعديل والحذف والطباعة لهذا المستخدم. المدير صلاحياته كاملة دائماً.',
+        'perm.selectUser': 'المستخدم',
+        'perm.resetRole': 'الافتراضي',
+        'perm.save': 'حفظ',
+        'perm.cancel': 'خروج',
+        'perm.adminNote': 'حساب المدير يمتلك كل الصلاحيات ولا يُقيَّد من هذه الصفحة.',
+        'perm.module': 'القسم',
+        'perm.chooseFirst': 'اختر مستخدماً لعرض الصلاحيات',
+        'perm.openFromUsers': 'افتح الصلاحيات من أيقونة القفل بجانب المستخدم',
+        'perm.userMissing': 'تعذر العثور على المستخدم',
+        'perm.selectAllPage': 'اختيار الكل (الصفحة)',
+        'perm.selectAllRow': 'اختيار كل صلاحيات الصف',
+        'perm.rowAll': 'الكل',
+        'perm.act.view': 'قراءة',
+        'perm.act.create': 'إضافة',
+        'perm.act.edit': 'تعديل',
+        'perm.act.delete': 'حذف',
+        'perm.act.print': 'طباعة',
+        'perm.mod.dashboard': 'لوحة المتابعة',
+        'perm.mod.charts': 'المتابعة والرسوم',
+        'perm.mod.facility': 'التراخيص والاشتراكات',
+        'perm.mod.vehicles': 'المركبات',
+        'perm.mod.staff': 'الموظفين',
+        'perm.mod.trips': 'الرحلات',
+        'perm.mod.maintenance': 'الصيانة',
+        'perm.mod.reports_general': 'التقارير العامة',
+        'perm.mod.reports_ops': 'تقرير حركة التشغيل',
+        'perm.mod.reports_maint': 'تقرير حركة الصيانة',
+        'perm.mod.reports_finance': 'التقارير المالية',
+        'perm.mod.users': 'المستخدمين',
+        'perm.mod.settings': 'إعدادات المنشأة',
+        'perm.mod.activity_log': 'سجل النشاط',
+        'perm.mod.permissions': 'توزيع الصلاحيات',
+        'page.permissions': 'توزيع الصلاحيات',
+        'page.permissionsSub': 'صلاحيات مخصصة لكل مستخدم: قراءة وإضافة وتعديل وحذف وطباعة',
         'nav.settings': 'إعدادات النظام',
         'nav.companySettings': 'البيانات الأساسية للمنشأة',
         'nav.password': 'تغيير كلمة المرور',
@@ -10934,6 +11451,43 @@ const I18N = {
         'sub.blocked': 'Company subscription is expired or suspended. Contact FleetOp support.',
         'sub.loadFailed': 'Could not load subscriptions.',
         'nav.activityLog': 'Activity log',
+        'nav.permissions': 'Permissions',
+        'perm.title': 'Permissions',
+        'perm.hint': 'Enable view, create, edit, delete and print for this user. Admins always have full access.',
+        'perm.selectUser': 'User',
+        'perm.resetRole': 'Default',
+        'perm.save': 'Save',
+        'perm.cancel': 'Exit',
+        'perm.adminNote': 'Admin accounts always have full access and cannot be restricted here.',
+        'perm.module': 'Section',
+        'perm.chooseFirst': 'Choose a user to view permissions',
+        'perm.openFromUsers': 'Open permissions from the lock icon next to the user',
+        'perm.userMissing': 'User not found',
+        'perm.selectAllPage': 'Select all (page)',
+        'perm.selectAllRow': 'Select all in this row',
+        'perm.rowAll': 'All',
+        'perm.act.view': 'View',
+        'perm.act.create': 'Create',
+        'perm.act.edit': 'Edit',
+        'perm.act.delete': 'Delete',
+        'perm.act.print': 'Print',
+        'perm.mod.dashboard': 'Dashboard',
+        'perm.mod.charts': 'Charts',
+        'perm.mod.facility': 'Licenses & subscriptions',
+        'perm.mod.vehicles': 'Vehicles',
+        'perm.mod.staff': 'Staff',
+        'perm.mod.trips': 'Trips',
+        'perm.mod.maintenance': 'Maintenance',
+        'perm.mod.reports_general': 'General reports',
+        'perm.mod.reports_ops': 'Operations report',
+        'perm.mod.reports_maint': 'Maintenance report',
+        'perm.mod.reports_finance': 'Financial reports',
+        'perm.mod.users': 'Users',
+        'perm.mod.settings': 'Company settings',
+        'perm.mod.activity_log': 'Activity log',
+        'perm.mod.permissions': 'Permissions',
+        'page.permissions': 'Permissions',
+        'page.permissionsSub': 'Per-user access: view, create, edit, delete and print',
         'nav.settings': 'System settings',
         'nav.companySettings': 'Organization basic details',
         'nav.password': 'Change password',
@@ -11505,6 +12059,8 @@ const PAGE_HEADER_KEYS = {
     subscriptionsSection: ['page.subscriptions', 'page.subscriptionsSub'],
     activityLog: ['page.activityLog', 'page.activityLogSub'],
     activityLogSection: ['page.activityLog', 'page.activityLogSub'],
+    permissions: ['page.permissions', 'page.permissionsSub'],
+    permissionsSection: ['page.permissions', 'page.permissionsSub'],
     settings: ['page.settings', 'page.settingsSub']
 };
 
@@ -11764,16 +12320,44 @@ function setActiveNav(tabId) {
 }
 
 function switchTab(tabId) {
-    if (tabId === 'facility' && !canViewFacilityDocs()) {
-        alert(currentLang === 'en' ? 'This section is available to administrators only.' : 'هذا القسم متاح لصلاحيات المدير فقط.');
+    if (tabId === 'facility' && !hasPerm('facility', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to this section.' : 'ليست لديك صلاحية عرض هذا القسم.');
         return;
     }
-    if ((tabId === 'analytics' || tabId === 'analyticsSection') && !canViewRestrictedReports()) {
+    if ((tabId === 'analytics' || tabId === 'analyticsSection') && !hasPerm('reports_general', 'view')) {
         alert(currentLang === 'en' ? 'General reports are not available for your role.' : 'التقارير العامة غير متاحة لصلاحيتك.');
         return;
     }
-    if (tabId === 'maintenanceReport' && !canViewRestrictedReports()) {
+    if (tabId === 'maintenanceReport' && !hasPerm('reports_maint', 'view')) {
         alert(currentLang === 'en' ? 'Maintenance reports are not available for your role.' : 'تقرير حركة الصيانة غير متاح لصلاحيتك.');
+        return;
+    }
+    if ((tabId === 'reports' || tabId === 'reportsSection') && !hasPerm('reports_ops', 'view')) {
+        alert(currentLang === 'en' ? 'Operations reports are not available for your role.' : 'تقرير حركة التشغيل غير متاح لصلاحيتك.');
+        return;
+    }
+    if ((tabId === 'trucks' || tabId === 'otherVehicles') && !hasPerm('vehicles', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to vehicles.' : 'ليست لديك صلاحية عرض المركبات.');
+        return;
+    }
+    if ((tabId === 'drivers' || tabId === 'employees') && !hasPerm('staff', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to staff.' : 'ليست لديك صلاحية عرض الموظفين.');
+        return;
+    }
+    if ((tabId === 'maintenance' || tabId === 'maintenanceSection') && !hasPerm('maintenance', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to maintenance.' : 'ليست لديك صلاحية عرض الصيانة.');
+        return;
+    }
+    if ((tabId === 'trips' || tabId === 'tripsSection') && !hasPerm('trips', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to trips.' : 'ليست لديك صلاحية عرض الرحلات.');
+        return;
+    }
+    if ((tabId === 'permissions' || tabId === 'permissionsSection') && !hasPerm('permissions', 'view')) {
+        alert(currentLang === 'en' ? 'Not allowed.' : 'غير مصرح.');
+        return;
+    }
+    if (['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId) && !hasPerm('reports_finance', 'view')) {
+        alert(currentLang === 'en' ? 'Financial reports are not available for your role.' : 'التقارير المالية غير متاحة لصلاحيتك.');
         return;
     }
 
@@ -11821,6 +12405,17 @@ function switchTab(tabId) {
         }
         fillCompanySettingsForm();
         if (typeof loadCompanySubscriptionCard === 'function') loadCompanySubscriptionCard();
+        return;
+    }
+
+    if (tabId === 'permissions' || tabId === 'permissionsSection') {
+        toggleSystemMenu(false);
+        const section = document.getElementById('permissionsSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadPermissionsScreen === 'function') loadPermissionsScreen();
         return;
     }
 
@@ -11877,6 +12472,7 @@ function switchTab(tabId) {
         toggleFacilityMenu(true);
         applyVehicleScreenLabels();
         resetTruckForm();
+        syncFleetFormAccess();
         const trucksSection = document.getElementById('trucksSection');
         if (trucksSection) {
             trucksSection.classList.remove('hidden');
@@ -11893,6 +12489,7 @@ function switchTab(tabId) {
         toggleFacilityMenu(true);
         applyStaffScreenLabels();
         resetDriverForm();
+        syncFleetFormAccess();
         const driversSection = document.getElementById('driversSection');
         if (driversSection) {
             driversSection.classList.remove('hidden');
@@ -13224,11 +13821,9 @@ async function saveEditTrip(e) {
                                     ...(cargo ? [{ label: 'بطاقة التشغيل', date: tr.operation_card_expiry }] : [])
                                 ])}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
-${canManageFleetRecords() ? `
-<button onclick="editTruck(${tr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل">
-    <i class="fa-solid fa-pen-to-square"></i>
-</button>
-<button onclick="deleteTruck(${tr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+${(hasPerm('vehicles', 'edit') || hasPerm('vehicles', 'delete')) ? `
+${hasPerm('vehicles', 'edit') ? `<button onclick="editTruck(${tr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+${hasPerm('vehicles', 'delete') ? `<button onclick="deleteTruck(${tr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>` : ''}
 ` : '<span class="text-slate-300">—</span>'}
                                 </td>
                             </tr>
@@ -13285,8 +13880,12 @@ async function cancelTrip(tripNo) {
         async function saveTruck(e) {
             e.preventDefault();
             const id = document.getElementById('truckId').value;
-            if (id && !canManageFleetRecords()) {
-                alert(currentLang === 'en' ? 'Editing vehicles is available to administrators only.' : 'تعديل المركبات متاح لصلاحيات المدير فقط.');
+            if (id && !hasPerm('vehicles', 'edit')) {
+                alert(currentLang === 'en' ? 'You cannot edit vehicles.' : 'ليست لديك صلاحية تعديل المركبات.');
+                return;
+            }
+            if (!id && !hasPerm('vehicles', 'create')) {
+                alert(currentLang === 'en' ? 'You cannot add vehicles.' : 'ليست لديك صلاحية إضافة مركبات.');
                 return;
             }
             const plate = document.getElementById('truckPlate').value.trim();
@@ -13330,8 +13929,8 @@ async function cancelTrip(tripNo) {
         }
 
    function editTruck(id) {
-    if (!canManageFleetRecords()) {
-        alert(currentLang === 'en' ? 'Editing vehicles is available to administrators only.' : 'تعديل المركبات متاح لصلاحيات المدير فقط.');
+    if (!hasPerm('vehicles', 'edit')) {
+        alert(currentLang === 'en' ? 'You cannot edit vehicles.' : 'ليست لديك صلاحية تعديل المركبات.');
         return;
     }
     const tr = allTrucksById[id];
@@ -13381,8 +13980,8 @@ async function cancelTrip(tripNo) {
         }
 
         async function deleteTruck(id) {
-            if (!canManageFleetRecords()) {
-                alert(currentLang === 'en' ? 'Deleting vehicles is available to administrators only.' : 'حذف المركبات متاح لصلاحيات المدير فقط.');
+            if (!hasPerm('vehicles', 'delete')) {
+                alert(currentLang === 'en' ? 'You cannot delete vehicles.' : 'ليست لديك صلاحية حذف المركبات.');
                 return;
             }
             if (confirm('هل أنت متأكد من الحذف؟')) {
@@ -13460,9 +14059,9 @@ async function cancelTrip(tripNo) {
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus === 'في إجازة' ? 'إجازة' : shownStatus))}</span></td>
                                 <td class="p-3.5">${compactExpiryHtml(docs)}</td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
-                                    ${canManageFleetRecords() ? `
-                                    <button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="deleteDriver(${dr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+                                    ${(hasPerm('staff', 'edit') || hasPerm('staff', 'delete')) ? `
+                                    ${hasPerm('staff', 'edit') ? `<button onclick="editDriver(${dr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+                                    ${hasPerm('staff', 'delete') ? `<button onclick="deleteDriver(${dr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                                     ` : '<span class="text-slate-300">—</span>'}
                                 </td>
                             </tr>
@@ -13480,8 +14079,12 @@ async function cancelTrip(tripNo) {
         async function saveDriver(e) {
             e.preventDefault();
             const id = document.getElementById('driverId').value;
-            if (id && !canManageFleetRecords()) {
-                alert(currentLang === 'en' ? 'Editing employees is available to administrators only.' : 'تعديل الموظفين متاح لصلاحيات المدير فقط.');
+            if (id && !hasPerm('staff', 'edit')) {
+                alert(currentLang === 'en' ? 'You cannot edit employees.' : 'ليست لديك صلاحية تعديل الموظفين.');
+                return;
+            }
+            if (!id && !hasPerm('staff', 'create')) {
+                alert(currentLang === 'en' ? 'You cannot add employees.' : 'ليست لديك صلاحية إضافة موظفين.');
                 return;
             }
             const name = document.getElementById('driverName').value.trim();
@@ -13526,8 +14129,8 @@ async function cancelTrip(tripNo) {
         }
 
         function editDriver(id) {
-            if (!canManageFleetRecords()) {
-                alert(currentLang === 'en' ? 'Editing employees is available to administrators only.' : 'تعديل الموظفين متاح لصلاحيات المدير فقط.');
+            if (!hasPerm('staff', 'edit')) {
+                alert(currentLang === 'en' ? 'You cannot edit employees.' : 'ليست لديك صلاحية تعديل الموظفين.');
                 return;
             }
             const dr = allDriversById[id];
@@ -13565,8 +14168,8 @@ async function cancelTrip(tripNo) {
         }
 
         async function deleteDriver(id) {
-            if (!canManageFleetRecords()) {
-                alert(currentLang === 'en' ? 'Deleting employees is available to administrators only.' : 'حذف الموظفين متاح لصلاحيات المدير فقط.');
+            if (!hasPerm('staff', 'delete')) {
+                alert(currentLang === 'en' ? 'You cannot delete employees.' : 'ليست لديك صلاحية حذف الموظفين.');
                 return;
             }
             if (confirm('هل أنت متأكد من الحذف؟')) {
@@ -13584,7 +14187,12 @@ async function loadUsers(options = {}) {
                 table.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">جاري تحميل المستخدمين...</td></tr>`;
             }
             try {
-                const { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
+                let { data: users, error } = await client.from('app_users').select(APP_USER_FIELDS).order('id', { ascending: false });
+                if (error && /permissions/i.test(error.message || '')) {
+                    ({ data: users, error } = await client.from('app_users')
+                        .select('id, username, employee_name, role, status, auth_id, company_id')
+                        .order('id', { ascending: false }));
+                }
                 if (error) throw error;
                 if (isAdminUser() && !silent) {
                     try { await reconcileAbandonedSessions(); } catch (err) { console.warn(err); }
@@ -13634,6 +14242,7 @@ async function loadUsers(options = {}) {
                                 <td class="p-3.5"><span class="${statusBadge} px-2.5 py-1 rounded-full text-[10px] font-bold">${tv(usr.status || 'نشط')}</span></td>
                                 <td class="p-3.5 text-center space-x-1 space-x-reverse">
                                     <button type="button" onclick="editUser(${usr.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button type="button" onclick="openUserPermissions(${usr.id})" class="text-emerald-600 hover:text-emerald-800 font-bold p-1" title="الصلاحيات"><i class="fa-solid fa-user-lock"></i></button>
                                     <button type="button" onclick="openResetPasswordModal(${usr.id})" class="text-blue-600 hover:text-blue-800 font-bold p-1" title="إعادة ضبط كلمة المرور"><i class="fa-solid fa-key"></i></button>
                                     <button type="button" onclick="deleteUser(${usr.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="حذف الحساب"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
@@ -13946,9 +14555,7 @@ async function loadUsers(options = {}) {
             updateSidebarIdentity(user);
             if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
 
-            const financialMenu = document.getElementById('financialMenu');
-            const canSeeFinance = user.role === 'admin' || user.role === 'accountant' || isSupportMode(user);
-            if (financialMenu) financialMenu.classList.toggle('hidden', !canSeeFinance);
+            const canSeeFinance = hasPerm('reports_finance', 'view', user);
             toggleFinancialMenu(false);
 
             const dashboardStatGrid = document.getElementById('dashboardStatGrid');
@@ -13957,12 +14564,8 @@ async function loadUsers(options = {}) {
             });
             if (dashboardStatGrid) dashboardStatGrid.classList.toggle('stats-with-money', canSeeFinance);
 
-            const tabUsersBtn = document.getElementById('tabUsersBtn');
-            if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
             const tabSubscriptionsBtn = document.getElementById('tabSubscriptionsBtn');
             if (tabSubscriptionsBtn) tabSubscriptionsBtn.classList.add('hidden');
-            const systemMenu = document.getElementById('systemMenu');
-            if (systemMenu) systemMenu.classList.toggle('hidden', user.role !== 'admin' && !isSupportMode(user));
             toggleSystemMenu(false);
             if (typeof applyRoleBasedNav === 'function') applyRoleBasedNav(user);
             setAppLang(currentLang);
