@@ -9962,12 +9962,16 @@ function buildExpiryProfiles() {
                 { label: 'بطاقة السائق', number: person.driver_card_no || '', date: person.driver_card_expiry }
             );
         }
+        const rawJob = String(person.job_title || '').trim();
+        const jobLabel = rawJob === 'سائق' || (!rawJob && tripDriver)
+            ? 'سائق شاحنة'
+            : (rawJob || '—');
         const meta = [
             { label: t('ui.iqamaNo'), value: iqama || '—' },
+            { label: t('ui.job'), value: tv(jobLabel) },
             { label: t('ui.phone'), value: person.phone || '—' },
             { label: t('th.status'), value: tv(person.status || '—') }
         ];
-        if (!tripDriver && person.job_title) meta.splice(1, 0, { label: t('ui.job'), value: person.job_title });
         profiles.push({
             category: tripDriver ? 'سائق' : 'موظف',
             title: name,
@@ -10065,7 +10069,6 @@ function renderExpiryProfileCard(profile) {
         <article class="expiry-profile-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-2" style="background:#f8fafc">
                 <div class="min-w-0">
-                    <div class="text-[10px] font-bold text-amber-700 mb-0.5">${escapeHtml(tv(profile.category))}</div>
                     <h4 class="text-sm font-black text-slate-900">${escapeHtml(profile.title)}</h4>
                     ${profile.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(profile.subtitle)}</p>` : ''}
                     ${metaHtml ? `<div class="mt-1.5 flex flex-wrap items-center gap-y-1">${metaHtml}</div>` : ''}
