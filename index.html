@@ -7236,20 +7236,24 @@ async function resetFinancialFilters() {
     if (methodFilter) methodFilter.value = '';
     await generateFinancialReport();
 }
+function normalizeFleetKey(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
 function sameFleetValue(a, b) {
-    return String(a || '').trim() === String(b || '').trim();
+    return normalizeFleetKey(a) === normalizeFleetKey(b);
 }
 
 function activeAssignmentSets(trips) {
     const active = (trips || []).filter(trip => String(trip?.status || '').trim() === 'جارية');
     return {
-        plates: new Set(active.map(trip => String(trip.truck_plate || '').trim()).filter(Boolean)),
-        drivers: new Set(active.map(trip => String(trip.driver_name || '').trim()).filter(Boolean))
+        plates: new Set(active.map(trip => normalizeFleetKey(trip.truck_plate || trip.truck)).filter(Boolean)),
+        drivers: new Set(active.map(trip => normalizeFleetKey(trip.driver_name || trip.driver)).filter(Boolean))
     };
 }
 
 function truckStatusForTrips(truck, assignments) {
-    const plate = String(truck?.plate || '').trim();
+    const plate = normalizeFleetKey(truck?.plate);
     if (isInactiveFleetVehicle(truck)) return truck?.status;
     const blocked = isBlockedFleetVehicle(truck);
     if (isCargoTruck(truck) && plate && assignments.plates.has(plate) && !blocked) return 'في رحلة';
@@ -7257,7 +7261,7 @@ function truckStatusForTrips(truck, assignments) {
 }
 
 function driverStatusForTrips(driver, assignments) {
-    const name = String(driver?.name || '').trim();
+    const name = normalizeFleetKey(driver?.name);
     const blocked = driver?.status === 'إجازة' || driver?.status === 'في إجازة' || driver?.status === 'موقوف';
     if (isTripDriver(driver) && name && assignments.drivers.has(name) && !blocked) return 'في رحلة';
     return driver?.status;
@@ -7273,6 +7277,24 @@ async function alignFleetWithActiveTrips(trucks, drivers, trips) {
         .filter(driver => driverStatusForTrips(driver, assignments) === 'في رحلة' && driver.status !== 'في رحلة')
         .map(driver => driver.id)
         .filter(id => id != null);
+    // تحرير من بقي «في رحلة» في القاعدة بلا رحلة جارية
+    const freeTruckIds = (trucks || [])
+        .filter(truck => {
+            if (isInactiveFleetVehicle(truck)) return false;
+            if (String(truck.status || '').trim() !== 'في رحلة') return false;
+            const plate = normalizeFleetKey(truck.plate);
+            return plate && !assignments.plates.has(plate);
+        })
+        .map(truck => truck.id)
+        .filter(id => id != null);
+    const freeDriverIds = (drivers || [])
+        .filter(driver => {
+            if (String(driver.status || '').trim() !== 'في رحلة') return false;
+            const name = normalizeFleetKey(driver.name);
+            return name && !assignments.drivers.has(name);
+        })
+        .map(driver => driver.id)
+        .filter(id => id != null);
     if (truckIds.length) {
         const { error } = await client.from('trucks').update({ status: 'في رحلة' }).in('id', truckIds);
         if (!error) {
@@ -7282,12 +7304,30 @@ async function alignFleetWithActiveTrips(trucks, drivers, trips) {
             });
         }
     }
+    if (freeTruckIds.length) {
+        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeTruckIds);
+        if (!error) {
+            freeTruckIds.forEach(id => {
+                const row = trucks.find(truck => truck.id === id);
+                if (row) row.status = 'جاهزة للعمل';
+            });
+        }
+    }
     if (driverIds.length) {
         const { error } = await client.from('drivers').update({ status: 'في رحلة' }).in('id', driverIds);
         if (!error) {
             driverIds.forEach(id => {
                 const row = drivers.find(driver => driver.id === id);
                 if (row) row.status = 'في رحلة';
+            });
+        }
+    }
+    if (freeDriverIds.length) {
+        const { error } = await client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds);
+        if (!error) {
+            freeDriverIds.forEach(id => {
+                const row = drivers.find(driver => driver.id === id);
+                if (row) row.status = 'متوفر';
             });
         }
     }
@@ -8093,19 +8133,60 @@ async function fetchActiveTrips() {
 
 async function releaseFleetIfIdle(trip, exceptTripNo) {
     const activeTrips = await fetchActiveTrips();
-    const others = activeTrips.filter(t => String(t.trip_no) !== String(exceptTripNo));
-    const truckIdentifier = trip.truck_plate || trip.truck;
-    const driverIdentifier = trip.driver_name || trip.driver;
-    const truckBusy = truckIdentifier && others.some(t => sameFleetValue(t.truck_plate, truckIdentifier));
-    const driverBusy = driverIdentifier && others.some(t => sameFleetValue(t.driver_name, driverIdentifier));
+    const exceptNo = String(exceptTripNo || '').trim();
+    const others = activeTrips.filter(t => String(t.trip_no || '').trim() !== exceptNo);
+    const truckIdentifier = String(trip.truck_plate || trip.truck || '').trim();
+    const driverIdentifier = String(trip.driver_name || trip.driver || '').trim();
+    const truckBusy = truckIdentifier && others.some(t => sameFleetValue(t.truck_plate || t.truck, truckIdentifier));
+    const driverBusy = driverIdentifier && others.some(t => sameFleetValue(t.driver_name || t.driver, driverIdentifier));
 
     if (truckIdentifier && !truckBusy) {
-        const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim()).eq('status', 'في رحلة');
-        if (error) console.error('خطأ في تحرير الشاحنة:', error);
+        let { data: matched, error: findError } = await client
+            .from('trucks')
+            .select('id, plate, status')
+            .eq('plate', truckIdentifier);
+        if (findError) console.error('خطأ في جلب الشاحنة للتحرير:', findError);
+        if (!(matched || []).length) {
+            const { data: allTrucks } = await client.from('trucks').select('id, plate, status');
+            matched = (allTrucks || []).filter(tr => sameFleetValue(tr.plate, truckIdentifier));
+        }
+        const freeIds = (matched || [])
+            .filter(tr => !isInactiveFleetVehicle(tr))
+            .filter(tr => {
+                const st = String(tr.status || '').trim();
+                // حرر المربوطة برحلة؛ لا تلمس صيانة/عطل/مباعة
+                return st === 'في رحلة' || st === 'جاهزة للعمل';
+            })
+            .filter(tr => String(tr.status || '').trim() === 'في رحلة')
+            .map(tr => tr.id)
+            .filter(id => id != null);
+        if (freeIds.length) {
+            const { error } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).in('id', freeIds);
+            if (error) console.error('خطأ في تحرير الشاحنة:', error);
+        } else if (!(matched || []).length) {
+            console.warn('تحرير الشاحنة: لم يُعثر على لوحة مطابقة', truckIdentifier);
+        }
     }
     if (driverIdentifier && !driverBusy) {
-        const { error } = await client.from('drivers').update({ status: 'متوفر' }).eq('name', String(driverIdentifier).trim());
-        if (error) console.error('خطأ في تحرير السائق:', error);
+        let { data: matched, error: findError } = await client
+            .from('drivers')
+            .select('id, name, status')
+            .eq('name', driverIdentifier);
+        if (findError) console.error('خطأ في جلب السائق للتحرير:', findError);
+        if (!(matched || []).length) {
+            const { data: allDrivers } = await client.from('drivers').select('id, name, status');
+            matched = (allDrivers || []).filter(dr => sameFleetValue(dr.name, driverIdentifier));
+        }
+        const freeIds = (matched || [])
+            .filter(dr => String(dr.status || '').trim() === 'في رحلة')
+            .map(dr => dr.id)
+            .filter(id => id != null);
+        if (freeIds.length) {
+            const { error } = await client.from('drivers').update({ status: 'متوفر' }).in('id', freeIds);
+            if (error) console.error('خطأ في تحرير السائق:', error);
+        } else if (!(matched || []).length) {
+            console.warn('تحرير السائق: لم يُعثر على اسم مطابق', driverIdentifier);
+        }
     }
     return { truckBusy, driverBusy };
 }
@@ -13865,16 +13946,7 @@ async function cancelTrip(tripNo) {
         return;
     }
 
-    const truckIdentifier = tripData.truck_plate || tripData.truck;
-    const driverIdentifier = tripData.driver_name || tripData.driver;
-    if (truckIdentifier) {
-        const { error: truckError } = await client.from('trucks').update({ status: 'جاهزة للعمل' }).eq('plate', String(truckIdentifier).trim()).eq('status', 'في رحلة');
-        if (truckError) console.error('خطأ في تحرير الشاحنة:', truckError);
-    }
-    if (driverIdentifier) {
-        const { error: driverError } = await client.from('drivers').update({ status: 'متوفر' }).eq('name', String(driverIdentifier).trim());
-        if (driverError) console.error('خطأ في تحرير السائق:', driverError);
-    }
+    await releaseFleetIfIdle(tripData, tripNo);
 
     logActivity('trip.cancel', 'رحلة', tripNo, `${tripData.client_name || ''} · ${tripData.truck_plate || ''} · ${tripData.driver_name || ''}`);
     alert('تم إلغاء الرحلة وتحرير الشاحنة والسائق. سقط مبلغ الرحلة من الإيرادات، وسقطت عمولة السائق.');
