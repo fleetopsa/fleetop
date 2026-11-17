@@ -99,7 +99,11 @@
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
         .analytics-fill { height: 100%; border-radius: 999px; }
-        .chart-card { min-width: 0; overflow: hidden; }
+        /* لا تضع overflow:hidden على البطاقة نفسها داخل flex — يصفّر min-height وينكمش المحتوى */
+        .chart-card {
+            min-width: 0;
+            flex-shrink: 0;
+        }
         .chart-host {
             position: relative;
             width: 100%;
@@ -107,8 +111,19 @@
             overflow: hidden;
         }
         .chart-host canvas {
+            display: block;
             max-width: 100% !important;
-            width: 100% !important;
+        }
+        .chart-host--trend {
+            height: 18rem;
+            min-height: 18rem;
+        }
+        .chart-host--fuel {
+            height: 18rem;
+            min-height: 18rem;
+        }
+        .chart-host--rank {
+            min-height: 12.5rem;
         }
         @media (max-width: 767px) {
             #chartsSection .chart-card,
@@ -121,19 +136,13 @@
                 font-size: 1.2rem;
                 line-height: 1.35;
             }
-            #chartsSection .chart-host--trend {
-                height: 13.5rem;
+            .chart-host--trend {
+                height: 14rem;
+                min-height: 14rem;
             }
-            #fuelReportSection .chart-host--fuel {
+            .chart-host--fuel {
                 height: 15rem;
-            }
-        }
-        @media (min-width: 768px) {
-            #chartsSection .chart-host--trend {
-                height: 18rem;
-            }
-            #fuelReportSection .chart-host--fuel {
-                height: 18rem;
+                min-height: 15rem;
             }
         }
         .recv-toolbar { min-width: 0; }
@@ -1896,10 +1905,10 @@
             <div id="analyticsBestDriverMeta" class="text-xs text-slate-500 mt-1"></div>
         </div>
     </div>
-    <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+    <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 shrink-0">
         <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.trendTitle">اتجاه الأداء الشهري</h3>
         <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.trendHint">عدد الرحلات والإيرادات عبر أشهر الفترة المحددة</p>
-        <div class="chart-host chart-host--trend">
+        <div class="chart-host chart-host--trend h-56 sm:h-72">
             <canvas id="analyticsTrendChart" aria-label="monthly trend chart"></canvas>
         </div>
         <div id="analyticsTrendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
