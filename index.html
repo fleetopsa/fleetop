@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style> 
         :root {
             --brand-navy: #0b2a4a;
@@ -1510,6 +1511,9 @@
                     <button onclick="switchTab('maintenance')" id="tabMaintenanceBtn" data-nav="maintenance" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                         <i class="fa-solid fa-screwdriver-wrench text-base"></i> <span data-i18n="nav.maintenance">إدارة الصيانة</span>
                     </button>
+                    <button onclick="switchTab('fuel')" id="tabFuelBtn" data-nav="fuel" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-gas-pump text-base"></i> <span data-i18n="nav.fuel">إدارة الوقود</span>
+                    </button>
                     <div>
                         <button type="button" onclick="toggleReportsMenu()" id="tabReportsGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-chart-line text-base"></i>
@@ -1532,6 +1536,9 @@
                                     </button>
                                     <button onclick="switchTab('maintenanceReport')" id="tabMaintReportBtn" data-nav="maintenanceReport" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-screwdriver-wrench ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.maintReports">تقرير حركة الصيانة</span>
+                                    </button>
+                                    <button onclick="switchTab('fuelReport')" id="tabFuelReportBtn" data-nav="fuelReport" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-gas-pump ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.fuelReports">تقرير استهلاك الوقود</span>
                                     </button>
                                 </div>
                             </div>
@@ -1852,22 +1859,46 @@
             <div id="analyticsBestDriverMeta" class="text-xs text-slate-500 mt-1"></div>
         </div>
     </div>
+    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.trendTitle">اتجاه الأداء الشهري</h3>
+        <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.trendHint">عدد الرحلات والإيرادات عبر أشهر الفترة المحددة</p>
+        <div class="relative h-64 sm:h-72">
+            <canvas id="analyticsTrendChart" aria-label="monthly trend chart"></canvas>
+        </div>
+        <div id="analyticsTrendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
+    </div>
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
         <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
-            <div id="analyticsTruckTripBars" class="space-y-2"></div>
+            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
+            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
+            <div class="relative h-56 sm:h-64">
+                <canvas id="analyticsTruckTripsChart" aria-label="truck trips chart"></canvas>
+            </div>
+            <div id="analyticsTruckTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
-            <div id="analyticsTruckRevenueBars" class="space-y-2"></div>
+            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
+            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
+            <div class="relative h-56 sm:h-64">
+                <canvas id="analyticsTruckRevenueChart" aria-label="truck revenue chart"></canvas>
+            </div>
+            <div id="analyticsTruckRevenueEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
-            <div id="analyticsDriverTripBars" class="space-y-2"></div>
+            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
+            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
+            <div class="relative h-56 sm:h-64">
+                <canvas id="analyticsDriverTripsChart" aria-label="driver trips chart"></canvas>
+            </div>
+            <div id="analyticsDriverTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverComm">عمولات السائقين</h3>
-            <div id="analyticsDriverCommBars" class="space-y-2"></div>
+            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverComm">عمولات السائقين</h3>
+            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
+            <div class="relative h-56 sm:h-64">
+                <canvas id="analyticsDriverCommChart" aria-label="driver commission chart"></canvas>
+            </div>
+            <div id="analyticsDriverCommEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
     </div>
 </main>
@@ -2546,6 +2577,134 @@
                             </thead>
                             <tbody id="maintenanceReportTable">
                                 <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <main id="fuelSection" class="hidden px-3 sm:px-6 md:px-8 pt-2 sm:pt-3 pb-3 sm:pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
+                <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <div class="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 no-print">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                            <i class="fa-solid fa-gas-pump text-amber-500 ml-2"></i> <span data-i18n="fuel.recordsList">سجلات تعبئة الوقود</span>
+                            <span class="ms-2 text-[11px] font-bold text-slate-500">(<span id="fuelManageCount">0</span>)</span>
+                        </h3>
+                        <button type="button" id="fuelAddBtn" onclick="openFuelModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="fuel.add">إضافة تعبئة</span>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto flex-grow min-w-0">
+                        <table class="w-full text-center text-xs text-slate-700">
+                            <thead class="bg-slate-100 text-slate-700">
+                                <tr>
+                                    <th class="p-3 rounded-r-xl" data-i18n="fuel.fillDate">تاريخ التعبئة</th>
+                                    <th class="p-3" data-i18n="fuel.truck">الشاحنة</th>
+                                    <th class="p-3" data-i18n="fuel.odometer">قراءة العداد</th>
+                                    <th class="p-3" data-i18n="fuel.liters">اللترات</th>
+                                    <th class="p-3" data-i18n="fuel.amount">المبلغ</th>
+                                    <th class="p-3" data-i18n="fuel.station">المحطة</th>
+                                    <th class="p-3" data-i18n="fuel.consumption">الاستهلاك</th>
+                                    <th class="p-3 rounded-l-xl no-print" data-i18n="th.actions">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fuelManageTable">
+                                <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="fuel.loading">جاري تحميل سجلات الوقود...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <main id="fuelReportSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
+                        <div class="no-print min-w-0">
+                            <h2 class="text-base font-bold text-slate-900" data-i18n="page.fuelReport">تقرير استهلاك الوقود</h2>
+                            <p class="text-xs text-slate-500 mt-0.5" data-i18n="page.fuelReportSub">متابعة الصرف والاستهلاك ومقارنة الشاحنات</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 shrink-0">
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
+                                <div class="text-[10px] font-bold text-emerald-700" data-i18n="fuel.totalLiters">إجمالي اللترات</div>
+                                <div id="fuelRepTotalLiters" class="text-sm font-black text-emerald-900 font-mono mt-0.5">0</div>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
+                                <div class="text-[10px] font-bold text-amber-700" data-i18n="fuel.totalAmount">إجمالي المبلغ</div>
+                                <div id="fuelRepTotalAmount" class="text-sm font-black text-amber-900 font-mono mt-0.5">0</div>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
+                                <div class="text-[10px] font-bold text-blue-700" data-i18n="fuel.fillCount">عدد التعبئات</div>
+                                <div id="fuelRepFillCount" class="text-sm font-black text-blue-900 font-mono mt-0.5">0</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
+                                <div class="text-[10px] font-bold text-slate-600" data-i18n="fuel.avgPer100">متوسط لتر/100كم</div>
+                                <div id="fuelRepAvgPer100" class="text-sm font-black text-slate-900 font-mono mt-0.5">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 min-w-0 no-print">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                            <input type="date" id="fuelRepStartDate" onchange="loadFuelReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                            <input type="date" id="fuelRepEndDate" onchange="loadFuelReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.truck">الشاحنة</label>
+                            <select id="fuelRepTruckFilter" onchange="renderFuelReportView()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap justify-end gap-2 mt-2.5 no-print">
+                        <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                            <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                        </button>
+                        <button type="button" onclick="loadFuelReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 no-print">
+                    <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartSpend">صرف الوقود حسب الشاحنة</h3>
+                        <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartSpendHint">أعمدة للمبلغ واللترات معاً للمقارنة المباشرة</p>
+                        <div class="relative h-64 sm:h-72">
+                            <canvas id="fuelRepSpendChart" aria-label="fuel spend chart"></canvas>
+                        </div>
+                        <div id="fuelRepSpendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="fuel.empty">لا توجد سجلات وقود في الفترة المحددة</div>
+                    </div>
+                    <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartConsumption">كفاءة الاستهلاك (لتر/100كم)</h3>
+                        <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartConsumptionHint">الأقل أفضل — الشاحنة الأكثر كفاءة تظهر أولاً</p>
+                        <div class="relative h-64 sm:h-72">
+                            <canvas id="fuelRepConsumptionChart" aria-label="fuel consumption chart"></canvas>
+                        </div>
+                        <div id="fuelRepConsumptionEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="fuel.noConsumption">لا تتوفر قراءة عداد كافية لحساب الاستهلاك</div>
+                    </div>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow min-w-0">
+                    <h3 class="font-bold text-slate-900 text-sm mb-2 border-b pb-2 flex items-center">
+                        <i class="fa-solid fa-table-list ml-2 text-amber-500"></i> <span data-i18n="fuel.detailReport">تفاصيل التعبئات</span>
+                    </h3>
+                    <div class="overflow-x-auto flex-grow min-w-0">
+                        <table class="w-full text-center text-xs text-slate-700">
+                            <thead class="bg-slate-800 text-slate-200">
+                                <tr>
+                                    <th class="p-2.5" data-i18n="fuel.fillDate">تاريخ التعبئة</th>
+                                    <th class="p-2.5" data-i18n="fuel.truck">الشاحنة</th>
+                                    <th class="p-2.5" data-i18n="fuel.odometer">قراءة العداد</th>
+                                    <th class="p-2.5" data-i18n="fuel.distance">المسافة</th>
+                                    <th class="p-2.5" data-i18n="fuel.liters">اللترات</th>
+                                    <th class="p-2.5" data-i18n="fuel.amount">المبلغ</th>
+                                    <th class="p-2.5" data-i18n="fuel.per100">لتر/100كم</th>
+                                    <th class="p-2.5" data-i18n="fuel.station">المحطة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fuelReportTable">
+                                <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="fuel.loading">جاري تحميل سجلات الوقود...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3520,6 +3679,54 @@
             </form>
         </div>
     </div>
+    <div id="fuelModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92dvh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center"><i class="fa-solid fa-gas-pump text-amber-500 ml-2"></i> <span id="fuelModalTitle" data-i18n="fuel.add">إضافة تعبئة</span></h3>
+                <button type="button" onclick="closeFuelModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p id="fuelFormError" class="hidden text-xs font-bold text-rose-600 mb-3"></p>
+            <form onsubmit="saveFuelLog(event)" class="space-y-3.5">
+                <input type="hidden" id="fuelId">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.fillDate">تاريخ التعبئة</label>
+                    <input type="date" id="fuelFillDate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.truck">الشاحنة</label>
+                    <select id="fuelTruckPlate" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="" data-i18n="ui.chooseTruck">اختر الشاحنة</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.odometer">قراءة العداد (كم)</label>
+                        <input type="number" id="fuelOdometer" required min="0" step="0.1" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.liters">كمية الوقود (لتر)</label>
+                        <input type="number" id="fuelLiters" required min="0.01" step="0.01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="0.00">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1"><span data-i18n="fuel.amount">المبلغ</span> <svg class="riyal-symbol" aria-hidden="true" style="display:inline-block;vertical-align:-0.1em"><use href="#riyal-icon"></use></svg></label>
+                    <input type="number" id="fuelAmount" required min="0" step="0.01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.station">المحطة / المورد</label>
+                    <input type="text" id="fuelStation" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اختياري">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.notes">ملاحظات</label>
+                    <textarea id="fuelNotes" rows="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اختياري"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="fuelSubmitBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs shadow-sm transition" data-i18n="ui.save">حفظ</button>
+                    <button type="button" onclick="closeFuelModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="maintenanceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-xl border border-slate-200 text-slate-900 max-h-[92dvh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
@@ -4403,9 +4610,11 @@ const PERM_MODULES = [
     { id: 'staff', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'trips', actions: ['view', 'create', 'edit', 'delete', 'print'] },
     { id: 'maintenance', actions: ['view', 'create', 'edit', 'delete'] },
+    { id: 'fuel', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'reports_general', actions: ['view', 'print'] },
     { id: 'reports_ops', actions: ['view', 'print'] },
     { id: 'reports_maint', actions: ['view', 'print'] },
+    { id: 'reports_fuel', actions: ['view', 'print'] },
     { id: 'reports_finance', actions: ['view', 'print'] },
     { id: 'users', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'settings', actions: ['view', 'edit'] },
@@ -4471,7 +4680,8 @@ function roleDefaultPermissions(role) {
         base.staff.view = true;
         Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
         base.maintenance.view = true;
-        ['reports_general', 'reports_ops', 'reports_maint', 'reports_finance'].forEach(id => {
+        Object.assign(base.fuel, { view: true, create: true, edit: true, delete: false });
+        ['reports_general', 'reports_ops', 'reports_maint', 'reports_fuel', 'reports_finance'].forEach(id => {
             base[id].view = true;
             base[id].print = true;
         });
@@ -4481,7 +4691,9 @@ function roleDefaultPermissions(role) {
     Object.assign(base.staff, { view: true, create: true, edit: false, delete: false });
     Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
     Object.assign(base.maintenance, { view: true, create: true, edit: true, delete: false });
+    Object.assign(base.fuel, { view: true, create: true, edit: true, delete: false });
     Object.assign(base.reports_ops, { view: true, print: true });
+    Object.assign(base.reports_fuel, { view: true, print: true });
     return base;
 }
 
@@ -4532,8 +4744,13 @@ function syncMaintenanceManageAccess(user = currentLoggedInUser) {
     if (addBtn) addBtn.classList.toggle('hidden', !hasPerm('maintenance', 'create', user));
 }
 
+function syncFuelManageAccess(user = currentLoggedInUser) {
+    const addBtn = document.getElementById('fuelAddBtn');
+    if (addBtn) addBtn.classList.toggle('hidden', !hasPerm('fuel', 'create', user));
+}
+
 function canViewRestrictedReports(user = currentLoggedInUser) {
-    return hasPerm('reports_general', 'view', user) || hasPerm('reports_maint', 'view', user);
+    return hasPerm('reports_general', 'view', user) || hasPerm('reports_maint', 'view', user) || hasPerm('reports_fuel', 'view', user);
 }
 
 function syncFleetFormAccess(user = currentLoggedInUser) {
@@ -4555,6 +4772,8 @@ function applyRoleBasedNav(user = currentLoggedInUser) {
     if (tripsBtn) tripsBtn.classList.toggle('hidden', !hasPerm('trips', 'view', user));
     const maintBtn = document.getElementById('tabMaintenanceBtn');
     if (maintBtn) maintBtn.classList.toggle('hidden', !hasPerm('maintenance', 'view', user));
+    const fuelBtn = document.getElementById('tabFuelBtn');
+    if (fuelBtn) fuelBtn.classList.toggle('hidden', !hasPerm('fuel', 'view', user));
     const chartsBtn = document.getElementById('tabChartsBtn');
     if (chartsBtn) chartsBtn.classList.toggle('hidden', !hasPerm('charts', 'view', user));
     const generalReportsBtn = document.getElementById('tabGeneralReportsBtn');
@@ -4563,6 +4782,8 @@ function applyRoleBasedNav(user = currentLoggedInUser) {
     if (opsMovementBtn) opsMovementBtn.classList.toggle('hidden', !hasPerm('reports_ops', 'view', user));
     const maintReportBtn = document.getElementById('tabMaintReportBtn');
     if (maintReportBtn) maintReportBtn.classList.toggle('hidden', !hasPerm('reports_maint', 'view', user));
+    const fuelReportBtn = document.getElementById('tabFuelReportBtn');
+    if (fuelReportBtn) fuelReportBtn.classList.toggle('hidden', !hasPerm('reports_fuel', 'view', user));
     const financialMenu = document.getElementById('financialMenu');
     if (financialMenu) financialMenu.classList.toggle('hidden', !hasPerm('reports_finance', 'view', user));
     const tabUsersBtn = document.getElementById('tabUsersBtn');
@@ -4572,6 +4793,7 @@ function applyRoleBasedNav(user = currentLoggedInUser) {
     if (systemMenu) systemMenu.classList.toggle('hidden', !showSystem);
     const settingsBtn = document.getElementById('tabSettingsBtn');
     if (settingsBtn) settingsBtn.classList.toggle('hidden', !hasPerm('settings', 'view', user));
+    syncFuelManageAccess(user);
     const activityBtn = document.getElementById('tabActivityLogBtn');
     if (activityBtn) activityBtn.classList.toggle('hidden', !hasPerm('activity_log', 'view', user));
     syncMaintenanceManageAccess(user);
@@ -6339,6 +6561,12 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('maintRepEndDate', '');
         setFilterValue('maintRepVehicleFilter', '');
         setFilterValue('maintRepTypeFilter', '');
+        return;
+    }
+    if (id === 'fuelReport' || id === 'fuelReportSection') {
+        setFilterValue('fuelRepStartDate', '');
+        setFilterValue('fuelRepEndDate', '');
+        setFilterValue('fuelRepTruckFilter', '');
     }
 }
 
@@ -8444,7 +8672,8 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             typeof populateCommissionFilters === 'function' ? populateCommissionFilters().then(() => (
                 typeof generateCommissionReport === 'function' ? generateCommissionReport() : null
             )) : null,
-            typeof loadMaintenanceManage === 'function' ? loadMaintenanceManage() : null
+            typeof loadMaintenanceManage === 'function' ? loadMaintenanceManage() : null,
+            typeof loadFuelManage === 'function' ? loadFuelManage() : null
         ]).catch(err => console.error(err));
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
@@ -9133,6 +9362,593 @@ async function refreshOpenMaintenanceScreens() {
     if (!document.getElementById('maintenanceReportSection')?.classList.contains('hidden')) {
         await loadMaintenanceReport();
     }
+}
+
+let fuelCache = [];
+let fuelReportCache = [];
+let fuelTrucks = [];
+let fuelSpendChart = null;
+let fuelConsumptionChart = null;
+
+function destroyFuelCharts() {
+    if (fuelSpendChart) {
+        fuelSpendChart.destroy();
+        fuelSpendChart = null;
+    }
+    if (fuelConsumptionChart) {
+        fuelConsumptionChart.destroy();
+        fuelConsumptionChart = null;
+    }
+}
+
+function fuelChartDefaults() {
+    const en = currentLang === 'en';
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 11, weight: '700' },
+                    color: '#475569'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#0b2a4a',
+                titleFont: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 12, weight: '700' },
+                bodyFont: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 11 },
+                padding: 10,
+                cornerRadius: 10
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 10, weight: '700' },
+                    color: '#64748b',
+                    maxRotation: 45,
+                    minRotation: 0
+                },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 10 },
+                    color: '#94a3b8'
+                },
+                grid: { color: 'rgba(148,163,184,0.18)' }
+            }
+        }
+    };
+}
+
+function fuelBarSizing(count, grouped) {
+    const n = Math.max(1, Number(count) || 1);
+    // يقل عرض العمود تدريجياً مع زيادة الشاحنات
+    let maxBarThickness;
+    if (n <= 2) maxBarThickness = grouped ? 22 : 28;
+    else if (n <= 4) maxBarThickness = grouped ? 18 : 24;
+    else if (n <= 6) maxBarThickness = grouped ? 14 : 20;
+    else if (n <= 10) maxBarThickness = grouped ? 11 : 16;
+    else maxBarThickness = grouped ? 8 : 12;
+    const categoryPercentage = n <= 3 ? 0.55 : (n <= 6 ? 0.7 : 0.82);
+    const barPercentage = grouped ? (n <= 4 ? 0.7 : 0.85) : (n <= 4 ? 0.55 : 0.7);
+    const borderRadius = n <= 4 ? 7 : 4;
+    return { maxBarThickness, categoryPercentage, barPercentage, borderRadius };
+}
+
+function renderFuelCharts(truckList) {
+    destroyFuelCharts();
+    const spendCanvas = document.getElementById('fuelRepSpendChart');
+    const consCanvas = document.getElementById('fuelRepConsumptionChart');
+    const spendEmpty = document.getElementById('fuelRepSpendEmpty');
+    const consEmpty = document.getElementById('fuelRepConsumptionEmpty');
+    const ChartLib = typeof Chart !== 'undefined' ? Chart : null;
+
+    const spendRows = [...(truckList || [])].filter(x => x.liters > 0 || x.amount > 0).sort((a, b) => b.amount - a.amount || b.liters - a.liters);
+    const consRows = [...(truckList || [])].filter(x => x.per100 > 0).sort((a, b) => a.per100 - b.per100);
+    const spendSize = fuelBarSizing(spendRows.length, true);
+    const consSize = fuelBarSizing(consRows.length, false);
+
+    if (spendCanvas) spendCanvas.classList.toggle('hidden', !spendRows.length || !ChartLib);
+    if (spendEmpty) spendEmpty.classList.toggle('hidden', !!(spendRows.length && ChartLib));
+    if (consCanvas) consCanvas.classList.toggle('hidden', !consRows.length || !ChartLib);
+    if (consEmpty) consEmpty.classList.toggle('hidden', !!(consRows.length && ChartLib));
+
+    if (!ChartLib) {
+        if (spendEmpty) {
+            spendEmpty.classList.remove('hidden');
+            spendEmpty.textContent = currentLang === 'en' ? 'Chart library failed to load' : 'تعذر تحميل مكتبة الرسوم';
+        }
+        return;
+    }
+
+    if (spendRows.length && spendCanvas) {
+        const labels = spendRows.map(x => x.name);
+        fuelSpendChart = new ChartLib(spendCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: t('fuel.amount'),
+                        data: spendRows.map(x => roundMoney(x.amount)),
+                        backgroundColor: 'rgba(11, 42, 74, 0.88)',
+                        borderRadius: spendSize.borderRadius,
+                        maxBarThickness: spendSize.maxBarThickness,
+                        categoryPercentage: spendSize.categoryPercentage,
+                        barPercentage: spendSize.barPercentage,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: t('fuel.liters'),
+                        data: spendRows.map(x => roundMoney(x.liters)),
+                        backgroundColor: 'rgba(5, 150, 105, 0.85)',
+                        borderRadius: spendSize.borderRadius,
+                        maxBarThickness: spendSize.maxBarThickness,
+                        categoryPercentage: spendSize.categoryPercentage,
+                        barPercentage: spendSize.barPercentage,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                ...fuelChartDefaults(),
+                layout: { padding: { top: 18 } },
+                scales: {
+                    x: {
+                        ...fuelChartDefaults().scales.x,
+                        stacked: false
+                    },
+                    y: {
+                        ...fuelChartDefaults().scales.y,
+                        position: 'right',
+                        grace: '12%',
+                        title: {
+                            display: true,
+                            text: t('fuel.amount'),
+                            color: '#0b2a4a',
+                            font: { size: 11, weight: '700' }
+                        },
+                        ticks: {
+                            ...fuelChartDefaults().scales.y.ticks,
+                            callback: (value) => Number(value).toLocaleString('en-US')
+                        }
+                    },
+                    y1: {
+                        ...fuelChartDefaults().scales.y,
+                        position: 'left',
+                        grace: '12%',
+                        grid: { drawOnChartArea: false },
+                        title: {
+                            display: true,
+                            text: t('fuel.liters'),
+                            color: '#059669',
+                            font: { size: 11, weight: '700' }
+                        },
+                        ticks: {
+                            ...fuelChartDefaults().scales.y.ticks,
+                            callback: (value) => Number(value).toLocaleString('en-US')
+                        }
+                    }
+                }
+            },
+            plugins: [chartEndValueLabelsPlugin((value, ctx) => {
+                const ds = ctx?.dataset;
+                if (ds?.yAxisID === 'y1') return formatFuelNumber(value, 0);
+                return formatMoney(value);
+            }, { id: 'fuelSpendLabels', fontSize: 9, color: '#64748b', pad: 8 })]
+        });
+    }
+
+    if (consRows.length && consCanvas) {
+        const best = consRows[0]?.per100 || 0;
+        fuelConsumptionChart = new ChartLib(consCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: consRows.map(x => x.name),
+                datasets: [{
+                    label: t('fuel.per100'),
+                    data: consRows.map(x => roundMoney(x.per100)),
+                    backgroundColor: consRows.map((x, i) => i === 0
+                        ? 'rgba(5, 150, 105, 0.9)'
+                        : (x.per100 > best * 1.25 ? 'rgba(225, 29, 72, 0.8)' : 'rgba(196, 163, 90, 0.9)')),
+                    borderRadius: consSize.borderRadius,
+                    maxBarThickness: consSize.maxBarThickness,
+                    categoryPercentage: consSize.categoryPercentage,
+                    barPercentage: consSize.barPercentage
+                }]
+            },
+            options: {
+                ...fuelChartDefaults(),
+                layout: { padding: { top: 18 } },
+                plugins: {
+                    ...fuelChartDefaults().plugins,
+                    legend: { display: false },
+                    tooltip: {
+                        ...fuelChartDefaults().plugins.tooltip,
+                        callbacks: {
+                            label: (ctx) => `${formatFuelNumber(ctx.parsed.y, 1)} ${t('fuel.per100')}`
+                        }
+                    }
+                },
+                scales: {
+                    x: fuelChartDefaults().scales.x,
+                    y: {
+                        ...fuelChartDefaults().scales.y,
+                        grace: '12%',
+                        title: {
+                            display: true,
+                            text: t('fuel.per100'),
+                            color: '#8a6d3a',
+                            font: { size: 11, weight: '700' }
+                        }
+                    }
+                }
+            },
+            plugins: [chartEndValueLabelsPlugin(
+                (value) => formatFuelNumber(value, 1),
+                { id: 'fuelConsLabels', fontSize: 10, color: '#64748b', pad: 8 }
+            )]
+        });
+    }
+}
+
+function showFuelError(msg) {
+    const el = document.getElementById('fuelFormError');
+    if (!el) return;
+    if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+    }
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+function fuelNum(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+}
+
+function formatFuelNumber(value, digits = 1) {
+    const n = fuelNum(value);
+    return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+/** يحسب المسافة والاستهلاك لكل سجل بناءً على التعبئة السابقة لنفس اللوحة */
+function enrichFuelRows(rows) {
+    const byPlate = new Map();
+    (rows || []).forEach(row => {
+        const plate = String(row.truck_plate || '').trim();
+        if (!byPlate.has(plate)) byPlate.set(plate, []);
+        byPlate.get(plate).push(row);
+    });
+    const metrics = new Map();
+    byPlate.forEach(list => {
+        const sorted = [...list].sort((a, b) => {
+            const da = String(a.fill_date || '');
+            const db = String(b.fill_date || '');
+            if (da !== db) return da.localeCompare(db);
+            const oa = fuelNum(a.odometer);
+            const ob = fuelNum(b.odometer);
+            if (oa !== ob) return oa - ob;
+            return Number(a.id || 0) - Number(b.id || 0);
+        });
+        let prev = null;
+        sorted.forEach(row => {
+            let distance = null;
+            let per100 = null;
+            if (prev) {
+                const delta = fuelNum(row.odometer) - fuelNum(prev.odometer);
+                if (delta > 0) {
+                    distance = delta;
+                    const liters = fuelNum(row.liters);
+                    if (liters > 0) per100 = (liters / delta) * 100;
+                }
+            }
+            metrics.set(row.id, { distance, per100 });
+            prev = row;
+        });
+    });
+    return (rows || []).map(row => {
+        const m = metrics.get(row.id) || {};
+        return { ...row, _distance: m.distance, _per100: m.per100 };
+    });
+}
+
+function fuelConsumptionLabel(row) {
+    if (row._per100 == null || row._distance == null) return '—';
+    return `${formatFuelNumber(row._per100, 1)} لتر/100كم · ${formatFuelNumber(row._distance, 0)} كم`;
+}
+
+async function ensureFuelTrucks() {
+    const { data } = await client.from('trucks').select('plate, model, vehicle_kind').order('plate');
+    fuelTrucks = (data || []).filter(isCargoTruck);
+}
+
+function fillFuelTruckSelect(selectId, includeAll) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    const current = select.value;
+    const options = fuelTrucks.map(row => {
+        const plate = String(row.plate || '').trim();
+        const model = String(row.model || '').trim();
+        const label = model ? `${plate} · ${model}` : plate;
+        return `<option value="${escapeHtml(plate)}">${escapeHtml(label)}</option>`;
+    }).join('');
+    const first = includeAll
+        ? `<option value="">${escapeHtml(t('ui.allTrucks'))}</option>`
+        : `<option value="">${escapeHtml(t('ui.chooseTruck'))}</option>`;
+    select.innerHTML = first + options;
+    if (current && [...select.options].some(o => o.value === current)) select.value = current;
+}
+
+function findFuelRow(id) {
+    const num = Number(id);
+    return fuelCache.find(item => Number(item.id) === num)
+        || fuelReportCache.find(item => Number(item.id) === num)
+        || null;
+}
+
+async function openFuelModal(id) {
+    showFuelError('');
+    await ensureFuelTrucks();
+    fillFuelTruckSelect('fuelTruckPlate', false);
+    const editId = Number(id || 0);
+    const row = editId ? findFuelRow(editId) : null;
+    document.getElementById('fuelId').value = row?.id || '';
+    document.getElementById('fuelFillDate').value = dateInputValue(row?.fill_date) || new Date().toISOString().slice(0, 10);
+    document.getElementById('fuelTruckPlate').value = row?.truck_plate || '';
+    document.getElementById('fuelOdometer').value = row?.odometer != null ? row.odometer : '';
+    document.getElementById('fuelLiters').value = row?.liters != null ? row.liters : '';
+    document.getElementById('fuelAmount').value = row?.amount != null ? row.amount : '';
+    document.getElementById('fuelStation').value = row?.station || '';
+    document.getElementById('fuelNotes').value = row?.notes || '';
+    const title = document.getElementById('fuelModalTitle');
+    if (title) title.textContent = row ? t('fuel.edit') : t('fuel.add');
+    const submit = document.getElementById('fuelSubmitBtn');
+    if (submit) submit.textContent = t('ui.save');
+    document.getElementById('fuelModal')?.classList.remove('hidden');
+}
+
+function closeFuelModal() {
+    document.getElementById('fuelModal')?.classList.add('hidden');
+    showFuelError('');
+}
+
+function renderFuelManage() {
+    const tbody = document.getElementById('fuelManageTable');
+    const countEl = document.getElementById('fuelManageCount');
+    const enriched = enrichFuelRows(fuelCache).sort((a, b) => {
+        const da = String(b.fill_date || '').localeCompare(String(a.fill_date || ''));
+        if (da) return da;
+        return Number(b.id || 0) - Number(a.id || 0);
+    });
+    if (countEl) countEl.textContent = String(enriched.length);
+    if (!tbody) return;
+    if (!enriched.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
+        return;
+    }
+    const canEdit = hasPerm('fuel', 'edit');
+    const canDelete = hasPerm('fuel', 'delete');
+    tbody.innerHTML = enriched.map(row => `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
+            <td class="p-3 font-black font-mono text-slate-900">${escapeHtml(row.truck_plate || '—')}</td>
+            <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</td>
+            <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
+            <td class="p-3 font-mono">${formatSAR(row.amount)}</td>
+            <td class="p-3 text-slate-600">${escapeHtml(row.station || '—')}</td>
+            <td class="p-3 text-[11px] text-slate-600">${escapeHtml(fuelConsumptionLabel(row))}</td>
+            <td class="p-3 no-print text-center space-x-1 space-x-reverse">
+                ${(canEdit || canDelete) ? `
+                    ${canEdit ? `<button type="button" onclick="openFuelModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
+                    ${canDelete ? `<button type="button" onclick="deleteFuelLog(${Number(row.id)})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="${escapeHtml(t('ui.delete') || 'حذف')}"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                ` : '<span class="text-slate-300">—</span>'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function loadFuelManage() {
+    const tbody = document.getElementById('fuelManageTable');
+    syncFuelManageAccess();
+    try {
+        const { data, error } = await client.from('fuel_logs').select('*').order('fill_date', { ascending: false }).order('id', { ascending: false });
+        if (error) throw error;
+        fuelCache = data || [];
+        renderFuelManage();
+    } catch (err) {
+        console.error(err);
+        fuelCache = [];
+        const missing = /fuel_logs|schema cache|relation/i.test(err?.message || '');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed'))}</td></tr>`;
+        const countEl = document.getElementById('fuelManageCount');
+        if (countEl) countEl.textContent = '0';
+    }
+}
+
+function filterFuelReportRows(rows) {
+    const plate = document.getElementById('fuelRepTruckFilter')?.value || '';
+    return (rows || []).filter(row => !plate || String(row.truck_plate || '').trim() === plate);
+}
+
+function renderFuelReportView() {
+    const filtered = enrichFuelRows(filterFuelReportRows(fuelReportCache)).sort((a, b) => {
+        const da = String(b.fill_date || '').localeCompare(String(a.fill_date || ''));
+        if (da) return da;
+        return Number(b.id || 0) - Number(a.id || 0);
+    });
+    const totalLiters = filtered.reduce((s, r) => s + fuelNum(r.liters), 0);
+    const totalAmount = filtered.reduce((s, r) => s + fuelNum(r.amount), 0);
+    let kmSum = 0;
+    let litersForKm = 0;
+    filtered.forEach(r => {
+        if (r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
+            kmSum += r._distance;
+            litersForKm += fuelNum(r.liters);
+        }
+    });
+    const avgPer100 = kmSum > 0 ? (litersForKm / kmSum) * 100 : null;
+
+    const litersEl = document.getElementById('fuelRepTotalLiters');
+    const amountEl = document.getElementById('fuelRepTotalAmount');
+    const countEl = document.getElementById('fuelRepFillCount');
+    const avgEl = document.getElementById('fuelRepAvgPer100');
+    if (litersEl) litersEl.textContent = formatFuelNumber(totalLiters, 2);
+    if (amountEl) amountEl.innerHTML = formatSAR(totalAmount);
+    if (countEl) countEl.textContent = String(filtered.length);
+    if (avgEl) avgEl.textContent = avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1);
+
+    const byTruck = new Map();
+    filtered.forEach(row => {
+        const plate = String(row.truck_plate || '').trim() || '—';
+        if (!byTruck.has(plate)) byTruck.set(plate, { name: plate, liters: 0, amount: 0, km: 0, litersForKm: 0 });
+        const agg = byTruck.get(plate);
+        agg.liters += fuelNum(row.liters);
+        agg.amount += fuelNum(row.amount);
+        if (row._distance != null && row._distance > 0 && fuelNum(row.liters) > 0) {
+            agg.km += row._distance;
+            agg.litersForKm += fuelNum(row.liters);
+        }
+    });
+    const truckList = [...byTruck.values()].map(t => ({
+        ...t,
+        per100: t.km > 0 ? (t.litersForKm / t.km) * 100 : 0
+    }));
+
+    renderFuelCharts(truckList);
+
+    const tbody = document.getElementById('fuelReportTable');
+    if (!tbody) return;
+    if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = filtered.map(row => `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="p-2.5 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
+            <td class="p-2.5 font-black font-mono">${escapeHtml(row.truck_plate || '—')}</td>
+            <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</td>
+            <td class="p-2.5 font-mono">${row._distance == null ? '—' : escapeHtml(formatFuelNumber(row._distance, 0) + ' كم')}</td>
+            <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
+            <td class="p-2.5 font-mono">${formatSAR(row.amount)}</td>
+            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}</td>
+            <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
+        </tr>
+    `).join('');
+}
+
+async function loadFuelReport() {
+    const tbody = document.getElementById('fuelReportTable');
+    try {
+        await ensureFuelTrucks();
+        fillFuelTruckSelect('fuelRepTruckFilter', true);
+        const start = document.getElementById('fuelRepStartDate')?.value || '';
+        const end = document.getElementById('fuelRepEndDate')?.value || '';
+        let query = client.from('fuel_logs').select('*').order('fill_date', { ascending: false }).order('id', { ascending: false });
+        if (start) query = query.gte('fill_date', start);
+        if (end) query = query.lte('fill_date', end);
+        const { data, error } = await query;
+        if (error) throw error;
+        fuelReportCache = data || [];
+        fuelCache = data || [];
+        renderFuelReportView();
+    } catch (err) {
+        console.error(err);
+        fuelReportCache = [];
+        const missing = /fuel_logs|schema cache|relation/i.test(err?.message || '');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed'))}</td></tr>`;
+        ['fuelRepTotalLiters', 'fuelRepFillCount'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
+        const amountEl = document.getElementById('fuelRepTotalAmount');
+        if (amountEl) amountEl.innerHTML = formatSAR(0);
+        const avgEl = document.getElementById('fuelRepAvgPer100');
+        if (avgEl) avgEl.textContent = '—';
+        destroyFuelCharts();
+        renderFuelCharts([]);
+    }
+}
+
+async function refreshOpenFuelScreens() {
+    if (!document.getElementById('fuelSection')?.classList.contains('hidden')) {
+        await loadFuelManage();
+    }
+    if (!document.getElementById('fuelReportSection')?.classList.contains('hidden')) {
+        await loadFuelReport();
+    }
+}
+
+async function saveFuelLog(event) {
+    event.preventDefault();
+    const editId = Number(document.getElementById('fuelId')?.value || 0);
+    if ((editId && !hasPerm('fuel', 'edit')) || (!editId && !hasPerm('fuel', 'create'))) {
+        alert(currentLang === 'en' ? 'Fuel module is view-only for your role.' : 'إدارة الوقود للاطلاع فقط حسب صلاحيتك.');
+        return;
+    }
+    showFuelError('');
+    const fillDate = document.getElementById('fuelFillDate')?.value || '';
+    const plate = String(document.getElementById('fuelTruckPlate')?.value || '').trim();
+    const odometer = Number(document.getElementById('fuelOdometer')?.value);
+    const liters = Number(document.getElementById('fuelLiters')?.value);
+    const amount = Number(document.getElementById('fuelAmount')?.value);
+    const station = String(document.getElementById('fuelStation')?.value || '').trim();
+    const notes = String(document.getElementById('fuelNotes')?.value || '').trim();
+    if (!fillDate || !plate || !Number.isFinite(odometer) || odometer < 0 || !Number.isFinite(liters) || liters <= 0 || !Number.isFinite(amount) || amount < 0) {
+        showFuelError(t('fuel.required'));
+        return;
+    }
+    const payload = withCompany({
+        truck_plate: plate,
+        fill_date: fillDate,
+        odometer,
+        liters: roundMoney(liters),
+        amount: roundMoney(amount),
+        station: station || null,
+        notes: notes || null
+    });
+    if (editId) payload.updated_at = new Date().toISOString();
+    const write = async (data) => editId
+        ? client.from('fuel_logs').update(data).eq('id', editId)
+        : client.from('fuel_logs').insert([data]);
+    const { error } = await writeIgnoringUnknownColumns(write, payload);
+    if (error) {
+        const missing = /fuel_logs|schema cache|relation/i.test(error.message || '');
+        showFuelError(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed') + (error.message ? `: ${error.message}` : ''));
+        return;
+    }
+    logActivity(editId ? 'fuel.edit' : 'fuel.create', 'وقود', plate, `${fillDate} · ${liters} لتر · ${amount}`);
+    closeFuelModal();
+    await refreshOpenFuelScreens();
+    if (document.getElementById('fuelSection')?.classList.contains('hidden')
+        && document.getElementById('fuelReportSection')?.classList.contains('hidden')) {
+        await loadFuelManage();
+    }
+}
+
+async function deleteFuelLog(id) {
+    if (!hasPerm('fuel', 'delete')) {
+        alert(currentLang === 'en' ? 'You cannot delete fuel records.' : 'ليست لديك صلاحية حذف سجلات الوقود.');
+        return;
+    }
+    const row = findFuelRow(id);
+    if (!confirm(currentLang === 'en' ? 'Delete this fuel record?' : 'هل تريد حذف سجل التعبئة؟')) return;
+    const { error } = await client.from('fuel_logs').delete().eq('id', id);
+    if (error) {
+        alert((currentLang === 'en' ? 'Could not delete: ' : 'تعذر الحذف: ') + (error.message || ''));
+        return;
+    }
+    logActivity('fuel.delete', 'وقود', row?.truck_plate || id, dateInputValue(row?.fill_date) || '');
+    await refreshOpenFuelScreens();
 }
 
 function toggleMaintenanceTypeOther() {
@@ -10898,6 +11714,8 @@ const I18N = {
         'nav.trucks': 'الشاحنات',
         'nav.otherVehicles': 'المركبات الأخرى',
         'nav.maintenance': 'إدارة الصيانة',
+        'nav.fuel': 'إدارة الوقود',
+        'nav.fuelReports': 'تقرير استهلاك الوقود',
         'nav.staff': 'الموظفين',
         'nav.drivers': 'السائقين',
         'nav.employees': 'الموظفين الإداريين',
@@ -10962,9 +11780,11 @@ const I18N = {
         'perm.mod.staff': 'الموظفين',
         'perm.mod.trips': 'الرحلات',
         'perm.mod.maintenance': 'الصيانة',
+        'perm.mod.fuel': 'الوقود',
         'perm.mod.reports_general': 'التقارير العامة',
         'perm.mod.reports_ops': 'تقرير حركة التشغيل',
         'perm.mod.reports_maint': 'تقرير حركة الصيانة',
+        'perm.mod.reports_fuel': 'تقرير استهلاك الوقود',
         'perm.mod.reports_finance': 'التقارير المالية',
         'perm.mod.users': 'المستخدمين',
         'perm.mod.settings': 'إعدادات المنشأة',
@@ -10997,6 +11817,9 @@ const I18N = {
         'analytics.driverComm': 'عمولات السائقين',
         'analytics.noData': 'لا توجد رحلات مكتملة في هذه الفترة',
         'analytics.tripsCount': '{n} رحلة',
+        'analytics.trendTitle': 'اتجاه الأداء الشهري',
+        'analytics.trendHint': 'عدد الرحلات والإيرادات عبر أشهر الفترة المحددة',
+        'analytics.rankHint': 'ترتيب تنازلي — الأفضل أولاً',
         'page.trips': 'إدارة الرحلات',
         'page.tripsSub': 'سجل الرحلات الجارية والمكتملة والملغاة',
         'page.reports': 'تقرير حركة التشغيل',
@@ -11021,6 +11844,40 @@ const I18N = {
         'page.maintenanceSub': 'إدخال وتعديل سجلات صيانة الشاحنات والمركبات',
         'page.maintenanceReport': 'تقرير حركة الصيانة',
         'page.maintenanceReportSub': 'عرض مخرجات وتكاليف الصيانة للطباعة والمتابعة',
+        'page.fuel': 'إدارة الوقود',
+        'page.fuelSub': 'تسجيل تعبئة الوقود وقراءة العداد ومتابعة الصرف',
+        'page.fuelReport': 'تقرير استهلاك الوقود',
+        'page.fuelReportSub': 'متابعة الصرف والاستهلاك ومقارنة الشاحنات',
+        'fuel.recordsList': 'سجلات تعبئة الوقود',
+        'fuel.add': 'إضافة تعبئة',
+        'fuel.edit': 'تعديل تعبئة',
+        'fuel.fillDate': 'تاريخ التعبئة',
+        'fuel.truck': 'الشاحنة',
+        'fuel.odometer': 'قراءة العداد',
+        'fuel.liters': 'اللترات',
+        'fuel.amount': 'المبلغ',
+        'fuel.station': 'المحطة',
+        'fuel.notes': 'ملاحظات',
+        'fuel.consumption': 'الاستهلاك',
+        'fuel.distance': 'المسافة',
+        'fuel.per100': 'لتر/100كم',
+        'fuel.loading': 'جاري تحميل سجلات الوقود...',
+        'fuel.empty': 'لا توجد سجلات وقود في الفترة المحددة',
+        'fuel.required': 'أكمل التاريخ والشاحنة والعداد واللترات والمبلغ',
+        'fuel.missingTable': 'جدول الوقود غير موجود. نفّذ ملف fuel-logs.sql في Supabase',
+        'fuel.saveFailed': 'تعذر حفظ سجل الوقود',
+        'fuel.totalLiters': 'إجمالي اللترات',
+        'fuel.totalAmount': 'إجمالي المبلغ',
+        'fuel.fillCount': 'عدد التعبئات',
+        'fuel.avgPer100': 'متوسط لتر/100كم',
+        'fuel.chartLiters': 'مقارنة اللترات بين الشاحنات',
+        'fuel.chartAmount': 'مقارنة المبالغ بين الشاحنات',
+        'fuel.chartSpend': 'صرف الوقود حسب الشاحنة',
+        'fuel.chartSpendHint': 'أعمدة للمبلغ واللترات معاً للمقارنة المباشرة',
+        'fuel.chartConsumption': 'كفاءة الاستهلاك (لتر/100كم)',
+        'fuel.chartConsumptionHint': 'الأقل أفضل — الشاحنة الأكثر كفاءة تظهر أولاً',
+        'fuel.noConsumption': 'لا تتوفر قراءة عداد كافية لحساب الاستهلاك',
+        'fuel.detailReport': 'تفاصيل التعبئات',
         'maint.recordsList': 'سجلات الصيانة',
         'maint.records': 'سجل',
         'maint.byVehicle': 'ملخص حسب المركبة',
@@ -11675,6 +12532,8 @@ const I18N = {
         'nav.trucks': 'Trucks',
         'nav.otherVehicles': 'Other vehicles',
         'nav.maintenance': 'Maintenance',
+        'nav.fuel': 'Fuel',
+        'nav.fuelReports': 'Fuel consumption report',
         'nav.staff': 'Staff',
         'nav.drivers': 'Drivers',
         'nav.employees': 'Office staff',
@@ -11739,9 +12598,11 @@ const I18N = {
         'perm.mod.staff': 'Staff',
         'perm.mod.trips': 'Trips',
         'perm.mod.maintenance': 'Maintenance',
+        'perm.mod.fuel': 'Fuel',
         'perm.mod.reports_general': 'General reports',
         'perm.mod.reports_ops': 'Operations report',
         'perm.mod.reports_maint': 'Maintenance report',
+        'perm.mod.reports_fuel': 'Fuel consumption report',
         'perm.mod.reports_finance': 'Financial reports',
         'perm.mod.users': 'Users',
         'perm.mod.settings': 'Company settings',
@@ -11774,6 +12635,9 @@ const I18N = {
         'analytics.driverComm': 'Driver commissions',
         'analytics.noData': 'No completed trips in this period',
         'analytics.tripsCount': '{n} trips',
+        'analytics.trendTitle': 'Monthly performance trend',
+        'analytics.trendHint': 'Trips and revenue across months in the selected period',
+        'analytics.rankHint': 'Descending rank — best first',
         'page.trips': 'Trip management',
         'page.tripsSub': 'Active, completed and cancelled trips',
         'page.reports': 'Operations movement report',
@@ -11798,6 +12662,40 @@ const I18N = {
         'page.maintenanceSub': 'Enter and edit truck and vehicle maintenance records',
         'page.maintenanceReport': 'Maintenance movement report',
         'page.maintenanceReportSub': 'View maintenance outputs and costs for print and follow-up',
+        'page.fuel': 'Fuel management',
+        'page.fuelSub': 'Log fuel fills, odometer readings and spending',
+        'page.fuelReport': 'Fuel consumption report',
+        'page.fuelReportSub': 'Track spend and consumption and compare trucks',
+        'fuel.recordsList': 'Fuel fill records',
+        'fuel.add': 'Add fill',
+        'fuel.edit': 'Edit fill',
+        'fuel.fillDate': 'Fill date',
+        'fuel.truck': 'Truck',
+        'fuel.odometer': 'Odometer',
+        'fuel.liters': 'Liters',
+        'fuel.amount': 'Amount',
+        'fuel.station': 'Station',
+        'fuel.notes': 'Notes',
+        'fuel.consumption': 'Consumption',
+        'fuel.distance': 'Distance',
+        'fuel.per100': 'L/100km',
+        'fuel.loading': 'Loading fuel records...',
+        'fuel.empty': 'No fuel records in the selected period',
+        'fuel.required': 'Complete date, truck, odometer, liters and amount',
+        'fuel.missingTable': 'Fuel table is missing. Run fuel-logs.sql in Supabase',
+        'fuel.saveFailed': 'Could not save fuel record',
+        'fuel.totalLiters': 'Total liters',
+        'fuel.totalAmount': 'Total amount',
+        'fuel.fillCount': 'Fill count',
+        'fuel.avgPer100': 'Avg L/100km',
+        'fuel.chartLiters': 'Liters comparison by truck',
+        'fuel.chartAmount': 'Amount comparison by truck',
+        'fuel.chartSpend': 'Fuel spend by truck',
+        'fuel.chartSpendHint': 'Grouped columns for amount and liters side by side',
+        'fuel.chartConsumption': 'Efficiency (L/100km)',
+        'fuel.chartConsumptionHint': 'Lower is better — most efficient truck appears first',
+        'fuel.noConsumption': 'Not enough odometer readings to calculate consumption',
+        'fuel.detailReport': 'Fill details',
         'maint.recordsList': 'Maintenance records',
         'maint.records': 'records',
         'maint.byVehicle': 'Summary by vehicle',
@@ -12324,6 +13222,10 @@ const PAGE_HEADER_KEYS = {
     maintenanceReport: ['page.maintenanceReport', 'page.maintenanceReportSub'],
     maintenanceSection: ['page.maintenance', 'page.maintenanceSub'],
     maintenanceReportSection: ['page.maintenanceReport', 'page.maintenanceReportSub'],
+    fuel: ['page.fuel', 'page.fuelSub'],
+    fuelSection: ['page.fuel', 'page.fuelSub'],
+    fuelReport: ['page.fuelReport', 'page.fuelReportSub'],
+    fuelReportSection: ['page.fuelReport', 'page.fuelReportSub'],
     drivers: ['page.drivers', 'page.driversSub'],
     employees: ['page.employees', 'page.employeesSub'],
     users: ['page.users', 'page.usersSub'],
@@ -12573,7 +13475,7 @@ function setActiveNav(tabId) {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
     const financialOpen = ['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
-    const opsReportsOpen = tabId === 'reports' || tabId === 'maintenanceReport';
+    const opsReportsOpen = tabId === 'reports' || tabId === 'maintenanceReport' || tabId === 'fuelReport';
     const reportsOpen = tabId === 'analytics' || opsReportsOpen || financialOpen;
     const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
     if (reportsGroupBtn) reportsGroupBtn.classList.toggle('nav-open', reportsOpen);
@@ -12603,6 +13505,14 @@ function switchTab(tabId) {
     }
     if (tabId === 'maintenanceReport' && !hasPerm('reports_maint', 'view')) {
         alert(currentLang === 'en' ? 'Maintenance reports are not available for your role.' : 'تقرير حركة الصيانة غير متاح لصلاحيتك.');
+        return;
+    }
+    if (tabId === 'fuelReport' && !hasPerm('reports_fuel', 'view')) {
+        alert(currentLang === 'en' ? 'Fuel reports are not available for your role.' : 'تقرير استهلاك الوقود غير متاح لصلاحيتك.');
+        return;
+    }
+    if ((tabId === 'fuel' || tabId === 'fuelSection') && !hasPerm('fuel', 'view')) {
+        alert(currentLang === 'en' ? 'You do not have access to fuel.' : 'ليست لديك صلاحية عرض الوقود.');
         return;
     }
     if ((tabId === 'reports' || tabId === 'reportsSection') && !hasPerm('reports_ops', 'view')) {
@@ -12737,6 +13647,27 @@ function switchTab(tabId) {
         return;
     }
 
+    if (tabId === 'fuel') {
+        const section = document.getElementById('fuelSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadFuelManage === 'function') loadFuelManage();
+        return;
+    }
+
+    if (tabId === 'fuelReport') {
+        toggleOpsReportsMenu(true);
+        const section = document.getElementById('fuelReportSection');
+        if (section) {
+            section.classList.remove('hidden');
+            section.scrollTop = 0;
+        }
+        if (typeof loadFuelReport === 'function') loadFuelReport();
+        return;
+    }
+
     if (tabId === 'trucks' || tabId === 'otherVehicles') {
         currentNavTab = 'trucks';
         currentVehicleKind = '';
@@ -12868,24 +13799,286 @@ function setAnalyticsMonthRange() {
     setAnalyticsDateRange('this');
 }
 
-function analyticsBarHtml(items, valueFn, labelFn, metaFn, color) {
-    if (!items.length) return `<div class="text-xs text-slate-400 py-4">${t('analytics.noData')}</div>`;
-    const max = Math.max(...items.map(valueFn), 1);
-    return items.map((item, index) => {
-        const value = valueFn(item);
-        const pct = Math.max(4, Math.round((value / max) * 100));
-        return `
-            <div>
-                <div class="flex items-center justify-between gap-2 mb-1">
-                    <span class="text-xs font-bold text-slate-800 truncate">${escapeHtml(labelFn(item))}${index === 0 ? ' ★' : ''}</span>
-                    <span class="text-[11px] font-mono font-bold text-slate-500 shrink-0">${metaFn(item)}</span>
-                </div>
-                <div class="analytics-track">
-                    <div class="analytics-fill" style="width:${pct}%;background:${color}"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
+let analyticsCharts = {
+    trend: null,
+    truckTrips: null,
+    truckRevenue: null,
+    driverTrips: null,
+    driverComm: null
+};
+
+function destroyAnalyticsCharts() {
+    Object.keys(analyticsCharts).forEach(key => {
+        if (analyticsCharts[key]) {
+            analyticsCharts[key].destroy();
+            analyticsCharts[key] = null;
+        }
+    });
+}
+
+function analyticsChartFont() {
+    return currentLang === 'en' ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif';
+}
+
+/** تسمية صغيرة بنهاية العمود/الشريط (مثل البطاقات السابقة) */
+function chartEndValueLabelsPlugin(formatter, opts = {}) {
+    const fontSize = opts.fontSize || 10;
+    const color = opts.color || '#64748b';
+    const fontFamily = opts.fontFamily || analyticsChartFont();
+    const pad = opts.pad != null ? opts.pad : 6;
+    return {
+        id: opts.id || 'endValueLabels',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const horizontal = chart.options.indexAxis === 'y';
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                if (dataset.hidden) return;
+                // في الرسوم المجمّعة نعرض التسمية على آخر مجموعة فقط لتجنب التزاحم،
+                // أو على الكل إذا طُلب صراحة
+                if (opts.datasetIndex != null && datasetIndex !== opts.datasetIndex) return;
+                if (opts.onlyLastDataset && datasetIndex !== chart.data.datasets.length - 1) return;
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (meta.hidden) return;
+                meta.data.forEach((element, index) => {
+                    const raw = dataset.data[index];
+                    const value = typeof raw === 'object' && raw != null ? (raw.y ?? raw.x ?? raw) : raw;
+                    if (value == null || value === '' || Number(value) === 0) return;
+                    const text = String(formatter(value, { dataset, index, chart }) || '').replace(/<[^>]+>/g, '');
+                    if (!text) return;
+                    const { x, y } = element.tooltipPosition();
+                    ctx.save();
+                    ctx.font = `700 ${fontSize}px ${fontFamily}`;
+                    ctx.fillStyle = color;
+                    ctx.textBaseline = 'middle';
+                    if (horizontal) {
+                        ctx.textAlign = 'left';
+                        const maxX = chart.chartArea.right - 2;
+                        const labelX = Math.min(x + pad, maxX - ctx.measureText(text).width);
+                        ctx.fillText(text, labelX, y);
+                    } else {
+                        ctx.textAlign = 'center';
+                        const labelY = Math.max(chart.chartArea.top + fontSize, y - pad);
+                        ctx.fillText(text, x, labelY);
+                    }
+                    ctx.restore();
+                });
+            });
+        }
+    };
+}
+
+function analyticsMonthKey(dateStr) {
+    const d = String(dateStr || '').slice(0, 7);
+    return /^\d{4}-\d{2}$/.test(d) ? d : '';
+}
+
+function analyticsMonthLabel(key) {
+    if (!key) return '—';
+    const [y, m] = key.split('-');
+    const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const idx = Math.max(0, Math.min(11, Number(m) - 1));
+    return currentLang === 'en' ? `${monthsEn[idx]} ${y}` : `${monthsAr[idx]} ${y}`;
+}
+
+function buildAnalyticsMonthlyTrend(trips) {
+    const map = new Map();
+    (trips || []).forEach(trip => {
+        const key = analyticsMonthKey(dateOnly(trip.departure_date) || tripCompletionDate(trip) || '');
+        if (!key) return;
+        if (!map.has(key)) map.set(key, { key, trips: 0, revenue: 0 });
+        const row = map.get(key);
+        row.trips += 1;
+        row.revenue += roundMoney(trip.total_amount || 0);
+    });
+    return [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function analyticsRankBarThickness(count) {
+    const n = Math.max(1, Number(count) || 1);
+    if (n <= 3) return 22;
+    if (n <= 5) return 18;
+    if (n <= 8) return 14;
+    return 10;
+}
+
+function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, color, valueFormatter) {
+    const canvas = document.getElementById(canvasId);
+    const empty = document.getElementById(emptyId);
+    const ChartLib = typeof Chart !== 'undefined' ? Chart : null;
+    const rows = (items || []).filter(item => valueFn(item) > 0);
+    if (canvas) canvas.classList.toggle('hidden', !rows.length || !ChartLib);
+    if (empty) empty.classList.toggle('hidden', !!(rows.length && ChartLib));
+    if (!ChartLib || !canvas || !rows.length) return;
+
+    // أفقية: الأفضل في الأعلى
+    const labels = rows.map(x => x.name);
+    const values = rows.map(valueFn);
+    analyticsCharts[chartKey] = new ChartLib(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: values,
+                backgroundColor: rows.map((_, i) => i === 0 ? color : color.replace(/[\d.]+\)$/, '0.55)')),
+                borderRadius: 6,
+                maxBarThickness: analyticsRankBarThickness(rows.length),
+                barPercentage: 0.72,
+                categoryPercentage: 0.78
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { right: 56 } },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0b2a4a',
+                    titleFont: { family: analyticsChartFont(), size: 12, weight: '700' },
+                    bodyFont: { family: analyticsChartFont(), size: 11 },
+                    padding: 10,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: (ctx) => valueFormatter(ctx.parsed.x)
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grace: '8%',
+                    grid: { color: 'rgba(148,163,184,0.18)' },
+                    ticks: {
+                        font: { family: analyticsChartFont(), size: 10 },
+                        color: '#94a3b8',
+                        callback: (value) => Number(value).toLocaleString('en-US')
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: analyticsChartFont(), size: 10, weight: '700' },
+                        color: '#475569'
+                    }
+                }
+            }
+        },
+        plugins: [chartEndValueLabelsPlugin(valueFormatter, { id: `endLabels-${chartKey}`, fontSize: 10, color: '#64748b', pad: 8 })]
+    });
+}
+
+function renderAnalyticsTrendChart(monthly, showMoney) {
+    const canvas = document.getElementById('analyticsTrendChart');
+    const empty = document.getElementById('analyticsTrendEmpty');
+    const ChartLib = typeof Chart !== 'undefined' ? Chart : null;
+    if (canvas) canvas.classList.toggle('hidden', !monthly.length || !ChartLib);
+    if (empty) empty.classList.toggle('hidden', !!(monthly.length && ChartLib));
+    if (!ChartLib || !canvas || !monthly.length) return;
+
+    const datasets = [{
+        label: t('ui.completedTrips'),
+        data: monthly.map(x => x.trips),
+        borderColor: '#c4a35a',
+        backgroundColor: 'rgba(196,163,90,0.15)',
+        tension: 0.35,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 5,
+        yAxisID: 'y'
+    }];
+    if (showMoney) {
+        datasets.push({
+            label: t('ui.totalRevenue'),
+            data: monthly.map(x => roundMoney(x.revenue)),
+            borderColor: '#0b2a4a',
+            backgroundColor: 'rgba(11,42,74,0.08)',
+            tension: 0.35,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 5,
+            yAxisID: 'y1'
+        });
+    }
+
+    analyticsCharts.trend = new ChartLib(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: monthly.map(x => analyticsMonthLabel(x.key)),
+            datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: { family: analyticsChartFont(), size: 11, weight: '700' },
+                        color: '#475569'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0b2a4a',
+                    titleFont: { family: analyticsChartFont(), size: 12, weight: '700' },
+                    bodyFont: { family: analyticsChartFont(), size: 11 },
+                    padding: 10,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: (ctx) => {
+                            if (ctx.dataset.yAxisID === 'y1') return `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y)}`;
+                            return `${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString('en-US')}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: analyticsChartFont(), size: 10, weight: '700' },
+                        color: '#64748b'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: t('ui.completedTrips'),
+                        color: '#c4a35a',
+                        font: { size: 11, weight: '700' }
+                    },
+                    ticks: {
+                        font: { family: analyticsChartFont(), size: 10 },
+                        color: '#94a3b8',
+                        precision: 0
+                    },
+                    grid: { color: 'rgba(148,163,184,0.18)' }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'left',
+                    display: showMoney,
+                    grid: { drawOnChartArea: false },
+                    title: {
+                        display: showMoney,
+                        text: t('ui.totalRevenue'),
+                        color: '#0b2a4a',
+                        font: { size: 11, weight: '700' }
+                    },
+                    ticks: {
+                        font: { family: analyticsChartFont(), size: 10 },
+                        color: '#94a3b8',
+                        callback: (value) => Number(value).toLocaleString('en-US')
+                    }
+                }
+            }
+        }
+    });
 }
 
 async function renderAnalyticsDashboard() {
@@ -12951,14 +14144,14 @@ async function renderAnalyticsDashboard() {
         ? `${escapeHtml(tf('analytics.tripsCount', bestDriver.trips))}${showMoney ? ' · ' + formatSAR(bestDriver.commission) : ''}`
         : escapeHtml(t('analytics.noData'));
 
-    const truckTripBars = document.getElementById('analyticsTruckTripBars');
-    const truckRevBars = document.getElementById('analyticsTruckRevenueBars');
-    const driverTripBars = document.getElementById('analyticsDriverTripBars');
-    const driverCommBars = document.getElementById('analyticsDriverCommBars');
-    if (truckTripBars) truckTripBars.innerHTML = analyticsBarHtml(truckList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#c4a35a');
-    if (truckRevBars) truckRevBars.innerHTML = analyticsBarHtml([...truckList].sort((a, b) => b.revenue - a.revenue), x => x.revenue, x => x.name, x => formatSAR(x.revenue), '#0b2a4a');
-    if (driverTripBars) driverTripBars.innerHTML = analyticsBarHtml(driverList, x => x.trips, x => x.name, x => tf('analytics.tripsCount', x.trips), '#2563eb');
-    if (driverCommBars) driverCommBars.innerHTML = analyticsBarHtml([...driverList].sort((a, b) => b.commission - a.commission), x => x.commission, x => x.name, x => formatSAR(x.commission), '#059669');
+    destroyAnalyticsCharts();
+    renderAnalyticsTrendChart(buildAnalyticsMonthlyTrend(inPeriod), showMoney);
+    upsertAnalyticsRankChart('truckTrips', 'analyticsTruckTripsChart', 'analyticsTruckTripsEmpty', truckList, x => x.trips, 'rgba(196,163,90,0.92)', v => tf('analytics.tripsCount', v));
+    upsertAnalyticsRankChart('driverTrips', 'analyticsDriverTripsChart', 'analyticsDriverTripsEmpty', driverList, x => x.trips, 'rgba(37,99,235,0.9)', v => tf('analytics.tripsCount', v));
+    if (showMoney) {
+        upsertAnalyticsRankChart('truckRevenue', 'analyticsTruckRevenueChart', 'analyticsTruckRevenueEmpty', [...truckList].sort((a, b) => b.revenue - a.revenue), x => x.revenue, 'rgba(11,42,74,0.9)', v => formatMoney(v));
+        upsertAnalyticsRankChart('driverComm', 'analyticsDriverCommChart', 'analyticsDriverCommEmpty', [...driverList].sort((a, b) => b.commission - a.commission), x => x.commission, 'rgba(5,150,105,0.9)', v => formatMoney(v));
+    }
 }
 
                async function generateReport() {
@@ -14754,6 +15947,8 @@ async function loadUsers(options = {}) {
                 reports: 'reportsSection',
                 reportsSection: 'reportsSection',
                 maintenanceReport: 'maintenanceReportSection',
+                fuelReport: 'fuelReportSection',
+                fuel: 'fuelSection',
                 analytics: 'analyticsSection',
                 analyticsSection: 'analyticsSection',
                 charts: 'chartsSection',
