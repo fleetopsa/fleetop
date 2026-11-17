@@ -9757,11 +9757,27 @@ function renderFuelManage() {
     `).join('');
 }
 
+function fuelLogsBaseQuery() {
+    let query = client.from('fuel_logs');
+    const companyId = currentCompanyId();
+    if (companyId != null) query = query.eq('company_id', companyId);
+    return query;
+}
+
 async function loadFuelManage() {
     const tbody = document.getElementById('fuelManageTable');
     syncFuelManageAccess();
     try {
-        const { data, error } = await client.from('fuel_logs').select('*').order('fill_date', { ascending: false }).order('id', { ascending: false });
+        const companyId = currentCompanyId();
+        if (companyId == null) {
+            fuelCache = [];
+            renderFuelManage();
+            return;
+        }
+        const { data, error } = await fuelLogsBaseQuery()
+            .select('*')
+            .order('fill_date', { ascending: false })
+            .order('id', { ascending: false });
         if (error) throw error;
         fuelCache = data || [];
         renderFuelManage();
@@ -9849,11 +9865,21 @@ function renderFuelReportView() {
 async function loadFuelReport() {
     const tbody = document.getElementById('fuelReportTable');
     try {
+        const companyId = currentCompanyId();
+        if (companyId == null) {
+            fuelReportCache = [];
+            fuelCache = [];
+            renderFuelReportView();
+            return;
+        }
         await ensureFuelTrucks();
         fillFuelTruckSelect('fuelRepTruckFilter', true);
         const start = document.getElementById('fuelRepStartDate')?.value || '';
         const end = document.getElementById('fuelRepEndDate')?.value || '';
-        let query = client.from('fuel_logs').select('*').order('fill_date', { ascending: false }).order('id', { ascending: false });
+        let query = fuelLogsBaseQuery()
+            .select('*')
+            .order('fill_date', { ascending: false })
+            .order('id', { ascending: false });
         if (start) query = query.gte('fill_date', start);
         if (end) query = query.lte('fill_date', end);
         const { data, error } = await query;
@@ -9907,6 +9933,11 @@ async function saveFuelLog(event) {
         showFuelError(t('fuel.required'));
         return;
     }
+    const companyId = currentCompanyId();
+    if (companyId == null) {
+        showFuelError(currentLang === 'en' ? 'Company context is missing.' : 'تعذر تحديد الشركة الحالية.');
+        return;
+    }
     const payload = withCompany({
         truck_plate: plate,
         fill_date: fillDate,
@@ -9918,7 +9949,7 @@ async function saveFuelLog(event) {
     });
     if (editId) payload.updated_at = new Date().toISOString();
     const write = async (data) => editId
-        ? client.from('fuel_logs').update(data).eq('id', editId)
+        ? fuelLogsBaseQuery().update(data).eq('id', editId)
         : client.from('fuel_logs').insert([data]);
     const { error } = await writeIgnoringUnknownColumns(write, payload);
     if (error) {
@@ -9942,7 +9973,7 @@ async function deleteFuelLog(id) {
     }
     const row = findFuelRow(id);
     if (!confirm(currentLang === 'en' ? 'Delete this fuel record?' : 'هل تريد حذف سجل التعبئة؟')) return;
-    const { error } = await client.from('fuel_logs').delete().eq('id', id);
+    const { error } = await fuelLogsBaseQuery().delete().eq('id', id);
     if (error) {
         alert((currentLang === 'en' ? 'Could not delete: ' : 'تعذر الحذف: ') + (error.message || ''));
         return;
@@ -13833,8 +13864,6 @@ function chartEndValueLabelsPlugin(formatter, opts = {}) {
             const horizontal = chart.options.indexAxis === 'y';
             chart.data.datasets.forEach((dataset, datasetIndex) => {
                 if (dataset.hidden) return;
-                // في الرسوم المجمّعة نعرض التسمية على آخر مجموعة فقط لتجنب التزاحم،
-                // أو على الكل إذا طُلب صراحة
                 if (opts.datasetIndex != null && datasetIndex !== opts.datasetIndex) return;
                 if (opts.onlyLastDataset && datasetIndex !== chart.data.datasets.length - 1) return;
                 const meta = chart.getDatasetMeta(datasetIndex);
@@ -13851,9 +13880,14 @@ function chartEndValueLabelsPlugin(formatter, opts = {}) {
                     ctx.fillStyle = color;
                     ctx.textBaseline = 'middle';
                     if (horizontal) {
+                        // دائماً خارج نهاية الشريط — لا نرجع النص فوق العمود
                         ctx.textAlign = 'left';
-                        const maxX = chart.chartArea.right - 2;
-                        const labelX = Math.min(x + pad, maxX - ctx.measureText(text).width);
+                        const textW = ctx.measureText(text).width;
+                        const canvasRight = chart.width - 4;
+                        let labelX = x + pad;
+                        if (labelX + textW > canvasRight) {
+                            labelX = Math.max(x + 4, canvasRight - textW);
+                        }
                         ctx.fillText(text, labelX, y);
                     } else {
                         ctx.textAlign = 'center';
@@ -13914,6 +13948,11 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
     // أفقية: الأفضل في الأعلى
     const labels = rows.map(x => x.name);
     const values = rows.map(valueFn);
+    // مساحة يمين كافية لكتابة المبلغ/العدد خارج الشريط
+    const sampleLabels = values.map(v => String(valueFormatter(v) || '').replace(/<[^>]+>/g, ''));
+    const longest = sampleLabels.reduce((m, s) => Math.max(m, s.length), 0);
+    const rightPad = Math.max(52, Math.min(110, 18 + longest * 7));
+
     analyticsCharts[chartKey] = new ChartLib(canvas.getContext('2d'), {
         type: 'bar',
         data: {
@@ -13931,7 +13970,7 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            layout: { padding: { right: 56 } },
+            layout: { padding: { right: rightPad } },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -13948,7 +13987,7 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
             scales: {
                 x: {
                     beginAtZero: true,
-                    grace: '8%',
+                    grace: '4%',
                     grid: { color: 'rgba(148,163,184,0.18)' },
                     ticks: {
                         font: { family: analyticsChartFont(), size: 10 },
@@ -13965,7 +14004,7 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
                 }
             }
         },
-        plugins: [chartEndValueLabelsPlugin(valueFormatter, { id: `endLabels-${chartKey}`, fontSize: 10, color: '#64748b', pad: 8 })]
+        plugins: [chartEndValueLabelsPlugin(valueFormatter, { id: `endLabels-${chartKey}`, fontSize: 10, color: '#64748b', pad: 10 })]
     });
 }
 
