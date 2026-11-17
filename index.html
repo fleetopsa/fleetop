@@ -9757,9 +9757,13 @@ function renderFuelManage() {
     `).join('');
 }
 
-function fuelLogsBaseQuery() {
-    let query = client.from('fuel_logs');
+function requireFuelCompanyId() {
     const companyId = currentCompanyId();
+    return companyId != null ? companyId : null;
+}
+
+function scopeFuelQuery(query) {
+    const companyId = requireFuelCompanyId();
     if (companyId != null) query = query.eq('company_id', companyId);
     return query;
 }
@@ -9768,16 +9772,15 @@ async function loadFuelManage() {
     const tbody = document.getElementById('fuelManageTable');
     syncFuelManageAccess();
     try {
-        const companyId = currentCompanyId();
-        if (companyId == null) {
+        if (requireFuelCompanyId() == null) {
             fuelCache = [];
             renderFuelManage();
             return;
         }
-        const { data, error } = await fuelLogsBaseQuery()
-            .select('*')
-            .order('fill_date', { ascending: false })
-            .order('id', { ascending: false });
+        // مهم: select ثم eq (ترتيب Supabase)
+        const { data, error } = await scopeFuelQuery(
+            client.from('fuel_logs').select('*')
+        ).order('fill_date', { ascending: false }).order('id', { ascending: false });
         if (error) throw error;
         fuelCache = data || [];
         renderFuelManage();
@@ -9865,8 +9868,7 @@ function renderFuelReportView() {
 async function loadFuelReport() {
     const tbody = document.getElementById('fuelReportTable');
     try {
-        const companyId = currentCompanyId();
-        if (companyId == null) {
+        if (requireFuelCompanyId() == null) {
             fuelReportCache = [];
             fuelCache = [];
             renderFuelReportView();
@@ -9876,8 +9878,7 @@ async function loadFuelReport() {
         fillFuelTruckSelect('fuelRepTruckFilter', true);
         const start = document.getElementById('fuelRepStartDate')?.value || '';
         const end = document.getElementById('fuelRepEndDate')?.value || '';
-        let query = fuelLogsBaseQuery()
-            .select('*')
+        let query = scopeFuelQuery(client.from('fuel_logs').select('*'))
             .order('fill_date', { ascending: false })
             .order('id', { ascending: false });
         if (start) query = query.gte('fill_date', start);
@@ -9906,12 +9907,11 @@ async function loadFuelReport() {
 }
 
 async function refreshOpenFuelScreens() {
-    if (!document.getElementById('fuelSection')?.classList.contains('hidden')) {
-        await loadFuelManage();
-    }
-    if (!document.getElementById('fuelReportSection')?.classList.contains('hidden')) {
-        await loadFuelReport();
-    }
+    const fuelOpen = !document.getElementById('fuelSection')?.classList.contains('hidden');
+    const reportOpen = !document.getElementById('fuelReportSection')?.classList.contains('hidden');
+    if (fuelOpen) await loadFuelManage();
+    if (reportOpen) await loadFuelReport();
+    if (!fuelOpen && !reportOpen) await loadFuelManage();
 }
 
 async function saveFuelLog(event) {
@@ -9933,12 +9933,13 @@ async function saveFuelLog(event) {
         showFuelError(t('fuel.required'));
         return;
     }
-    const companyId = currentCompanyId();
+    const companyId = requireFuelCompanyId();
     if (companyId == null) {
         showFuelError(currentLang === 'en' ? 'Company context is missing.' : 'تعذر تحديد الشركة الحالية.');
         return;
     }
     const payload = withCompany({
+        company_id: companyId,
         truck_plate: plate,
         fill_date: fillDate,
         odometer,
@@ -9947,23 +9948,52 @@ async function saveFuelLog(event) {
         station: station || null,
         notes: notes || null
     });
+    // لا تسمح بإسقاط company_id أثناء الحفظ
+    payload.company_id = companyId;
     if (editId) payload.updated_at = new Date().toISOString();
-    const write = async (data) => editId
-        ? fuelLogsBaseQuery().update(data).eq('id', editId)
-        : client.from('fuel_logs').insert([data]);
-    const { error } = await writeIgnoringUnknownColumns(write, payload);
+
+    let savedRow = null;
+    let error = null;
+    if (editId) {
+        const write = async (data) => scopeFuelQuery(client.from('fuel_logs').update(data)).eq('id', editId).select('*');
+        const result = await writeIgnoringUnknownColumns(write, payload);
+        error = result.error;
+        if (!error) {
+            const { data } = await scopeFuelQuery(client.from('fuel_logs').select('*')).eq('id', editId).maybeSingle();
+            savedRow = data;
+        }
+    } else {
+        // insert + select للتأكد من نجاح العزل وإرجاع الصف
+        const write = async (data) => client.from('fuel_logs').insert([{ ...data, company_id: companyId }]).select('*');
+        const result = await writeIgnoringUnknownColumns(write, payload);
+        error = result.error;
+        if (!error) {
+            // writeIgnoringUnknownColumns لا يعيد data — نجلب أحدث سجل مطابق
+            const { data: latest } = await scopeFuelQuery(client.from('fuel_logs').select('*'))
+                .eq('truck_plate', plate)
+                .eq('fill_date', fillDate)
+                .order('id', { ascending: false })
+                .limit(1);
+            savedRow = latest && latest[0] ? latest[0] : null;
+        }
+    }
     if (error) {
         const missing = /fuel_logs|schema cache|relation/i.test(error.message || '');
-        showFuelError(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed') + (error.message ? `: ${error.message}` : ''));
+        const rls = /row-level security|RLS|policy/i.test(error.message || '');
+        showFuelError(
+            t(missing ? 'fuel.missingTable' : 'fuel.saveFailed')
+            + (rls ? (currentLang === 'en' ? ': company policy blocked the save. Re-run fuel-logs.sql' : ': سياسة الشركة منعت الحفظ. أعد تنفيذ fuel-logs.sql') : '')
+            + (error.message ? `: ${error.message}` : '')
+        );
         return;
+    }
+    if (savedRow) {
+        fuelCache = [savedRow, ...(fuelCache || []).filter(r => Number(r.id) !== Number(savedRow.id))];
+        renderFuelManage();
     }
     logActivity(editId ? 'fuel.edit' : 'fuel.create', 'وقود', plate, `${fillDate} · ${liters} لتر · ${amount}`);
     closeFuelModal();
     await refreshOpenFuelScreens();
-    if (document.getElementById('fuelSection')?.classList.contains('hidden')
-        && document.getElementById('fuelReportSection')?.classList.contains('hidden')) {
-        await loadFuelManage();
-    }
 }
 
 async function deleteFuelLog(id) {
@@ -9973,7 +10003,7 @@ async function deleteFuelLog(id) {
     }
     const row = findFuelRow(id);
     if (!confirm(currentLang === 'en' ? 'Delete this fuel record?' : 'هل تريد حذف سجل التعبئة؟')) return;
-    const { error } = await fuelLogsBaseQuery().delete().eq('id', id);
+    const { error } = await scopeFuelQuery(client.from('fuel_logs').delete()).eq('id', id);
     if (error) {
         alert((currentLang === 'en' ? 'Could not delete: ' : 'تعذر الحذف: ') + (error.message || ''));
         return;
