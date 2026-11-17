@@ -99,6 +99,43 @@
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
         .analytics-fill { height: 100%; border-radius: 999px; }
+        .chart-card { min-width: 0; overflow: hidden; }
+        .chart-host {
+            position: relative;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .chart-host canvas {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        @media (max-width: 767px) {
+            #chartsSection .chart-card,
+            #fuelReportSection .chart-card {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            #chartsSection .analytics-money .text-2xl,
+            #chartsSection .text-2xl.font-black {
+                font-size: 1.2rem;
+                line-height: 1.35;
+            }
+            #chartsSection .chart-host--trend {
+                height: 13.5rem;
+            }
+            #fuelReportSection .chart-host--fuel {
+                height: 15rem;
+            }
+        }
+        @media (min-width: 768px) {
+            #chartsSection .chart-host--trend {
+                height: 18rem;
+            }
+            #fuelReportSection .chart-host--fuel {
+                height: 18rem;
+            }
+        }
         .recv-toolbar { min-width: 0; }
         .recv-toolbar-top {
             display: flex;
@@ -1859,43 +1896,43 @@
             <div id="analyticsBestDriverMeta" class="text-xs text-slate-500 mt-1"></div>
         </div>
     </div>
-    <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+    <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
         <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.trendTitle">اتجاه الأداء الشهري</h3>
         <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.trendHint">عدد الرحلات والإيرادات عبر أشهر الفترة المحددة</p>
-        <div class="relative h-64 sm:h-72">
+        <div class="chart-host chart-host--trend">
             <canvas id="analyticsTrendChart" aria-label="monthly trend chart"></canvas>
         </div>
         <div id="analyticsTrendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
     </div>
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
-        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+        <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
             <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
             <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
-            <div class="relative h-56 sm:h-64">
+            <div class="chart-host chart-host--rank" data-chart-host="analyticsTruckTripsChart">
                 <canvas id="analyticsTruckTripsChart" aria-label="truck trips chart"></canvas>
             </div>
             <div id="analyticsTruckTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
-        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+        <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
             <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
             <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
-            <div class="relative h-56 sm:h-64">
+            <div class="chart-host chart-host--rank" data-chart-host="analyticsTruckRevenueChart">
                 <canvas id="analyticsTruckRevenueChart" aria-label="truck revenue chart"></canvas>
             </div>
             <div id="analyticsTruckRevenueEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
-        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
+        <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
             <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
             <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
-            <div class="relative h-56 sm:h-64">
+            <div class="chart-host chart-host--rank" data-chart-host="analyticsDriverTripsChart">
                 <canvas id="analyticsDriverTripsChart" aria-label="driver trips chart"></canvas>
             </div>
             <div id="analyticsDriverTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
-        <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
+        <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
             <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverComm">عمولات السائقين</h3>
             <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.rankHint">ترتيب تنازلي — الأفضل أولاً</p>
-            <div class="relative h-56 sm:h-64">
+            <div class="chart-host chart-host--rank" data-chart-host="analyticsDriverCommChart">
                 <canvas id="analyticsDriverCommChart" aria-label="driver commission chart"></canvas>
             </div>
             <div id="analyticsDriverCommEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
@@ -2668,18 +2705,18 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 no-print">
-                    <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="chart-card bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartSpend">صرف الوقود حسب الشاحنة</h3>
                         <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartSpendHint">أعمدة للمبلغ واللترات معاً للمقارنة المباشرة</p>
-                        <div class="relative h-64 sm:h-72">
+                        <div class="chart-host chart-host--fuel">
                             <canvas id="fuelRepSpendChart" aria-label="fuel spend chart"></canvas>
                         </div>
                         <div id="fuelRepSpendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="fuel.empty">لا توجد سجلات وقود في الفترة المحددة</div>
                     </div>
-                    <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="chart-card bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartConsumption">كفاءة الاستهلاك (لتر/100كم)</h3>
                         <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartConsumptionHint">الأقل أفضل — الشاحنة الأكثر كفاءة تظهر أولاً</p>
-                        <div class="relative h-64 sm:h-72">
+                        <div class="chart-host chart-host--fuel">
                             <canvas id="fuelRepConsumptionChart" aria-label="fuel consumption chart"></canvas>
                         </div>
                         <div id="fuelRepConsumptionEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="fuel.noConsumption">لا تتوفر قراءة عداد كافية لحساب الاستهلاك</div>
@@ -9314,15 +9351,28 @@ function fillMaintenanceFilterVehicles() {
     fillMaintenanceVehicleFilterSelect('maintRepVehicleFilter');
 }
 
-function maintenanceEnteredAt(row) {
-    return row.created_at ? new Date(row.created_at).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
+/** تاريخ/وقت ميلادي ثابت — يمنع ظهور الهجري على أجهزة iOS/iPad عندما تكون اللغة عربية */
+function formatGregorianDateTime(value, withSeconds) {
+    if (!value) return '—';
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '—';
+    const opts = {
+        calendar: 'gregory',
         numberingSystem: 'latn',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
-        minute: '2-digit'
-    }) : '—';
+        minute: '2-digit',
+        hour12: false
+    };
+    if (withSeconds) opts.second = '2-digit';
+    // en-GB يعطي ترتيباً واضحاً DD/MM/YYYY بغض النظر عن تقويم الجهاز
+    return date.toLocaleString('en-GB', opts);
+}
+
+function maintenanceEnteredAt(row) {
+    return row.created_at ? formatGregorianDateTime(row.created_at) : '—';
 }
 
 function filterMaintenanceRows(rows, vehicleFilterId, typeFilterId) {
@@ -9381,8 +9431,41 @@ function destroyFuelCharts() {
     }
 }
 
+function isCompactChartsViewport() {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
+}
+
+let _chartsCompactFlag = null;
+let _chartsResizeTimer = null;
+function refreshChartsForViewportChange() {
+    const next = isCompactChartsViewport();
+    if (_chartsCompactFlag === next) {
+        // حتى بدون تغيير الـ breakpoint نحدّث حجم الشاشات الأفقية
+        Object.values(analyticsCharts || {}).forEach(ch => {
+            try { ch?.resize?.(); } catch (e) {}
+        });
+        try { fuelSpendChart?.resize?.(); } catch (e) {}
+        try { fuelConsumptionChart?.resize?.(); } catch (e) {}
+        return;
+    }
+    _chartsCompactFlag = next;
+    const chartsOpen = !document.getElementById('chartsSection')?.classList.contains('hidden');
+    const fuelOpen = !document.getElementById('fuelReportSection')?.classList.contains('hidden');
+    if (chartsOpen && typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
+    if (fuelOpen && typeof renderFuelReportView === 'function') renderFuelReportView();
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        clearTimeout(_chartsResizeTimer);
+        _chartsResizeTimer = setTimeout(refreshChartsForViewportChange, 180);
+    });
+}
+
 function fuelChartDefaults() {
     const en = currentLang === 'en';
+    const compact = isCompactChartsViewport();
+    const tickSize = compact ? 9 : 10;
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -9391,9 +9474,9 @@ function fuelChartDefaults() {
             legend: {
                 position: 'bottom',
                 labels: {
-                    boxWidth: 12,
-                    boxHeight: 12,
-                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 11, weight: '700' },
+                    boxWidth: compact ? 10 : 12,
+                    boxHeight: compact ? 10 : 12,
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: compact ? 10 : 11, weight: '700' },
                     color: '#475569'
                 }
             },
@@ -9408,18 +9491,21 @@ function fuelChartDefaults() {
         scales: {
             x: {
                 ticks: {
-                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 10, weight: '700' },
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: tickSize, weight: '700' },
                     color: '#64748b',
-                    maxRotation: 45,
-                    minRotation: 0
+                    maxRotation: compact ? 55 : 45,
+                    minRotation: compact ? 30 : 0,
+                    autoSkip: true,
+                    maxTicksLimit: compact ? 6 : 12
                 },
                 grid: { display: false }
             },
             y: {
                 beginAtZero: true,
                 ticks: {
-                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: 10 },
-                    color: '#94a3b8'
+                    font: { family: en ? 'Inter, Cairo, sans-serif' : 'Cairo, Inter, sans-serif', size: tickSize },
+                    color: '#94a3b8',
+                    maxTicksLimit: compact ? 5 : 8
                 },
                 grid: { color: 'rgba(148,163,184,0.18)' }
             }
@@ -9468,8 +9554,12 @@ function renderFuelCharts(truckList) {
         return;
     }
 
+    const compact = isCompactChartsViewport();
+    const showEndLabels = !compact || spendRows.length <= 5;
+
     if (spendRows.length && spendCanvas) {
         const labels = spendRows.map(x => x.name);
+        const defaults = fuelChartDefaults();
         fuelSpendChart = new ChartLib(spendCanvas.getContext('2d'), {
             type: 'bar',
             data: {
@@ -9498,56 +9588,57 @@ function renderFuelCharts(truckList) {
                 ]
             },
             options: {
-                ...fuelChartDefaults(),
-                layout: { padding: { top: 18 } },
+                ...defaults,
+                layout: { padding: { top: compact ? 8 : 18, left: compact ? 2 : 4, right: compact ? 2 : 4 } },
                 scales: {
                     x: {
-                        ...fuelChartDefaults().scales.x,
+                        ...defaults.scales.x,
                         stacked: false
                     },
                     y: {
-                        ...fuelChartDefaults().scales.y,
+                        ...defaults.scales.y,
                         position: 'right',
-                        grace: '12%',
+                        grace: compact ? '8%' : '12%',
                         title: {
-                            display: true,
+                            display: !compact,
                             text: t('fuel.amount'),
                             color: '#0b2a4a',
                             font: { size: 11, weight: '700' }
                         },
                         ticks: {
-                            ...fuelChartDefaults().scales.y.ticks,
+                            ...defaults.scales.y.ticks,
                             callback: (value) => Number(value).toLocaleString('en-US')
                         }
                     },
                     y1: {
-                        ...fuelChartDefaults().scales.y,
+                        ...defaults.scales.y,
                         position: 'left',
-                        grace: '12%',
+                        grace: compact ? '8%' : '12%',
                         grid: { drawOnChartArea: false },
                         title: {
-                            display: true,
+                            display: !compact,
                             text: t('fuel.liters'),
                             color: '#059669',
                             font: { size: 11, weight: '700' }
                         },
                         ticks: {
-                            ...fuelChartDefaults().scales.y.ticks,
+                            ...defaults.scales.y.ticks,
                             callback: (value) => Number(value).toLocaleString('en-US')
                         }
                     }
                 }
             },
-            plugins: [chartEndValueLabelsPlugin((value, ctx) => {
+            plugins: showEndLabels ? [chartEndValueLabelsPlugin((value, ctx) => {
                 const ds = ctx?.dataset;
                 if (ds?.yAxisID === 'y1') return formatFuelNumber(value, 0);
                 return formatMoney(value);
-            }, { id: 'fuelSpendLabels', fontSize: 9, color: '#64748b', pad: 8 })]
+            }, { id: 'fuelSpendLabels', fontSize: compact ? 8 : 9, color: '#64748b', pad: compact ? 5 : 8 })] : []
         });
     }
 
     if (consRows.length && consCanvas) {
         const best = consRows[0]?.per100 || 0;
+        const defaults = fuelChartDefaults();
         fuelConsumptionChart = new ChartLib(consCanvas.getContext('2d'), {
             type: 'bar',
             data: {
@@ -9565,25 +9656,25 @@ function renderFuelCharts(truckList) {
                 }]
             },
             options: {
-                ...fuelChartDefaults(),
-                layout: { padding: { top: 18 } },
+                ...defaults,
+                layout: { padding: { top: compact ? 8 : 18, left: compact ? 2 : 4, right: compact ? 2 : 4 } },
                 plugins: {
-                    ...fuelChartDefaults().plugins,
+                    ...defaults.plugins,
                     legend: { display: false },
                     tooltip: {
-                        ...fuelChartDefaults().plugins.tooltip,
+                        ...defaults.plugins.tooltip,
                         callbacks: {
                             label: (ctx) => `${formatFuelNumber(ctx.parsed.y, 1)} ${t('fuel.per100')}`
                         }
                     }
                 },
                 scales: {
-                    x: fuelChartDefaults().scales.x,
+                    x: defaults.scales.x,
                     y: {
-                        ...fuelChartDefaults().scales.y,
-                        grace: '12%',
+                        ...defaults.scales.y,
+                        grace: compact ? '8%' : '12%',
                         title: {
-                            display: true,
+                            display: !compact,
                             text: t('fuel.per100'),
                             color: '#8a6d3a',
                             font: { size: 11, weight: '700' }
@@ -9591,10 +9682,10 @@ function renderFuelCharts(truckList) {
                     }
                 }
             },
-            plugins: [chartEndValueLabelsPlugin(
+            plugins: (!compact || consRows.length <= 6) ? [chartEndValueLabelsPlugin(
                 (value) => formatFuelNumber(value, 1),
-                { id: 'fuelConsLabels', fontSize: 10, color: '#64748b', pad: 8 }
-            )]
+                { id: 'fuelConsLabels', fontSize: compact ? 9 : 10, color: '#64748b', pad: compact ? 5 : 8 }
+            )] : []
         });
     }
 }
@@ -13892,6 +13983,7 @@ function chartEndValueLabelsPlugin(formatter, opts = {}) {
         afterDatasetsDraw(chart) {
             const { ctx } = chart;
             const horizontal = chart.options.indexAxis === 'y';
+            const compact = isCompactChartsViewport();
             chart.data.datasets.forEach((dataset, datasetIndex) => {
                 if (dataset.hidden) return;
                 if (opts.datasetIndex != null && datasetIndex !== opts.datasetIndex) return;
@@ -13907,19 +13999,29 @@ function chartEndValueLabelsPlugin(formatter, opts = {}) {
                     const { x, y } = element.tooltipPosition();
                     ctx.save();
                     ctx.font = `700 ${fontSize}px ${fontFamily}`;
-                    ctx.fillStyle = color;
                     ctx.textBaseline = 'middle';
                     if (horizontal) {
-                        // دائماً خارج نهاية الشريط — لا نرجع النص فوق العمود
-                        ctx.textAlign = 'left';
                         const textW = ctx.measureText(text).width;
-                        const canvasRight = chart.width - 4;
-                        let labelX = x + pad;
-                        if (labelX + textW > canvasRight) {
-                            labelX = Math.max(x + 4, canvasRight - textW);
+                        const barBase = typeof element.base === 'number' ? element.base : chart.chartArea.left;
+                        const barWidth = Math.abs(x - barBase);
+                        const spaceOutside = chart.chartArea.right - x;
+                        // على الشاشات الضيقة: داخل الشريط إن ضاق المكان خارجه
+                        if (compact && spaceOutside < textW + pad + 4 && barWidth > textW + 14) {
+                            ctx.fillStyle = '#ffffff';
+                            ctx.textAlign = 'right';
+                            ctx.fillText(text, x - 6, y);
+                        } else {
+                            ctx.fillStyle = color;
+                            ctx.textAlign = 'left';
+                            let labelX = x + pad;
+                            const canvasRight = chart.width - 4;
+                            if (labelX + textW > canvasRight) {
+                                labelX = Math.max(x + 4, canvasRight - textW);
+                            }
+                            ctx.fillText(text, labelX, y);
                         }
-                        ctx.fillText(text, labelX, y);
                     } else {
+                        ctx.fillStyle = color;
                         ctx.textAlign = 'center';
                         const labelY = Math.max(chart.chartArea.top + fontSize, y - pad);
                         ctx.fillText(text, x, labelY);
@@ -13929,6 +14031,25 @@ function chartEndValueLabelsPlugin(formatter, opts = {}) {
             });
         }
     };
+}
+
+function sizeAnalyticsRankHost(canvas, rowCount) {
+    const host = canvas?.closest?.('.chart-host') || canvas?.parentElement;
+    if (!host) return;
+    const compact = isCompactChartsViewport();
+    const n = Math.max(1, Number(rowCount) || 1);
+    const rowH = compact ? 34 : 38;
+    const chrome = compact ? 28 : 36;
+    const minH = compact ? 168 : 200;
+    const maxH = compact ? 320 : 420;
+    const height = Math.max(minH, Math.min(maxH, n * rowH + chrome));
+    host.style.height = `${height}px`;
+}
+
+function truncateChartLabel(label, maxLen) {
+    const s = String(label || '');
+    if (s.length <= maxLen) return s;
+    return `${s.slice(0, Math.max(1, maxLen - 1))}…`;
 }
 
 function analyticsMonthKey(dateStr) {
@@ -13975,13 +14096,19 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
     if (empty) empty.classList.toggle('hidden', !!(rows.length && ChartLib));
     if (!ChartLib || !canvas || !rows.length) return;
 
+    const compact = isCompactChartsViewport();
+    sizeAnalyticsRankHost(canvas, rows.length);
+
     // أفقية: الأفضل في الأعلى
     const labels = rows.map(x => x.name);
     const values = rows.map(valueFn);
-    // مساحة يمين كافية لكتابة المبلغ/العدد خارج الشريط
+    // مساحة يمين كافية لكتابة المبلغ/العدد خارج الشريط (أقل على الجوال)
     const sampleLabels = values.map(v => String(valueFormatter(v) || '').replace(/<[^>]+>/g, ''));
     const longest = sampleLabels.reduce((m, s) => Math.max(m, s.length), 0);
-    const rightPad = Math.max(52, Math.min(110, 18 + longest * 7));
+    const rightPad = compact
+        ? Math.max(28, Math.min(64, 10 + longest * 5))
+        : Math.max(52, Math.min(110, 18 + longest * 7));
+    const yLabelMax = compact ? 9 : 16;
 
     analyticsCharts[chartKey] = new ChartLib(canvas.getContext('2d'), {
         type: 'bar',
@@ -13992,15 +14119,15 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
                 backgroundColor: rows.map((_, i) => i === 0 ? color : color.replace(/[\d.]+\)$/, '0.55)')),
                 borderRadius: 6,
                 maxBarThickness: analyticsRankBarThickness(rows.length),
-                barPercentage: 0.72,
-                categoryPercentage: 0.78
+                barPercentage: compact ? 0.78 : 0.72,
+                categoryPercentage: compact ? 0.86 : 0.78
             }]
         },
         options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            layout: { padding: { right: rightPad } },
+            layout: { padding: { right: rightPad, left: compact ? 0 : 4 } },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -14010,6 +14137,10 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
                     padding: 10,
                     cornerRadius: 10,
                     callbacks: {
+                        title: (items) => {
+                            const idx = items?.[0]?.dataIndex;
+                            return idx != null ? labels[idx] : '';
+                        },
                         label: (ctx) => valueFormatter(ctx.parsed.x)
                     }
                 }
@@ -14017,24 +14148,35 @@ function upsertAnalyticsRankChart(chartKey, canvasId, emptyId, items, valueFn, c
             scales: {
                 x: {
                     beginAtZero: true,
-                    grace: '4%',
+                    grace: compact ? '2%' : '4%',
                     grid: { color: 'rgba(148,163,184,0.18)' },
                     ticks: {
-                        font: { family: analyticsChartFont(), size: 10 },
+                        font: { family: analyticsChartFont(), size: compact ? 9 : 10 },
                         color: '#94a3b8',
+                        maxTicksLimit: compact ? 4 : 6,
                         callback: (value) => Number(value).toLocaleString('en-US')
                     }
                 },
                 y: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: analyticsChartFont(), size: 10, weight: '700' },
-                        color: '#475569'
+                        font: { family: analyticsChartFont(), size: compact ? 9 : 10, weight: '700' },
+                        color: '#475569',
+                        autoSkip: false,
+                        callback(value) {
+                            const label = this.getLabelForValue(value);
+                            return truncateChartLabel(label, yLabelMax);
+                        }
                     }
                 }
             }
         },
-        plugins: [chartEndValueLabelsPlugin(valueFormatter, { id: `endLabels-${chartKey}`, fontSize: 10, color: '#64748b', pad: 10 })]
+        plugins: [chartEndValueLabelsPlugin(valueFormatter, {
+            id: `endLabels-${chartKey}`,
+            fontSize: compact ? 9 : 10,
+            color: '#64748b',
+            pad: compact ? 6 : 10
+        })]
     });
 }
 
@@ -14046,6 +14188,7 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
     if (empty) empty.classList.toggle('hidden', !!(monthly.length && ChartLib));
     if (!ChartLib || !canvas || !monthly.length) return;
 
+    const compact = isCompactChartsViewport();
     const datasets = [{
         label: t('ui.completedTrips'),
         data: monthly.map(x => x.trips),
@@ -14053,7 +14196,7 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
         backgroundColor: 'rgba(196,163,90,0.15)',
         tension: 0.35,
         fill: true,
-        pointRadius: 4,
+        pointRadius: compact ? 3 : 4,
         pointHoverRadius: 5,
         yAxisID: 'y'
     }];
@@ -14065,7 +14208,7 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
             backgroundColor: 'rgba(11,42,74,0.08)',
             tension: 0.35,
             fill: false,
-            pointRadius: 4,
+            pointRadius: compact ? 3 : 4,
             pointHoverRadius: 5,
             yAxisID: 'y1'
         });
@@ -14081,12 +14224,13 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            layout: { padding: { left: compact ? 0 : 4, right: compact ? 0 : 4 } },
             plugins: {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        boxWidth: 12,
-                        font: { family: analyticsChartFont(), size: 11, weight: '700' },
+                        boxWidth: compact ? 10 : 12,
+                        font: { family: analyticsChartFont(), size: compact ? 10 : 11, weight: '700' },
                         color: '#475569'
                     }
                 },
@@ -14108,23 +14252,27 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: analyticsChartFont(), size: 10, weight: '700' },
-                        color: '#64748b'
+                        font: { family: analyticsChartFont(), size: compact ? 9 : 10, weight: '700' },
+                        color: '#64748b',
+                        maxRotation: compact ? 40 : 0,
+                        autoSkip: true,
+                        maxTicksLimit: compact ? 5 : 12
                     }
                 },
                 y: {
                     beginAtZero: true,
                     position: 'right',
                     title: {
-                        display: true,
+                        display: !compact,
                         text: t('ui.completedTrips'),
                         color: '#c4a35a',
                         font: { size: 11, weight: '700' }
                     },
                     ticks: {
-                        font: { family: analyticsChartFont(), size: 10 },
+                        font: { family: analyticsChartFont(), size: compact ? 9 : 10 },
                         color: '#94a3b8',
-                        precision: 0
+                        precision: 0,
+                        maxTicksLimit: compact ? 4 : 8
                     },
                     grid: { color: 'rgba(148,163,184,0.18)' }
                 },
@@ -14134,14 +14282,15 @@ function renderAnalyticsTrendChart(monthly, showMoney) {
                     display: showMoney,
                     grid: { drawOnChartArea: false },
                     title: {
-                        display: showMoney,
+                        display: showMoney && !compact,
                         text: t('ui.totalRevenue'),
                         color: '#0b2a4a',
                         font: { size: 11, weight: '700' }
                     },
                     ticks: {
-                        font: { family: analyticsChartFont(), size: 10 },
+                        font: { family: analyticsChartFont(), size: compact ? 9 : 10 },
                         color: '#94a3b8',
+                        maxTicksLimit: compact ? 4 : 8,
                         callback: (value) => Number(value).toLocaleString('en-US')
                     }
                 }
@@ -16040,15 +16189,7 @@ async function loadUsers(options = {}) {
             const timeLabel = document.getElementById('printTimestamp');
             if (userLabel) userLabel.textContent = userName ? t('print.by') + userName : '';
             if (timeLabel) {
-                const stamp = new Date().toLocaleString(currentLang === 'en' ? 'en-GB' : 'ar-SA', {
-                    numberingSystem: 'latn',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                timeLabel.textContent = t('print.at') + stamp;
+                timeLabel.textContent = t('print.at') + formatGregorianDateTime(new Date());
             }
             applyCompanyBranding();
 
