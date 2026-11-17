@@ -219,19 +219,21 @@
         .dash-side-card {
             height: 16rem;
             max-height: 16rem;
+            flex-shrink: 0;
         }
         .dash-fleet-card {
             height: 16rem;
             max-height: 16rem;
             min-height: 16rem;
+            flex-shrink: 0;
         }
         .dash-fleet-card .dash-status-grid {
             flex: 1 1 auto;
             min-height: 0;
-            grid-template-rows: repeat(3, minmax(0, 1fr));
+            grid-template-rows: repeat(3, minmax(2.4rem, 1fr));
         }
         .dash-fleet-card .dash-status-grid > div {
-            min-height: 0;
+            min-height: 2.4rem;
         }
         .dash-alerts-card #dashExpiryAlerts {
             scrollbar-width: thin;
@@ -1066,16 +1068,19 @@
             height: 16rem;
             max-height: 16rem;
             min-height: 16rem;
+            flex-shrink: 0;
         }
         #dashboardSection .dash-alerts-card {
             height: 16rem;
             max-height: 16rem;
             min-height: 16rem;
+            flex-shrink: 0;
         }
         #dashboardSection .dash-alerts-card #dashExpiryAlerts {
             overflow-y: auto;
             overscroll-behavior: contain;
         }
+        /* آيباد/جوال عمودي: لا تثبت الارتفاع حتى لا تنكمش بطاقة السائقين */
         @media (max-width: 1023px) {
             #mainDashboard {
                 height: 100dvh;
@@ -1084,13 +1089,56 @@
             #dashboardSection .grid.xl\:grid-cols-3 {
                 grid-template-columns: minmax(0, 1fr);
             }
+            #dashboardSection > .grid.xl\:grid-cols-3 {
+                align-items: stretch;
+            }
+            #dashboardSection .dash-side-card.dash-fleet-card,
+            #dashboardSection .dash-fleet-card,
+            #dashboardSection .dash-side-card.dash-fleet-card.h-\[16rem\] {
+                height: auto !important;
+                max-height: none !important;
+                min-height: 15.5rem;
+                flex-shrink: 0;
+            }
+            #dashboardSection .dash-alerts-card,
+            #dashboardSection .dash-alerts-card.h-\[16rem\] {
+                height: auto !important;
+                max-height: none !important;
+                min-height: 16rem;
+                flex-shrink: 0;
+            }
+            #dashboardSection .dash-alerts-card #dashExpiryAlerts {
+                max-height: 14rem;
+            }
+            #dashboardSection .dash-fleet-card .dash-status-grid {
+                grid-template-rows: repeat(3, minmax(2.6rem, auto));
+                gap: 0.45rem;
+            }
+            #dashboardSection .dash-fleet-card .dash-status-grid > div {
+                min-height: 2.6rem;
+                padding-top: 0.45rem;
+                padding-bottom: 0.45rem;
+            }
+            #dashboardSection .dash-fleet-card .dash-status-grid > div span:first-child {
+                white-space: normal;
+                overflow: visible;
+                text-overflow: unset;
+                line-height: 1.25;
+            }
         }
+        /* آيباد بالعرض: عمودان مريحان */
         @media (min-width: 1024px) and (max-width: 1535px) {
             #dashboardSection .grid.xl\:grid-cols-3 {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
             #dashboardSection .dash-alerts-card {
                 grid-column: 1 / -1;
+            }
+            #dashboardSection .dash-side-card.dash-fleet-card,
+            #dashboardSection .dash-fleet-card {
+                height: 16rem;
+                max-height: 16rem;
+                min-height: 16rem;
             }
         }
         .riyal-symbol {
@@ -1714,74 +1762,74 @@
         </div>
         </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 items-stretch min-w-0">
-                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 items-stretch min-w-0 shrink-0">
+                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 shrink-0 h-[16rem]">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
                             <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-truck-moving text-amber-500 ml-2"></i> <span data-i18n="ui.trucks">الشاحنات</span></h4>
                             <span id="dashTotalTrucksBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
                         <div class="dash-status-grid grid grid-cols-2 gap-1.5">
-                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="ui.readyLoad">جاهزة للتحميل</span>
                                 <span id="dashReadyTrucks" class="text-base font-bold text-emerald-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-blue-700 truncate" data-i18n="ui.onTrip">في رحلة</span>
                                 <span id="dashBusyTrucks" class="text-base font-bold text-blue-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-amber-700 truncate" data-i18n="ui.maint">صيانة دورية</span>
                                 <span id="dashMaintTrucks" class="text-base font-bold text-amber-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-rose-700 truncate" data-i18n="ui.broken">متعطلة</span>
                                 <span id="dashBrokenTrucks" class="text-base font-bold text-rose-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-slate-600 truncate" data-i18n="ui.retired">خارج الخدمة</span>
                                 <span id="dashRetiredTrucks" class="text-base font-bold text-slate-700 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-violet-50 px-2.5 rounded-lg border border-violet-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-violet-50 px-2.5 rounded-lg border border-violet-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-violet-700 truncate" data-i18n="ui.sold">مباعة</span>
                                 <span id="dashSoldTrucks" class="text-base font-bold text-violet-800 tabular-nums shrink-0">0</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 h-[16rem]">
+                    <div class="dash-side-card dash-fleet-card bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden min-w-0 shrink-0 h-[16rem]">
                         <div class="flex justify-between items-center mb-2 border-b border-slate-100 pb-2 shrink-0">
                             <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.drivers">السائقين</span></h4>
                             <span id="dashTotalDriversBadge" class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">إجمالي: 0</span>
                         </div>
                         <div class="dash-status-grid grid grid-cols-2 gap-1.5">
-                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-emerald-50 px-2.5 rounded-lg border border-emerald-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="ui.available">متوفر</span>
                                 <span id="dashReadyDrivers" class="text-base font-bold text-emerald-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-blue-50 px-2.5 rounded-lg border border-blue-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-blue-700 truncate" data-i18n="ui.onTrip">في رحلة</span>
                                 <span id="dashBusyDrivers" class="text-base font-bold text-blue-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-amber-50 px-2.5 rounded-lg border border-amber-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-amber-700 truncate" data-i18n="ui.leave">إجازة</span>
                                 <span id="dashLeaveDrivers" class="text-base font-bold text-amber-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-orange-50 px-2.5 rounded-lg border border-orange-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-orange-50 px-2.5 rounded-lg border border-orange-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-orange-700 truncate" data-i18n="ui.pausedTemp">متوقف مؤقتاً</span>
                                 <span id="dashPausedDrivers" class="text-base font-bold text-orange-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-rose-50 px-2.5 rounded-lg border border-rose-100 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-rose-700 truncate" data-i18n="ui.suspendedWork">موقوف عن العمل</span>
                                 <span id="dashSuspendedDrivers" class="text-base font-bold text-rose-800 tabular-nums shrink-0">0</span>
                             </div>
-                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0">
+                            <div class="flex items-center justify-between gap-1.5 bg-slate-50 px-2.5 rounded-lg border border-slate-200 min-w-0 min-h-[2.4rem]">
                                 <span class="text-[10px] font-bold text-slate-600 truncate" data-i18n="ui.resigned">مستقيل</span>
                                 <span id="dashResignedDrivers" class="text-base font-bold text-slate-700 tabular-nums shrink-0">0</span>
                             </div>
                         </div>
                     </div>
 
-                <div class="dash-side-card dash-alerts-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-[16rem] min-w-0 sm:col-span-2 xl:col-span-1">
+                <div class="dash-side-card dash-alerts-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-[16rem] min-w-0 shrink-0 sm:col-span-2 xl:col-span-1">
                     <div class="mb-3 border-b border-slate-100 pb-2 shrink-0 flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <h4 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-bell text-rose-500 ml-2"></i> <span data-i18n="ui.expiryAlerts">تنبيهات الوثائق القريبة من الانتهاء</span></h4>
