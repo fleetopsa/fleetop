@@ -9646,16 +9646,7 @@ function renderFuelCharts(truckList) {
                 labels,
                 datasets: [
                     {
-                        label: t('fuel.amount'),
-                        data: spendRows.map(x => roundMoney(x.amount)),
-                        backgroundColor: 'rgba(11, 42, 74, 0.88)',
-                        borderRadius: spendSize.borderRadius,
-                        maxBarThickness: spendSize.maxBarThickness,
-                        categoryPercentage: spendSize.categoryPercentage,
-                        barPercentage: spendSize.barPercentage,
-                        yAxisID: 'y'
-                    },
-                    {
+                        // العمود الأيسر بجانب محور اللترات (يسار)
                         label: t('fuel.liters'),
                         data: spendRows.map(x => roundMoney(x.liters)),
                         backgroundColor: 'rgba(5, 150, 105, 0.85)',
@@ -9663,7 +9654,18 @@ function renderFuelCharts(truckList) {
                         maxBarThickness: spendSize.maxBarThickness,
                         categoryPercentage: spendSize.categoryPercentage,
                         barPercentage: spendSize.barPercentage,
-                        yAxisID: 'y1'
+                        yAxisID: 'yLiters'
+                    },
+                    {
+                        // العمود الأيمن بجانب محور المبالغ (يمين)
+                        label: t('fuel.amount'),
+                        data: spendRows.map(x => roundMoney(x.amount)),
+                        backgroundColor: 'rgba(11, 42, 74, 0.88)',
+                        borderRadius: spendSize.borderRadius,
+                        maxBarThickness: spendSize.maxBarThickness,
+                        categoryPercentage: spendSize.categoryPercentage,
+                        barPercentage: spendSize.barPercentage,
+                        yAxisID: 'yAmount'
                     }
                 ]
             },
@@ -9675,26 +9677,11 @@ function renderFuelCharts(truckList) {
                         ...defaults.scales.x,
                         stacked: false
                     },
-                    y: {
-                        ...defaults.scales.y,
-                        position: 'right',
-                        grace: compact ? '8%' : '12%',
-                        title: {
-                            display: !compact,
-                            text: t('fuel.amount'),
-                            color: '#0b2a4a',
-                            font: { size: 11, weight: '700' }
-                        },
-                        ticks: {
-                            ...defaults.scales.y.ticks,
-                            callback: (value) => Number(value).toLocaleString('en-US')
-                        }
-                    },
-                    y1: {
+                    yLiters: {
                         ...defaults.scales.y,
                         position: 'left',
                         grace: compact ? '8%' : '12%',
-                        grid: { drawOnChartArea: false },
+                        grid: { color: 'rgba(148,163,184,0.18)' },
                         title: {
                             display: !compact,
                             text: t('fuel.liters'),
@@ -9703,6 +9690,24 @@ function renderFuelCharts(truckList) {
                         },
                         ticks: {
                             ...defaults.scales.y.ticks,
+                            color: '#059669',
+                            callback: (value) => Number(value).toLocaleString('en-US')
+                        }
+                    },
+                    yAmount: {
+                        ...defaults.scales.y,
+                        position: 'right',
+                        grace: compact ? '8%' : '12%',
+                        grid: { drawOnChartArea: false },
+                        title: {
+                            display: !compact,
+                            text: t('fuel.amount'),
+                            color: '#0b2a4a',
+                            font: { size: 11, weight: '700' }
+                        },
+                        ticks: {
+                            ...defaults.scales.y.ticks,
+                            color: '#0b2a4a',
                             callback: (value) => Number(value).toLocaleString('en-US')
                         }
                     }
@@ -9710,7 +9715,7 @@ function renderFuelCharts(truckList) {
             },
             plugins: showEndLabels ? [chartEndValueLabelsPlugin((value, ctx) => {
                 const ds = ctx?.dataset;
-                if (ds?.yAxisID === 'y1') return formatFuelNumber(value, 0);
+                if (ds?.yAxisID === 'yLiters') return formatFuelNumber(value, 0);
                 return formatMoney(value);
             }, { id: 'fuelSpendLabels', fontSize: compact ? 8 : 9, color: '#64748b', pad: compact ? 5 : 8 })] : []
         });
