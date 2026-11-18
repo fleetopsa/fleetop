@@ -3299,6 +3299,27 @@
                                         <span data-i18n="settings.commissionRequired">إجباري</span>
                                     </label>
                                 </div>
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs font-black text-slate-800" data-i18n="bayan.settingsTitle">إصدار بيان من FleetOp</p>
+                                        <p class="text-[11px] text-slate-500 mt-1" data-i18n="bayan.settingsHint">فعّل تجهيز وثيقة بيان من شاشة الرحلات. الإصدار الرسمي عبر لوجستي يُربط بعد اعتماد الواجهة.</p>
+                                    </div>
+                                    <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="checkbox" id="bayanEnabled" class="mt-0.5 accent-amber-500">
+                                        <span data-i18n="bayan.enabled">تفعيل إصدار بيان من داخل الرحلات</span>
+                                    </label>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.mode">وضع العمل</label>
+                                        <select id="bayanMode" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                            <option value="prepare" data-i18n="bayan.modePrepare">تجهيز وحفظ الطلب داخل FleetOp</option>
+                                            <option value="live" data-i18n="bayan.modeLive">إصدار مباشر (عند توفر الربط)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.notes">ملاحظات الربط</label>
+                                        <textarea id="bayanNotes" rows="2" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.notesPh" placeholder="رقم المنشأة في لوجستي / جهة الاعتماد / ملاحظات داخلية"></textarea>
+                                    </div>
+                                </div>
                                 <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
                             </form>
                         </div>
@@ -3989,7 +4010,87 @@
                 <button type="button" onclick="closeTripDetails()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="tripDetailBody" class="grid grid-cols-2 gap-3 text-xs"></div>
-            <button type="button" onclick="closeTripDetails()" class="w-full mt-5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition" data-i18n="ui.close">إغلاق</button>
+            <div id="tripDetailBayanActions" class="hidden mt-4 pt-3 border-t border-slate-100">
+                <button type="button" id="tripDetailBayanBtn" onclick="openBayanFromTripDetails()" class="w-full bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-shield"></i> <span data-i18n="bayan.openIssue">إصدار / متابعة بيان</span>
+                </button>
+            </div>
+            <button type="button" onclick="closeTripDetails()" class="w-full mt-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition" data-i18n="ui.close">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة إصدار بيان (توثيق الحمولة) -->
+    <div id="bayanModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 text-slate-900 max-h-[92dvh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-sm flex items-center">
+                    <i class="fa-solid fa-file-shield text-amber-500 ml-2"></i>
+                    <span data-i18n="bayan.modalTitle">إصدار وثيقة بيان</span>
+                </h3>
+                <button type="button" onclick="closeBayanModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p id="bayanTripMeta" class="text-[11px] text-slate-500 mb-3 leading-5"></p>
+            <div id="bayanStatusBanner" class="hidden mb-3 rounded-xl px-3 py-2 text-[11px] font-bold border"></div>
+            <form id="bayanForm" onsubmit="submitBayanDocument(event)" class="space-y-3">
+                <input type="hidden" id="bayanTripNo">
+                <input type="hidden" id="bayanDocId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.senderName">المرسل</label>
+                        <input type="text" id="bayanSenderName" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.senderId">هوية / سجل المرسل</label>
+                        <input type="text" id="bayanSenderId" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.receiverName">المستلم</label>
+                        <input type="text" id="bayanReceiverName" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.receiverId">هوية / سجل المستلم</label>
+                        <input type="text" id="bayanReceiverId" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.cargoDesc">وصف الحمولة</label>
+                    <textarea id="bayanCargoDesc" rows="2" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.cargoDescPh" placeholder="نوع البضاعة ووصفها"></textarea>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.cargoQty">الكمية</label>
+                        <input type="number" id="bayanCargoQty" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.cargoUnit">الوحدة</label>
+                        <input type="text" id="bayanCargoUnit" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="طن / طرد">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.cargoWeight">الوزن (كجم)</label>
+                        <input type="number" id="bayanCargoWeight" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.fare">أجرة النقل</label>
+                        <input type="number" id="bayanFare" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.senderPhone">جوال المرسل</label>
+                        <input type="text" id="bayanSenderPhone" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.docNotes">ملاحظات</label>
+                    <input type="text" id="bayanDocNotes" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                </div>
+                <p id="bayanFormError" class="hidden text-[11px] font-bold text-rose-600"></p>
+                <div class="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button type="button" onclick="closeBayanModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
+                    <button type="button" id="bayanSaveDraftBtn" onclick="submitBayanDocument(event, 'مسودة')" class="flex-1 bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold py-3 rounded-xl text-xs transition" data-i18n="bayan.saveDraft">حفظ مسودة</button>
+                    <button type="submit" id="bayanIssueBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs transition" data-i18n="bayan.issue">إصدار بيان</button>
+                </div>
+            </form>
         </div>
     </div>
     <script>
@@ -4726,6 +4827,7 @@ const PERM_MODULES = [
     { id: 'vehicles', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'staff', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'trips', actions: ['view', 'create', 'edit', 'delete', 'print'] },
+    { id: 'bayan', actions: ['view', 'create', 'edit'] },
     { id: 'maintenance', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'fuel', actions: ['view', 'create', 'edit', 'delete'] },
     { id: 'reports_general', actions: ['view', 'print'] },
@@ -4796,6 +4898,7 @@ function roleDefaultPermissions(role) {
         base.vehicles.view = true;
         base.staff.view = true;
         Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
+        Object.assign(base.bayan, { view: true, create: true, edit: true });
         base.maintenance.view = true;
         Object.assign(base.fuel, { view: true, create: true, edit: true, delete: false });
         ['reports_general', 'reports_ops', 'reports_maint', 'reports_fuel', 'reports_finance'].forEach(id => {
@@ -4807,6 +4910,7 @@ function roleDefaultPermissions(role) {
     Object.assign(base.vehicles, { view: true, create: true, edit: false, delete: false });
     Object.assign(base.staff, { view: true, create: true, edit: false, delete: false });
     Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
+    Object.assign(base.bayan, { view: true, create: true, edit: true });
     Object.assign(base.maintenance, { view: true, create: true, edit: true, delete: false });
     Object.assign(base.fuel, { view: true, create: true, edit: true, delete: false });
     Object.assign(base.reports_ops, { view: true, print: true });
@@ -6950,16 +7054,21 @@ function tripPaymentLabel(trip) {
     return tv('غير مسدد');
 }
 
+let tripDetailsCurrentNo = '';
+
 function openTripDetails(tripNo) {
-    const trip = commissionTripsByNo.get(String(tripNo));
+    const trip = (typeof commissionTripsByNo !== 'undefined' && commissionTripsByNo.get(String(tripNo)))
+        || (allTripsCache || []).find(t => String(t.trip_no) === String(tripNo));
     const modal = document.getElementById('tripDetailsModal');
     const body = document.getElementById('tripDetailBody');
     if (!trip || !modal || !body) {
         alert('تعذر العثور على تفاصيل الرحلة.');
         return;
     }
+    tripDetailsCurrentNo = String(trip.trip_no || '');
     const noEl = document.getElementById('tripDetailNo');
     if (noEl) noEl.textContent = trip.trip_no || '';
+    const bayanDoc = getBayanDocForTrip(trip.trip_no);
     const fields = [
         ['اسم العميل', trip.client_name],
         ['تاريخ المغادرة', trip.departure_date],
@@ -6979,7 +7088,9 @@ function openTripDetails(tripNo) {
         ['المتبقي', { html: formatSAR(trip.remaining_amount || 0) }],
         ['عمولة السائق', { html: formatSAR(commissionAmount(trip)) }],
         ['حالة السداد', tripPaymentLabel(trip)],
-        ['دفعات السداد', { html: formatPaymentLines(trip), span: true }]
+        ['دفعات السداد', { html: formatPaymentLines(trip), span: true }],
+        [t('bayan.status'), bayanDoc ? bayanStatusLabel(bayanDoc.status) : t('bayan.none')],
+        [t('bayan.docNo'), bayanDoc?.document_number || '—']
     ];
     body.innerHTML = fields.map(([label, value]) => `
         <div class="${value && value.span ? 'col-span-2' : ''} bg-slate-50 border border-slate-200 rounded-xl p-3">
@@ -6987,7 +7098,15 @@ function openTripDetails(tripNo) {
             <div class="font-bold text-slate-900">${value && value.html ? value.html : escapeHtml(value || '---')}</div>
         </div>
     `).join('');
+    const bayanActions = document.getElementById('tripDetailBayanActions');
+    if (bayanActions) bayanActions.classList.toggle('hidden', !canUseBayan());
     modal.classList.remove('hidden');
+}
+
+function openBayanFromTripDetails() {
+    if (!tripDetailsCurrentNo) return;
+    closeTripDetails();
+    openBayanModal(tripDetailsCurrentNo);
 }
 
 function closeTripDetails() {
@@ -12016,6 +12135,7 @@ const I18N = {
         'perm.mod.vehicles': 'المركبات',
         'perm.mod.staff': 'الموظفين',
         'perm.mod.trips': 'الرحلات',
+        'perm.mod.bayan': 'بيان / توثيق الحمولة',
         'perm.mod.maintenance': 'الصيانة',
         'perm.mod.fuel': 'الوقود',
         'perm.mod.reports_general': 'التقارير العامة',
@@ -12194,6 +12314,50 @@ const I18N = {
         'settings.commissionHint': 'اختر إن كانت عمولة السائق اختيارية أو إجبارية لهذه الشركة.',
         'settings.commissionOptional': 'اختياري',
         'settings.commissionRequired': 'إجباري',
+        'bayan.settingsTitle': 'إصدار بيان من FleetOp',
+        'bayan.settingsHint': 'فعّل تجهيز وثيقة بيان من شاشة الرحلات. الإصدار الرسمي عبر لوجستي يُربط بعد اعتماد الواجهة.',
+        'bayan.enabled': 'تفعيل إصدار بيان من داخل الرحلات',
+        'bayan.mode': 'وضع العمل',
+        'bayan.modePrepare': 'تجهيز وحفظ الطلب داخل FleetOp',
+        'bayan.modeLive': 'إصدار مباشر (عند توفر الربط)',
+        'bayan.notes': 'ملاحظات الربط',
+        'bayan.notesPh': 'رقم المنشأة في لوجستي / جهة الاعتماد / ملاحظات داخلية',
+        'bayan.modalTitle': 'إصدار وثيقة بيان',
+        'bayan.openIssue': 'إصدار / متابعة بيان',
+        'bayan.short': 'بيان',
+        'bayan.issue': 'إصدار بيان',
+        'bayan.saveDraft': 'حفظ مسودة',
+        'bayan.senderName': 'المرسل',
+        'bayan.senderId': 'هوية / سجل المرسل',
+        'bayan.senderPhone': 'جوال المرسل',
+        'bayan.receiverName': 'المستلم',
+        'bayan.receiverId': 'هوية / سجل المستلم',
+        'bayan.cargoDesc': 'وصف الحمولة',
+        'bayan.cargoDescPh': 'نوع البضاعة ووصفها',
+        'bayan.cargoQty': 'الكمية',
+        'bayan.cargoUnit': 'الوحدة',
+        'bayan.cargoWeight': 'الوزن (كجم)',
+        'bayan.fare': 'أجرة النقل',
+        'bayan.docNotes': 'ملاحظات',
+        'bayan.status': 'حالة بيان',
+        'bayan.docNo': 'رقم وثيقة بيان',
+        'bayan.none': 'لا توجد وثيقة',
+        'bayan.statusDraft': 'مسودة',
+        'bayan.statusReady': 'جاهز للإرسال',
+        'bayan.statusPending': 'قيد الإصدار',
+        'bayan.statusIssued': 'صادر',
+        'bayan.statusRejected': 'مرفوض',
+        'bayan.statusCancelled': 'ملغى',
+        'bayan.noOfficialNumber': 'بدون رقم رسمي بعد',
+        'bayan.disabledHint': 'فعّل بيان من إعدادات الشركة أولاً.',
+        'bayan.requiredFields': 'أكمل المرسل والمستلم ووصف الحمولة.',
+        'bayan.noPerm': 'ليست لديك صلاحية إصدار بيان.',
+        'bayan.needSql': 'نفّذ ملف bayan-documents.sql في Supabase أولاً.',
+        'bayan.draftSaved': 'تم حفظ مسودة بيان.',
+        'bayan.savedReady': 'تم حفظ طلب بيان وهو جاهز للإرسال. الربط الرسمي مع لوجستي يُفعّل بعد اعتماد الواجهة.',
+        'bayan.livePendingApi': 'تم حفظ الطلب بحالة قيد الإصدار. الواجهة الرسمية غير مربوطة بعد.',
+        'bayan.saveFailed': 'تعذر حفظ وثيقة بيان.',
+        'log.bayan.save': 'حفظ / إصدار بيان',
         'print.by': 'طُبع بواسطة: ',
         'print.at': 'تاريخ الطباعة: ',
         'role.admin': 'مدير',
@@ -12838,6 +13002,7 @@ const I18N = {
         'perm.mod.vehicles': 'Vehicles',
         'perm.mod.staff': 'Staff',
         'perm.mod.trips': 'Trips',
+        'perm.mod.bayan': 'Bayan / cargo waybill',
         'perm.mod.maintenance': 'Maintenance',
         'perm.mod.fuel': 'Fuel',
         'perm.mod.reports_general': 'General reports',
@@ -13016,6 +13181,50 @@ const I18N = {
         'settings.commissionHint': 'Choose whether driver commission is optional or required for this company.',
         'settings.commissionOptional': 'Optional',
         'settings.commissionRequired': 'Required',
+        'bayan.settingsTitle': 'Issue Bayan from FleetOp',
+        'bayan.settingsHint': 'Enable preparing Bayan waybills from trips. Official Logisti issuance connects after API approval.',
+        'bayan.enabled': 'Enable Bayan issuance from trips',
+        'bayan.mode': 'Working mode',
+        'bayan.modePrepare': 'Prepare and save the request in FleetOp',
+        'bayan.modeLive': 'Live issue (when API is connected)',
+        'bayan.notes': 'Integration notes',
+        'bayan.notesPh': 'Logisti company number / approval contact / internal notes',
+        'bayan.modalTitle': 'Issue Bayan waybill',
+        'bayan.openIssue': 'Issue / track Bayan',
+        'bayan.short': 'Bayan',
+        'bayan.issue': 'Issue Bayan',
+        'bayan.saveDraft': 'Save draft',
+        'bayan.senderName': 'Sender',
+        'bayan.senderId': 'Sender ID / CR',
+        'bayan.senderPhone': 'Sender phone',
+        'bayan.receiverName': 'Receiver',
+        'bayan.receiverId': 'Receiver ID / CR',
+        'bayan.cargoDesc': 'Cargo description',
+        'bayan.cargoDescPh': 'Goods type and description',
+        'bayan.cargoQty': 'Quantity',
+        'bayan.cargoUnit': 'Unit',
+        'bayan.cargoWeight': 'Weight (kg)',
+        'bayan.fare': 'Transport fare',
+        'bayan.docNotes': 'Notes',
+        'bayan.status': 'Bayan status',
+        'bayan.docNo': 'Bayan document no.',
+        'bayan.none': 'No document',
+        'bayan.statusDraft': 'Draft',
+        'bayan.statusReady': 'Ready to submit',
+        'bayan.statusPending': 'Issuing',
+        'bayan.statusIssued': 'Issued',
+        'bayan.statusRejected': 'Rejected',
+        'bayan.statusCancelled': 'Cancelled',
+        'bayan.noOfficialNumber': 'No official number yet',
+        'bayan.disabledHint': 'Enable Bayan in company settings first.',
+        'bayan.requiredFields': 'Complete sender, receiver, and cargo description.',
+        'bayan.noPerm': 'You do not have permission to issue Bayan.',
+        'bayan.needSql': 'Run bayan-documents.sql in Supabase first.',
+        'bayan.draftSaved': 'Bayan draft saved.',
+        'bayan.savedReady': 'Bayan request saved and ready to submit. Official Logisti linking activates after API approval.',
+        'bayan.livePendingApi': 'Request saved as issuing. Official API is not connected yet.',
+        'bayan.saveFailed': 'Could not save Bayan document.',
+        'log.bayan.save': 'Save / issue Bayan',
         'print.by': 'Printed by: ',
         'print.at': 'Printed on: ',
         'role.admin': 'Admin',
@@ -13673,6 +13882,12 @@ function fillCompanySettingsForm() {
     document.querySelectorAll('input[name="commissionMode"]').forEach(input => {
         input.checked = input.value === mode;
     });
+    const bayanEnabled = document.getElementById('bayanEnabled');
+    if (bayanEnabled) bayanEnabled.checked = !!companySettings.bayan_enabled;
+    const bayanMode = document.getElementById('bayanMode');
+    if (bayanMode) bayanMode.value = companySettings.bayan_mode === 'live' ? 'live' : 'prepare';
+    const bayanNotes = document.getElementById('bayanNotes');
+    if (bayanNotes) bayanNotes.value = companySettings.bayan_notes || '';
 }
 
 async function saveCompanySettings(e) {
@@ -13690,6 +13905,9 @@ async function saveCompanySettings(e) {
         address: emptyToNull(document.getElementById('companyAddress')?.value),
         logo_data: companySettings.logo_data || null,
         commission_mode: document.querySelector('input[name="commissionMode"]:checked')?.value === 'required' ? 'required' : 'optional',
+        bayan_enabled: !!document.getElementById('bayanEnabled')?.checked,
+        bayan_mode: document.getElementById('bayanMode')?.value === 'live' ? 'live' : 'prepare',
+        bayan_notes: emptyToNull(document.getElementById('bayanNotes')?.value),
         updated_at: new Date().toISOString()
     });
     const write = (data) => {
@@ -14689,6 +14907,279 @@ async function renderAnalyticsDashboard() {
       // متغير عالمي لحفظ الرحلات مؤقتاً لغرض الفلترة الفورية
 let allTripsCache = [];
 let settlementsByTrip = new Map();
+let bayanDocsByTrip = new Map();
+let bayanBusy = false;
+
+function canUseBayan() {
+    if (!companySettings?.bayan_enabled) return false;
+    return hasPerm('bayan', 'view') || hasPerm('bayan', 'create') || hasPerm('bayan', 'edit') || hasPerm('trips', 'edit');
+}
+
+function canIssueBayan() {
+    return canUseBayan() && (hasPerm('bayan', 'create') || hasPerm('bayan', 'edit') || hasPerm('trips', 'edit') || hasPerm('trips', 'create'));
+}
+
+function scopeBayanQuery(query) {
+    const companyId = currentCompanyId();
+    if (companyId != null) return query.eq('company_id', companyId);
+    return query;
+}
+
+function getBayanDocForTrip(tripNo) {
+    return bayanDocsByTrip.get(String(tripNo || '').trim()) || null;
+}
+
+function bayanStatusLabel(status) {
+    const s = String(status || '').trim();
+    const map = {
+        'مسودة': t('bayan.statusDraft'),
+        'جاهز للإرسال': t('bayan.statusReady'),
+        'قيد الإصدار': t('bayan.statusPending'),
+        'صادر': t('bayan.statusIssued'),
+        'مرفوض': t('bayan.statusRejected'),
+        'ملغى': t('bayan.statusCancelled')
+    };
+    return map[s] || s || '—';
+}
+
+function showBayanError(msg) {
+    const el = document.getElementById('bayanFormError');
+    if (!el) return;
+    if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+    }
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+function paintBayanStatusBanner(doc) {
+    const el = document.getElementById('bayanStatusBanner');
+    if (!el) return;
+    if (!doc) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+    }
+    const issued = doc.document_number
+        ? `${t('bayan.docNo')}: ${doc.document_number}`
+        : t('bayan.noOfficialNumber');
+    el.className = 'mb-3 rounded-xl px-3 py-2 text-[11px] font-bold border '
+        + (doc.status === 'صادر'
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-100'
+            : (doc.status === 'مرفوض'
+                ? 'bg-rose-50 text-rose-700 border-rose-100'
+                : 'bg-amber-50 text-amber-800 border-amber-100'));
+    el.textContent = `${bayanStatusLabel(doc.status)} · ${issued}`;
+    el.classList.remove('hidden');
+}
+
+async function loadBayanDocuments() {
+    bayanDocsByTrip = new Map();
+    if (!companySettings?.bayan_enabled) return;
+    try {
+        let query = client.from('bayan_documents').select('*').order('id', { ascending: false });
+        query = scopeBayanQuery(query);
+        const { data, error } = await query;
+        if (error) {
+            if (/relation|does not exist|schema cache/i.test(String(error.message || ''))) {
+                console.warn('جدول bayan_documents غير موجود — نفّذ bayan-documents.sql');
+                return;
+            }
+            throw error;
+        }
+        (data || []).forEach(row => {
+            const key = String(row.trip_no || '').trim();
+            if (!key) return;
+            if (!bayanDocsByTrip.has(key)) bayanDocsByTrip.set(key, row);
+        });
+    } catch (err) {
+        console.warn('تعذر تحميل وثائق بيان:', err);
+    }
+}
+
+function closeBayanModal() {
+    document.getElementById('bayanModal')?.classList.add('hidden');
+    showBayanError('');
+}
+
+async function openBayanModal(tripNo) {
+    if (!canUseBayan()) {
+        alert(t('bayan.disabledHint'));
+        return;
+    }
+    const trip = (allTripsCache || []).find(t => String(t.trip_no) === String(tripNo));
+    if (!trip) {
+        alert(currentLang === 'en' ? 'Trip not found.' : 'تعذر العثور على الرحلة.');
+        return;
+    }
+    if (!bayanDocsByTrip.size) await loadBayanDocuments();
+    const existing = getBayanDocForTrip(trip.trip_no);
+    document.getElementById('bayanTripNo').value = trip.trip_no || '';
+    document.getElementById('bayanDocId').value = existing?.id || '';
+    const meta = document.getElementById('bayanTripMeta');
+    if (meta) {
+        meta.textContent = `${t('th.tripNo')}: ${trip.trip_no || '—'} · ${trip.client_name || '—'} · ${tripRouteText(trip)} · ${trip.truck_plate || trip.truck || '—'} / ${trip.driver_name || '—'}`;
+    }
+    document.getElementById('bayanSenderName').value = existing?.sender_name || trip.client_name || '';
+    document.getElementById('bayanSenderId').value = existing?.sender_id || '';
+    document.getElementById('bayanSenderPhone').value = existing?.sender_phone || '';
+    document.getElementById('bayanReceiverName').value = existing?.receiver_name || '';
+    document.getElementById('bayanReceiverId').value = existing?.receiver_id || '';
+    document.getElementById('bayanCargoDesc').value = existing?.cargo_desc || '';
+    document.getElementById('bayanCargoQty').value = existing?.cargo_qty != null ? existing.cargo_qty : '';
+    document.getElementById('bayanCargoUnit').value = existing?.cargo_unit || '';
+    document.getElementById('bayanCargoWeight').value = existing?.cargo_weight != null ? existing.cargo_weight : '';
+    document.getElementById('bayanFare').value = existing?.fare_amount != null ? existing.fare_amount : (trip.total_amount != null ? trip.total_amount : '');
+    document.getElementById('bayanDocNotes').value = existing?.notes || '';
+    paintBayanStatusBanner(existing);
+    showBayanError('');
+    const issueBtn = document.getElementById('bayanIssueBtn');
+    const draftBtn = document.getElementById('bayanSaveDraftBtn');
+    if (issueBtn) issueBtn.disabled = !canIssueBayan() || existing?.status === 'صادر';
+    if (draftBtn) draftBtn.disabled = !canIssueBayan() || existing?.status === 'صادر';
+    document.getElementById('bayanModal')?.classList.remove('hidden');
+}
+
+function readBayanFormPayload(trip, status) {
+    const numOrNull = (id) => {
+        const raw = String(document.getElementById(id)?.value || '').trim();
+        if (!raw) return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
+    };
+    return withCompany({
+        trip_no: String(trip.trip_no || ''),
+        trip_id: trip.id != null ? trip.id : null,
+        status,
+        sender_name: emptyToNull(document.getElementById('bayanSenderName')?.value),
+        sender_id: emptyToNull(document.getElementById('bayanSenderId')?.value),
+        sender_phone: emptyToNull(document.getElementById('bayanSenderPhone')?.value),
+        receiver_name: emptyToNull(document.getElementById('bayanReceiverName')?.value),
+        receiver_id: emptyToNull(document.getElementById('bayanReceiverId')?.value),
+        cargo_desc: emptyToNull(document.getElementById('bayanCargoDesc')?.value),
+        cargo_qty: numOrNull('bayanCargoQty'),
+        cargo_unit: emptyToNull(document.getElementById('bayanCargoUnit')?.value),
+        cargo_weight: numOrNull('bayanCargoWeight'),
+        fare_amount: numOrNull('bayanFare'),
+        truck_plate: trip.truck_plate || trip.truck || null,
+        driver_name: trip.driver_name || null,
+        from_city: trip.from_city || null,
+        to_city: trip.to_city || trip.destination || null,
+        departure_date: dateOnly(trip.departure_date) || null,
+        notes: emptyToNull(document.getElementById('bayanDocNotes')?.value),
+        created_by: currentLoggedInUser?.username || currentLoggedInUser?.name || null,
+        updated_at: new Date().toISOString()
+    });
+}
+
+/** نقطة ربط الإصدار الرسمي — تُستبدل لاحقاً بواجهة لوجستي/بيان */
+async function attemptBayanOfficialIssue(payload) {
+    if (companySettings?.bayan_mode !== 'live') {
+        return {
+            ok: true,
+            status: 'جاهز للإرسال',
+            document_number: null,
+            message: t('bayan.savedReady')
+        };
+    }
+    // لا توجد واجهة معتمدة مربوطة بعد — نحفظ الطلب ونوضح الحالة
+    return {
+        ok: true,
+        status: 'قيد الإصدار',
+        document_number: null,
+        message: t('bayan.livePendingApi'),
+        api_ref: null,
+        api_response: { note: 'official_api_not_connected' }
+    };
+}
+
+async function submitBayanDocument(event, forcedStatus) {
+    if (event) event.preventDefault();
+    if (bayanBusy) return;
+    if (!canIssueBayan()) {
+        showBayanError(t('bayan.noPerm'));
+        return;
+    }
+    const tripNo = document.getElementById('bayanTripNo')?.value;
+    const trip = (allTripsCache || []).find(t => String(t.trip_no) === String(tripNo));
+    if (!trip) {
+        showBayanError(currentLang === 'en' ? 'Trip not found.' : 'تعذر العثور على الرحلة.');
+        return;
+    }
+    const sender = String(document.getElementById('bayanSenderName')?.value || '').trim();
+    const receiver = String(document.getElementById('bayanReceiverName')?.value || '').trim();
+    const cargo = String(document.getElementById('bayanCargoDesc')?.value || '').trim();
+    if (!sender || !receiver || !cargo) {
+        showBayanError(t('bayan.requiredFields'));
+        return;
+    }
+
+    bayanBusy = true;
+    const issueBtn = document.getElementById('bayanIssueBtn');
+    const draftBtn = document.getElementById('bayanSaveDraftBtn');
+    if (issueBtn) issueBtn.disabled = true;
+    if (draftBtn) draftBtn.disabled = true;
+    showBayanError('');
+
+    try {
+        let status = forcedStatus || 'جاهز للإرسال';
+        let documentNumber = null;
+        let apiRef = null;
+        let apiResponse = null;
+        let issuedAt = null;
+        let userMessage = t('bayan.draftSaved');
+
+        if (!forcedStatus || forcedStatus !== 'مسودة') {
+            const issueResult = await attemptBayanOfficialIssue({});
+            status = issueResult.status || status;
+            documentNumber = issueResult.document_number || null;
+            apiRef = issueResult.api_ref || null;
+            apiResponse = issueResult.api_response || null;
+            userMessage = issueResult.message || userMessage;
+            if (status === 'صادر') issuedAt = new Date().toISOString();
+        }
+
+        const payload = readBayanFormPayload(trip, status);
+        payload.document_number = documentNumber;
+        payload.api_ref = apiRef;
+        payload.api_response = apiResponse;
+        payload.issued_at = issuedAt;
+        if (status === 'مسودة') userMessage = t('bayan.draftSaved');
+
+        const docId = document.getElementById('bayanDocId')?.value;
+        let write;
+        if (docId) {
+            write = (data) => scopeBayanQuery(client.from('bayan_documents').update(data).eq('id', docId));
+        } else {
+            write = (data) => client.from('bayan_documents').insert([data]);
+        }
+        const { error } = await writeIgnoringUnknownColumns(write, payload);
+        if (error) {
+            if (/relation|does not exist|schema cache/i.test(String(error.message || ''))) {
+                throw new Error(t('bayan.needSql'));
+            }
+            throw error;
+        }
+
+        await loadBayanDocuments();
+        filterAndRenderTrips();
+        paintBayanStatusBanner(getBayanDocForTrip(trip.trip_no));
+        const saved = getBayanDocForTrip(trip.trip_no);
+        if (saved?.id) document.getElementById('bayanDocId').value = saved.id;
+        logActivity('bayan.save', 'بيان', trip.trip_no || '', status);
+        alert(userMessage);
+        if (status === 'صادر') closeBayanModal();
+    } catch (err) {
+        console.error(err);
+        showBayanError(err.message || t('bayan.saveFailed'));
+    } finally {
+        bayanBusy = false;
+        if (issueBtn) issueBtn.disabled = !canIssueBayan();
+        if (draftBtn) draftBtn.disabled = !canIssueBayan();
+    }
+}
 
 // 1. دالة جلب الرحلات من قاعدة البيانات
 async function loadTripsData() {
@@ -14700,6 +15191,7 @@ async function loadTripsData() {
         const rows = await reconcileDuplicateSettlements(trips);
         indexSettlements(rows);
         allTripsCache = (rows || []).filter(t => !isCommissionPayout(t) && !isSettlementRecord(t) && !isOpeningBalance(t));
+        await loadBayanDocuments();
         filterAndRenderTrips(); // استدعاء الفلترة والعرض مباشرة
     } catch (err) {
         console.error("خطأ استعلام الرحلات:", err);
@@ -14789,11 +15281,22 @@ function renderTripsTable(trips) {
                 ? `<button type="button" onclick='openEditTripModal(${JSON.stringify(tr.trip_no)})' class="bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.edit')}"><i class="fa-solid fa-pen-to-square ml-1"></i> ${t('ui.edit')}</button>`
                 : '';
 
+            const bayanBtn = canUseBayan() && !isCancelledTrip(tr)
+                ? `<button type="button" onclick='openBayanModal(${JSON.stringify(String(tr.trip_no || ''))})' class="bg-slate-700 hover:bg-slate-800 text-amber-300 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('bayan.issue')}">
+                        <i class="fa-solid fa-file-shield ml-1"></i> ${t('bayan.short')}
+                   </button>`
+                : '';
+            const bayanDoc = getBayanDocForTrip(tr.trip_no);
+            const bayanBadge = bayanDoc
+                ? `<div class="mt-1"><span class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(bayanStatusLabel(bayanDoc.status))}</span></div>`
+                : '';
+
             if (tr.status === 'جارية') {
                 actionButtons = `
                     <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission == null || tr.driver_commission === '' ? 'null' : Number(tr.driver_commission)})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.finishSettle')}">
                         <i class="fa-solid fa-flag-checkered ml-1"></i> ${t('ui.finishSettle')}
                     </button>
+                    ${bayanBtn}
                     <button onclick="cancelTrip('${tr.trip_no}')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.cancelTrip')}">
                         <i class="fa-solid fa-ban ml-1"></i> ${t('ui.cancelTrip')}
                     </button>
@@ -14806,9 +15309,13 @@ function renderTripsTable(trips) {
                         <button onclick="openCompleteModal('${tr.trip_no}', '${tr.truck_plate}', '${tr.driver_name}', ${tr.total_amount}, ${tr.paid_amount}, ${tr.remaining_amount}, ${tr.driver_commission == null || tr.driver_commission === '' ? 'null' : Number(tr.driver_commission)})" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-[10px] transition shadow-sm" title="${t('ui.settleRemain')}">
                             <i class="fa-solid fa-wallet ml-1"></i> ${t('ui.settleRemain')}
                         </button>
+                        ${bayanBtn}
                     `;
                 } else {
-                    actionButtons = `<span class="text-emerald-600 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> ${t('ui.donePaid')}</span>`;
+                    actionButtons = `
+                        <span class="text-emerald-600 text-[11px] font-bold"><i class="fa-solid fa-check-circle"></i> ${t('ui.donePaid')}</span>
+                        ${bayanBtn}
+                    `;
                 }
             }
 
@@ -14838,6 +15345,7 @@ function renderTripsTable(trips) {
                     <td class="p-3.5 space-y-1.5">
                         <div>${statusBadge}</div>
                         <div>${paymentBadge}</div>
+                        ${bayanBadge}
                         <div class="text-[11px] text-slate-700 font-bold mt-1">${formatPaymentLines(tr)}</div>
                     </td>
                     <td class="p-3.5 text-center">
