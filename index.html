@@ -7734,6 +7734,62 @@ function sameFleetValue(a, b) {
     return normalizeFleetKey(a) === normalizeFleetKey(b);
 }
 
+/** أسطول حُرّر للتو بعد إنهاء رحلة — لضمان ظهوره فوراً في إضافة رحلة */
+const recentlyFreedFleet = {
+    plates: new Set(),
+    drivers: new Set(),
+    excludeTripNos: new Set(),
+    at: 0
+};
+
+function noteFreedFleetFromTrip(trip, tripNo) {
+    const plate = String(trip?.truck_plate || trip?.truck || '').trim();
+    const driver = String(trip?.driver_name || trip?.driver || '').trim();
+    const no = String(tripNo || trip?.trip_no || '').trim();
+    if (plate) recentlyFreedFleet.plates.add(normalizeFleetKey(plate));
+    if (driver) recentlyFreedFleet.drivers.add(normalizeFleetKey(driver));
+    if (no) recentlyFreedFleet.excludeTripNos.add(no);
+    recentlyFreedFleet.at = Date.now();
+}
+
+function pruneRecentlyFreedFleet(assignments) {
+    // أزل من الذاكرة من عاد لمهمة جارية أخرى
+    [...recentlyFreedFleet.plates].forEach(key => {
+        if (assignments.plates.has(key)) recentlyFreedFleet.plates.delete(key);
+    });
+    [...recentlyFreedFleet.drivers].forEach(key => {
+        if (assignments.drivers.has(key)) recentlyFreedFleet.drivers.delete(key);
+    });
+}
+
+/** يدمج كاش الرحلات مع قاعدة البيانات ويستبعد ما أُنهي محلياً للتو */
+function resolveActiveTripsForFleet(dbActiveTrips) {
+    const byNo = new Map();
+    (dbActiveTrips || []).forEach(trip => {
+        const no = String(trip?.trip_no || '').trim();
+        if (!no) return;
+        if (recentlyFreedFleet.excludeTripNos.has(no)) return;
+        byNo.set(no, trip);
+    });
+    (typeof allTripsCache !== 'undefined' ? allTripsCache : []).forEach(trip => {
+        const no = String(trip?.trip_no || '').trim();
+        if (!no) return;
+        const status = String(trip?.status || '').trim();
+        if (status === 'جارية') {
+            if (recentlyFreedFleet.excludeTripNos.has(no)) {
+                byNo.delete(no);
+                return;
+            }
+            byNo.set(no, trip);
+            return;
+        }
+        // الكاش يقول منتهية/ملغاة — لا تُحسب جارية حتى لو تأخرت القاعدة
+        byNo.delete(no);
+        recentlyFreedFleet.excludeTripNos.add(no);
+    });
+    return [...byNo.values()];
+}
+
 function activeAssignmentSets(trips) {
     const active = (trips || []).filter(trip => String(trip?.status || '').trim() === 'جارية');
     return {
@@ -8839,6 +8895,15 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             return;
         }
 
+        // حدّث الكاش فوراً قبل أي إعادة جلب — حتى لا تبقى الرحلة «جارية» في إضافة رحلة
+        if (typeof allTripsCache !== 'undefined' && Array.isArray(allTripsCache)) {
+            allTripsCache = allTripsCache.map(item => {
+                if (String(item.trip_no) !== String(tripId)) return item;
+                return { ...item, ...updateData };
+            });
+        }
+        if (endingActiveTrip) noteFreedFleetFromTrip(currentTrip, tripId);
+
         closeCompleteModal();
         logActivity(
             endingActiveTrip ? 'trip.complete' : 'trip.settle',
@@ -8849,6 +8914,11 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         if (endingActiveTrip) {
             const { truckBusy, driverBusy } = await releaseFleetIfIdle(currentTrip, tripId);
             if (truckBusy || driverBusy) {
+                // ما زال مشغولاً برحلة أخرى — أزل من قائمة المحرَّرين
+                const plateKey = normalizeFleetKey(currentTrip.truck_plate || currentTrip.truck);
+                const driverKey = normalizeFleetKey(currentTrip.driver_name || currentTrip.driver);
+                if (truckBusy && plateKey) recentlyFreedFleet.plates.delete(plateKey);
+                if (driverBusy && driverKey) recentlyFreedFleet.drivers.delete(driverKey);
                 alert('تم إنهاء الرحلة. الشاحنة أو السائق ما زالا في رحلة جارية أخرى، لذلك لم يتم تحريرهما.');
             } else if (additionalPayment > 0) {
                 alert('تم إنهاء الرحلة وتسجيل السداد وتحرير الشاحنة والسائق.');
@@ -8862,20 +8932,22 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         }
 
         if (typeof loadTripsData === 'function') await loadTripsData();
-        // مزامنة فورية للأسطول حتى تظهر في إضافة رحلة مباشرة (خصوصاً للمستخدم العادي)
+        // مزامنة فورية للأسطول (مع استبعاد الرحلة المنتهية محلياً)
         try {
             const [{ data: trucks }, { data: drivers }, activeTrips] = await Promise.all([
                 client.from('trucks').select('*'),
                 client.from('drivers').select('*'),
                 fetchActiveTrips()
             ]);
-            await alignFleetWithActiveTrips(trucks || [], drivers || [], activeTrips || [], { wait: true });
+            const resolvedActive = resolveActiveTripsForFleet(activeTrips || []);
+            await alignFleetWithActiveTrips(trucks || [], drivers || [], resolvedActive, { wait: true });
         } catch (syncErr) {
             console.error('مزامنة الأسطول بعد إنهاء الرحلة:', syncErr);
         }
         if (typeof loadTrucks === 'function') loadTrucks();
         if (typeof loadDrivers === 'function') loadDrivers();
         if (typeof loadDashboardData === 'function') loadDashboardData();
+        if (typeof filterAndRenderTrips === 'function') filterAndRenderTrips();
 
     } catch (err) {
         console.error("Unexpected error in confirmCompleteTrip:", err);
@@ -14891,33 +14963,42 @@ async function renderAnalyticsDashboard() {
 
             let trucks = [];
             let drivers = [];
-            let activeTrips = [];
+            let dbActive = [];
             try {
                 const [truckRes, driverRes, active] = await Promise.all([
                     client.from('trucks').select('*'),
                     client.from('drivers').select('*'),
-                    fetchActiveTrips()
+                    fetchActiveTrips().catch(err => {
+                        console.error(err);
+                        return [];
+                    })
                 ]);
                 if (truckRes.error) throw truckRes.error;
                 if (driverRes.error) throw driverRes.error;
                 trucks = truckRes.data || [];
                 drivers = driverRes.data || [];
-                activeTrips = active || [];
+                dbActive = active || [];
             } catch (err) {
                 console.error('تعذر تحميل قوائم الرحلة:', err);
                 return;
             }
 
-            // نفس منطق اللوحة: التوفر من الرحلات الجارية، لا من حقل status المتأخر في القاعدة
+            // الكاش المحلي + استبعاد الرحلات المنتهية للتو أهم من حالة القاعدة المتأخرة
+            const activeTrips = resolveActiveTripsForFleet(dbActive);
             const assignments = activeAssignmentSets(activeTrips);
+            pruneRecentlyFreedFleet(assignments);
             void alignFleetWithActiveTrips(trucks, drivers, activeTrips);
 
             const readyTrucks = trucks.filter(t => {
                 if (!isCargoTruck(t) || isInactiveFleetVehicle(t) || isBlockedFleetVehicle(t)) return false;
+                const key = normalizeFleetKey(t.plate);
+                if (recentlyFreedFleet.plates.has(key) && !assignments.plates.has(key)) return true;
                 return isCargoReadyStatus(truckStatusForTrips(t, assignments));
             });
             const availableDrivers = drivers.filter(d => {
                 if (!isTripDriver(d) || isStaffBlockedStatus(d.status)) return false;
+                const key = normalizeFleetKey(d.name);
+                if (recentlyFreedFleet.drivers.has(key) && !assignments.drivers.has(key)) return true;
                 return driverStatusForTrips(d, assignments) === 'متوفر';
             });
 
