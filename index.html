@@ -8862,6 +8862,19 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         }
 
         if (typeof loadTripsData === 'function') await loadTripsData();
+        // مزامنة فورية للأسطول حتى تظهر في إضافة رحلة مباشرة (خصوصاً للمستخدم العادي)
+        try {
+            const [{ data: trucks }, { data: drivers }, activeTrips] = await Promise.all([
+                client.from('trucks').select('*'),
+                client.from('drivers').select('*'),
+                fetchActiveTrips()
+            ]);
+            await alignFleetWithActiveTrips(trucks || [], drivers || [], activeTrips || [], { wait: true });
+        } catch (syncErr) {
+            console.error('مزامنة الأسطول بعد إنهاء الرحلة:', syncErr);
+        }
+        if (typeof loadTrucks === 'function') loadTrucks();
+        if (typeof loadDrivers === 'function') loadDrivers();
         if (typeof loadDashboardData === 'function') loadDashboardData();
 
     } catch (err) {
@@ -14871,24 +14884,51 @@ async function renderAnalyticsDashboard() {
         }
 
         async function loadDropdowns() {
-            const { data: trucks } = await client.from('trucks').select('*');
-            const { data: drivers } = await client.from('drivers').select('*');
-            let activeTrips = [];
-            try { activeTrips = await fetchActiveTrips(); } catch (err) { console.error(err); }
-            const busyPlates = new Set(activeTrips.map(t => String(t.truck_plate || '').trim()));
-            const busyDrivers = new Set(activeTrips.map(t => String(t.driver_name || '').trim()));
-            
             const truckSelect = document.getElementById('tripTruck');
             const driverSelect = document.getElementById('tripDriver');
+            if (truckSelect) truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>`;
+            if (driverSelect) driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>`;
 
-            const readyTrucks = trucks ? trucks.filter(t => isCargoTruck(t) && !isInactiveFleetVehicle(t) && isCargoReadyStatus(t.status) && !busyPlates.has(String(t.plate || '').trim())) : [];
-            const availableDrivers = drivers ? drivers.filter(d => isTripDriver(d) && d.status === 'متوفر' && !busyDrivers.has(String(d.name || '').trim())) : [];
+            let trucks = [];
+            let drivers = [];
+            let activeTrips = [];
+            try {
+                const [truckRes, driverRes, active] = await Promise.all([
+                    client.from('trucks').select('*'),
+                    client.from('drivers').select('*'),
+                    fetchActiveTrips()
+                ]);
+                if (truckRes.error) throw truckRes.error;
+                if (driverRes.error) throw driverRes.error;
+                trucks = truckRes.data || [];
+                drivers = driverRes.data || [];
+                activeTrips = active || [];
+            } catch (err) {
+                console.error('تعذر تحميل قوائم الرحلة:', err);
+                return;
+            }
 
-            truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
-                readyTrucks.map(truck => `<option value="${truck.plate}">${t('ui.plateLabel')}: ${truck.plate} (${truck.model || '—'})</option>`).join('');
+            // نفس منطق اللوحة: التوفر من الرحلات الجارية، لا من حقل status المتأخر في القاعدة
+            const assignments = activeAssignmentSets(activeTrips);
+            void alignFleetWithActiveTrips(trucks, drivers, activeTrips);
 
-            driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>` +  
-                availableDrivers.map(d => `<option value="${d.name}">${d.name} (${d.phone})</option>`).join('');
+            const readyTrucks = trucks.filter(t => {
+                if (!isCargoTruck(t) || isInactiveFleetVehicle(t) || isBlockedFleetVehicle(t)) return false;
+                return isCargoReadyStatus(truckStatusForTrips(t, assignments));
+            });
+            const availableDrivers = drivers.filter(d => {
+                if (!isTripDriver(d) || isStaffBlockedStatus(d.status)) return false;
+                return driverStatusForTrips(d, assignments) === 'متوفر';
+            });
+
+            if (truckSelect) {
+                truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
+                    readyTrucks.map(truck => `<option value="${escapeHtml(truck.plate)}">${t('ui.plateLabel')}: ${escapeHtml(truck.plate)} (${escapeHtml(truck.model || '—')})</option>`).join('');
+            }
+            if (driverSelect) {
+                driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>` +
+                    availableDrivers.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}${d.phone ? ` (${escapeHtml(d.phone)})` : ''}</option>`).join('');
+            }
         }
         async function generateTripNo() {
             const { data: trips } = await client.from('trips').select('trip_no');
@@ -15627,8 +15667,8 @@ function bindTripSuggestions() {
 }
 
     // 1. فتح نافذة إضافة رحلة جديدة (مدمجة ومنسقة بالكامل)
-function openAddTripModal() {
-    loadDropdowns();
+async function openAddTripModal() {
+    document.getElementById('addTripModal')?.classList.remove('hidden');
     loadTripSuggestions();
     bindTripSuggestions();
     paintCommissionFieldLabels();
@@ -15636,7 +15676,7 @@ function openAddTripModal() {
     const collect = document.getElementById('tripCollectionDate');
     if (collect) collect.value = '';
     syncTripAdvancePayFields();
-    document.getElementById('addTripModal').classList.remove('hidden');
+    await loadDropdowns();
 }
 
 function syncTripAdvancePayFields() {
@@ -15731,9 +15771,20 @@ function closeAddTripModal() {
             const settlement = await recordSettlementPayment(trip_no, paid_amount, payment_method || '', collection_date || departure_date);
             if (settlement.error) console.error('تعذر حفظ دفعة الإنشاء:', settlement.error);
         }
-        const { data: fleetRows } = await client.from('trucks').select('id, plate, status, vehicle_kind');
-        const { data: driverRows } = await client.from('drivers').select('id, name, status, staff_kind');
-        await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], [{ status: 'جارية', truck_plate, driver_name }], { wait: true });
+        try {
+            const [{ data: fleetRows }, { data: driverRows }, allActive] = await Promise.all([
+                client.from('trucks').select('id, plate, status, vehicle_kind'),
+                client.from('drivers').select('id, name, status, staff_kind'),
+                fetchActiveTrips()
+            ]);
+            const withNew = [
+                ...(allActive || []).filter(t => String(t.trip_no || '') !== String(trip_no)),
+                { status: 'جارية', trip_no, truck_plate, driver_name }
+            ];
+            await alignFleetWithActiveTrips(fleetRows || [], driverRows || [], withNew, { wait: true });
+        } catch (syncErr) {
+            console.error('مزامنة الأسطول بعد إنشاء الرحلة:', syncErr);
+        }
 
         closeAddTripModal();
         logActivity('trip.create', 'رحلة', trip_no, `${client_name} · ${from_city} → ${to_city} · ${truck_plate} · ${driver_name}`);
