@@ -2779,11 +2779,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 min-w-0 no-print">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
-                            <input type="date" id="fuelRepStartDate" onchange="loadFuelReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <input type="date" id="fuelRepStartDate" onchange="renderFuelReportView()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
-                            <input type="date" id="fuelRepEndDate" onchange="loadFuelReport()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                            <input type="date" id="fuelRepEndDate" onchange="renderFuelReportView()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.truck">الشاحنة</label>
@@ -9771,6 +9771,8 @@ async function refreshOpenMaintenanceScreens() {
 
 let fuelCache = [];
 let fuelReportCache = [];
+/** كل سجلات الشركة (بدون فلتر فترة) لحساب المسافة/الشذوذ بشكل صحيح */
+let fuelAllCache = [];
 let fuelTrucks = [];
 let fuelSpendChart = null;
 let fuelConsumptionChart = null;
@@ -10090,8 +10092,8 @@ function enrichFuelRows(rows) {
     byPlate.forEach(list => {
         // ترتيب زمني صارم: التاريخ ثم رقم السجل (وليس العداد) حتى لا تُخفى أخطاء الإدخال
         const sorted = [...list].sort((a, b) => {
-            const da = String(a.fill_date || '');
-            const db = String(b.fill_date || '');
+            const da = dateOnly(a.fill_date);
+            const db = dateOnly(b.fill_date);
             if (da !== db) return da.localeCompare(db);
             return Number(a.id || 0) - Number(b.id || 0);
         });
@@ -10164,7 +10166,7 @@ function fuelOdoIssueLabel(row) {
 }
 
 function previousFuelOdometerForPlate(plate, fillDate, excludeId) {
-    const all = [...(fuelCache || []), ...(fuelReportCache || [])];
+    const all = [...(fuelAllCache || []), ...(fuelCache || []), ...(fuelReportCache || [])];
     const seen = new Set();
     const list = [];
     all.forEach(row => {
@@ -10176,16 +10178,17 @@ function previousFuelOdometerForPlate(plate, fillDate, excludeId) {
         list.push(row);
     });
     list.sort((a, b) => {
-        const da = String(a.fill_date || '');
-        const db = String(b.fill_date || '');
+        const da = dateOnly(a.fill_date);
+        const db = dateOnly(b.fill_date);
         if (da !== db) return da.localeCompare(db);
         return Number(a.id || 0) - Number(b.id || 0);
     });
+    const fillDay = dateOnly(fillDate);
     let prev = null;
     for (const row of list) {
-        const d = String(row.fill_date || '');
-        if (fillDate && d > fillDate) break;
-        if (fillDate && d === fillDate && excludeId && Number(row.id) >= Number(excludeId)) break;
+        const d = dateOnly(row.fill_date);
+        if (fillDay && d > fillDay) break;
+        if (fillDay && d === fillDay && excludeId && Number(row.id) >= Number(excludeId)) break;
         prev = row;
     }
     return prev;
@@ -10312,6 +10315,7 @@ async function loadFuelManage() {
     try {
         if (requireFuelCompanyId() == null) {
             fuelCache = [];
+            fuelAllCache = [];
             renderFuelManage();
             return;
         }
@@ -10321,10 +10325,12 @@ async function loadFuelManage() {
         ).order('fill_date', { ascending: false }).order('id', { ascending: false });
         if (error) throw error;
         fuelCache = data || [];
+        fuelAllCache = fuelCache;
         renderFuelManage();
     } catch (err) {
         console.error(err);
         fuelCache = [];
+        fuelAllCache = [];
         const missing = /fuel_logs|schema cache|relation/i.test(err?.message || '');
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed'))}</td></tr>`;
         const countEl = document.getElementById('fuelManageCount');
@@ -10334,24 +10340,24 @@ async function loadFuelManage() {
 
 function filterFuelReportRows(rows) {
     const plate = document.getElementById('fuelRepTruckFilter')?.value || '';
-    return (rows || []).filter(row => !plate || String(row.truck_plate || '').trim() === plate);
+    const start = dateOnly(document.getElementById('fuelRepStartDate')?.value || '');
+    const end = dateOnly(document.getElementById('fuelRepEndDate')?.value || '');
+    return (rows || []).filter(row => {
+        if (plate && String(row.truck_plate || '').trim() !== plate) return false;
+        if (row._anchorPrior) return false;
+        return tripInDateRange(row.fill_date, start, end);
+    });
 }
 
 function renderFuelReportView() {
-    const start = document.getElementById('fuelRepStartDate')?.value || '';
-    const end = document.getElementById('fuelRepEndDate')?.value || '';
-    const enrichedAll = enrichFuelRows(filterFuelReportRows(fuelReportCache));
-    const filtered = enrichedAll.filter(row => {
-        if (row._anchorPrior) return false;
-        const d = String(row.fill_date || '');
-        if (start && d < start) return false;
-        if (end && d > end) return false;
-        return true;
-    }).sort((a, b) => {
-        const da = String(b.fill_date || '').localeCompare(String(a.fill_date || ''));
+    const history = (fuelAllCache && fuelAllCache.length) ? fuelAllCache : (fuelCache || fuelReportCache || []);
+    const enrichedAll = enrichFuelRows(history);
+    const filtered = filterFuelReportRows(enrichedAll).sort((a, b) => {
+        const da = dateOnly(b.fill_date).localeCompare(dateOnly(a.fill_date));
         if (da) return da;
         return Number(b.id || 0) - Number(a.id || 0);
     });
+    fuelReportCache = filtered;
     const totalLiters = filtered.reduce((s, r) => s + fuelNum(r.liters), 0);
     const totalAmount = filtered.reduce((s, r) => s + fuelNum(r.amount), 0);
     let kmSum = 0;
@@ -10463,48 +10469,25 @@ async function loadFuelReport() {
     try {
         if (requireFuelCompanyId() == null) {
             fuelReportCache = [];
+            fuelAllCache = [];
             fuelCache = [];
             renderFuelReportView();
             return;
         }
         await ensureFuelTrucks();
         fillFuelTruckSelect('fuelRepTruckFilter', true);
-        const start = document.getElementById('fuelRepStartDate')?.value || '';
-        const end = document.getElementById('fuelRepEndDate')?.value || '';
-        // نجلب كل سجلات الشركة حتى تُحسب المسافة/الشذوذ مقابل التعبئة السابقة الحقيقية
+        // نجلب كل السجلات لحساب المسافة، والفلترة بالفترة تتم عند العرض عبر tripInDateRange
         const { data, error } = await scopeFuelQuery(client.from('fuel_logs').select('*'))
             .order('fill_date', { ascending: false })
             .order('id', { ascending: false });
         if (error) throw error;
-        const all = data || [];
-        fuelCache = all;
-        fuelReportCache = all.filter(row => {
-            const d = String(row.fill_date || '');
-            if (start && d < start) return false;
-            if (end && d > end) return false;
-            return true;
-        });
-        // للتعبئة الأولى في الفترة: أرفق آخر قراءة قبل البداية حتى يظهر التناقص/المسافة بشكل صحيح
-        if (start) {
-            const plates = new Set(fuelReportCache.map(r => String(r.truck_plate || '').trim()));
-            plates.forEach(plate => {
-                const prior = all
-                    .filter(r => String(r.truck_plate || '').trim() === plate && String(r.fill_date || '') < start)
-                    .sort((a, b) => {
-                        const da = String(a.fill_date || '').localeCompare(String(b.fill_date || ''));
-                        if (da) return da;
-                        return Number(a.id || 0) - Number(b.id || 0);
-                    });
-                const last = prior[prior.length - 1];
-                if (last && !fuelReportCache.some(r => Number(r.id) === Number(last.id))) {
-                    fuelReportCache.push({ ...last, _anchorPrior: true });
-                }
-            });
-        }
+        fuelAllCache = data || [];
+        fuelCache = fuelAllCache;
         renderFuelReportView();
     } catch (err) {
         console.error(err);
         fuelReportCache = [];
+        fuelAllCache = [];
         const missing = /fuel_logs|schema cache|relation/i.test(err?.message || '');
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t(missing ? 'fuel.missingTable' : 'fuel.saveFailed'))}</td></tr>`;
         ['fuelRepTotalLiters', 'fuelRepFillCount'].forEach(id => {
