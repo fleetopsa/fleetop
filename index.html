@@ -8656,20 +8656,38 @@ function syncPaymentDetail(prefix) {
 }
 
 function applyPaymentMethodFields(prefix, stored) {
-    const parts = paymentMethodParts(stored);
+    const raw = String(stored || '').trim();
+    const parts = paymentMethodParts(raw);
     const method = document.getElementById(prefix + 'PaymentMethod');
     const bank = document.getElementById(prefix + 'BankName');
     const bankOther = document.getElementById(prefix + 'BankOther');
     const other = document.getElementById(prefix + 'OtherDetail');
-    if (method) method.value = parts.kind;
-    if (bank) {
-        bank.value = parts.kind === 'تحويل بنكي' && PAYMENT_BANKS.includes(parts.detail)
-            ? parts.detail
-            : (parts.kind === 'تحويل بنكي' && parts.detail ? '__other__' : '');
+    // قيمة قديمة غير مصنّفة → تُعرض كـ «أخرى» بدل تفريغ الحقل
+    const kind = parts.kind || (raw ? 'أخرى' : '');
+    const detail = parts.kind ? parts.detail : raw;
+    if (method) {
+        if (kind && [...method.options].some(opt => opt.value === kind)) method.value = kind;
+        else method.value = '';
     }
-    if (bankOther) bankOther.value = parts.kind === 'تحويل بنكي' && !PAYMENT_BANKS.includes(parts.detail) ? parts.detail : '';
-    if (other) other.value = parts.kind === 'أخرى' ? parts.detail : '';
+    if (bank) {
+        bank.value = kind === 'تحويل بنكي' && PAYMENT_BANKS.includes(detail)
+            ? detail
+            : (kind === 'تحويل بنكي' && detail ? '__other__' : '');
+    }
+    if (bankOther) bankOther.value = kind === 'تحويل بنكي' && !PAYMENT_BANKS.includes(detail) ? detail : '';
+    if (other) other.value = kind === 'أخرى' ? detail : '';
     syncPaymentDetail(prefix);
+}
+
+/** يجلب طريقة/تاريخ السداد من الرحلة أو من دفعات التسوية المسجّلة */
+function resolveTripPaymentForEdit(trip) {
+    const lines = typeof paymentLineItems === 'function' ? paymentLineItems(trip) : [];
+    const withMethod = [...lines].reverse().find(line => String(line?.payment_method || '').trim());
+    const withDate = [...lines].reverse().find(line => dateInputValue(line?.collection_date));
+    return {
+        method: String(trip?.payment_method || withMethod?.payment_method || '').trim(),
+        collection: dateInputValue(trip?.collection_date) || dateInputValue(withDate?.collection_date) || ''
+    };
 }
 
 function composePaymentMethod(prefix, requireKind) {
@@ -16091,11 +16109,12 @@ async function openEditTripModal(tripNo) {
         : totalStored;
     document.getElementById('editTotalAmount').value = amountField;
     paintEditVatRecordedNote(trip);
-    applyPaymentMethodFields('edit', trip.payment_method || '');
-    document.getElementById('editCollectionDate').value = dateInputValue(trip.collection_date);
+    const resolvedPay = resolveTripPaymentForEdit(trip);
+    applyPaymentMethodFields('edit', resolvedPay.method || '');
+    document.getElementById('editCollectionDate').value = resolvedPay.collection || '';
     const editCompletionDate = document.getElementById('editCompletionDate');
     if (editCompletionDate) {
-        editCompletionDate.value = dateInputValue(trip.completion_date);
+        editCompletionDate.value = dateInputValue(trip.completion_date) || dateInputValue(trip.departure_date) || '';
         editCompletionDate.closest('div').classList.toggle('hidden', String(trip.status || '').trim() === 'جارية');
     }
     await fillEditFleetOptions(trip);
@@ -16141,15 +16160,36 @@ async function saveEditTrip(e) {
     }
     const remaining_amount = roundMoney(total_amount - paid_amount);
     const payment_status = remaining_amount === 0 ? 'مسدد بالكامل' : (paid_amount > 0 ? 'سداد جزئي' : 'غير مسدد');
-    const paymentEntry = composePaymentMethod('edit', paid_amount > 0);
-    if (!paymentEntry.ok) {
-        alert(paymentEntry.message);
-        document.getElementById('editPaymentMethod')?.focus();
-        return;
+    const previousPay = resolveTripPaymentForEdit(trip);
+    // لا نُجبر إعادة إدخال السداد إن كانت البيانات موجودة مسبقاً
+    let paymentEntry = composePaymentMethod('edit', false);
+    let payment_method = paymentEntry.value || '';
+    let collection_date = document.getElementById('editCollectionDate').value || '';
+    if (paid_amount > 0) {
+        if (!payment_method) payment_method = previousPay.method || '';
+        if (!collection_date) collection_date = previousPay.collection || '';
+        if (!payment_method) {
+            paymentEntry = composePaymentMethod('edit', true);
+            if (!paymentEntry.ok) {
+                alert(paymentEntry.message);
+                document.getElementById('editPaymentMethod')?.focus();
+                return;
+            }
+            payment_method = paymentEntry.value || '';
+        }
+    } else {
+        payment_method = payment_method || null;
+        collection_date = collection_date || null;
     }
-    const payment_method = paymentEntry.value || null;
-    const collection_date = document.getElementById('editCollectionDate').value || null;
-    const completion_date = document.getElementById('editCompletionDate')?.value || null;
+    payment_method = payment_method || null;
+    collection_date = collection_date || null;
+    // لا تمسح تاريخ الإنهاء إن تُرك فارغاً بالخطأ — أبقِ السابق ما لم يُغيَّر
+    let completion_date = document.getElementById('editCompletionDate')?.value || '';
+    if (String(trip.status || '').trim() !== 'جارية') {
+        completion_date = completion_date || dateInputValue(trip.completion_date) || dateInputValue(trip.departure_date) || null;
+    } else {
+        completion_date = null;
+    }
 
     if (trip.status === 'جارية') {
         let activeTrips = [];
@@ -16177,7 +16217,9 @@ async function saveEditTrip(e) {
         payment_method, collection_date,
         ...vatPayload
     };
-    if (String(trip.status || '').trim() !== 'جارية') editPayload.completion_date = completion_date;
+    if (String(trip.status || '').trim() !== 'جارية' && completion_date) {
+        editPayload.completion_date = completion_date;
+    }
 
     const diffDetails = buildTripEditDiff(trip, editPayload);
 
