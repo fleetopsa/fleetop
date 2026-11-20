@@ -1285,7 +1285,7 @@
         <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyCode">معرف الشركة</label>
-                <input type="text" id="companyCodeInput" name="company_code" autocomplete="organization" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
+                <input type="text" id="companyCodeInput" name="company_code" autocomplete="organization" required inputmode="numeric" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40 font-mono" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 7012345678">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.username">اسم المستخدم</label>
@@ -1311,7 +1311,8 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.companyCode">معرف الشركة</label>
-                    <input type="text" id="registerCompanyCode" name="fleetop_reg_code" autocomplete="off" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 1010123456">
+                    <input type="text" id="registerCompanyCode" name="fleetop_reg_code" autocomplete="off" required inputmode="numeric" maxlength="10" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40 font-mono" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.companyCodePh" placeholder="مثال: 7012345678">
+                    <p class="text-[10px] font-bold mt-1" style="color:#c4a35a" data-i18n="login.companyCodeHint">الرقم الوطني الموحد للمنشأة — 10 أرقام ويبدأ بـ 7</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.employeeName">اسم المسؤول</label>
@@ -5348,7 +5349,22 @@ function updateSidebarIdentity(user = currentLoggedInUser) {
 }
 
 function normalizeCompanyCode(code) {
-    return String(code || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const digitMap = {
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+    };
+    return String(code || '')
+        .trim()
+        .replace(/[٠-٩۰-۹]/g, (d) => digitMap[d] || d)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+}
+
+/** الرقم الوطني الموحد: 10 أرقام ويبدأ بـ 7 */
+function isValidUnifiedCompanyCode(code) {
+    return /^7\d{9}$/.test(normalizeCompanyCode(code));
 }
 
 function authEmailFor(username, companyCode) {
@@ -6535,8 +6551,8 @@ function validateRegisterPayload(payload) {
     if (FLEETOP_REGISTER_INVITE_CODE && payload.inviteCode !== FLEETOP_REGISTER_INVITE_CODE) {
         return t('login.registerInviteInvalid');
     }
-    if (payload.normalizedCode.length < 3) return t('login.companyCodeShort');
     if (payload.normalizedCode === PLATFORM_COMPANY_CODE) return t('login.companyCodeReserved');
+    if (!isValidUnifiedCompanyCode(payload.normalizedCode)) return t('login.companyCodeUnifiedInvalid');
     const usernameError = validateAppUsername(payload.username);
     if (usernameError) return usernameError;
     const passwordError = validateAppPassword(payload.password);
@@ -6562,7 +6578,9 @@ function mapRegisterRpcError(msg) {
     if (/Could not find the function|function .* does not exist|42883|save_registration_pending|complete_verified_registration/i.test(msg)) {
         return t('login.registerEmailSqlMissing');
     }
-    if (/معرف الشركة مستخدم/i.test(msg)) return t('login.companyCodeTaken');
+    if (/معرف الشركة مستخدم|سجّل الدخول وجدّد/i.test(msg)) return t('login.companyCodeTaken');
+    if (/البريد مستخدم|البريد الإلكتروني مستخدم/i.test(msg)) return t('login.registerEmailTaken');
+    if (/يجب أن يبدأ بـ\s*7|10 أرقام|الرقم الوطني الموحد/i.test(msg)) return t('login.companyCodeUnifiedInvalid');
     if (/اسم المستخدم مستخدم/i.test(msg)) return t('login.registerUsernameTaken');
     return msg || t('login.registerFailed');
 }
@@ -12293,13 +12311,15 @@ const I18N = {
         'login.employeeNamePh': 'اسم المسؤول',
         'login.registerHint': 'إنشاء شركة جديدة مستقلة على المنصة. بياناتك منفصلة عن باقي الشركات.',
         'login.companyCode': 'معرف الشركة',
-        'login.companyCodePh': 'مثال: 1010123456',
-        'login.companyCodeHint': 'رقم موحد خاص بشركتك للدخول لاحقاً (أحرف أو أرقام).',
+        'login.companyCodePh': 'مثال: 7012345678',
+        'login.companyCodeHint': 'الرقم الوطني الموحد للمنشأة — 10 أرقام ويبدأ بـ 7',
         'login.companyCodeRequired': 'أدخل معرف الشركة.',
         'login.companyCodeShort': 'معرف الشركة يجب أن يكون 3 أحرف/أرقام على الأقل.',
-        'login.companyCodeTaken': 'معرف الشركة مستخدم مسبقاً.',
+        'login.companyCodeUnifiedInvalid': 'معرف الشركة يجب أن يكون الرقم الوطني الموحد: 10 أرقام ويبدأ بـ 7.',
+        'login.companyCodeTaken': 'هذا المعرف مسجّل مسبقاً. سجّل الدخول بنفس المعرف وجدّد الاشتراك بدل إنشاء حساب جديد.',
         'login.companyCodeReserved': 'معرف الشركة محجوز للمنصة.',
         'login.companyCodeMismatch': 'معرف الشركة لا يطابق هذا الحساب.',
+        'login.registerEmailTaken': 'هذا البريد مرتبط بشركة مسجّلة. سجّل الدخول وجدّد الاشتراك.',
         'support.switchCompany': 'تبديل شركة الدعم',
         'support.pickTitle': 'اختيار شركة للدعم',
         'support.pickHint': 'هذا الحساب للمنصة فقط ولا يظهر للشركات.',
@@ -13163,13 +13183,15 @@ const I18N = {
         'login.employeeNamePh': 'Admin name',
         'login.registerHint': 'Create a new independent company on the platform. Your data stays separate from other companies.',
         'login.companyCode': 'Company ID',
-        'login.companyCodePh': 'Example: 1010123456',
-        'login.companyCodeHint': 'A unique company code used later for sign-in (letters or numbers).',
+        'login.companyCodePh': 'Example: 7012345678',
+        'login.companyCodeHint': 'Unified national number — 10 digits starting with 7',
         'login.companyCodeRequired': 'Enter the company ID.',
         'login.companyCodeShort': 'Company ID must be at least 3 characters.',
-        'login.companyCodeTaken': 'This company ID is already used.',
+        'login.companyCodeUnifiedInvalid': 'Company ID must be the unified national number: 10 digits starting with 7.',
+        'login.companyCodeTaken': 'This ID is already registered. Sign in with the same ID and renew the subscription instead of creating a new account.',
         'login.companyCodeReserved': 'This company ID is reserved for the platform.',
         'login.companyCodeMismatch': 'Company ID does not match this account.',
+        'login.registerEmailTaken': 'This email is linked to a registered company. Sign in and renew the subscription.',
         'support.switchCompany': 'Switch support company',
         'support.pickTitle': 'Choose a company to support',
         'support.pickHint': 'This account is for the platform only and is hidden from companies.',
