@@ -3869,7 +3869,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.station">المحطة / المورد</label>
-                    <input type="text" id="fuelStation" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اختياري">
+                    <input type="text" id="fuelStation" data-suggest="station" autocomplete="off" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="اكتب جزءاً من اسم المحطة">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.notes">ملاحظات</label>
@@ -10247,9 +10247,12 @@ async function openFuelModal(id) {
     const submit = document.getElementById('fuelSubmitBtn');
     if (submit) submit.textContent = t('ui.save');
     document.getElementById('fuelModal')?.classList.remove('hidden');
+    if (typeof loadTripSuggestions === 'function') loadTripSuggestions();
+    if (typeof bindTripSuggestions === 'function') bindTripSuggestions();
 }
 
 function closeFuelModal() {
+    if (typeof hideTripSuggestions === 'function') hideTripSuggestions();
     document.getElementById('fuelModal')?.classList.add('hidden');
     showFuelError('');
 }
@@ -10601,8 +10604,13 @@ async function saveFuelLog(event) {
     }
     if (savedRow) {
         fuelCache = [savedRow, ...(fuelCache || []).filter(r => Number(r.id) !== Number(savedRow.id))];
+        if (fuelAllCache?.length) {
+            fuelAllCache = [savedRow, ...(fuelAllCache || []).filter(r => Number(r.id) !== Number(savedRow.id))];
+        }
         renderFuelManage();
     }
+    if (station && typeof revealSuggestion === 'function') revealSuggestion('station', station);
+    if (typeof loadTripSuggestions === 'function') loadTripSuggestions();
     logActivity(editId ? 'fuel.edit' : 'fuel.create', 'وقود', plate, `${fillDate} · ${liters} لتر · ${amount}`);
     closeFuelModal();
     await refreshOpenFuelScreens();
@@ -15727,7 +15735,7 @@ function resetTripFilters() {
     if (clientInput) clientInput.value = '';
     filterAndRenderTrips();
 }
-const tripSuggestions = { client: [], city: [] };
+const tripSuggestions = { client: [], city: [], station: [] };
 const HIDDEN_SUGGESTIONS_KEY = 'fleetop_hidden_suggestions';
 const HIDDEN_SUGGESTIONS_KEY_LEGACY = 'gstco_hidden_suggestions';
 let suggestMenu = null;
@@ -15748,17 +15756,19 @@ function loadHiddenSuggestions() {
         const raw = JSON.parse(rawText || '{}');
         return {
             client: new Set(raw.client || []),
-            city: new Set(raw.city || [])
+            city: new Set(raw.city || []),
+            station: new Set(raw.station || [])
         };
     } catch (err) {
-        return { client: new Set(), city: new Set() };
+        return { client: new Set(), city: new Set(), station: new Set() };
     }
 }
 
 function saveHiddenSuggestions() {
     localStorage.setItem(HIDDEN_SUGGESTIONS_KEY, JSON.stringify({
         client: [...hiddenSuggestions.client],
-        city: [...hiddenSuggestions.city]
+        city: [...hiddenSuggestions.city],
+        station: [...(hiddenSuggestions.station || [])]
     }));
     localStorage.removeItem(HIDDEN_SUGGESTIONS_KEY_LEGACY);
 }
@@ -15789,6 +15799,20 @@ async function loadTripSuggestions() {
         });
         tripSuggestions.client = uniqueSorted(clients).filter(name => !hiddenSuggestions.client.has(name));
         tripSuggestions.city = uniqueSorted(cities).filter(name => !hiddenSuggestions.city.has(name));
+
+        let stations = [];
+        try {
+            let fuelQuery = client.from('fuel_logs').select('station');
+            const companyId = typeof currentCompanyId === 'function' ? currentCompanyId() : null;
+            if (companyId != null) fuelQuery = fuelQuery.eq('company_id', companyId);
+            const { data: fuelRows, error: fuelErr } = await fuelQuery;
+            if (!fuelErr) stations = (fuelRows || []).map(row => row.station);
+        } catch (fuelLoadErr) {
+            console.warn('تعذر تحميل اقتراحات المحطات:', fuelLoadErr);
+        }
+        if (!hiddenSuggestions.station) hiddenSuggestions.station = new Set();
+        tripSuggestions.station = uniqueSorted(stations).filter(name => !hiddenSuggestions.station.has(name));
+
         if (suggestInput && document.activeElement === suggestInput) showTripSuggestions(suggestInput);
     } catch (err) {
         console.error('تعذر تحميل اقتراحات العملاء والمدن:', err);
@@ -15845,8 +15869,12 @@ function hideTripSuggestion(value) {
     const kind = currentSuggestKind();
     const name = String(value || '').trim();
     if (!name) return;
-    const label = kind === 'city' ? 'هذه المدينة' : 'هذا العميل';
-    if (!confirm(`حذف «${name}» من قائمة الاقتراحات؟\nلن يُحذف من الرحلات المسجّلة، ويمكنك إعادته بكتابته وحفظ رحلة.`)) return;
+    if (!hiddenSuggestions[kind]) hiddenSuggestions[kind] = new Set();
+    const label = kind === 'city' ? 'هذه المدينة' : (kind === 'station' ? 'هذه المحطة' : 'هذا العميل');
+    const keepHint = kind === 'station'
+        ? 'لن تُحذف من سجلات الوقود، ويمكنك إعادتها بكتابتها وحفظ تعبئة.'
+        : 'لن يُحذف من الرحلات المسجّلة، ويمكنك إعادته بكتابته وحفظ رحلة.';
+    if (!confirm(`حذف «${name}» من قائمة الاقتراحات؟\n${keepHint}`)) return;
     hiddenSuggestions[kind].add(name);
     saveHiddenSuggestions();
     const input = suggestInput;
@@ -15858,10 +15886,39 @@ async function editTripSuggestion(value) {
     const kind = currentSuggestKind();
     const oldName = String(value || '').trim();
     if (!oldName) return;
-    const next = prompt(kind === 'city' ? 'الاسم الصحيح للمدينة:' : 'الاسم الصحيح للعميل:', oldName);
+    const promptLabel = kind === 'city'
+        ? 'الاسم الصحيح للمدينة:'
+        : (kind === 'station' ? 'الاسم الصحيح للمحطة / المورد:' : 'الاسم الصحيح للعميل:');
+    const next = prompt(promptLabel, oldName);
     if (next === null) return;
     const newName = String(next).trim();
     if (!newName || newName === oldName) return;
+
+    if (kind === 'station') {
+        let query = client.from('fuel_logs').update({ station: newName, updated_at: new Date().toISOString() }).eq('station', oldName);
+        const companyId = typeof currentCompanyId === 'function' ? currentCompanyId() : null;
+        if (companyId != null) query = query.eq('company_id', companyId);
+        const { error } = await query;
+        if (error) {
+            alert((currentLang === 'en' ? 'Could not rename station: ' : 'تعذر تعديل اسم المحطة: ') + error.message);
+            return;
+        }
+        if (!hiddenSuggestions.station) hiddenSuggestions.station = new Set();
+        hiddenSuggestions.station.delete(oldName);
+        hiddenSuggestions.station.delete(newName);
+        saveHiddenSuggestions();
+        if (suggestInput) suggestInput.value = newName;
+        const input = suggestInput;
+        hideTripSuggestions();
+        if (typeof refreshOpenFuelScreens === 'function') await refreshOpenFuelScreens();
+        await loadTripSuggestions();
+        if (input) showTripSuggestions(input);
+        alert(currentLang === 'en'
+            ? 'Station name updated across fuel records and suggestions.'
+            : 'تم تصحيح اسم المحطة في كل سجلات الوقود والاقتراحات.');
+        return;
+    }
+
     const { data: rows, error: fetchErr } = await client.from('trips').select('id, status, client_name, from_city, to_city');
     if (fetchErr) {
         alert('تعذر تعديل الاسم في الرحلات: ' + fetchErr.message);
