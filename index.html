@@ -1597,7 +1597,7 @@
                         <i class="fa-solid fa-thumbtack"></i>
                     </button>
                     <div class="flex flex-col items-center text-center gap-1.5 px-1">
-                        <img src="fleetop-logo.png" alt="FleetOp" class="w-16 h-16 rounded-xl object-contain shrink-0">
+                        <img src="fleetop-logo.png" alt="FleetOp" class="w-20 h-20 rounded-xl object-contain shrink-0">
                         <h1 class="font-black text-base leading-snug" style="color:#0b2a4a">FleetOp · فليتوب</h1>
                         <p id="sidebarCompanyName" class="text-[11px] font-bold leading-snug max-w-full" style="color:#8a6230;overflow-wrap:anywhere"></p>
                         <p id="currentUserBadge" class="text-[10px] font-bold leading-snug" style="color:#3e5670"></p>
@@ -6686,7 +6686,9 @@ function formatSAR(amount) {
 }
 
 function formatCommissionNet(amount) {
-    return formatSAR(roundMoney(amount));
+    const net = roundMoney(amount);
+    if (net < -0.009) return formatSAR(Math.abs(net));
+    return formatSAR(net);
 }
 
 function fillSelectOptions(selectId, items, allLabel) {
@@ -6864,6 +6866,20 @@ function payoutNoteForDisplay(note, creditCleared) {
     return text;
 }
 
+/** يعرض ملاحظة الصرف مع شعار الريال لمبالغ «رصيد مقدم» */
+function formatPayoutNoteHtml(note, creditCleared) {
+    const text = payoutNoteForDisplay(note, creditCleared);
+    if (!text || text === '—') return '—';
+    const advanceRe = /(رصيد مقدم|Advance credit)\s+([0-9][0-9,]*(?:\.[0-9]+)?)/gi;
+    let matched = false;
+    const html = text.replace(advanceRe, (_full, label, amount) => {
+        matched = true;
+        return `${escapeHtml(label)} <span class="money" dir="ltr">${riyalMark()}${escapeHtml(amount)}</span>`;
+    });
+    if (matched) return html;
+    return escapeHtml(text);
+}
+
 async function clearCoveredAdvanceCreditNotes(payouts, finalRemainingByDriver) {
     const targets = (payouts || []).filter(payout => {
         if (!isAdvanceCreditNote(payout?.payment_method) && String(payout?.payment_status || '').trim() !== 'رصيد مقدم') return false;
@@ -6912,7 +6928,7 @@ function renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver) {
             <td class="p-3.5 font-mono font-bold text-amber-600">${escapeHtml(payout.trip_no || '—')}</td>
             <td class="p-3.5 font-bold text-slate-900">${escapeHtml(name)}</td>
             <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
-            <td class="p-3.5 text-slate-600">${escapeHtml(payoutNoteForDisplay(payout.payment_method, creditCleared))}</td>
+            <td class="p-3.5 text-slate-600">${formatPayoutNoteHtml(payout.payment_method, creditCleared)}</td>
             <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
                 <button type="button" onclick="openEditPayoutModal(${JSON.stringify(payout.id)})" class="text-amber-600 hover:text-amber-800 font-bold" title="${t('ui.edit')}">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -6961,6 +6977,16 @@ async function generateCommissionReport() {
             remainingEl.innerHTML = formatCommissionNet(net);
             remainingEl.classList.toggle('text-rose-600', net < -0.009);
             remainingEl.classList.toggle('text-emerald-600', net >= -0.009);
+            const remainingLabel = remainingEl.previousElementSibling;
+            if (remainingLabel && remainingLabel.matches('[data-i18n="ui.remaining"], [data-i18n="ui.advanceCredit"]')) {
+                if (net < -0.009) {
+                    remainingLabel.dataset.i18n = 'ui.advanceCredit';
+                    remainingLabel.textContent = currentLang === 'en' ? 'Advance credit' : 'رصيد مقدم';
+                } else {
+                    remainingLabel.dataset.i18n = 'ui.remaining';
+                    remainingLabel.textContent = t('ui.remaining');
+                }
+            }
         }
         if (tripsEl) tripsEl.innerText = activeTrips.filter(isCompletedTrip).length.toLocaleString('en-US');
         const lifetimeRemainingByDriver = new Map();
@@ -7276,10 +7302,10 @@ async function refreshPayoutBalanceHint() {
         }
         hint.classList.remove('hidden');
         if (remaining < -0.009) {
-            hint.textContent = (currentLang === 'en' ? 'Current driver credit: ' : 'الرصيد الحالي للسائق: ') + formatMoney(Math.abs(remaining));
+            hint.innerHTML = (currentLang === 'en' ? 'Current driver credit: ' : 'الرصيد الحالي للسائق: ') + formatSAR(Math.abs(remaining));
             hint.className = 'text-xs font-bold text-amber-700 mb-3';
         } else {
-            hint.textContent = (currentLang === 'en' ? 'Commission due: ' : 'العمولة المستحقة: ') + formatMoney(Math.max(0, remaining));
+            hint.innerHTML = (currentLang === 'en' ? 'Commission due: ' : 'العمولة المستحقة: ') + formatSAR(Math.max(0, remaining));
             hint.className = 'text-xs font-bold text-slate-600 mb-3';
         }
     } catch (err) {
@@ -13011,6 +13037,7 @@ const I18N = {
         'ui.total': 'الإجمالي',
         'ui.paid': 'مدفوع',
         'ui.remaining': 'متبقي',
+        'ui.advanceCredit': 'رصيد مقدم',
         'th.departureDate': 'تاريخ المغادرة',
         'th.completionDate': 'تاريخ إنهاء الرحلة',
         'ui.fromCompletionDate': 'من تاريخ الإنهاء',
@@ -13876,6 +13903,7 @@ const I18N = {
         'ui.total': 'Total',
         'ui.paid': 'Paid',
         'ui.remaining': 'Remaining',
+        'ui.advanceCredit': 'Advance credit',
         'th.departureDate': 'Departure date',
         'th.completionDate': 'Trip completion date',
         'ui.fromCompletionDate': 'From completion date',
