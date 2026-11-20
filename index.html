@@ -2775,6 +2775,7 @@
                             </div>
                         </div>
                     </div>
+                    <div id="fuelRepAnomalyBanner" class="hidden mb-2.5 rounded-xl border px-3 py-2.5 text-[11px] font-bold"></div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 min-w-0 no-print">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
@@ -10045,6 +10046,12 @@ function formatFuelNumber(value, digits = 1) {
     return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
+/** عتبة تنبيه قفزة عداد غير منطقية بين تعبئتين (كم) */
+const FUEL_ODO_SPIKE_KM = 2500;
+/** استهلاك خارج النطاق المعقول لشاحنة ثقيلة (لتر/100كم) */
+const FUEL_PER100_MIN = 12;
+const FUEL_PER100_MAX = 75;
+
 /** يحسب المسافة والاستهلاك لكل سجل بناءً على التعبئة السابقة لنفس اللوحة */
 function enrichFuelRows(rows) {
     const byPlate = new Map();
@@ -10055,35 +10062,107 @@ function enrichFuelRows(rows) {
     });
     const metrics = new Map();
     byPlate.forEach(list => {
+        // ترتيب زمني صارم: التاريخ ثم رقم السجل (وليس العداد) حتى لا تُخفى أخطاء الإدخال
         const sorted = [...list].sort((a, b) => {
             const da = String(a.fill_date || '');
             const db = String(b.fill_date || '');
             if (da !== db) return da.localeCompare(db);
-            const oa = fuelNum(a.odometer);
-            const ob = fuelNum(b.odometer);
-            if (oa !== ob) return oa - ob;
             return Number(a.id || 0) - Number(b.id || 0);
         });
         let prev = null;
         sorted.forEach(row => {
             let distance = null;
             let per100 = null;
+            let odoIssue = null;
             if (prev) {
                 const delta = fuelNum(row.odometer) - fuelNum(prev.odometer);
-                if (delta > 0) {
+                if (delta < 0) {
+                    odoIssue = 'drop';
+                } else if (delta === 0) {
+                    odoIssue = 'equal';
+                } else {
                     distance = delta;
                     const liters = fuelNum(row.liters);
                     if (liters > 0) per100 = (liters / delta) * 100;
+                    if (delta > FUEL_ODO_SPIKE_KM) odoIssue = 'spike';
+                    else if (per100 != null && (per100 < FUEL_PER100_MIN || per100 > FUEL_PER100_MAX)) {
+                        odoIssue = 'rate';
+                    }
                 }
             }
-            metrics.set(row.id, { distance, per100 });
+            metrics.set(row.id, {
+                distance,
+                per100,
+                odoIssue,
+                prevOdo: prev ? fuelNum(prev.odometer) : null,
+                prevDate: prev ? String(prev.fill_date || '') : null
+            });
             prev = row;
         });
     });
     return (rows || []).map(row => {
         const m = metrics.get(row.id) || {};
-        return { ...row, _distance: m.distance, _per100: m.per100 };
+        return {
+            ...row,
+            _distance: m.distance,
+            _per100: m.per100,
+            _odoIssue: m.odoIssue || null,
+            _prevOdo: m.prevOdo,
+            _prevDate: m.prevDate
+        };
     });
+}
+
+function fuelOdoIssueLabel(row) {
+    const issue = row?._odoIssue;
+    if (!issue) return '';
+    if (issue === 'drop') {
+        return currentLang === 'en'
+            ? `Odometer dropped vs ${formatFuelNumber(row._prevOdo, 1)} on ${row._prevDate || '—'}`
+            : `العداد أقل من القراءة السابقة ${formatFuelNumber(row._prevOdo, 1)} بتاريخ ${row._prevDate || '—'}`;
+    }
+    if (issue === 'equal') {
+        return currentLang === 'en' ? 'Same odometer as previous fill' : 'نفس قراءة العداد للتعبئة السابقة';
+    }
+    if (issue === 'spike') {
+        return currentLang === 'en'
+            ? `Unusual jump (+${formatFuelNumber(row._distance, 0)} km)`
+            : `قفزة غير معتادة (+${formatFuelNumber(row._distance, 0)} كم)`;
+    }
+    if (issue === 'rate') {
+        return currentLang === 'en'
+            ? `Unusual rate ${formatFuelNumber(row._per100, 1)} L/100km`
+            : `استهلاك غير معتاد ${formatFuelNumber(row._per100, 1)} لتر/100كم`;
+    }
+    return '';
+}
+
+function previousFuelOdometerForPlate(plate, fillDate, excludeId) {
+    const all = [...(fuelCache || []), ...(fuelReportCache || [])];
+    const seen = new Set();
+    const list = [];
+    all.forEach(row => {
+        const id = Number(row.id || 0);
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        if (String(row.truck_plate || '').trim() !== plate) return;
+        if (excludeId && id === Number(excludeId)) return;
+        list.push(row);
+    });
+    list.sort((a, b) => {
+        const da = String(a.fill_date || '');
+        const db = String(b.fill_date || '');
+        if (da !== db) return da.localeCompare(db);
+        return Number(a.id || 0) - Number(b.id || 0);
+    });
+    let prev = null;
+    for (const row of list) {
+        const d = String(row.fill_date || '');
+        if (fillDate && d > fillDate) break;
+        if (fillDate && d === fillDate && excludeId && Number(row.id) >= Number(excludeId)) break;
+        prev = row;
+    }
+    return prev;
 }
 
 function fuelConsumptionLabel(row) {
@@ -10162,23 +10241,32 @@ function renderFuelManage() {
     }
     const canEdit = hasPerm('fuel', 'edit');
     const canDelete = hasPerm('fuel', 'delete');
-    tbody.innerHTML = enriched.map(row => `
-        <tr class="hover:bg-slate-50 transition">
+    tbody.innerHTML = enriched.map(row => {
+        const issue = row._odoIssue;
+        const rowTone = issue === 'drop' || issue === 'spike'
+            ? 'bg-rose-50/70'
+            : (issue ? 'bg-amber-50/60' : 'hover:bg-slate-50');
+        const issueTip = fuelOdoIssueLabel(row);
+        const odoCell = issue
+            ? `<span class="font-mono ${issue === 'drop' || issue === 'spike' ? 'text-rose-700' : 'text-amber-800'}" title="${escapeHtml(issueTip)}">${escapeHtml(formatFuelNumber(row.odometer, 1))} <i class="fa-solid fa-triangle-exclamation text-[10px]"></i></span>`
+            : `<span class="font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</span>`;
+        return `
+        <tr class="${rowTone} transition">
             <td class="p-3 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
             <td class="p-3 font-black font-mono text-slate-900">${escapeHtml(row.truck_plate || '—')}</td>
-            <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</td>
+            <td class="p-3">${odoCell}</td>
             <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-3 font-mono">${formatSAR(row.amount)}</td>
             <td class="p-3 text-slate-600">${escapeHtml(row.station || '—')}</td>
-            <td class="p-3 text-[11px] text-slate-600">${escapeHtml(fuelConsumptionLabel(row))}</td>
+            <td class="p-3 text-[11px] text-slate-600">${escapeHtml(fuelConsumptionLabel(row))}${issueTip ? `<div class="text-[10px] text-rose-600 mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
             <td class="p-3 no-print text-center space-x-1 space-x-reverse">
                 ${(canEdit || canDelete) ? `
                     ${canEdit ? `<button type="button" onclick="openFuelModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
                     ${canDelete ? `<button type="button" onclick="deleteFuelLog(${Number(row.id)})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="${escapeHtml(t('ui.delete') || 'حذف')}"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                 ` : '<span class="text-slate-300">—</span>'}
             </td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 function requireFuelCompanyId() {
@@ -10224,7 +10312,16 @@ function filterFuelReportRows(rows) {
 }
 
 function renderFuelReportView() {
-    const filtered = enrichFuelRows(filterFuelReportRows(fuelReportCache)).sort((a, b) => {
+    const start = document.getElementById('fuelRepStartDate')?.value || '';
+    const end = document.getElementById('fuelRepEndDate')?.value || '';
+    const enrichedAll = enrichFuelRows(filterFuelReportRows(fuelReportCache));
+    const filtered = enrichedAll.filter(row => {
+        if (row._anchorPrior) return false;
+        const d = String(row.fill_date || '');
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        return true;
+    }).sort((a, b) => {
         const da = String(b.fill_date || '').localeCompare(String(a.fill_date || ''));
         if (da) return da;
         return Number(b.id || 0) - Number(a.id || 0);
@@ -10250,6 +10347,23 @@ function renderFuelReportView() {
     if (countEl) countEl.textContent = String(filtered.length);
     if (avgEl) avgEl.textContent = avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1);
 
+    const anomalyRows = filtered.filter(r => r._odoIssue);
+    const dropCount = anomalyRows.filter(r => r._odoIssue === 'drop').length;
+    const spikeCount = anomalyRows.filter(r => r._odoIssue === 'spike' || r._odoIssue === 'rate' || r._odoIssue === 'equal').length;
+    const banner = document.getElementById('fuelRepAnomalyBanner');
+    if (banner) {
+        if (!anomalyRows.length) {
+            banner.classList.add('hidden');
+            banner.textContent = '';
+        } else {
+            banner.classList.remove('hidden');
+            banner.className = 'mb-2.5 rounded-xl border px-3 py-2.5 text-[11px] font-bold border-rose-200 bg-rose-50 text-rose-800';
+            banner.textContent = currentLang === 'en'
+                ? `${anomalyRows.length} suspicious odometer reading(s): ${dropCount} drop(s), ${spikeCount} other. Consumption skips dropped intervals — fix entries then refresh.`
+                : `${anomalyRows.length} قراءة عداد مشبوهة: ${dropCount} تناقص، ${spikeCount} أخرى. الاستهلاك لا يُحسب عند التناقص — صحّح الإدخالات ثم حدّث التقرير.`;
+        }
+    }
+
     const byTruck = new Map();
     filtered.forEach(row => {
         const plate = String(row.truck_plate || '').trim() || '—';
@@ -10257,11 +10371,31 @@ function renderFuelReportView() {
         const agg = byTruck.get(plate);
         agg.liters += fuelNum(row.liters);
         agg.amount += fuelNum(row.amount);
-        if (row._distance != null && row._distance > 0 && fuelNum(row.liters) > 0) {
+        // لا تُدخل فترات الشذوذ في متوسط الكفاءة حتى لا يفسد الرسم
+        if (!row._odoIssue && row._distance != null && row._distance > 0 && fuelNum(row.liters) > 0) {
             agg.km += row._distance;
             agg.litersForKm += fuelNum(row.liters);
         }
     });
+    // إعادة حساب المتوسط الكلي بدون فترات مشبوهة
+    {
+        let cleanKm = 0;
+        let cleanLiters = 0;
+        filtered.forEach(r => {
+            if (!r._odoIssue && r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
+                cleanKm += r._distance;
+                cleanLiters += fuelNum(r.liters);
+            }
+        });
+        if (avgEl) {
+            avgEl.textContent = cleanKm > 0 ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1) : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
+            if (anomalyRows.length && cleanKm > 0) {
+                avgEl.title = currentLang === 'en'
+                    ? 'Average excludes suspicious odometer intervals'
+                    : 'المتوسط يستبعد فترات العداد المشبوهة';
+            }
+        }
+    }
     const truckList = [...byTruck.values()].map(t => ({
         ...t,
         per100: t.km > 0 ? (t.litersForKm / t.km) * 100 : 0
@@ -10275,18 +10409,27 @@ function renderFuelReportView() {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
         return;
     }
-    tbody.innerHTML = filtered.map(row => `
-        <tr class="hover:bg-slate-50 transition">
+    tbody.innerHTML = filtered.map(row => {
+        const issue = row._odoIssue;
+        const issueTip = fuelOdoIssueLabel(row);
+        const rowTone = issue === 'drop' || issue === 'spike'
+            ? 'bg-rose-50/70'
+            : (issue ? 'bg-amber-50/60' : 'hover:bg-slate-50');
+        const distLabel = row._distance == null
+            ? (issue === 'drop' || issue === 'equal' ? '—' : '—')
+            : `${formatFuelNumber(row._distance, 0)} كم`;
+        return `
+        <tr class="${rowTone} transition" title="${escapeHtml(issueTip)}">
             <td class="p-2.5 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
             <td class="p-2.5 font-black font-mono">${escapeHtml(row.truck_plate || '—')}</td>
-            <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</td>
-            <td class="p-2.5 font-mono">${row._distance == null ? '—' : escapeHtml(formatFuelNumber(row._distance, 0) + ' كم')}</td>
+            <td class="p-2.5 font-mono ${issue ? (issue === 'drop' || issue === 'spike' ? 'text-rose-700 font-black' : 'text-amber-800 font-black') : ''}">${escapeHtml(formatFuelNumber(row.odometer, 1))}${issue ? ' ⚠' : ''}</td>
+            <td class="p-2.5 font-mono">${escapeHtml(distLabel)}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-2.5 font-mono">${formatSAR(row.amount)}</td>
-            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}</td>
+            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}${issueTip ? `<div class="text-[10px] text-rose-600 font-bold mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
             <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 async function loadFuelReport() {
@@ -10302,15 +10445,36 @@ async function loadFuelReport() {
         fillFuelTruckSelect('fuelRepTruckFilter', true);
         const start = document.getElementById('fuelRepStartDate')?.value || '';
         const end = document.getElementById('fuelRepEndDate')?.value || '';
-        let query = scopeFuelQuery(client.from('fuel_logs').select('*'))
+        // نجلب كل سجلات الشركة حتى تُحسب المسافة/الشذوذ مقابل التعبئة السابقة الحقيقية
+        const { data, error } = await scopeFuelQuery(client.from('fuel_logs').select('*'))
             .order('fill_date', { ascending: false })
             .order('id', { ascending: false });
-        if (start) query = query.gte('fill_date', start);
-        if (end) query = query.lte('fill_date', end);
-        const { data, error } = await query;
         if (error) throw error;
-        fuelReportCache = data || [];
-        fuelCache = data || [];
+        const all = data || [];
+        fuelCache = all;
+        fuelReportCache = all.filter(row => {
+            const d = String(row.fill_date || '');
+            if (start && d < start) return false;
+            if (end && d > end) return false;
+            return true;
+        });
+        // للتعبئة الأولى في الفترة: أرفق آخر قراءة قبل البداية حتى يظهر التناقص/المسافة بشكل صحيح
+        if (start) {
+            const plates = new Set(fuelReportCache.map(r => String(r.truck_plate || '').trim()));
+            plates.forEach(plate => {
+                const prior = all
+                    .filter(r => String(r.truck_plate || '').trim() === plate && String(r.fill_date || '') < start)
+                    .sort((a, b) => {
+                        const da = String(a.fill_date || '').localeCompare(String(b.fill_date || ''));
+                        if (da) return da;
+                        return Number(a.id || 0) - Number(b.id || 0);
+                    });
+                const last = prior[prior.length - 1];
+                if (last && !fuelReportCache.some(r => Number(r.id) === Number(last.id))) {
+                    fuelReportCache.push({ ...last, _anchorPrior: true });
+                }
+            });
+        }
         renderFuelReportView();
     } catch (err) {
         console.error(err);
@@ -10361,6 +10525,21 @@ async function saveFuelLog(event) {
     if (companyId == null) {
         showFuelError(currentLang === 'en' ? 'Company context is missing.' : 'تعذر تحديد الشركة الحالية.');
         return;
+    }
+    const prevFill = previousFuelOdometerForPlate(plate, fillDate, editId || null);
+    if (prevFill && Number.isFinite(fuelNum(prevFill.odometer))) {
+        const prevOdo = fuelNum(prevFill.odometer);
+        if (odometer < prevOdo) {
+            const ok = confirm(currentLang === 'en'
+                ? `Odometer (${odometer}) is lower than previous fill (${prevOdo} on ${prevFill.fill_date}). Save anyway?`
+                : `قراءة العداد (${odometer}) أقل من التعبئة السابقة (${prevOdo} بتاريخ ${prevFill.fill_date}). هل تريد الحفظ رغم ذلك؟`);
+            if (!ok) return;
+        } else if (odometer - prevOdo > FUEL_ODO_SPIKE_KM) {
+            const ok = confirm(currentLang === 'en'
+                ? `Large jump from ${prevOdo} to ${odometer} (+${Math.round(odometer - prevOdo)} km). Confirm this reading is correct?`
+                : `قفزة كبيرة من ${prevOdo} إلى ${odometer} (+${Math.round(odometer - prevOdo)} كم). هل القراءة صحيحة؟`);
+            if (!ok) return;
+        }
     }
     const payload = withCompany({
         company_id: companyId,
