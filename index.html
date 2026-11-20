@@ -3419,7 +3419,7 @@
                                             <th class="p-2.5" data-i18n="th.date">التاريخ</th>
                                             <th class="p-2.5" data-i18n="platform.amount">المبلغ</th>
                                             <th class="p-2.5" data-i18n="sub.status">الحالة</th>
-                                            <th class="p-2.5" data-i18n="payreq.notesOrReason">ملاحظة / سبب المراجعة</th>
+                                            <th class="p-2.5" data-i18n="payreq.reviewResult">نتيجة المراجعة</th>
                                         </tr>
                                     </thead>
                                     <tbody id="companyPaymentRequestsTable">
@@ -5967,16 +5967,18 @@ function paymentRequestNotesHtml(row) {
     const companyNote = String(row?.notes || '').trim();
     const receiptName = String(row?.receipt_name || '').trim();
     const parts = [];
-    if (review) {
-        const label = status === 'rejected'
-            ? t('payreq.rejectReason')
-            : (status === 'approved' ? t('payreq.reviewNote') : t('payreq.reviewNote'));
-        const tone = status === 'rejected' ? 'text-rose-700' : 'text-slate-800';
-        parts.push(`<div class="font-bold ${tone}">${escapeHtml(label)}: ${escapeHtml(review)}</div>`);
+    if (status === 'rejected') {
+        // نص سبب الرفض كما كتبه السوبر آدمن (بدون عنوان)، بالأحمر
+        const text = review || t('payreq.statusRejected');
+        parts.push(`<div class="font-bold text-rose-700">${escapeHtml(text)}</div>`);
+    } else if (status === 'approved') {
+        parts.push(`<div class="font-bold text-emerald-700">${escapeHtml(t('payreq.approvedResult'))}</div>`);
+    } else if (status === 'pending') {
+        parts.push(`<div class="font-bold text-amber-700">${escapeHtml(t('payreq.statusPending'))}</div>`);
     }
-    if (companyNote) {
-        parts.push(`<div class="${review ? 'text-slate-500 mt-0.5' : ''}">${escapeHtml(companyNote)}</div>`);
-    } else if (!review && receiptName) {
+    if (companyNote && status === 'pending') {
+        parts.push(`<div class="text-slate-500 mt-0.5">${escapeHtml(companyNote)}</div>`);
+    } else if (!parts.length && receiptName) {
         parts.push(escapeHtml(receiptName));
     }
     return parts.length ? parts.join('') : '—';
@@ -12351,9 +12353,8 @@ const I18N = {
         'payreq.submit': 'إرسال الإيصال',
         'payreq.whatsappNotify': 'إبلاغ الدعم الفني عبر الواتساب',
         'payreq.submitted': 'تم إرسال الإيصال بنجاح. يرجى الانتظار حتى تتم المراجعة والتفعيل من قبل الدعم الفني.',
-        'payreq.notesOrReason': 'ملاحظة / سبب المراجعة',
-        'payreq.rejectReason': 'سبب الرفض',
-        'payreq.reviewNote': 'ملاحظة المراجعة',
+        'payreq.reviewResult': 'نتيجة المراجعة',
+        'payreq.approvedResult': 'تم الاعتماد',
         'payreq.sqlMissing': 'نفّذ ملف fleetop-payment-requests.sql ثم أعد المحاولة.',
         'payreq.storageSqlMissing': 'نفّذ ملف fleetop-receipt-storage.sql ثم أعد المحاولة.',
         'payreq.uploadFailed': 'تعذر رفع الإيصال. تأكد من الشركة والتخزين.',
@@ -13222,9 +13223,8 @@ const I18N = {
         'payreq.submit': 'Submit receipt',
         'payreq.whatsappNotify': 'Notify technical support via WhatsApp',
         'payreq.submitted': 'Receipt submitted successfully. Please wait until support reviews and activates your account.',
-        'payreq.notesOrReason': 'Note / review reason',
-        'payreq.rejectReason': 'Rejection reason',
-        'payreq.reviewNote': 'Review note',
+        'payreq.reviewResult': 'Review result',
+        'payreq.approvedResult': 'Approved',
         'payreq.sqlMissing': 'Run fleetop-payment-requests.sql then try again.',
         'payreq.storageSqlMissing': 'Run fleetop-receipt-storage.sql then try again.',
         'payreq.uploadFailed': 'Could not upload the receipt. Check company and storage setup.',
