@@ -10541,16 +10541,27 @@ async function saveFuelLog(event) {
     const prevFill = previousFuelOdometerForPlate(plate, fillDate, editId || null);
     if (prevFill && Number.isFinite(fuelNum(prevFill.odometer))) {
         const prevOdo = fuelNum(prevFill.odometer);
-        if (odometer < prevOdo) {
+        const deltaKm = odometer - prevOdo;
+        if (deltaKm < 0) {
             const ok = confirm(currentLang === 'en'
                 ? `Odometer (${odometer}) is lower than previous fill (${prevOdo} on ${prevFill.fill_date}). Save anyway?`
                 : `قراءة العداد (${odometer}) أقل من التعبئة السابقة (${prevOdo} بتاريخ ${prevFill.fill_date}). هل تريد الحفظ رغم ذلك؟`);
             if (!ok) return;
-        } else if (odometer - prevOdo > FUEL_ODO_SPIKE_KM) {
+        } else if (deltaKm > FUEL_ODO_SPIKE_KM) {
             const ok = confirm(currentLang === 'en'
-                ? `Large jump from ${prevOdo} to ${odometer} (+${Math.round(odometer - prevOdo)} km). Confirm this reading is correct?`
-                : `قفزة كبيرة من ${prevOdo} إلى ${odometer} (+${Math.round(odometer - prevOdo)} كم). هل القراءة صحيحة؟`);
+                ? `Large jump from ${prevOdo} to ${odometer} (+${Math.round(deltaKm)} km). Confirm this reading is correct?`
+                : `قفزة كبيرة من ${prevOdo} إلى ${odometer} (+${Math.round(deltaKm)} كم). هل القراءة صحيحة؟`);
             if (!ok) return;
+        }
+        if (deltaKm > 0 && liters > 0) {
+            const per100 = (liters / deltaKm) * 100;
+            if (per100 > FUEL_PER100_MAX || per100 < FUEL_PER100_MIN) {
+                const rateLabel = formatFuelNumber(per100, 1);
+                const ok = confirm(currentLang === 'en'
+                    ? `Unusual consumption: ${rateLabel} L/100km over ${Math.round(deltaKm)} km (${liters} L).\nExpected roughly ${FUEL_PER100_MIN}–${FUEL_PER100_MAX} L/100km. Save anyway?`
+                    : `استهلاك غير معتاد: ${rateLabel} لتر/100كم على مسافة ${Math.round(deltaKm)} كم (${liters} لتر).\nالنطاق المعتاد تقريباً ${FUEL_PER100_MIN}–${FUEL_PER100_MAX} لتر/100كم. هل تريد الحفظ رغم ذلك؟`);
+                if (!ok) return;
+            }
         }
     }
     const payload = withCompany({
