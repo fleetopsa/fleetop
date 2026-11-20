@@ -1332,11 +1332,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.password">كلمة المرور</label>
-                    <input type="password" id="registerPassword" name="fleetop_reg_password" autocomplete="new-password" required minlength="8" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="8 أحرف على الأقل + حرف ورقم">
+                    <input type="password" id="registerPassword" name="fleetop_reg_password" autocomplete="new-password" required minlength="8" class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.passwordRulesPh" placeholder="8 أحرف على الأقل + حرف ورقم">
                 </div>
                 <div>
                     <label class="block text-xs font-bold mb-1" style="color:#e8d5a3" data-i18n="login.confirmPassword">تأكيد كلمة المرور</label>
-                    <input type="password" id="registerConfirmPassword" name="fleetop_reg_confirm" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" placeholder="••••••••">
+                    <input type="password" id="registerConfirmPassword" name="fleetop_reg_confirm" autocomplete="new-password" required class="w-full p-3 rounded-xl outline-none text-sm text-white placeholder:text-white/40" style="background:rgba(255,255,255,0.08);border:1px solid rgba(196,163,90,0.35);" data-i18n-placeholder="login.confirmPasswordPh" placeholder="••••••••">
                 </div>
                 <button type="submit" id="registerSubmitBtn" class="w-full font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-70" style="background:#c4a35a;color:#0b2a4a" data-i18n="login.registerSubmit">
                     إنشاء حساب
@@ -12305,6 +12305,8 @@ const I18N = {
         'login.usernamePh': 'أدخل اسم المستخدم',
         'login.password': 'كلمة المرور',
         'login.confirmPassword': 'تأكيد كلمة المرور',
+        'login.passwordRulesPh': '8 أحرف على الأقل + حرف ورقم',
+        'login.confirmPasswordPh': 'أعد كتابة كلمة المرور',
         'login.companyName': 'اسم الشركة',
         'login.companyNamePh': 'اسم الشركة',
         'login.employeeName': 'اسم المسؤول',
@@ -13177,6 +13179,8 @@ const I18N = {
         'login.usernamePh': 'Enter username',
         'login.password': 'Password',
         'login.confirmPassword': 'Confirm password',
+        'login.passwordRulesPh': 'At least 8 characters + a letter and a number',
+        'login.confirmPasswordPh': 'Re-enter the password',
         'login.companyName': 'Company name',
         'login.companyNamePh': 'Company name',
         'login.employeeName': 'Admin name',
