@@ -4505,7 +4505,7 @@
         const PRESENCE_ONLINE_MS = 5 * 60 * 1000;
         const PRESENCE_BEAT_MS = 30000;
         const PRESENCE_TOUCH_MIN_MS = 20000;
-        const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+        const IDLE_TIMEOUT_MS = 8 * 60 * 1000;
         const IDLE_CHECK_MS = 10000;
         let presenceTimer = null;
         let presenceByUserId = {};
@@ -4604,8 +4604,8 @@
             idleLogoutBusy = true;
             stopIdleWatch();
             const message = currentLang === 'en'
-                ? 'You were signed out after 5 minutes of inactivity.'
-                : 'تم تسجيل خروجك تلقائياً بعد 5 دقائق من الخمول.';
+                ? 'You were signed out after 8 minutes of inactivity.'
+                : 'تم تسجيل خروجك تلقائياً بعد 8 دقائق من الخمول.';
             try {
                 await handleLogout('idle');
             } finally {
