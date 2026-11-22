@@ -1400,6 +1400,13 @@
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="sub.notes">ملاحظة</label>
                     <input type="text" id="subEditNotes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" placeholder="">
                 </div>
+                <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <input type="checkbox" id="subEditBayanEntitled" class="mt-0.5 accent-amber-500">
+                    <span>
+                        <span data-i18n="bayan.entitleTitle">الربط مع منصة بيان لإصدار وثائق النقل</span>
+                        <span class="block text-[11px] font-medium text-slate-500 mt-0.5" data-i18n="bayan.entitleHint">يُفعّل من سوبر أدمن فقط للشركات المشتركة؛ التفعيل الداخلي يبقى لأدمن الشركة.</span>
+                    </span>
+                </label>
                 <p id="subEditError" class="hidden text-xs font-bold text-rose-600"></p>
                 <div class="flex gap-2 pt-2">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl text-xs" data-i18n="ui.save">حفظ</button>
@@ -3317,25 +3324,40 @@
                                         <span data-i18n="settings.commissionRequired">إجباري</span>
                                     </label>
                                 </div>
-                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                <div id="bayanSettingsCard" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                                     <div>
-                                        <p class="text-xs font-black text-slate-800" data-i18n="bayan.settingsTitle">إصدار بيان من FleetOp</p>
-                                        <p class="text-[11px] text-slate-500 mt-1" data-i18n="bayan.settingsHint">فعّل تجهيز وثيقة بيان من شاشة الرحلات. الإصدار الرسمي عبر لوجستي يُربط بعد اعتماد الواجهة.</p>
+                                        <p class="text-xs font-black text-slate-800" data-i18n="bayan.settingsTitle">إصدار وثائق النقل من منصة بيان</p>
+                                        <p class="text-[11px] text-slate-500 mt-1" data-i18n="bayan.settingsHint">خدمة قيمة مضافة للشركات المشتركة ويفعّلها أدمن الشركة داخلياً.</p>
                                     </div>
-                                    <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                    <p id="bayanEntitleBanner" class="text-[11px] font-bold rounded-xl px-3 py-2 border bg-amber-50 text-amber-800 border-amber-100 leading-5"></p>
+                                    <label id="bayanEnabledLabel" class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer">
                                         <input type="checkbox" id="bayanEnabled" class="mt-0.5 accent-amber-500">
-                                        <span data-i18n="bayan.enabled">تفعيل إصدار بيان من داخل الرحلات</span>
+                                        <span data-i18n="bayan.enabled">تفعيل إصدار وثائق النقل داخل الشركة</span>
                                     </label>
                                     <div>
                                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.mode">وضع العمل</label>
                                         <select id="bayanMode" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                                            <option value="prepare" data-i18n="bayan.modePrepare">تجهيز وحفظ الطلب داخل FleetOp</option>
-                                            <option value="live" data-i18n="bayan.modeLive">إصدار مباشر (عند توفر الربط)</option>
+                                            <option value="prepare" data-i18n="bayan.modePrepare">تجهيز وحفظ + تصدير ملخص لوجستي</option>
+                                            <option value="live" data-i18n="bayan.modeLive">إصدار مباشر عبر Bayan API (عند الربط)</option>
                                         </select>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.appId">App ID</label>
+                                            <input type="text" id="bayanAppId" autocomplete="off" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" data-i18n-placeholder="bayan.appIdPh" placeholder="من بوابة لوجستي / بيان">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.appKey">App Key</label>
+                                            <input type="password" id="bayanAppKey" autocomplete="new-password" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" data-i18n-placeholder="bayan.appKeyPh" placeholder="يُحفظ لأدمن الشركة فقط">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.orgNumber">رقم المنشأة في لوجستي</label>
+                                        <input type="text" id="bayanOrgNumber" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.notes">ملاحظات الربط</label>
-                                        <textarea id="bayanNotes" rows="2" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.notesPh" placeholder="رقم المنشأة في لوجستي / جهة الاعتماد / ملاحظات داخلية"></textarea>
+                                        <textarea id="bayanNotes" rows="2" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.notesPh" placeholder="جهة الاعتماد / ملاحظات داخلية"></textarea>
                                     </div>
                                 </div>
                                 <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs" data-i18n="settings.save">حفظ إعدادات الشركة</button>
@@ -3854,6 +3876,13 @@
                         <option value="" data-i18n="ui.chooseTruck">اختر الشاحنة</option>
                     </select>
                 </div>
+                <label class="flex items-start gap-2 text-xs font-bold text-slate-700 cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <input type="checkbox" id="fuelIsBaseline" class="mt-0.5 accent-amber-500" onchange="toggleFuelBaselineFields()">
+                    <span>
+                        <span data-i18n="fuel.baseline">رصيد افتتاحي / قراءة تأسيس</span>
+                        <span class="block text-[11px] font-medium text-slate-500 mt-0.5" data-i18n="fuel.baselineHint">لحفظ قراءة عداد مرجعية بدون حساب استهلاك (مفيد عند بدء التسجيل أو البيانات بأثر رجعي).</span>
+                    </span>
+                </label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="fuel.odometer">قراءة العداد (كم)</label>
@@ -4069,10 +4098,39 @@
                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.receiverId">هوية / سجل المستلم</label>
                         <input type="text" id="bayanReceiverId" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.senderPhone">جوال المرسل</label>
+                        <input type="text" id="bayanSenderPhone" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="9665xxxxxxxx" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.receiverPhone">جوال المستلم</label>
+                        <input type="text" id="bayanReceiverPhone" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="9665xxxxxxxx" dir="ltr">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.goodType">نوع الحمولة</label>
+                    <select id="bayanGoodType" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="" data-i18n="bayan.goodTypePick">اختر نوع الحمولة</option>
+                        <option value="1|مواد غذائية">مواد غذائية</option>
+                        <option value="2|مواد بناء">مواد بناء</option>
+                        <option value="3|بضائع عامة">بضائع عامة</option>
+                        <option value="4|مواد كيميائية">مواد كيميائية</option>
+                        <option value="5|أجهزة ومعدات">أجهزة ومعدات</option>
+                        <option value="6|حاوية">حاوية</option>
+                        <option value="7|بلاستيك">بلاستيك</option>
+                        <option value="8|أخشاب">أخشاب</option>
+                        <option value="9|معادن وحديد">معادن وحديد</option>
+                        <option value="10|منتجات نفطية">منتجات نفطية</option>
+                        <option value="11|مياه ومشروبات">مياه ومشروبات</option>
+                        <option value="12|أثاث ومفروشات">أثاث ومفروشات</option>
+                        <option value="13|سيارات ومركبات">سيارات ومركبات</option>
+                        <option value="14|نفايات قابلة للتدوير">نفايات قابلة للتدوير</option>
+                        <option value="99|أخرى">أخرى</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.cargoDesc">وصف الحمولة</label>
-                    <textarea id="bayanCargoDesc" rows="2" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.cargoDescPh" placeholder="نوع البضاعة ووصفها"></textarea>
+                    <textarea id="bayanCargoDesc" rows="2" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="bayan.cargoDescPh" placeholder="تفاصيل إضافية عن البضاعة"></textarea>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
@@ -4088,21 +4146,18 @@
                         <input type="number" id="bayanCargoWeight" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.fare">أجرة النقل</label>
-                        <input type="number" id="bayanFare" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.senderPhone">جوال المرسل</label>
-                        <input type="text" id="bayanSenderPhone" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                    </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.fare">أجرة النقل</label>
+                    <input type="number" id="bayanFare" min="0" step="0.01" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="bayan.docNotes">ملاحظات</label>
                     <input type="text" id="bayanDocNotes" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
                 </div>
                 <p id="bayanFormError" class="hidden text-[11px] font-bold text-rose-600"></p>
+                <button type="button" id="bayanDeleteDraftBtn" onclick="deleteBayanDocument()" class="hidden w-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2.5 rounded-xl text-xs transition">
+                    <i class="fa-solid fa-trash-can ml-1"></i> <span data-i18n="bayan.deleteDraft">حذف المسودة</span>
+                </button>
                 <div class="flex flex-col sm:flex-row gap-2 pt-1">
                     <button type="button" onclick="closeBayanModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition" data-i18n="ui.cancel">إلغاء</button>
                     <button type="button" id="bayanSaveDraftBtn" onclick="submitBayanDocument(event, 'مسودة')" class="flex-1 bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold py-3 rounded-xl text-xs transition" data-i18n="bayan.saveDraft">حفظ مسودة</button>
@@ -5557,6 +5612,19 @@ async function loadPlatformDashboard() {
         const { data, error } = await client.rpc('list_support_companies');
         if (error) throw error;
         subscriptionsCache = data || [];
+        try {
+            const ids = subscriptionsCache.map((c) => Number(c.id)).filter(Boolean);
+            if (ids.length) {
+                const { data: entitleRows } = await client
+                    .from('companies')
+                    .select('id, bayan_entitled')
+                    .in('id', ids);
+                const map = new Map((entitleRows || []).map((r) => [Number(r.id), !!r.bayan_entitled]));
+                subscriptionsCache.forEach((c) => {
+                    if (map.has(Number(c.id))) c.bayan_entitled = map.get(Number(c.id));
+                });
+            }
+        } catch (entitleErr) { /* عمود bayan_entitled اختياري حتى تنفيذ SQL */ }
         fillPlatformCompanySelects();
         const total = subscriptionsCache.length;
         const active = subscriptionsCache.filter((c) => subscriptionAccessOk(c)).length;
@@ -5578,8 +5646,11 @@ async function loadPlatformDashboard() {
             table.innerHTML = subscriptionsCache.map((c) => {
                 const ok = subscriptionAccessOk(c);
                 const tone = ok ? 'text-emerald-300' : 'text-rose-300';
+                const bayanBadge = c.bayan_entitled
+                    ? `<span class="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(196,163,90,0.25);color:#e8d5a3">${escapeHtml(t('bayan.short'))}</span>`
+                    : '';
                 return `<tr>
-                    <td class="p-3 font-bold">${escapeHtml(c.name || '—')}</td>
+                    <td class="p-3 font-bold">${escapeHtml(c.name || '—')}${bayanBadge ? `<div>${bayanBadge}</div>` : ''}</td>
                     <td class="p-3 font-mono" style="color:#c4a35a">${escapeHtml(c.company_code || '—')}</td>
                     <td class="p-3">${escapeHtml(subscriptionPlanLabel(c.subscription_plan))}</td>
                     <td class="p-3 font-bold ${tone}">${escapeHtml(subscriptionStatusLabel(c.subscription_status))}</td>
@@ -6059,7 +6130,7 @@ async function loadCompanySubscriptionCard() {
         if (!row && companyId != null) {
             const direct = await client
                 .from('companies')
-                .select('id, name, company_code, subscription_plan, subscription_status, subscription_starts_at, subscription_ends_at, subscription_notes')
+                .select('id, name, company_code, subscription_plan, subscription_status, subscription_starts_at, subscription_ends_at, subscription_notes, bayan_entitled')
                 .eq('id', companyId)
                 .maybeSingle();
             if (!direct.error && direct.data) {
@@ -6072,14 +6143,25 @@ async function loadCompanySubscriptionCard() {
                     subscription_starts_at: direct.data.subscription_starts_at,
                     subscription_ends_at: direct.data.subscription_ends_at,
                     subscription_notes: direct.data.subscription_notes,
+                    bayan_entitled: !!direct.data.bayan_entitled,
                     access_ok: subscriptionAccessOk(direct.data)
                 };
             }
         }
+        if (row && row.bayan_entitled == null && companyId != null) {
+            try {
+                const ent = await client.from('companies').select('bayan_entitled').eq('id', companyId).maybeSingle();
+                if (!ent.error) row.bayan_entitled = !!ent.data?.bayan_entitled;
+            } catch (e) {}
+        }
+        companyBayanEntitled = !!(row && row.bayan_entitled);
         paintCompanySubscriptionCard(row || null);
+        paintBayanSettingsGate();
     } catch (err) {
         console.warn('company subscription card:', err);
+        companyBayanEntitled = false;
         paintCompanySubscriptionCard(null);
+        paintBayanSettingsGate();
     }
     if (isAdminUser() || isSupportMode()) {
         await loadCompanyPaymentRequests();
@@ -6375,6 +6457,8 @@ function openSubscriptionEditModal(companyId) {
     document.getElementById('subEditStartsAt').value = company.subscription_starts_at ? String(company.subscription_starts_at).slice(0, 10) : '';
     document.getElementById('subEditEndsAt').value = company.subscription_ends_at ? String(company.subscription_ends_at).slice(0, 10) : '';
     document.getElementById('subEditNotes').value = company.subscription_notes || '';
+    const bayanEntitle = document.getElementById('subEditBayanEntitled');
+    if (bayanEntitle) bayanEntitle.checked = !!company.bayan_entitled;
     document.getElementById('subEditError')?.classList.add('hidden');
     document.getElementById('subscriptionEditModal')?.classList.remove('hidden');
 }
@@ -6387,6 +6471,7 @@ async function saveSubscriptionEdit(e) {
     e.preventDefault();
     const companyId = Number(document.getElementById('subEditCompanyId').value);
     const errBox = document.getElementById('subEditError');
+    const entitled = !!document.getElementById('subEditBayanEntitled')?.checked;
     try {
         const { error } = await client.rpc('admin_update_subscription', {
             p_company_id: companyId,
@@ -6397,6 +6482,21 @@ async function saveSubscriptionEdit(e) {
             p_notes: document.getElementById('subEditNotes').value || null
         });
         if (error) throw error;
+        const entitleRpc = await client.rpc('admin_set_bayan_entitlement', {
+            p_company_id: companyId,
+            p_entitled: entitled
+        });
+        if (entitleRpc.error) {
+            if (!/admin_set_bayan_entitlement|does not exist|schema cache/i.test(String(entitleRpc.error.message || ''))) {
+                throw entitleRpc.error;
+            }
+            const direct = await client.from('companies').update({ bayan_entitled: entitled }).eq('id', companyId);
+            if (direct.error && !/bayan_entitled|schema cache|column/i.test(String(direct.error.message || ''))) {
+                throw direct.error;
+            }
+        }
+        const cached = subscriptionsCache.find((c) => Number(c.id) === companyId);
+        if (cached) cached.bayan_entitled = entitled;
         closeSubscriptionEditModal();
         await loadPlatformDashboard();
         alert(t('sub.saved'));
@@ -7184,7 +7284,9 @@ function openTripDetails(tripNo) {
         ['حالة السداد', tripPaymentLabel(trip)],
         ['دفعات السداد', { html: formatPaymentLines(trip), span: true }],
         [t('bayan.status'), bayanDoc ? bayanStatusLabel(bayanDoc.status) : t('bayan.none')],
-        [t('bayan.docNo'), bayanDoc?.document_number || '—']
+        [t('bayan.docNo'), bayanDoc?.document_number || '—'],
+        [t('bayan.goodType'), bayanDoc?.good_type_name || '—'],
+        [t('bayan.receiverPhone'), bayanDoc?.receiver_phone || '—']
     ];
     body.innerHTML = fields.map(([label, value]) => `
         <div class="${value && value.span ? 'col-span-2' : ''} bg-slate-50 border border-slate-200 rounded-xl p-3">
@@ -7193,6 +7295,12 @@ function openTripDetails(tripNo) {
         </div>
     `).join('');
     const bayanActions = document.getElementById('tripDetailBayanActions');
+    const bayanBtnLabel = document.querySelector('#tripDetailBayanBtn [data-i18n="bayan.openIssue"]');
+    if (bayanBtnLabel) {
+        bayanBtnLabel.textContent = bayanDoc
+            ? (bayanDoc.status === 'مسودة' ? t('bayan.openDraft') : t('bayan.openIssue'))
+            : t('bayan.openIssue');
+    }
     if (bayanActions) bayanActions.classList.toggle('hidden', !canUseBayan());
     modal.classList.remove('hidden');
 }
@@ -10115,11 +10223,39 @@ function formatFuelNumber(value, digits = 1) {
     return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
-/** عتبة تنبيه قفزة عداد غير منطقية بين تعبئتين (كم) */
+/** عتبة قفزة أساسية للفجوات القصيرة (كم) — للفجوات الأطول تُحسب حسب الأيام */
 const FUEL_ODO_SPIKE_KM = 2500;
+/** سقف يومي معقول لشاحنة ثقيلة عند تقدير القفزة حسب المدة */
+const FUEL_MAX_KM_PER_DAY = 900;
+const FUEL_SPIKE_ABS_CAP = 30000;
 /** استهلاك خارج النطاق المعقول لشاحنة ثقيلة (لتر/100كم) */
 const FUEL_PER100_MIN = 12;
 const FUEL_PER100_MAX = 75;
+
+function fuelDaysBetween(prevDate, fillDate) {
+    const a = dateOnly(prevDate);
+    const b = dateOnly(fillDate);
+    if (!a || !b) return 1;
+    const ms = new Date(`${b}T00:00:00`).getTime() - new Date(`${a}T00:00:00`).getTime();
+    if (!Number.isFinite(ms) || ms <= 0) return 1;
+    return Math.max(1, Math.round(ms / 86400000));
+}
+
+/** قفزة مشبوهة فقط إذا تجاوزت السقف اليومي × عدد الأيام (أو 2500 كم للفجوات القصيرة) */
+function fuelSpikeThresholdKm(prevDate, fillDate) {
+    const days = fuelDaysBetween(prevDate, fillDate);
+    return Math.min(FUEL_SPIKE_ABS_CAP, Math.max(FUEL_ODO_SPIKE_KM, days * FUEL_MAX_KM_PER_DAY));
+}
+
+function isFuelBaselineRow(row) {
+    if (row?.is_baseline === true || row?.is_baseline === 1 || row?.is_baseline === 'true') return true;
+    return /رصيد\s*افتتاحي|opening\s*balance|baseline|قراءة\s*تأسيس/i.test(String(row?.notes || ''));
+}
+
+/** التناقص فقط يمنع حساب الاستهلاك؛ القفزات/المعدلات تبقى تحذيرية */
+function fuelIssueBlocksConsumption(issue) {
+    return issue === 'drop';
+}
 
 /** يحسب المسافة والاستهلاك لكل سجل بناءً على التعبئة السابقة لنفس اللوحة */
 function enrichFuelRows(rows) {
@@ -10143,6 +10279,20 @@ function enrichFuelRows(rows) {
             let distance = null;
             let per100 = null;
             let odoIssue = null;
+            const baseline = isFuelBaselineRow(row);
+            if (baseline) {
+                // قراءة تأسيس / رصيد افتتاحي: مرجع عداد فقط بدون استهلاك
+                metrics.set(row.id, {
+                    distance: null,
+                    per100: null,
+                    odoIssue: null,
+                    baseline: true,
+                    prevOdo: prev ? fuelNum(prev.odometer) : null,
+                    prevDate: prev ? String(prev.fill_date || '') : null
+                });
+                prev = row;
+                return;
+            }
             if (prev) {
                 const delta = fuelNum(row.odometer) - fuelNum(prev.odometer);
                 if (delta < 0) {
@@ -10153,7 +10303,8 @@ function enrichFuelRows(rows) {
                     distance = delta;
                     const liters = fuelNum(row.liters);
                     if (liters > 0) per100 = (liters / delta) * 100;
-                    if (delta > FUEL_ODO_SPIKE_KM) odoIssue = 'spike';
+                    const spikeMax = fuelSpikeThresholdKm(prev.fill_date, row.fill_date);
+                    if (delta > spikeMax) odoIssue = 'spike';
                     else if (per100 != null && (per100 < FUEL_PER100_MIN || per100 > FUEL_PER100_MAX)) {
                         odoIssue = 'rate';
                     }
@@ -10163,6 +10314,7 @@ function enrichFuelRows(rows) {
                 distance,
                 per100,
                 odoIssue,
+                baseline: false,
                 prevOdo: prev ? fuelNum(prev.odometer) : null,
                 prevDate: prev ? String(prev.fill_date || '') : null
             });
@@ -10176,6 +10328,7 @@ function enrichFuelRows(rows) {
             _distance: m.distance,
             _per100: m.per100,
             _odoIssue: m.odoIssue || null,
+            _baseline: !!m.baseline,
             _prevOdo: m.prevOdo,
             _prevDate: m.prevDate
         };
@@ -10283,6 +10436,9 @@ async function openFuelModal(id) {
     document.getElementById('fuelAmount').value = row?.amount != null ? row.amount : '';
     document.getElementById('fuelStation').value = row?.station || '';
     document.getElementById('fuelNotes').value = row?.notes || '';
+    const baselineCb = document.getElementById('fuelIsBaseline');
+    if (baselineCb) baselineCb.checked = isFuelBaselineRow(row || {});
+    toggleFuelBaselineFields();
     const title = document.getElementById('fuelModalTitle');
     if (title) title.textContent = row ? t('fuel.edit') : t('fuel.add');
     const submit = document.getElementById('fuelSubmitBtn');
@@ -10290,6 +10446,21 @@ async function openFuelModal(id) {
     document.getElementById('fuelModal')?.classList.remove('hidden');
     if (typeof loadTripSuggestions === 'function') loadTripSuggestions();
     if (typeof bindTripSuggestions === 'function') bindTripSuggestions();
+}
+
+function toggleFuelBaselineFields() {
+    const baseline = !!document.getElementById('fuelIsBaseline')?.checked;
+    const liters = document.getElementById('fuelLiters');
+    const amount = document.getElementById('fuelAmount');
+    if (liters) {
+        liters.required = !baseline;
+        liters.min = baseline ? '0' : '0.01';
+        if (baseline && (!liters.value || Number(liters.value) <= 0)) liters.value = '0';
+    }
+    if (amount) {
+        amount.required = !baseline;
+        if (baseline && (!amount.value || Number(amount.value) < 0)) amount.value = '0';
+    }
 }
 
 function closeFuelModal() {
@@ -10316,12 +10487,12 @@ function renderFuelManage() {
     const canDelete = hasPerm('fuel', 'delete');
     tbody.innerHTML = enriched.map(row => {
         const issue = row._odoIssue;
-        const rowTone = issue === 'drop' || issue === 'spike'
+        const rowTone = issue === 'drop'
             ? 'bg-rose-50/70'
             : (issue ? 'bg-amber-50/60' : 'hover:bg-slate-50');
         const issueTip = fuelOdoIssueLabel(row);
         const odoCell = issue
-            ? `<span class="font-mono ${issue === 'drop' || issue === 'spike' ? 'text-rose-700' : 'text-amber-800'}" title="${escapeHtml(issueTip)}">${escapeHtml(formatFuelNumber(row.odometer, 1))} <i class="fa-solid fa-triangle-exclamation text-[10px]"></i></span>`
+            ? `<span class="font-mono ${issue === 'drop' ? 'text-rose-700' : 'text-amber-800'}" title="${escapeHtml(issueTip)}">${escapeHtml(formatFuelNumber(row.odometer, 1))} <i class="fa-solid fa-triangle-exclamation text-[10px]"></i></span>`
             : `<span class="font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</span>`;
         return `
         <tr class="${rowTone} transition">
@@ -10425,7 +10596,7 @@ function renderFuelReportView() {
 
     const anomalyRows = filtered.filter(r => r._odoIssue);
     const dropCount = anomalyRows.filter(r => r._odoIssue === 'drop').length;
-    const spikeCount = anomalyRows.filter(r => r._odoIssue === 'spike' || r._odoIssue === 'rate' || r._odoIssue === 'equal').length;
+    const softCount = anomalyRows.filter(r => r._odoIssue === 'spike' || r._odoIssue === 'rate' || r._odoIssue === 'equal').length;
     const banner = document.getElementById('fuelRepAnomalyBanner');
     if (banner) {
         if (!anomalyRows.length) {
@@ -10433,10 +10604,17 @@ function renderFuelReportView() {
             banner.textContent = '';
         } else {
             banner.classList.remove('hidden');
-            banner.className = 'mb-2.5 rounded-xl border px-3 py-2.5 text-[11px] font-bold border-rose-200 bg-rose-50 text-rose-800';
-            banner.textContent = currentLang === 'en'
-                ? `${anomalyRows.length} suspicious odometer reading(s): ${dropCount} drop(s), ${spikeCount} other. Consumption skips dropped intervals — fix entries then refresh.`
-                : `${anomalyRows.length} قراءة عداد مشبوهة: ${dropCount} تناقص، ${spikeCount} أخرى. الاستهلاك لا يُحسب عند التناقص — صحّح الإدخالات ثم حدّث التقرير.`;
+            if (dropCount > 0) {
+                banner.className = 'mb-2.5 rounded-xl border px-3 py-2.5 text-[11px] font-bold border-rose-200 bg-rose-50 text-rose-800';
+                banner.textContent = currentLang === 'en'
+                    ? `${dropCount} odometer drop(s) — consumption skipped for those intervals. ${softCount ? softCount + ' other warning(s) still counted in the chart.' : 'Fix drops then refresh.'}`
+                    : `${dropCount} قراءة متناقصة — يُستبعد استهلاكها فقط. ${softCount ? softCount + ' تنبيه(ات) أخرى تُحسب في رسم الكفاءة.' : 'صحّح التناقص ثم حدّث التقرير.'}`;
+            } else {
+                banner.className = 'mb-2.5 rounded-xl border px-3 py-2.5 text-[11px] font-bold border-amber-200 bg-amber-50 text-amber-900';
+                banner.textContent = currentLang === 'en'
+                    ? `${softCount} review warning(s) (jump/rate). Efficiency chart still uses these intervals — check liters vs distance if values look odd.`
+                    : `${softCount} تنبيه مراجعة (قفزة/معدل). رسم الكفاءة يحسبها — راجع اللترات مقابل المسافة إن بدا الرقم غريباً.`;
+            }
         }
     }
 
@@ -10447,28 +10625,30 @@ function renderFuelReportView() {
         const agg = byTruck.get(plate);
         agg.liters += fuelNum(row.liters);
         agg.amount += fuelNum(row.amount);
-        // لا تُدخل فترات الشذوذ في متوسط الكفاءة حتى لا يفسد الرسم
-        if (!row._odoIssue && row._distance != null && row._distance > 0 && fuelNum(row.liters) > 0) {
+        // استبعاد التناقص فقط؛ القفزات/المعدلات تبقى في الكفاءة حتى لا يختفي الرسم عند التسجيل الشهري
+        if (!fuelIssueBlocksConsumption(row._odoIssue) && row._distance != null && row._distance > 0 && fuelNum(row.liters) > 0) {
             agg.km += row._distance;
             agg.litersForKm += fuelNum(row.liters);
         }
     });
-    // إعادة حساب المتوسط الكلي بدون فترات مشبوهة
+    // متوسط كلي بنفس قاعدة الرسم
     {
         let cleanKm = 0;
         let cleanLiters = 0;
         filtered.forEach(r => {
-            if (!r._odoIssue && r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
+            if (!fuelIssueBlocksConsumption(r._odoIssue) && r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
                 cleanKm += r._distance;
                 cleanLiters += fuelNum(r.liters);
             }
         });
         if (avgEl) {
             avgEl.textContent = cleanKm > 0 ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1) : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
-            if (anomalyRows.length && cleanKm > 0) {
+            if (dropCount > 0 && cleanKm > 0) {
                 avgEl.title = currentLang === 'en'
-                    ? 'Average excludes suspicious odometer intervals'
-                    : 'المتوسط يستبعد فترات العداد المشبوهة';
+                    ? 'Average excludes odometer-drop intervals only'
+                    : 'المتوسط يستبعد فترات تناقص العداد فقط';
+            } else {
+                avgEl.title = '';
             }
         }
     }
@@ -10488,21 +10668,24 @@ function renderFuelReportView() {
     tbody.innerHTML = filtered.map(row => {
         const issue = row._odoIssue;
         const issueTip = fuelOdoIssueLabel(row);
-        const rowTone = issue === 'drop' || issue === 'spike'
+        const rowTone = issue === 'drop'
             ? 'bg-rose-50/70'
             : (issue ? 'bg-amber-50/60' : 'hover:bg-slate-50');
-        const distLabel = row._distance == null
-            ? (issue === 'drop' || issue === 'equal' ? '—' : '—')
-            : `${formatFuelNumber(row._distance, 0)} كم`;
+        const distLabel = row._baseline
+            ? (currentLang === 'en' ? 'Opening' : 'افتتاحي')
+            : (row._distance == null ? '—' : `${formatFuelNumber(row._distance, 0)} كم`);
+        const issueTone = issue === 'drop'
+            ? 'text-rose-700 font-black'
+            : (issue ? 'text-amber-800 font-black' : '');
         return `
-        <tr class="${rowTone} transition" title="${escapeHtml(issueTip)}">
+        <tr class="${row._baseline ? 'bg-slate-50' : rowTone} transition" title="${escapeHtml(issueTip)}">
             <td class="p-2.5 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
             <td class="p-2.5 font-black font-mono">${escapeHtml(row.truck_plate || '—')}</td>
-            <td class="p-2.5 font-mono ${issue ? (issue === 'drop' || issue === 'spike' ? 'text-rose-700 font-black' : 'text-amber-800 font-black') : ''}">${escapeHtml(formatFuelNumber(row.odometer, 1))}${issue ? ' ⚠' : ''}</td>
+            <td class="p-2.5 font-mono ${issueTone}">${escapeHtml(formatFuelNumber(row.odometer, 1))}${issue ? ' ⚠' : ''}${row._baseline ? ` <span class="text-[10px] text-slate-500">${escapeHtml(currentLang === 'en' ? 'base' : 'تأسيس')}</span>` : ''}</td>
             <td class="p-2.5 font-mono">${escapeHtml(distLabel)}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-2.5 font-mono">${formatSAR(row.amount)}</td>
-            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}${issueTip ? `<div class="text-[10px] text-rose-600 font-bold mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
+            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}${issueTip ? `<div class="text-[10px] ${issue === 'drop' ? 'text-rose-600' : 'text-amber-700'} font-bold mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
             <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
         </tr>`;
     }).join('');
@@ -10566,11 +10749,21 @@ async function saveFuelLog(event) {
     const fillDate = document.getElementById('fuelFillDate')?.value || '';
     const plate = String(document.getElementById('fuelTruckPlate')?.value || '').trim();
     const odometer = Number(document.getElementById('fuelOdometer')?.value);
+    const isBaseline = !!document.getElementById('fuelIsBaseline')?.checked;
     const liters = Number(document.getElementById('fuelLiters')?.value);
     const amount = Number(document.getElementById('fuelAmount')?.value);
     const station = String(document.getElementById('fuelStation')?.value || '').trim();
-    const notes = String(document.getElementById('fuelNotes')?.value || '').trim();
-    if (!fillDate || !plate || !Number.isFinite(odometer) || odometer < 0 || !Number.isFinite(liters) || liters <= 0 || !Number.isFinite(amount) || amount < 0) {
+    let notes = String(document.getElementById('fuelNotes')?.value || '').trim();
+    if (isBaseline) {
+        notes = /رصيد\s*افتتاحي|opening\s*balance|baseline|قراءة\s*تأسيس/i.test(notes)
+            ? notes
+            : (notes ? `رصيد افتتاحي — ${notes}` : 'رصيد افتتاحي');
+    }
+    const litersOk = isBaseline
+        ? (Number.isFinite(liters) && liters >= 0)
+        : (Number.isFinite(liters) && liters > 0);
+    const amountOk = Number.isFinite(amount) && amount >= 0;
+    if (!fillDate || !plate || !Number.isFinite(odometer) || odometer < 0 || !litersOk || !amountOk) {
         showFuelError(t('fuel.required'));
         return;
     }
@@ -10579,19 +10772,21 @@ async function saveFuelLog(event) {
         showFuelError(currentLang === 'en' ? 'Company context is missing.' : 'تعذر تحديد الشركة الحالية.');
         return;
     }
-    const prevFill = previousFuelOdometerForPlate(plate, fillDate, editId || null);
+    const prevFill = isBaseline ? null : previousFuelOdometerForPlate(plate, fillDate, editId || null);
     if (prevFill && Number.isFinite(fuelNum(prevFill.odometer))) {
         const prevOdo = fuelNum(prevFill.odometer);
         const deltaKm = odometer - prevOdo;
+        const spikeMax = fuelSpikeThresholdKm(prevFill.fill_date, fillDate);
         if (deltaKm < 0) {
             const ok = confirm(currentLang === 'en'
                 ? `Odometer (${odometer}) is lower than previous fill (${prevOdo} on ${prevFill.fill_date}). Save anyway?`
                 : `قراءة العداد (${odometer}) أقل من التعبئة السابقة (${prevOdo} بتاريخ ${prevFill.fill_date}). هل تريد الحفظ رغم ذلك؟`);
             if (!ok) return;
-        } else if (deltaKm > FUEL_ODO_SPIKE_KM) {
+        } else if (deltaKm > spikeMax) {
+            const days = fuelDaysBetween(prevFill.fill_date, fillDate);
             const ok = confirm(currentLang === 'en'
-                ? `Large jump from ${prevOdo} to ${odometer} (+${Math.round(deltaKm)} km). Confirm this reading is correct?`
-                : `قفزة كبيرة من ${prevOdo} إلى ${odometer} (+${Math.round(deltaKm)} كم). هل القراءة صحيحة؟`);
+                ? `Large jump from ${prevOdo} to ${odometer} (+${Math.round(deltaKm)} km over ${days} day(s); limit ~${Math.round(spikeMax)} km). Confirm this reading is correct?`
+                : `قفزة كبيرة من ${prevOdo} إلى ${odometer} (+${Math.round(deltaKm)} كم خلال ${days} يوم؛ الحد تقريباً ${Math.round(spikeMax)} كم). هل القراءة صحيحة؟`);
             if (!ok) return;
         }
         if (deltaKm > 0 && liters > 0) {
@@ -10610,10 +10805,11 @@ async function saveFuelLog(event) {
         truck_plate: plate,
         fill_date: fillDate,
         odometer,
-        liters: roundMoney(liters),
-        amount: roundMoney(amount),
+        liters: roundMoney(isBaseline ? Math.max(0, liters || 0) : liters),
+        amount: roundMoney(isBaseline ? Math.max(0, amount || 0) : amount),
         station: station || null,
-        notes: notes || null
+        notes: notes || null,
+        is_baseline: isBaseline
     });
     // لا تسمح بإسقاط company_id أثناء الحفظ
     payload.company_id = companyId;
@@ -12606,8 +12802,10 @@ const I18N = {
         'fuel.distance': 'المسافة',
         'fuel.per100': 'لتر/100كم',
         'fuel.loading': 'جاري تحميل سجلات الوقود...',
+        'fuel.baseline': 'رصيد افتتاحي / قراءة تأسيس',
+        'fuel.baselineHint': 'لحفظ قراءة عداد مرجعية بدون حساب استهلاك (مفيد عند بدء التسجيل أو البيانات بأثر رجعي).',
         'fuel.empty': 'لا توجد سجلات وقود في الفترة المحددة',
-        'fuel.required': 'أكمل التاريخ والشاحنة والعداد واللترات والمبلغ',
+        'fuel.required': 'أكمل التاريخ والشاحنة والعداد (واللترات والمبلغ إلا عند الرصيد الافتتاحي)',
         'fuel.missingTable': 'جدول الوقود غير موجود. نفّذ ملف fuel-logs.sql في Supabase',
         'fuel.saveFailed': 'تعذر حفظ سجل الوقود',
         'fuel.totalLiters': 'إجمالي اللترات',
@@ -12697,26 +12895,45 @@ const I18N = {
         'settings.commissionHint': 'اختر إن كانت عمولة السائق اختيارية أو إجبارية لهذه الشركة.',
         'settings.commissionOptional': 'اختياري',
         'settings.commissionRequired': 'إجباري',
-        'bayan.settingsTitle': 'إصدار بيان من FleetOp',
-        'bayan.settingsHint': 'فعّل تجهيز وثيقة بيان من شاشة الرحلات. الإصدار الرسمي عبر لوجستي يُربط بعد اعتماد الواجهة.',
-        'bayan.enabled': 'تفعيل إصدار بيان من داخل الرحلات',
+        'bayan.settingsTitle': 'إصدار وثائق النقل من منصة بيان',
+        'bayan.settingsHint': 'خدمة قيمة مضافة للشركات المشتركة ويفعّلها أدمن الشركة داخلياً.',
+        'bayan.enabled': 'تفعيل إصدار وثائق النقل داخل الشركة',
         'bayan.mode': 'وضع العمل',
-        'bayan.modePrepare': 'تجهيز وحفظ الطلب داخل FleetOp',
-        'bayan.modeLive': 'إصدار مباشر (عند توفر الربط)',
+        'bayan.modePrepare': 'تجهيز وحفظ + تصدير ملخص لوجستي',
+        'bayan.modeLive': 'إصدار مباشر عبر Bayan API (عند الربط)',
         'bayan.notes': 'ملاحظات الربط',
-        'bayan.notesPh': 'رقم المنشأة في لوجستي / جهة الاعتماد / ملاحظات داخلية',
+        'bayan.notesPh': 'جهة الاعتماد / ملاحظات داخلية',
+        'bayan.entitleTitle': 'الربط مع منصة بيان لإصدار وثائق النقل',
+        'bayan.entitleHint': 'يُفعّل من سوبر أدمن فقط للشركات المشتركة؛ التفعيل الداخلي يبقى لأدمن الشركة.',
+        'bayan.notEntitled': 'الشركة غير مشتركة لإصدار وثائق النقل عبر منصة بيان، للاشتراك تواصل مع الدعم الفني.',
+        'bayan.entitled': 'الشركة مشتركة في إصدار وثائق النقل عبر منصة بيان. يمكن لأدمن الشركة تفعيل الخدمة أدناه.',
+        'bayan.appId': 'App ID',
+        'bayan.appIdPh': 'من بوابة لوجستي / بيان',
+        'bayan.appKey': 'App Key',
+        'bayan.appKeyPh': 'يُحفظ لأدمن الشركة فقط',
+        'bayan.orgNumber': 'رقم المنشأة في لوجستي',
         'bayan.modalTitle': 'إصدار وثيقة بيان',
         'bayan.openIssue': 'إصدار / متابعة بيان',
+        'bayan.openDraft': 'فتح مسودة بيان',
         'bayan.short': 'بيان',
         'bayan.issue': 'إصدار بيان',
         'bayan.saveDraft': 'حفظ مسودة',
+        'bayan.deleteDraft': 'حذف المسودة',
+        'bayan.deleteConfirm': 'هل تريد حذف مسودة بيان لهذه الرحلة؟ لا يمكن التراجع.',
+        'bayan.deleted': 'تم حذف مسودة بيان.',
+        'bayan.deleteFailed': 'تعذر حذف المسودة.',
+        'bayan.noDraftToDelete': 'لا توجد مسودة لحذفها.',
+        'bayan.cannotDeleteIssued': 'لا يمكن حذف وثيقة صادرة.',
         'bayan.senderName': 'المرسل',
         'bayan.senderId': 'هوية / سجل المرسل',
         'bayan.senderPhone': 'جوال المرسل',
         'bayan.receiverName': 'المستلم',
         'bayan.receiverId': 'هوية / سجل المستلم',
+        'bayan.receiverPhone': 'جوال المستلم',
+        'bayan.goodType': 'نوع الحمولة',
+        'bayan.goodTypePick': 'اختر نوع الحمولة',
         'bayan.cargoDesc': 'وصف الحمولة',
-        'bayan.cargoDescPh': 'نوع البضاعة ووصفها',
+        'bayan.cargoDescPh': 'تفاصيل إضافية عن البضاعة',
         'bayan.cargoQty': 'الكمية',
         'bayan.cargoUnit': 'الوحدة',
         'bayan.cargoWeight': 'الوزن (كجم)',
@@ -12732,8 +12949,8 @@ const I18N = {
         'bayan.statusRejected': 'مرفوض',
         'bayan.statusCancelled': 'ملغى',
         'bayan.noOfficialNumber': 'بدون رقم رسمي بعد',
-        'bayan.disabledHint': 'فعّل بيان من إعدادات الشركة أولاً.',
-        'bayan.requiredFields': 'أكمل المرسل والمستلم ووصف الحمولة.',
+        'bayan.disabledHint': 'بيان غير متاح: يلزم استحقاق المنصة ثم تفعيل أدمن الشركة.',
+        'bayan.requiredFields': 'أكمل المرسل والمستلم ونوع الحمولة ووصفها.',
         'bayan.noPerm': 'ليست لديك صلاحية إصدار بيان.',
         'bayan.needSql': 'نفّذ ملف bayan-documents.sql في Supabase أولاً.',
         'bayan.draftSaved': 'تم حفظ مسودة بيان.',
@@ -13480,8 +13697,10 @@ const I18N = {
         'fuel.distance': 'Distance',
         'fuel.per100': 'L/100km',
         'fuel.loading': 'Loading fuel records...',
+        'fuel.baseline': 'Opening balance / baseline reading',
+        'fuel.baselineHint': 'Saves a reference odometer without consumption (useful when starting or backfilling).',
         'fuel.empty': 'No fuel records in the selected period',
-        'fuel.required': 'Complete date, truck, odometer, liters and amount',
+        'fuel.required': 'Complete date, truck, odometer (and liters/amount unless opening balance)',
         'fuel.missingTable': 'Fuel table is missing. Run fuel-logs.sql in Supabase',
         'fuel.saveFailed': 'Could not save fuel record',
         'fuel.totalLiters': 'Total liters',
@@ -13571,26 +13790,45 @@ const I18N = {
         'settings.commissionHint': 'Choose whether driver commission is optional or required for this company.',
         'settings.commissionOptional': 'Optional',
         'settings.commissionRequired': 'Required',
-        'bayan.settingsTitle': 'Issue Bayan from FleetOp',
-        'bayan.settingsHint': 'Enable preparing Bayan waybills from trips. Official Logisti issuance connects after API approval.',
-        'bayan.enabled': 'Enable Bayan issuance from trips',
+        'bayan.settingsTitle': 'Issue transport waybills via Bayan',
+        'bayan.settingsHint': 'Add-on for subscribed companies; company admin enables it internally.',
+        'bayan.enabled': 'Enable transport waybill issuance inside the company',
         'bayan.mode': 'Working mode',
-        'bayan.modePrepare': 'Prepare and save the request in FleetOp',
-        'bayan.modeLive': 'Live issue (when API is connected)',
+        'bayan.modePrepare': 'Prepare + export Logisti-ready summary',
+        'bayan.modeLive': 'Live issue via Bayan API (when connected)',
         'bayan.notes': 'Integration notes',
-        'bayan.notesPh': 'Logisti company number / approval contact / internal notes',
+        'bayan.notesPh': 'Approval contact / internal notes',
+        'bayan.entitleTitle': 'Connect to Bayan to issue transport waybills',
+        'bayan.entitleHint': 'Super-admin only for subscribed companies; company admin still enables it internally.',
+        'bayan.notEntitled': 'This company is not subscribed to issue transport waybills via Bayan. Contact support to subscribe.',
+        'bayan.entitled': 'This company is subscribed to issue transport waybills via Bayan. Company admin can enable the service below.',
+        'bayan.appId': 'App ID',
+        'bayan.appIdPh': 'From Logisti / Bayan portal',
+        'bayan.appKey': 'App Key',
+        'bayan.appKeyPh': 'Stored for company admin only',
+        'bayan.orgNumber': 'Logisti organization number',
         'bayan.modalTitle': 'Issue Bayan waybill',
         'bayan.openIssue': 'Issue / track Bayan',
+        'bayan.openDraft': 'Open Bayan draft',
         'bayan.short': 'Bayan',
         'bayan.issue': 'Issue Bayan',
         'bayan.saveDraft': 'Save draft',
+        'bayan.deleteDraft': 'Delete draft',
+        'bayan.deleteConfirm': 'Delete the Bayan draft for this trip? This cannot be undone.',
+        'bayan.deleted': 'Bayan draft deleted.',
+        'bayan.deleteFailed': 'Could not delete the draft.',
+        'bayan.noDraftToDelete': 'No draft to delete.',
+        'bayan.cannotDeleteIssued': 'Issued waybills cannot be deleted.',
         'bayan.senderName': 'Sender',
         'bayan.senderId': 'Sender ID / CR',
         'bayan.senderPhone': 'Sender phone',
         'bayan.receiverName': 'Receiver',
         'bayan.receiverId': 'Receiver ID / CR',
+        'bayan.receiverPhone': 'Receiver phone',
+        'bayan.goodType': 'Cargo type',
+        'bayan.goodTypePick': 'Select cargo type',
         'bayan.cargoDesc': 'Cargo description',
-        'bayan.cargoDescPh': 'Goods type and description',
+        'bayan.cargoDescPh': 'Additional cargo details',
         'bayan.cargoQty': 'Quantity',
         'bayan.cargoUnit': 'Unit',
         'bayan.cargoWeight': 'Weight (kg)',
@@ -13606,8 +13844,8 @@ const I18N = {
         'bayan.statusRejected': 'Rejected',
         'bayan.statusCancelled': 'Cancelled',
         'bayan.noOfficialNumber': 'No official number yet',
-        'bayan.disabledHint': 'Enable Bayan in company settings first.',
-        'bayan.requiredFields': 'Complete sender, receiver, and cargo description.',
+        'bayan.disabledHint': 'Bayan unavailable: platform entitlement then company-admin enablement required.',
+        'bayan.requiredFields': 'Complete sender, receiver, cargo type, and description.',
         'bayan.noPerm': 'You do not have permission to issue Bayan.',
         'bayan.needSql': 'Run bayan-documents.sql in Supabase first.',
         'bayan.draftSaved': 'Bayan draft saved.',
@@ -14274,11 +14512,18 @@ function fillCompanySettingsForm() {
         input.checked = input.value === mode;
     });
     const bayanEnabled = document.getElementById('bayanEnabled');
-    if (bayanEnabled) bayanEnabled.checked = !!companySettings.bayan_enabled;
+    if (bayanEnabled) bayanEnabled.checked = !!companySettings.bayan_enabled && isBayanEntitled();
     const bayanMode = document.getElementById('bayanMode');
     if (bayanMode) bayanMode.value = companySettings.bayan_mode === 'live' ? 'live' : 'prepare';
     const bayanNotes = document.getElementById('bayanNotes');
     if (bayanNotes) bayanNotes.value = companySettings.bayan_notes || '';
+    const bayanAppId = document.getElementById('bayanAppId');
+    if (bayanAppId) bayanAppId.value = companySettings.bayan_app_id || '';
+    const bayanAppKey = document.getElementById('bayanAppKey');
+    if (bayanAppKey) bayanAppKey.value = companySettings.bayan_app_key || '';
+    const bayanOrgNumber = document.getElementById('bayanOrgNumber');
+    if (bayanOrgNumber) bayanOrgNumber.value = companySettings.bayan_org_number || '';
+    paintBayanSettingsGate();
 }
 
 async function saveCompanySettings(e) {
@@ -14296,9 +14541,12 @@ async function saveCompanySettings(e) {
         address: emptyToNull(document.getElementById('companyAddress')?.value),
         logo_data: companySettings.logo_data || null,
         commission_mode: document.querySelector('input[name="commissionMode"]:checked')?.value === 'required' ? 'required' : 'optional',
-        bayan_enabled: !!document.getElementById('bayanEnabled')?.checked,
+        bayan_enabled: isBayanEntitled() && (isAdminUser() || isSupportMode()) && !!document.getElementById('bayanEnabled')?.checked,
         bayan_mode: document.getElementById('bayanMode')?.value === 'live' ? 'live' : 'prepare',
         bayan_notes: emptyToNull(document.getElementById('bayanNotes')?.value),
+        bayan_app_id: emptyToNull(document.getElementById('bayanAppId')?.value),
+        bayan_app_key: emptyToNull(document.getElementById('bayanAppKey')?.value),
+        bayan_org_number: emptyToNull(document.getElementById('bayanOrgNumber')?.value),
         updated_at: new Date().toISOString()
     });
     const write = (data) => {
@@ -15336,9 +15584,39 @@ let allTripsCache = [];
 let settlementsByTrip = new Map();
 let bayanDocsByTrip = new Map();
 let bayanBusy = false;
+let companyBayanEntitled = false;
+
+function isBayanEntitled() {
+    return !!companyBayanEntitled || !!companySettings?.bayan_entitled;
+}
+
+function paintBayanSettingsGate() {
+    const entitled = isBayanEntitled();
+    const banner = document.getElementById('bayanEntitleBanner');
+    if (banner) {
+        banner.classList.remove('hidden');
+        if (entitled) {
+            banner.className = 'text-[11px] font-bold rounded-xl px-3 py-2 border bg-emerald-50 text-emerald-800 border-emerald-100 leading-5';
+            banner.textContent = t('bayan.entitled');
+        } else {
+            banner.className = 'text-[11px] font-bold rounded-xl px-3 py-2 border bg-amber-50 text-amber-800 border-amber-100 leading-5';
+            banner.textContent = t('bayan.notEntitled');
+        }
+    }
+    const enabledInput = document.getElementById('bayanEnabled');
+    const adminOk = isAdminUser() || isSupportMode();
+    if (enabledInput) {
+        enabledInput.disabled = !entitled || !adminOk;
+        if (!entitled) enabledInput.checked = false;
+    }
+    ['bayanMode', 'bayanAppId', 'bayanAppKey', 'bayanOrgNumber', 'bayanNotes'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !entitled || !adminOk;
+    });
+}
 
 function canUseBayan() {
-    if (!companySettings?.bayan_enabled) return false;
+    if (!isBayanEntitled() || !companySettings?.bayan_enabled) return false;
     return hasPerm('bayan', 'view') || hasPerm('bayan', 'create') || hasPerm('bayan', 'edit') || hasPerm('trips', 'edit');
 }
 
@@ -15404,7 +15682,7 @@ function paintBayanStatusBanner(doc) {
 
 async function loadBayanDocuments() {
     bayanDocsByTrip = new Map();
-    if (!companySettings?.bayan_enabled) return;
+    if (!isBayanEntitled() || !companySettings?.bayan_enabled) return;
     try {
         let query = client.from('bayan_documents').select('*').order('id', { ascending: false });
         query = scopeBayanQuery(query);
@@ -15454,6 +15732,19 @@ async function openBayanModal(tripNo) {
     document.getElementById('bayanSenderPhone').value = existing?.sender_phone || '';
     document.getElementById('bayanReceiverName').value = existing?.receiver_name || '';
     document.getElementById('bayanReceiverId').value = existing?.receiver_id || '';
+    document.getElementById('bayanReceiverPhone').value = existing?.receiver_phone || existing?.recipient_phone || '';
+    const goodTypeEl = document.getElementById('bayanGoodType');
+    if (goodTypeEl) {
+        const gid = existing?.good_type_id;
+        const gname = String(existing?.good_type_name || '').trim();
+        const byId = gid != null
+            ? Array.from(goodTypeEl.options).find((o) => o.value.startsWith(`${gid}|`))
+            : null;
+        const byName = gname
+            ? Array.from(goodTypeEl.options).find((o) => o.value.endsWith(`|${gname}`) || o.textContent === gname)
+            : null;
+        goodTypeEl.value = (byId || byName)?.value || '';
+    }
     document.getElementById('bayanCargoDesc').value = existing?.cargo_desc || '';
     document.getElementById('bayanCargoQty').value = existing?.cargo_qty != null ? existing.cargo_qty : '';
     document.getElementById('bayanCargoUnit').value = existing?.cargo_unit || '';
@@ -15464,9 +15755,70 @@ async function openBayanModal(tripNo) {
     showBayanError('');
     const issueBtn = document.getElementById('bayanIssueBtn');
     const draftBtn = document.getElementById('bayanSaveDraftBtn');
-    if (issueBtn) issueBtn.disabled = !canIssueBayan() || existing?.status === 'صادر';
-    if (draftBtn) draftBtn.disabled = !canIssueBayan() || existing?.status === 'صادر';
+    const deleteBtn = document.getElementById('bayanDeleteDraftBtn');
+    const locked = existing?.status === 'صادر';
+    if (issueBtn) issueBtn.disabled = !canIssueBayan() || locked;
+    if (draftBtn) draftBtn.disabled = !canIssueBayan() || locked;
+    if (deleteBtn) {
+        const canDelete = !!existing?.id && canIssueBayan() && existing.status !== 'صادر';
+        deleteBtn.classList.toggle('hidden', !canDelete);
+        deleteBtn.disabled = !canDelete;
+    }
     document.getElementById('bayanModal')?.classList.remove('hidden');
+}
+
+async function deleteBayanDocument() {
+    if (bayanBusy || !canIssueBayan()) {
+        showBayanError(t('bayan.noPerm'));
+        return;
+    }
+    const docId = document.getElementById('bayanDocId')?.value;
+    const tripNo = document.getElementById('bayanTripNo')?.value;
+    if (!docId) {
+        showBayanError(t('bayan.noDraftToDelete'));
+        return;
+    }
+    const existing = getBayanDocForTrip(tripNo);
+    if (existing?.status === 'صادر') {
+        showBayanError(t('bayan.cannotDeleteIssued'));
+        return;
+    }
+    const ok = await appConfirm(t('bayan.deleteConfirm'), {
+        okLabel: t('bayan.deleteDraft'),
+        cancelLabel: t('ui.cancel')
+    });
+    if (!ok) return;
+
+    bayanBusy = true;
+    showBayanError('');
+    try {
+        let query = client.from('bayan_documents').delete().eq('id', docId);
+        query = scopeBayanQuery(query);
+        const { error } = await query;
+        if (error) throw error;
+        await loadBayanDocuments();
+        filterAndRenderTrips();
+        logActivity('bayan.delete', 'بيان', tripNo || '', existing?.status || 'مسودة');
+        closeBayanModal();
+        alert(t('bayan.deleted'));
+    } catch (err) {
+        console.error(err);
+        showBayanError(err.message || t('bayan.deleteFailed'));
+    } finally {
+        bayanBusy = false;
+    }
+}
+
+function parseBayanGoodType() {
+    const raw = String(document.getElementById('bayanGoodType')?.value || '').trim();
+    if (!raw) return { good_type_id: null, good_type_name: null };
+    const [idPart, ...nameParts] = raw.split('|');
+    const id = Number(idPart);
+    const name = nameParts.join('|').trim() || null;
+    return {
+        good_type_id: Number.isFinite(id) ? id : null,
+        good_type_name: name
+    };
 }
 
 function readBayanFormPayload(trip, status) {
@@ -15476,6 +15828,7 @@ function readBayanFormPayload(trip, status) {
         const n = Number(raw);
         return Number.isFinite(n) ? n : null;
     };
+    const goodType = parseBayanGoodType();
     return withCompany({
         trip_no: String(trip.trip_no || ''),
         trip_id: trip.id != null ? trip.id : null,
@@ -15485,6 +15838,9 @@ function readBayanFormPayload(trip, status) {
         sender_phone: emptyToNull(document.getElementById('bayanSenderPhone')?.value),
         receiver_name: emptyToNull(document.getElementById('bayanReceiverName')?.value),
         receiver_id: emptyToNull(document.getElementById('bayanReceiverId')?.value),
+        receiver_phone: emptyToNull(document.getElementById('bayanReceiverPhone')?.value),
+        good_type_id: goodType.good_type_id,
+        good_type_name: goodType.good_type_name,
         cargo_desc: emptyToNull(document.getElementById('bayanCargoDesc')?.value),
         cargo_qty: numOrNull('bayanCargoQty'),
         cargo_unit: emptyToNull(document.getElementById('bayanCargoUnit')?.value),
@@ -15538,7 +15894,8 @@ async function submitBayanDocument(event, forcedStatus) {
     const sender = String(document.getElementById('bayanSenderName')?.value || '').trim();
     const receiver = String(document.getElementById('bayanReceiverName')?.value || '').trim();
     const cargo = String(document.getElementById('bayanCargoDesc')?.value || '').trim();
-    if (!sender || !receiver || !cargo) {
+    const goodType = String(document.getElementById('bayanGoodType')?.value || '').trim();
+    if (!sender || !receiver || !cargo || !goodType) {
         showBayanError(t('bayan.requiredFields'));
         return;
     }
