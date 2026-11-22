@@ -4455,6 +4455,28 @@
             }
         }
 
+        function activityDiffArrow() {
+            return '=>';
+        }
+
+        function formatActivityDiffHeader() {
+            return currentLang === 'en' ? 'Changes (before => after):' : 'التغييرات (قبل => بعد):';
+        }
+
+        function formatActivityDiffLine(label, beforeVal, afterVal) {
+            const from = (beforeVal == null || beforeVal === '') ? '—' : String(beforeVal);
+            const to = (afterVal == null || afterVal === '') ? '—' : String(afterVal);
+            return `${label}: ${from} ${activityDiffArrow()} ${to}`;
+        }
+
+        function buildActivityDiffLines(lines) {
+            const cleaned = (lines || []).filter(Boolean);
+            if (!cleaned.length) {
+                return currentLang === 'en' ? 'Saved without field changes' : 'حُفظ بدون تغيير في الحقول';
+            }
+            return `${formatActivityDiffHeader()}\n${cleaned.join('\n')}`;
+        }
+
         function splitActivityChange(details) {
             const text = String(details || '').trim();
             if (!text) return { before: '—', after: '—' };
@@ -4462,16 +4484,19 @@
             const beforeLines = [];
             const afterLines = [];
             lines.forEach((line) => {
-                if (/^(التغييرات|changes)\b/i.test(line)) return;
-                const match = line.match(/^(.*?):\s*(.*?)\s*←\s*(.*)$/);
+                if (/^(التغييرات|Changes)\b/i.test(line)) return;
+                // يدعم => و ← و → و -> لسجلات قديمة وجديدة
+                const match = line.match(/^(.*?):\s*(.*?)\s*(?:=>|←|→|->)\s*(.*)$/);
                 if (!match) return;
-                beforeLines.push(`${match[1]}: ${match[2] || '—'}`);
-                afterLines.push(`${match[1]}: ${match[3] || '—'}`);
+                const label = String(match[1] || '').trim();
+                if (!label) return;
+                beforeLines.push(`${label}: ${match[2] || '—'}`);
+                afterLines.push(`${label}: ${match[3] || '—'}`);
             });
             if (beforeLines.length || afterLines.length) {
                 return {
-                    before: beforeLines.join('\n'),
-                    after: afterLines.join('\n')
+                    before: beforeLines.join('\n') || '—',
+                    after: afterLines.join('\n') || '—'
                 };
             }
             return { before: '—', after: text };
@@ -10746,6 +10771,7 @@ async function saveFuelLog(event) {
         return;
     }
     showFuelError('');
+    const beforeFuelRow = editId ? (findFuelRow(editId) || null) : null;
     const fillDate = document.getElementById('fuelFillDate')?.value || '';
     const plate = String(document.getElementById('fuelTruckPlate')?.value || '').trim();
     const odometer = Number(document.getElementById('fuelOdometer')?.value);
@@ -10859,7 +10885,19 @@ async function saveFuelLog(event) {
     }
     if (station && typeof revealSuggestion === 'function') revealSuggestion('station', station);
     if (typeof loadTripSuggestions === 'function') loadTripSuggestions();
-    logActivity(editId ? 'fuel.edit' : 'fuel.create', 'وقود', plate, `${fillDate} · ${liters} لتر · ${amount}`);
+    const activityDetails = editId
+        ? buildFuelEditDiff(beforeFuelRow || {}, {
+            fill_date: fillDate,
+            truck_plate: plate,
+            odometer,
+            liters: payload.liters,
+            amount: payload.amount,
+            station: station || null,
+            notes: notes || null,
+            is_baseline: isBaseline
+        })
+        : `${fillDate} · ${formatFuelNumber(payload.liters, 2)} لتر · ${formatFuelNumber(payload.amount, 2)}`;
+    logActivity(editId ? 'fuel.edit' : 'fuel.create', 'وقود', plate, activityDetails);
     closeFuelModal();
     await refreshOpenFuelScreens();
 }
@@ -11579,11 +11617,9 @@ function buildMaintenanceEditDiff(before, after) {
     const lines = [];
     Object.keys(labels).forEach((key) => {
         if (same(key)) return;
-        lines.push(`${labels[key]}: ${show(key, before?.[key])} ← ${show(key, after?.[key])}`);
+        lines.push(formatActivityDiffLine(labels[key], show(key, before?.[key]), show(key, after?.[key])));
     });
-    if (!lines.length) return currentLang === 'en' ? 'Saved without field changes' : 'حُفظ بدون تغيير في الحقول';
-    const header = currentLang === 'en' ? 'Changes (before ← after):' : 'التغييرات (قبل ← بعد):';
-    return `${header}\n${lines.join('\n')}`;
+    return buildActivityDiffLines(lines);
 }
 
 async function saveMaintenance(event) {
@@ -16725,13 +16761,49 @@ function buildTripEditDiff(before, after) {
         if (tripEditValuesEqual(key, before[key], after[key])) return;
         const from = tripEditDisplayValue(key, before[key]);
         const to = tripEditDisplayValue(key, after[key]);
-        lines.push(`${labels[key]}: ${from} ← ${to}`);
+        lines.push(formatActivityDiffLine(labels[key], from, to));
     });
-    if (!lines.length) {
-        return currentLang === 'en' ? 'Saved without field changes' : 'حُفظ بدون تغيير في الحقول';
-    }
-    const header = currentLang === 'en' ? 'Changes (before ← after):' : 'التغييرات (قبل ← بعد):';
-    return `${header}\n${lines.join('\n')}`;
+    return buildActivityDiffLines(lines);
+}
+
+function buildFuelEditDiff(before, after) {
+    const labels = {
+        fill_date: currentLang === 'en' ? 'Fill date' : 'تاريخ التعبئة',
+        truck_plate: currentLang === 'en' ? 'Truck' : 'الشاحنة',
+        odometer: currentLang === 'en' ? 'Odometer' : 'قراءة العداد',
+        liters: currentLang === 'en' ? 'Liters' : 'اللترات',
+        amount: currentLang === 'en' ? 'Amount' : 'المبلغ',
+        station: currentLang === 'en' ? 'Station' : 'المحطة',
+        notes: currentLang === 'en' ? 'Notes' : 'الملاحظات',
+        is_baseline: currentLang === 'en' ? 'Opening balance' : 'رصيد افتتاحي'
+    };
+    const baselineLabel = (row) => (isFuelBaselineRow(row || {})
+        ? (currentLang === 'en' ? 'Yes' : 'نعم')
+        : (currentLang === 'en' ? 'No' : 'لا'));
+    const show = (key, value) => {
+        if (value == null || value === '') return '—';
+        if (key === 'fill_date') return dateInputValue(value) || String(value);
+        if (key === 'odometer' || key === 'liters' || key === 'amount') return formatFuelNumber(value, key === 'odometer' ? 1 : 2);
+        return String(value).trim() || '—';
+    };
+    const same = (key) => {
+        if (key === 'is_baseline') return baselineLabel(before) === baselineLabel(after);
+        if (key === 'fill_date') return dateInputValue(before?.[key]) === dateInputValue(after?.[key]);
+        if (key === 'odometer' || key === 'liters' || key === 'amount') {
+            return fuelNum(before?.[key]) === fuelNum(after?.[key]);
+        }
+        return String(before?.[key] ?? '').trim() === String(after?.[key] ?? '').trim();
+    };
+    const lines = [];
+    Object.keys(labels).forEach((key) => {
+        if (same(key)) return;
+        if (key === 'is_baseline') {
+            lines.push(formatActivityDiffLine(labels[key], baselineLabel(before), baselineLabel(after)));
+            return;
+        }
+        lines.push(formatActivityDiffLine(labels[key], show(key, before?.[key]), show(key, after?.[key])));
+    });
+    return buildActivityDiffLines(lines);
 }
 
 async function openEditTripModal(tripNo) {
