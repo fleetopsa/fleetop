@@ -147,13 +147,12 @@
         }
         @media (min-width: 768px) {
             .analytics-kpi-row {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
         }
         @media (min-width: 1280px) {
             .analytics-kpi-row {
-                /* المالية والرحلات أعرض — أفضل شاحنة/سائق أضيق ليتناسب مع محتواهما */
-                grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 0.72fr) minmax(0, 0.72fr);
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
             .analytics-kpi-best {
                 padding-left: 0.65rem;
@@ -1708,6 +1707,9 @@
                                     <button onclick="switchTab('receivablesSection')" data-nav="receivablesSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-file-invoice ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.receivables">تقرير متابعة التحصيل</span>
                                     </button>
+                                    <button onclick="switchTab('truckProfitSection')" data-nav="truckProfitSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
+                                        <i class="fa-solid fa-chart-line ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.truckProfit">تقرير ربحية الشاحنات</span>
+                                    </button>
                                     <button onclick="openCommissionReportTab()" data-nav="commissionReportSection" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
                                         <i class="fa-solid fa-file-invoice-dollar ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.commissions">تقرير العمولات</span>
                                     </button>
@@ -1760,7 +1762,7 @@
                     </button>
                     <div class="min-w-0">
                         <h2 id="pageTitle" class="text-sm xl:text-base font-black text-slate-800 truncate">لوحة التحكم</h2>
-                        <p id="pageSubtitle" class="text-[11px] text-slate-500 truncate">ملخص الإيرادات وحالة الأسطول والرحلات الجارية</p>
+                        <p id="pageSubtitle" class="hidden text-[11px] text-slate-500 truncate"></p>
                     </div>
                 </div>
             </header>
@@ -1956,7 +1958,7 @@
 </main>
 <main id="chartsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
     <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 items-end">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="analyticsStartDate" onchange="onAnalyticsDatesChanged()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -1974,12 +1976,25 @@
                     <option value="custom" data-i18n="analytics.customPeriod">فترة مخصصة</option>
                 </select>
             </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="printCurrentReport()" class="flex-1 font-bold px-3 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                    <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة</span>
+                </button>
+                <button type="button" onclick="resetAnalyticsFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                </button>
+            </div>
         </div>
     </div>
     <div class="analytics-kpi-row gap-2">
         <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-slate-200 analytics-money min-w-0">
             <div class="text-[10px] font-bold text-slate-500 truncate" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="analyticsTotalRevenue" class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
+        </div>
+        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-emerald-100 analytics-money min-w-0">
+            <div class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="analytics.fleetProfit">ربح تشغيلي للأسطول</div>
+            <div id="analyticsFleetProfit" class="text-lg sm:text-xl font-black text-emerald-800 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
+            <div id="analyticsFleetMargin" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
         </div>
         <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-slate-200 analytics-money min-w-0">
             <div class="text-[10px] font-bold text-slate-500 truncate" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
@@ -1990,19 +2005,28 @@
             <div id="analyticsTotalTrips" class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-0.5">0</div>
         </div>
         <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-amber-100 min-w-0">
-            <div class="text-[10px] font-bold text-amber-700 truncate" data-i18n="analytics.bestTruck">أفضل شاحنة</div>
+            <div class="text-[10px] font-bold text-amber-700 truncate" data-i18n="analytics.bestTruck">أفضل شاحنة ربحاً</div>
             <div id="analyticsBestTruck" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
             <div id="analyticsBestTruckMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
         </div>
+        <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-rose-100 analytics-money min-w-0">
+            <div class="text-[10px] font-bold text-rose-700 truncate" data-i18n="analytics.weakTruck">أضعف شاحنة ربحاً</div>
+            <div id="analyticsWeakTruck" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
+            <div id="analyticsWeakTruckMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        </div>
         <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-blue-100 min-w-0">
-            <div class="text-[10px] font-bold text-blue-700 truncate" data-i18n="analytics.bestDriver">أفضل سائق</div>
+            <div class="text-[10px] font-bold text-blue-700 truncate" data-i18n="analytics.bestDriver">أفضل سائق رحلات</div>
             <div id="analyticsBestDriver" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
             <div id="analyticsBestDriverMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
         </div>
+        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-rose-100 analytics-money min-w-0">
+            <div class="text-[10px] font-bold text-rose-700 truncate" data-i18n="analytics.overdueRemain">متبقي متأخر (+30 يوم)</div>
+            <div id="analyticsOverdueRemain" class="text-lg sm:text-xl font-black text-rose-800 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
+            <div id="analyticsOverdueMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        </div>
     </div>
     <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 shrink-0">
-        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.trendTitle">اتجاه الأداء الشهري</h3>
-        <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.trendHint">عدد الرحلات والإيرادات عبر أشهر الفترة المحددة</p>
+        <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.trendTitle">اتجاه الأداء الشهري</h3>
         <div class="chart-host chart-host--trend h-56 sm:h-72">
             <canvas id="analyticsTrendChart" aria-label="monthly trend chart"></canvas>
         </div>
@@ -2010,32 +2034,28 @@
     </div>
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
         <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
-            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.truckTripsHint">الأكثر رحلات في المقدمة</p>
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckTrips">إنتاجية الشاحنات (عدد الرحلات)</h3>
             <div class="chart-host chart-host--rank" data-chart-host="analyticsTruckTripsChart">
                 <canvas id="analyticsTruckTripsChart" aria-label="truck trips chart"></canvas>
             </div>
             <div id="analyticsTruckTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
-            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.truckRevenueHint">الأعلى إيراداً في المقدمة</p>
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.truckRevenue">إيرادات الشاحنات</h3>
             <div class="chart-host chart-host--rank" data-chart-host="analyticsTruckRevenueChart">
                 <canvas id="analyticsTruckRevenueChart" aria-label="truck revenue chart"></canvas>
             </div>
             <div id="analyticsTruckRevenueEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
-            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.driverTripsHint">الأكثر رحلات في المقدمة</p>
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverTrips">إنتاجية السائقين (عدد الرحلات)</h3>
             <div class="chart-host chart-host--rank" data-chart-host="analyticsDriverTripsChart">
                 <canvas id="analyticsDriverTripsChart" aria-label="driver trips chart"></canvas>
             </div>
             <div id="analyticsDriverTripsEmpty" class="hidden text-xs text-slate-400 py-6 text-center" data-i18n="analytics.noData">لا توجد رحلات مكتملة في هذه الفترة</div>
         </div>
         <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 analytics-money">
-            <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="analytics.driverComm">عمولات السائقين</h3>
-            <p class="text-[11px] text-slate-400 mb-2" data-i18n="analytics.driverCommHint">الأعلى عمولة في المقدمة</p>
+            <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="analytics.driverComm">عمولات السائقين</h3>
             <div class="chart-host chart-host--rank" data-chart-host="analyticsDriverCommChart">
                 <canvas id="analyticsDriverCommChart" aria-label="driver commission chart"></canvas>
             </div>
@@ -2159,6 +2179,9 @@
             <div class="flex flex-wrap justify-end gap-2 mt-3 no-print">
                 <button type="button" onclick="printCurrentReport()" class="font-bold px-6 py-3 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                     <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                </button>
+                <button type="button" onclick="resetOpsReportFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-xl text-xs transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
                 </button>
                 <button type="button" onclick="generateReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                     <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
@@ -2378,6 +2401,28 @@
             </div>
         </div>
     </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+        <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[10px] font-bold text-slate-500" data-i18n="recv.age0">متبقي 0–30 يوم</div>
+            <div id="recvAge0" class="text-base font-black text-slate-900 font-mono mt-1">0.00</div>
+            <div id="recvAge0Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        </div>
+        <div class="bg-white px-3 py-3 rounded-2xl border border-amber-100 shadow-sm">
+            <div class="text-[10px] font-bold text-amber-700" data-i18n="recv.age30">متبقي 31–60 يوم</div>
+            <div id="recvAge30" class="text-base font-black text-amber-800 font-mono mt-1">0.00</div>
+            <div id="recvAge30Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        </div>
+        <div class="bg-white px-3 py-3 rounded-2xl border border-orange-100 shadow-sm">
+            <div class="text-[10px] font-bold text-orange-700" data-i18n="recv.age60">متبقي 61–90 يوم</div>
+            <div id="recvAge60" class="text-base font-black text-orange-800 font-mono mt-1">0.00</div>
+            <div id="recvAge60Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        </div>
+        <div class="bg-white px-3 py-3 rounded-2xl border border-rose-100 shadow-sm">
+            <div class="text-[10px] font-bold text-rose-700" data-i18n="recv.age90">متبقي +90 يوم</div>
+            <div id="recvAge90" class="text-base font-black text-rose-800 font-mono mt-1">0.00</div>
+            <div id="recvAge90Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        </div>
+    </div>
     <div class="recv-table-card bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
             <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل متابعة التحصيل</span>
@@ -2394,11 +2439,87 @@
                         <th class="p-3.5" data-i18n="ui.driver">السائق</th>
                         <th class="p-3.5" data-i18n="th.amount">المبلغ</th>
                         <th class="p-3.5" data-i18n="ui.payMethod">طريقة السداد</th>
+                        <th class="p-3.5" data-i18n="recv.daysOverdue">أيام التأخير</th>
                         <th class="p-3.5 rounded-l-xl" data-i18n="ui.payStatus">حالة السداد</th>
                     </tr>
                 </thead>
                 <tbody id="receivablesReportTable" class="divide-y divide-slate-100">
-                    <tr><td colspan="9" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
+                    <tr><td colspan="10" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<main id="truckProfitSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 no-print">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                <input type="date" id="profitStartDate" onchange="generateTruckProfitReport()" class="w-full h-10 px-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                <input type="date" id="profitEndDate" onchange="generateTruckProfitReport()" class="w-full h-10 px-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
+                <select id="profitTruckFilter" onchange="generateTruckProfitReport()" class="w-full h-10 px-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                    <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-3">
+            <button type="button" onclick="printCurrentReport()" class="h-10 font-bold px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
+                <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+            </button>
+            <button type="button" onclick="resetTruckProfitFilters()" class="h-10 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+            </button>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+            <div id="profitTotalRevenue" class="text-lg font-black text-slate-900 font-mono mt-1">0.00</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm">
+            <div class="text-[10px] font-bold text-amber-700" data-i18n="profit.totalCosts">إجمالي التكاليف المباشرة</div>
+            <div id="profitTotalCosts" class="text-lg font-black text-amber-800 font-mono mt-1">0.00</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm">
+            <div class="text-[10px] font-bold text-emerald-700" data-i18n="profit.operating">الربح التشغيلي</div>
+            <div id="profitOperating" class="text-lg font-black text-emerald-800 font-mono mt-1">0.00</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-blue-100 shadow-sm">
+            <div class="text-[10px] font-bold text-blue-700" data-i18n="profit.margin">هامش الربح</div>
+            <div id="profitMargin" class="text-lg font-black text-blue-800 font-mono mt-1">—</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+            <div id="profitTripCount" class="text-lg font-black text-slate-900 font-mono mt-1">0</div>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
+        <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
+            <i class="fa-solid fa-truck text-amber-500 ml-2"></i> <span data-i18n="profit.tableTitle">ربحية كل شاحنة</span>
+        </h3>
+        <div class="overflow-x-auto flex-grow">
+            <table class="w-full text-right text-xs text-slate-700">
+                <thead class="bg-slate-800 text-slate-200">
+                    <tr>
+                        <th class="p-2.5 rounded-r-xl" data-i18n="th.plate">رقم اللوحة</th>
+                        <th class="p-2.5" data-i18n="th.completedTrips">الرحلات</th>
+                        <th class="p-2.5" data-i18n="ui.totalRevenue">الإيراد</th>
+                        <th class="p-2.5" data-i18n="profit.fuelCost">الوقود</th>
+                        <th class="p-2.5" data-i18n="profit.commCost">العمولات</th>
+                        <th class="p-2.5" data-i18n="profit.maintCost">الصيانة</th>
+                        <th class="p-2.5" data-i18n="profit.operating">الربح التشغيلي</th>
+                        <th class="p-2.5 rounded-l-xl" data-i18n="profit.margin">الهامش %</th>
+                    </tr>
+                </thead>
+                <tbody id="truckProfitTable" class="divide-y divide-slate-100">
+                    <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="profit.loading">جاري حساب ربحية الشاحنات...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -2655,7 +2776,6 @@
                     <div class="mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
                         <div class="no-print min-w-0">
                             <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenanceReport">تقرير حركة الصيانة</h2>
-                            <p class="text-xs text-slate-500 mt-0.5" data-i18n="page.maintenanceReportSub">عرض مخرجات وتكاليف الصيانة للطباعة والمتابعة</p>
                         </div>
                         <div class="maint-rep-kpis shrink-0">
                             <div class="maint-kpi maint-kpi-cost">
@@ -2693,6 +2813,9 @@
                     <div class="flex flex-wrap justify-end gap-2 mt-2.5 no-print">
                         <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                             <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
+                        </button>
+                        <button type="button" onclick="resetMaintenanceFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
                         </button>
                         <button type="button" onclick="loadMaintenanceReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
@@ -2762,7 +2885,6 @@
                     <div class="mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
                         <div class="no-print min-w-0">
                             <h2 class="text-base font-bold text-slate-900" data-i18n="page.fuelReport">تقرير استهلاك الوقود</h2>
-                            <p class="text-xs text-slate-500 mt-0.5" data-i18n="page.fuelReportSub">متابعة الصرف والاستهلاك ومقارنة الشاحنات</p>
                         </div>
                         <div class="flex flex-wrap gap-2 shrink-0">
                             <div class="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
@@ -2804,6 +2926,9 @@
                         <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                             <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
                         </button>
+                        <button type="button" onclick="resetFuelReportFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                        </button>
                         <button type="button" onclick="loadFuelReport()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="ui.showReport">عرض التقرير</span>
                         </button>
@@ -2811,16 +2936,14 @@
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 no-print">
                     <div class="chart-card bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartSpend">صرف الوقود حسب الشاحنة</h3>
-                        <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartSpendHint">مقارنة مباشرة لمصروفات واستهلاك الشاحنات</p>
+                        <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="fuel.chartSpend">صرف الوقود حسب الشاحنة</h3>
                         <div class="chart-host chart-host--fuel">
                             <canvas id="fuelRepSpendChart" aria-label="fuel spend chart"></canvas>
                         </div>
                         <div id="fuelRepSpendEmpty" class="hidden text-xs text-slate-400 py-8 text-center" data-i18n="fuel.empty">لا توجد سجلات وقود في الفترة المحددة</div>
                     </div>
                     <div class="chart-card bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="fuel.chartConsumption">كفاءة الاستهلاك (لتر/100كم)</h3>
-                        <p class="text-[11px] text-slate-400 mb-2" data-i18n="fuel.chartConsumptionHint">الأقل استهلاكاً … الأعلى كفاءةً</p>
+                        <h3 class="font-bold text-slate-900 text-sm mb-2" data-i18n="fuel.chartConsumption">كفاءة الاستهلاك (لتر/100كم)</h3>
                         <div class="chart-host chart-host--fuel">
                             <canvas id="fuelRepConsumptionChart" aria-label="fuel consumption chart"></canvas>
                         </div>
@@ -3171,6 +3294,9 @@
             <main id="activityLogSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
                 <div class="bg-white px-3 sm:px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print min-w-0">
                     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-end gap-2 mb-3">
+                        <button type="button" onclick="resetActivityLogFilters()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                        </button>
                         <button type="button" id="clearActivityLogBtn" onclick="clearActivityLog()" class="hidden bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
                             <i class="fa-solid fa-trash-can"></i> <span data-i18n="log.clear">مسح السجل</span>
                         </button>
@@ -6892,6 +7018,9 @@ function clearAllPageFilters() {
     setFilterValue('recvPayMethodFilter', '');
     setFilterValue('recvTruckFilter', '');
     setFilterValue('recvDriverFilter', '');
+    setFilterValue('profitStartDate', '');
+    setFilterValue('profitEndDate', '');
+    setFilterValue('profitTruckFilter', '');
     setFilterValue('commStartDate', '');
     setFilterValue('commEndDate', '');
     setFilterValue('commTruckFilter', '');
@@ -6936,6 +7065,12 @@ function resetFiltersForScreen(tabId) {
         setFilterValue('recvPayMethodFilter', '');
         setFilterValue('recvTruckFilter', '');
         setFilterValue('recvDriverFilter', '');
+        return;
+    }
+    if (id === 'truckProfitSection') {
+        setFilterValue('profitStartDate', '');
+        setFilterValue('profitEndDate', '');
+        setFilterValue('profitTruckFilter', '');
         return;
     }
     if (id === 'commissionReportSection' || id === 'commissionPayoutSection') {
@@ -8341,10 +8476,11 @@ async function generateReceivablesReport() {
         if (remainingEl) remainingEl.innerHTML = formatSAR(money.remaining);
         const tripsEl = document.getElementById('recvTripCount');
         if (tripsEl) tripsEl.textContent = tripsInView.length.toLocaleString('en-US');
+        paintReceivablesAging(tripsInView);
 
         if (!tbody) return;
         if (!rows.length) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
             return;
         }
         tbody.innerHTML = rows.map(({ trip: tr, line }) => {
@@ -8357,6 +8493,13 @@ async function generateReceivablesReport() {
             const amount = line
                 ? formatSAR(line.paid_amount || 0)
                 : formatSAR(tripMoneyParts(tr).total);
+            const overdueDays = tripOverdueDays(tr);
+            const overdueLabel = tripMoneyParts(tr).remaining > 0.009 && overdueDays != null
+                ? String(overdueDays)
+                : '—';
+            const overdueTone = overdueDays != null && overdueDays > 90
+                ? 'text-rose-700 font-black'
+                : (overdueDays != null && overdueDays > 30 ? 'text-amber-700 font-bold' : 'text-slate-600');
             return `
             <tr class="hover:bg-slate-50 transition">
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
@@ -8367,6 +8510,7 @@ async function generateReceivablesReport() {
                 <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
                 <td class="p-3.5 text-slate-700 align-top">${method}</td>
+                <td class="p-3.5 font-mono align-top ${overdueTone}">${escapeHtml(overdueLabel)}</td>
                 <td class="p-3.5 align-top">${receivablesPayBadge(tr)}</td>
             </tr>
             `;
@@ -8375,8 +8519,72 @@ async function generateReceivablesReport() {
         console.error('خطأ في تقرير المستحقات:', err);
         const tripsEl = document.getElementById('recvTripCount');
         if (tripsEl) tripsEl.textContent = '0';
-        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
+        paintReceivablesAging([]);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
     }
+}
+
+function tripAnchorDateForAging(trip) {
+    return tripCompletionDate(trip) || dateOnly(trip?.departure_date) || dateOnly(trip?.collection_date) || '';
+}
+
+function tripOverdueDays(trip) {
+    const remaining = tripMoneyParts(trip).remaining;
+    if (remaining <= 0.009) return null;
+    const anchor = tripAnchorDateForAging(trip);
+    if (!anchor) return null;
+    const start = new Date(`${anchor}T00:00:00`);
+    const end = new Date(`${todayDateInput()}T00:00:00`);
+    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) return null;
+    return Math.max(0, Math.round((end - start) / 86400000));
+}
+
+function receivablesAgingBucket(days) {
+    if (days == null) return null;
+    if (days <= 30) return '0';
+    if (days <= 60) return '30';
+    if (days <= 90) return '60';
+    return '90';
+}
+
+function summarizeReceivablesAging(trips) {
+    const buckets = {
+        '0': { amount: 0, count: 0 },
+        '30': { amount: 0, count: 0 },
+        '60': { amount: 0, count: 0 },
+        '90': { amount: 0, count: 0 }
+    };
+    (trips || []).forEach((trip) => {
+        const remaining = tripMoneyParts(trip).remaining;
+        if (remaining <= 0.009) return;
+        const days = tripOverdueDays(trip);
+        const key = receivablesAgingBucket(days);
+        if (!key || !buckets[key]) return;
+        buckets[key].amount += remaining;
+        buckets[key].count += 1;
+    });
+    return buckets;
+}
+
+function paintReceivablesAging(trips) {
+    const buckets = summarizeReceivablesAging(trips);
+    const map = [
+        ['recvAge0', 'recvAge0Count', '0'],
+        ['recvAge30', 'recvAge30Count', '30'],
+        ['recvAge60', 'recvAge60Count', '60'],
+        ['recvAge90', 'recvAge90Count', '90']
+    ];
+    map.forEach(([amountId, countId, key]) => {
+        const amountEl = document.getElementById(amountId);
+        const countEl = document.getElementById(countId);
+        const row = buckets[key] || { amount: 0, count: 0 };
+        if (amountEl) amountEl.innerHTML = formatSAR(row.amount);
+        if (countEl) {
+            countEl.textContent = currentLang === 'en'
+                ? `${row.count} trip(s)`
+                : `${row.count} رحلة`;
+        }
+    });
 }
 
 async function resetReceivablesFilters() {
@@ -8389,6 +8597,181 @@ async function resetReceivablesFilters() {
     setFilterValue('recvDriverFilter', '');
     syncRecvStatusPills();
     await generateReceivablesReport();
+}
+
+function emptyTruckProfitRow(plate) {
+    return {
+        plate: plate || '—',
+        trips: 0,
+        revenue: 0,
+        fuel: 0,
+        commission: 0,
+        maintenance: 0,
+        costs: 0,
+        profit: 0,
+        margin: null
+    };
+}
+
+function finalizeTruckProfitRow(row) {
+    row.revenue = roundMoney(row.revenue);
+    row.fuel = roundMoney(row.fuel);
+    row.commission = roundMoney(row.commission);
+    row.maintenance = roundMoney(row.maintenance);
+    row.costs = roundMoney(row.fuel + row.commission + row.maintenance);
+    row.profit = roundMoney(row.revenue - row.costs);
+    row.margin = row.revenue > 0.009 ? roundMoney((row.profit / row.revenue) * 100) : null;
+    return row;
+}
+
+async function buildTruckProfitabilityRows({ startDate = '', endDate = '', selectedTruck = '' } = {}) {
+    const [tripsRes, fuelRes, maintRes] = await Promise.all([
+        client.from('trips').select('*'),
+        scopeFuelQuery(client.from('fuel_logs').select('*')),
+        client.from('vehicle_maintenance').select('*')
+    ]);
+    if (tripsRes.error) throw tripsRes.error;
+    const fuelRows = fuelRes.error ? [] : (fuelRes.data || []);
+    const maintRows = maintRes.error ? [] : (maintRes.data || []);
+    const completed = filterCompletedTripsForPeriod(tripsRes.data || [], startDate, endDate)
+        .filter(trip => !selectedTruck || String(trip.truck_plate || trip.truck || '').trim() === selectedTruck);
+
+    const byPlate = new Map();
+    const ensure = (plate) => {
+        const key = String(plate || '').trim() || '—';
+        if (!byPlate.has(key)) byPlate.set(key, emptyTruckProfitRow(key));
+        return byPlate.get(key);
+    };
+
+    completed.forEach((trip) => {
+        const plate = String(trip.truck_plate || trip.truck || '').trim() || '—';
+        const row = ensure(plate);
+        row.trips += 1;
+        row.revenue += roundMoney(trip.total_amount || 0);
+        row.commission += roundMoney(commissionAmount(trip));
+    });
+
+    (fuelRows || []).forEach((row) => {
+        if (isFuelBaselineRow(row)) return;
+        const plate = String(row.truck_plate || '').trim();
+        if (!plate) return;
+        if (selectedTruck && plate !== selectedTruck) return;
+        if (!tripInDateRange(row.fill_date, startDate, endDate)) return;
+        ensure(plate).fuel += fuelNum(row.amount);
+    });
+
+    (maintRows || []).forEach((row) => {
+        const plate = String(row.vehicle_plate || '').trim();
+        if (!plate) return;
+        if (selectedTruck && plate !== selectedTruck) return;
+        if (!tripInDateRange(row.service_date, startDate, endDate)) return;
+        ensure(plate).maintenance += parseFloat(row.cost) || 0;
+    });
+
+    return [...byPlate.values()]
+        .map(finalizeTruckProfitRow)
+        .sort((a, b) => b.profit - a.profit || b.revenue - a.revenue || a.plate.localeCompare(b.plate, 'ar'));
+}
+
+function summarizeTruckProfitRows(rows) {
+    const summary = {
+        trips: 0,
+        revenue: 0,
+        fuel: 0,
+        commission: 0,
+        maintenance: 0,
+        costs: 0,
+        profit: 0,
+        margin: null
+    };
+    (rows || []).forEach((row) => {
+        summary.trips += row.trips || 0;
+        summary.revenue += row.revenue || 0;
+        summary.fuel += row.fuel || 0;
+        summary.commission += row.commission || 0;
+        summary.maintenance += row.maintenance || 0;
+        summary.costs += row.costs || 0;
+        summary.profit += row.profit || 0;
+    });
+    summary.revenue = roundMoney(summary.revenue);
+    summary.fuel = roundMoney(summary.fuel);
+    summary.commission = roundMoney(summary.commission);
+    summary.maintenance = roundMoney(summary.maintenance);
+    summary.costs = roundMoney(summary.costs);
+    summary.profit = roundMoney(summary.profit);
+    summary.margin = summary.revenue > 0.009 ? roundMoney((summary.profit / summary.revenue) * 100) : null;
+    return summary;
+}
+
+async function populateTruckProfitFilters() {
+    try {
+        const { data: trucks } = await client.from('trucks').select('plate, vehicle_kind').order('plate');
+        fillSelectOptions('profitTruckFilter', cargoTruckPlateList(trucks), t('ui.allTrucks'));
+    } catch (err) {
+        console.error('خطأ في تعبئة فلاتر ربحية الشاحنات:', err);
+    }
+}
+
+async function generateTruckProfitReport() {
+    const tbody = document.getElementById('truckProfitTable');
+    try {
+        await populateTruckProfitFilters();
+        const startDate = document.getElementById('profitStartDate')?.value || '';
+        const endDate = document.getElementById('profitEndDate')?.value || '';
+        const selectedTruck = document.getElementById('profitTruckFilter')?.value || '';
+        const rows = await buildTruckProfitabilityRows({ startDate, endDate, selectedTruck });
+        const summary = summarizeTruckProfitRows(rows);
+
+        const revEl = document.getElementById('profitTotalRevenue');
+        const costEl = document.getElementById('profitTotalCosts');
+        const profitEl = document.getElementById('profitOperating');
+        const marginEl = document.getElementById('profitMargin');
+        const tripsEl = document.getElementById('profitTripCount');
+        if (revEl) revEl.innerHTML = formatSAR(summary.revenue);
+        if (costEl) costEl.innerHTML = formatSAR(summary.costs);
+        if (profitEl) {
+            profitEl.innerHTML = formatSAR(summary.profit);
+            profitEl.classList.toggle('text-rose-700', summary.profit < -0.009);
+            profitEl.classList.toggle('text-emerald-800', summary.profit >= -0.009);
+        }
+        if (marginEl) {
+            marginEl.textContent = summary.margin == null ? '—' : `${summary.margin.toFixed(1)}%`;
+        }
+        if (tripsEl) tripsEl.textContent = summary.trips.toLocaleString('en-US');
+
+        if (!tbody) return;
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('profit.empty') || 'لا توجد بيانات ربحية في هذه الفترة')}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map((row) => {
+            const profitTone = row.profit < -0.009 ? 'text-rose-700' : 'text-emerald-700';
+            const marginLabel = row.margin == null ? '—' : `${row.margin.toFixed(1)}%`;
+            return `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(row.plate)}</td>
+                <td class="p-2.5 font-mono text-slate-700">${row.trips.toLocaleString('en-US')}</td>
+                <td class="p-2.5 font-mono font-bold text-slate-900">${formatSAR(row.revenue)}</td>
+                <td class="p-2.5 font-mono text-slate-700">${formatSAR(row.fuel)}</td>
+                <td class="p-2.5 font-mono text-slate-700">${formatSAR(row.commission)}</td>
+                <td class="p-2.5 font-mono text-slate-700">${formatSAR(row.maintenance)}</td>
+                <td class="p-2.5 font-mono font-black ${profitTone}">${formatSAR(row.profit)}</td>
+                <td class="p-2.5 font-mono text-slate-700">${escapeHtml(marginLabel)}</td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        console.error('خطأ في تقرير ربحية الشاحنات:', err);
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t('profit.loadFailed') || 'تعذر حساب ربحية الشاحنات')}</td></tr>`;
+        }
+    }
+}
+
+async function resetTruckProfitFilters() {
+    setFilterValue('profitStartDate', '');
+    setFilterValue('profitEndDate', '');
+    setFilterValue('profitTruckFilter', '');
+    await generateTruckProfitReport();
 }
 
 function dateOnly(value) {
@@ -11594,6 +11977,33 @@ async function resetMaintenanceFilters() {
     await loadMaintenanceReport();
 }
 
+async function resetFuelReportFilters() {
+    setFilterValue('fuelRepStartDate', '');
+    setFilterValue('fuelRepEndDate', '');
+    setFilterValue('fuelRepTruckFilter', '');
+    if (typeof loadFuelReport === 'function') await loadFuelReport();
+    else if (typeof renderFuelReportView === 'function') renderFuelReportView();
+}
+
+async function resetOpsReportFilters() {
+    setFilterValue('reportStartDate', '');
+    setFilterValue('reportEndDate', '');
+    setFilterValue('reportTruckFilter', '');
+    setFilterValue('reportDriverFilter', '');
+    if (typeof generateReport === 'function') await generateReport();
+}
+
+function resetAnalyticsFilters() {
+    setAnalyticsDateRange('all');
+}
+
+async function resetActivityLogFilters() {
+    setFilterValue('activityLogStart', '');
+    setFilterValue('activityLogEnd', '');
+    setFilterValue('activityLogUser', '');
+    if (typeof loadActivityLog === 'function') await loadActivityLog();
+}
+
 function buildMaintenanceEditDiff(before, after) {
     const labels = {
         service_date: currentLang === 'en' ? 'Service date' : 'تاريخ الصيانة',
@@ -12699,6 +13109,7 @@ const I18N = {
         'nav.financial': 'التقارير المالية',
         'nav.revenue': 'تقرير الإيرادات',
         'nav.receivables': 'تقرير متابعة التحصيل',
+        'nav.truckProfit': 'تقرير ربحية الشاحنات',
         'nav.commissions': 'تقرير العمولات',
         'nav.payouts': 'سداد العمولات',
         'nav.users': 'المستخدمين',
@@ -12781,8 +13192,11 @@ const I18N = {
         'analytics.allPeriod': 'كل الفترة',
         'analytics.lastMonth': 'الشهر السابق',
         'analytics.customPeriod': 'فترة مخصصة',
-        'analytics.bestTruck': 'أفضل شاحنة',
-        'analytics.bestDriver': 'أفضل سائق',
+        'analytics.bestTruck': 'أفضل شاحنة ربحاً',
+        'analytics.bestDriver': 'أفضل سائق رحلات',
+        'analytics.fleetProfit': 'ربح تشغيلي للأسطول',
+        'analytics.overdueRemain': 'متبقي متأخر (+30 يوم)',
+        'analytics.weakTruck': 'أضعف شاحنة ربحاً',
         'analytics.truckTrips': 'إنتاجية الشاحنات (عدد الرحلات)',
         'analytics.truckTripsHint': 'الأكثر رحلات في المقدمة',
         'analytics.truckRevenue': 'إيرادات الشاحنات',
@@ -12804,6 +13218,7 @@ const I18N = {
         'page.revenueSub': 'إجمالي الإيرادات، والمبالغ المحصلة، والغير محصلة مع تفاصيل الرحلات',
         'page.receivables': 'تقرير متابعة التحصيل',
         'page.receivablesSub': 'المستحقات والمحصل والمتبقي حسب العميل وطريقة السداد',
+        'page.truckProfit': 'تقرير ربحية الشاحنات',
         'page.fleetFinance': 'تقرير العمولات وإيرادات الأسطول',
         'page.fleetFinanceSub': 'تفاصيل إيرادات الشاحنات وعمولات السائقين لكل رحلة',
         'page.commissions': 'تقرير العمولات',
@@ -13008,6 +13423,21 @@ const I18N = {
         'ui.allClients': 'جميع العملاء',
         'ui.receivablesDetails': 'تفاصيل متابعة التحصيل',
         'ui.noReceivables': 'لا توجد بيانات مطابقة للفلتر المحدد',
+        'recv.age0': 'متبقي 0–30 يوم',
+        'recv.age30': 'متبقي 31–60 يوم',
+        'recv.age60': 'متبقي 61–90 يوم',
+        'recv.age90': 'متبقي +90 يوم',
+        'recv.daysOverdue': 'أيام التأخير',
+        'profit.totalCosts': 'إجمالي التكاليف المباشرة',
+        'profit.operating': 'الربح التشغيلي',
+        'profit.margin': 'هامش الربح',
+        'profit.tableTitle': 'ربحية كل شاحنة',
+        'profit.fuelCost': 'الوقود',
+        'profit.commCost': 'العمولات',
+        'profit.maintCost': 'الصيانة',
+        'profit.loading': 'جاري حساب ربحية الشاحنات...',
+        'profit.empty': 'لا توجد بيانات ربحية في هذه الفترة',
+        'profit.loadFailed': 'تعذر حساب ربحية الشاحنات',
         'th.destination': 'الوجهة',
         'ui.completedTrips': 'عدد الرحلات المنجزة',
         'ui.trucks': 'الشاحنات',
@@ -13594,6 +14024,7 @@ const I18N = {
         'nav.financial': 'Financial reports',
         'nav.revenue': 'Revenue report',
         'nav.receivables': 'Collection follow-up',
+        'nav.truckProfit': 'Truck profitability',
         'nav.commissions': 'Commission report',
         'nav.payouts': 'Commission payouts',
         'nav.users': 'Users',
@@ -13676,8 +14107,11 @@ const I18N = {
         'analytics.allPeriod': 'All time',
         'analytics.lastMonth': 'Last month',
         'analytics.customPeriod': 'Custom period',
-        'analytics.bestTruck': 'Top truck',
-        'analytics.bestDriver': 'Top driver',
+        'analytics.bestTruck': 'Top truck by profit',
+        'analytics.bestDriver': 'Top driver by trips',
+        'analytics.fleetProfit': 'Fleet operating profit',
+        'analytics.overdueRemain': 'Overdue remaining (+30 days)',
+        'analytics.weakTruck': 'Weakest truck by profit',
         'analytics.truckTrips': 'Truck productivity (trips)',
         'analytics.truckTripsHint': 'Most trips at the top',
         'analytics.truckRevenue': 'Truck revenue',
@@ -13699,6 +14133,7 @@ const I18N = {
         'page.revenueSub': 'Total, collected and outstanding amounts with trip details',
         'page.receivables': 'Collection follow-up',
         'page.receivablesSub': 'Due, collected and remaining amounts by client and payment method',
+        'page.truckProfit': 'Truck profitability',
         'page.fleetFinance': 'Commissions and fleet revenue',
         'page.fleetFinanceSub': 'Truck revenue and driver commissions per trip',
         'page.commissions': 'Commission report',
@@ -13903,6 +14338,21 @@ const I18N = {
         'ui.allClients': 'All clients',
         'ui.receivablesDetails': 'Collection follow-up details',
         'ui.noReceivables': 'No matching records for the selected filters',
+        'recv.age0': 'Remaining 0–30 days',
+        'recv.age30': 'Remaining 31–60 days',
+        'recv.age60': 'Remaining 61–90 days',
+        'recv.age90': 'Remaining +90 days',
+        'recv.daysOverdue': 'Days overdue',
+        'profit.totalCosts': 'Total direct costs',
+        'profit.operating': 'Operating profit',
+        'profit.margin': 'Profit margin',
+        'profit.tableTitle': 'Profitability by truck',
+        'profit.fuelCost': 'Fuel',
+        'profit.commCost': 'Commissions',
+        'profit.maintCost': 'Maintenance',
+        'profit.loading': 'Calculating truck profitability...',
+        'profit.empty': 'No profitability data in this period',
+        'profit.loadFailed': 'Could not calculate truck profitability',
         'th.destination': 'Destination',
         'ui.completedTrips': 'Completed trips',
         'ui.trucks': 'Trucks',
@@ -14319,43 +14769,44 @@ const I18N = {
 };
 
 const PAGE_HEADER_KEYS = {
-    dashboard: ['page.dashboard', 'page.dashboardSub'],
-    dashboardSection: ['page.dashboard', 'page.dashboardSub'],
-    analytics: ['page.analytics', 'page.analyticsSub'],
-    analyticsSection: ['page.analytics', 'page.analyticsSub'],
-    charts: ['page.charts', 'page.chartsSub'],
-    chartsSection: ['page.charts', 'page.chartsSub'],
-    trips: ['page.trips', 'page.tripsSub'],
-    tripsSection: ['page.trips', 'page.tripsSub'],
-    reports: ['page.reports', 'page.reportsSub'],
-    reportsSection: ['page.reports', 'page.reportsSub'],
-    financialOverviewSection: ['page.revenue', 'page.revenueSub'],
-    receivablesSection: ['page.receivables', 'page.receivablesSub'],
-    financialDetailsSection: ['page.fleetFinance', 'page.fleetFinanceSub'],
-    commissionReportSection: ['page.commissions', 'page.commissionsSub'],
-    commissionPayoutSection: ['page.payouts', 'page.payoutsSub'],
-    facility: ['page.facility', 'page.facilitySub'],
-    trucks: ['page.trucks', 'page.trucksSub'],
-    otherVehicles: ['page.otherVehicles', 'page.otherVehiclesSub'],
-    maintenance: ['page.maintenance', 'page.maintenanceSub'],
-    maintenanceReport: ['page.maintenanceReport', 'page.maintenanceReportSub'],
-    maintenanceSection: ['page.maintenance', 'page.maintenanceSub'],
-    maintenanceReportSection: ['page.maintenanceReport', 'page.maintenanceReportSub'],
-    fuel: ['page.fuel', 'page.fuelSub'],
-    fuelSection: ['page.fuel', 'page.fuelSub'],
-    fuelReport: ['page.fuelReport', 'page.fuelReportSub'],
-    fuelReportSection: ['page.fuelReport', 'page.fuelReportSub'],
-    drivers: ['page.drivers', 'page.driversSub'],
-    employees: ['page.employees', 'page.employeesSub'],
-    users: ['page.users', 'page.usersSub'],
-    usersSection: ['page.users', 'page.usersSub'],
-    subscriptions: ['page.subscriptions', 'page.subscriptionsSub'],
-    subscriptionsSection: ['page.subscriptions', 'page.subscriptionsSub'],
-    activityLog: ['page.activityLog', 'page.activityLogSub'],
-    activityLogSection: ['page.activityLog', 'page.activityLogSub'],
-    permissions: ['page.permissions', 'page.permissionsSub'],
-    permissionsSection: ['page.permissions', 'page.permissionsSub'],
-    settings: ['page.settings', 'page.settingsSub']
+    dashboard: ['page.dashboard'],
+    dashboardSection: ['page.dashboard'],
+    analytics: ['page.analytics'],
+    analyticsSection: ['page.analytics'],
+    charts: ['page.charts'],
+    chartsSection: ['page.charts'],
+    trips: ['page.trips'],
+    tripsSection: ['page.trips'],
+    reports: ['page.reports'],
+    reportsSection: ['page.reports'],
+    financialOverviewSection: ['page.revenue'],
+    receivablesSection: ['page.receivables'],
+    truckProfitSection: ['page.truckProfit'],
+    financialDetailsSection: ['page.fleetFinance'],
+    commissionReportSection: ['page.commissions'],
+    commissionPayoutSection: ['page.payouts'],
+    facility: ['page.facility'],
+    trucks: ['page.trucks'],
+    otherVehicles: ['page.otherVehicles'],
+    maintenance: ['page.maintenance'],
+    maintenanceReport: ['page.maintenanceReport'],
+    maintenanceSection: ['page.maintenance'],
+    maintenanceReportSection: ['page.maintenanceReport'],
+    fuel: ['page.fuel'],
+    fuelSection: ['page.fuel'],
+    fuelReport: ['page.fuelReport'],
+    fuelReportSection: ['page.fuelReport'],
+    drivers: ['page.drivers'],
+    employees: ['page.employees'],
+    users: ['page.users'],
+    usersSection: ['page.users'],
+    subscriptions: ['page.subscriptions'],
+    subscriptionsSection: ['page.subscriptions'],
+    activityLog: ['page.activityLog'],
+    activityLogSection: ['page.activityLog'],
+    permissions: ['page.permissions'],
+    permissionsSection: ['page.permissions'],
+    settings: ['page.settings']
 };
 
 function t(key) {
@@ -14424,6 +14875,12 @@ function setAppLang(lang) {
         if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
         if (typeof renderExpiryReport === 'function') renderExpiryReport();
         if (typeof renderAnalyticsDashboard === 'function') renderAnalyticsDashboard();
+        if (typeof generateReceivablesReport === 'function' && !document.getElementById('receivablesSection')?.classList.contains('hidden')) {
+            generateReceivablesReport();
+        }
+        if (typeof generateTruckProfitReport === 'function' && !document.getElementById('truckProfitSection')?.classList.contains('hidden')) {
+            generateTruckProfitReport();
+        }
         if (typeof fillMaintenanceTypeSelect === 'function') {
             fillMaintenanceTypeSelect(document.getElementById('maintRepTypeFilter'), true);
             fillMaintenanceFilterVehicles();
@@ -14441,7 +14898,7 @@ function setPageHeader(titleOrTab, subtitle) {
         if (!PAGE_HEADER_KEYS[titleOrTab]) return;
         const keys = PAGE_HEADER_KEYS[titleOrTab];
         title = t(keys[0]);
-        sub = t(keys[1]);
+        sub = keys[1] ? t(keys[1]) : '';
     }
     const titleEl = document.getElementById('pageTitle');
     const subEl = document.getElementById('pageSubtitle');
@@ -14612,7 +15069,7 @@ function setActiveNav(tabId) {
     document.querySelectorAll('[data-nav]').forEach(btn => {
         btn.classList.toggle('nav-active', btn.dataset.nav === tabId);
     });
-    const financialOpen = ['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
+    const financialOpen = ['financialOverviewSection', 'receivablesSection', 'truckProfitSection', 'financialDetailsSection', 'commissionReportSection'].includes(tabId);
     const opsReportsOpen = tabId === 'reports' || tabId === 'maintenanceReport' || tabId === 'fuelReport';
     const reportsOpen = tabId === 'analytics' || opsReportsOpen || financialOpen;
     const reportsGroupBtn = document.getElementById('tabReportsGroupBtn');
@@ -14677,7 +15134,7 @@ function switchTab(tabId) {
         alert(currentLang === 'en' ? 'Not allowed.' : 'غير مصرح.');
         return;
     }
-    if (['financialOverviewSection', 'receivablesSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId) && !hasPerm('reports_finance', 'view')) {
+    if (['financialOverviewSection', 'receivablesSection', 'truckProfitSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection'].includes(tabId) && !hasPerm('reports_finance', 'view')) {
         alert(currentLang === 'en' ? 'Financial reports are not available for your role.' : 'التقارير المالية غير متاحة لصلاحيتك.');
         return;
     }
@@ -14696,7 +15153,7 @@ function switchTab(tabId) {
     });
 
     // 2. معالجة خاصة للتبويبات المالية لضمان ظهورها وتشغيل بياناتها
-    if (tabId === 'financialOverviewSection' || tabId === 'receivablesSection' || tabId === 'financialDetailsSection' || tabId === 'commissionReportSection' || tabId === 'commissionPayoutSection') {
+    if (tabId === 'financialOverviewSection' || tabId === 'receivablesSection' || tabId === 'truckProfitSection' || tabId === 'financialDetailsSection' || tabId === 'commissionReportSection' || tabId === 'commissionPayoutSection') {
         toggleFinancialMenu(true);
         const resolvedTab = tabId === 'commissionPayoutSection' ? 'commissionReportSection' : tabId;
         currentNavTab = resolvedTab;
@@ -14710,6 +15167,8 @@ function switchTab(tabId) {
                 populateCommissionFilters().then(() => generateCommissionReport());
             } else if (resolvedTab === 'receivablesSection' && typeof generateReceivablesReport === 'function') {
                 generateReceivablesReport();
+            } else if (resolvedTab === 'truckProfitSection' && typeof generateTruckProfitReport === 'function') {
+                generateTruckProfitReport();
             } else if (typeof generateFinancialReport === 'function') {
                 generateFinancialReport();
             }
@@ -15332,21 +15791,71 @@ async function renderAnalyticsDashboard() {
     if (totalCommEl) totalCommEl.innerHTML = formatSAR(totalCommission);
     const truckList = [...trucks.values()].sort((a, b) => b.trips - a.trips || b.revenue - a.revenue).slice(0, 8);
     const driverList = [...drivers.values()].sort((a, b) => b.trips - a.trips || b.commission - a.commission).slice(0, 8);
-    const bestTruck = truckList[0];
     const bestDriver = driverList[0];
 
-    const bestTruckEl = document.getElementById('analyticsBestTruck');
-    const bestTruckMeta = document.getElementById('analyticsBestTruckMeta');
     const bestDriverEl = document.getElementById('analyticsBestDriver');
     const bestDriverMeta = document.getElementById('analyticsBestDriverMeta');
-    if (bestTruckEl) bestTruckEl.textContent = bestTruck ? bestTruck.name : '—';
-    if (bestTruckMeta) bestTruckMeta.innerHTML = bestTruck
-        ? `${escapeHtml(tf('analytics.tripsCount', bestTruck.trips))}${showMoney ? ' · ' + formatSAR(bestTruck.revenue) : ''}`
-        : escapeHtml(t('analytics.noData'));
     if (bestDriverEl) bestDriverEl.textContent = bestDriver ? bestDriver.name : '—';
     if (bestDriverMeta) bestDriverMeta.innerHTML = bestDriver
         ? `${escapeHtml(tf('analytics.tripsCount', bestDriver.trips))}${showMoney ? ' · ' + formatSAR(bestDriver.commission) : ''}`
         : escapeHtml(t('analytics.noData'));
+
+    let profitRows = [];
+    try {
+        profitRows = await buildTruckProfitabilityRows({ startDate, endDate });
+    } catch (err) {
+        console.error('analytics profit:', err);
+        profitRows = [];
+    }
+    const profitSummary = summarizeTruckProfitRows(profitRows);
+    const fleetProfitEl = document.getElementById('analyticsFleetProfit');
+    const fleetMarginEl = document.getElementById('analyticsFleetMargin');
+    if (fleetProfitEl) fleetProfitEl.innerHTML = formatSAR(profitSummary.profit);
+    if (fleetMarginEl) {
+        fleetMarginEl.textContent = profitSummary.margin == null
+            ? ''
+            : (currentLang === 'en'
+                ? `Margin ${profitSummary.margin.toFixed(1)}%`
+                : `الهامش ${profitSummary.margin.toFixed(1)}%`);
+    }
+
+    const overdueTrips = (data || []).filter(trip => {
+        const remaining = tripMoneyParts(trip).remaining;
+        if (remaining <= 0.009) return false;
+        const days = tripOverdueDays(trip);
+        return days != null && days > 30;
+    });
+    const overdueAmount = overdueTrips.reduce((sum, trip) => sum + tripMoneyParts(trip).remaining, 0);
+    const overdueRemainEl = document.getElementById('analyticsOverdueRemain');
+    const overdueMetaEl = document.getElementById('analyticsOverdueMeta');
+    if (overdueRemainEl) overdueRemainEl.innerHTML = formatSAR(overdueAmount);
+    if (overdueMetaEl) {
+        overdueMetaEl.textContent = currentLang === 'en'
+            ? `${overdueTrips.length} trip(s) past 30 days`
+            : `${overdueTrips.length} رحلة تجاوزت 30 يوماً`;
+    }
+
+    const rankedProfit = [...profitRows]
+        .filter(row => row.trips > 0 || row.costs > 0.009)
+        .sort((a, b) => b.profit - a.profit || b.revenue - a.revenue || a.plate.localeCompare(b.plate, 'ar'));
+    const bestTruck = rankedProfit[0];
+    const weakTruck = rankedProfit.length ? rankedProfit[rankedProfit.length - 1] : null;
+    const bestTruckEl = document.getElementById('analyticsBestTruck');
+    const bestTruckMeta = document.getElementById('analyticsBestTruckMeta');
+    const weakTruckEl = document.getElementById('analyticsWeakTruck');
+    const weakTruckMeta = document.getElementById('analyticsWeakTruckMeta');
+    const profitTruckMeta = (row) => {
+        if (!row) return escapeHtml(t('analytics.noData'));
+        const tripsLabel = escapeHtml(tf('analytics.tripsCount', row.trips || 0));
+        const moneyBits = showMoney
+            ? ` · ${formatSAR(row.profit)}${row.margin != null ? ` · ${row.margin.toFixed(1)}%` : ''}`
+            : '';
+        return `${tripsLabel}${moneyBits}`;
+    };
+    if (bestTruckEl) bestTruckEl.textContent = bestTruck ? bestTruck.plate : '—';
+    if (bestTruckMeta) bestTruckMeta.innerHTML = profitTruckMeta(bestTruck);
+    if (weakTruckEl) weakTruckEl.textContent = weakTruck ? weakTruck.plate : '—';
+    if (weakTruckMeta) weakTruckMeta.innerHTML = profitTruckMeta(weakTruck);
 
     destroyAnalyticsCharts();
     renderAnalyticsTrendChart(buildAnalyticsMonthlyTrend(inPeriod), showMoney);
@@ -17714,6 +18223,7 @@ async function loadUsers(options = {}) {
                 chartsSection: 'chartsSection',
                 financialOverviewSection: 'financialOverviewSection',
                 receivablesSection: 'receivablesSection',
+                truckProfitSection: 'truckProfitSection',
                 financialDetailsSection: 'financialDetailsSection',
                 commissionReportSection: 'commissionReportSection'
             };
