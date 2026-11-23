@@ -311,6 +311,12 @@
             width: 100% !important;
             table-layout: fixed;
         }
+        body.is-printing #truckProfitSection .no-print {
+            display: none !important;
+        }
+        body.is-printing #truckProfitTableFoot {
+            display: table-footer-group !important;
+        }
         body.is-printing main.print-target th,
         body.is-printing main.print-target td {
             white-space: normal !important;
@@ -2478,7 +2484,7 @@
             </button>
         </div>
     </div>
-    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
+    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4 no-print">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="profitTotalRevenue" class="text-lg font-black text-slate-900 font-mono mt-1">0.00</div>
@@ -2521,6 +2527,18 @@
                 <tbody id="truckProfitTable" class="divide-y divide-slate-100">
                     <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="profit.loading">جاري حساب ربحية الشاحنات...</td></tr>
                 </tbody>
+                <tfoot id="truckProfitTableFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                    <tr>
+                        <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
+                        <td class="p-2.5 font-mono" id="profitFootTrips">0</td>
+                        <td class="p-2.5 font-mono" id="profitFootRevenue">0.00</td>
+                        <td class="p-2.5 font-mono" id="profitFootFuel">0.00</td>
+                        <td class="p-2.5 font-mono" id="profitFootComm">0.00</td>
+                        <td class="p-2.5 font-mono" id="profitFootMaint">0.00</td>
+                        <td class="p-2.5 font-mono" id="profitFootProfit">0.00</td>
+                        <td class="p-2.5 font-mono" id="profitFootMargin">—</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -8739,9 +8757,37 @@ async function generateTruckProfitReport() {
         }
         if (tripsEl) tripsEl.textContent = summary.trips.toLocaleString('en-US');
 
+        const tfoot = document.getElementById('truckProfitTableFoot');
+        const paintFoot = (show) => {
+            if (!tfoot) return;
+            tfoot.classList.toggle('hidden', !show);
+            if (!show) return;
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            const setHtml = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = value;
+            };
+            setText('profitFootTrips', summary.trips.toLocaleString('en-US'));
+            setHtml('profitFootRevenue', formatSAR(summary.revenue));
+            setHtml('profitFootFuel', formatSAR(summary.fuel));
+            setHtml('profitFootComm', formatSAR(summary.commission));
+            setHtml('profitFootMaint', formatSAR(summary.maintenance));
+            setHtml('profitFootProfit', formatSAR(summary.profit));
+            setText('profitFootMargin', summary.margin == null ? '—' : `${summary.margin.toFixed(1)}%`);
+            const profitFoot = document.getElementById('profitFootProfit');
+            if (profitFoot) {
+                profitFoot.classList.toggle('text-rose-700', summary.profit < -0.009);
+                profitFoot.classList.toggle('text-emerald-800', summary.profit >= -0.009);
+            }
+        };
+
         if (!tbody) return;
         if (!rows.length) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('profit.empty') || 'لا توجد بيانات ربحية في هذه الفترة')}</td></tr>`;
+            paintFoot(false);
             return;
         }
         tbody.innerHTML = rows.map((row) => {
@@ -8759,11 +8805,14 @@ async function generateTruckProfitReport() {
                 <td class="p-2.5 font-mono text-slate-700">${escapeHtml(marginLabel)}</td>
             </tr>`;
         }).join('');
+        paintFoot(true);
     } catch (err) {
         console.error('خطأ في تقرير ربحية الشاحنات:', err);
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t('profit.loadFailed') || 'تعذر حساب ربحية الشاحنات')}</td></tr>`;
         }
+        const tfoot = document.getElementById('truckProfitTableFoot');
+        if (tfoot) tfoot.classList.add('hidden');
     }
 }
 
