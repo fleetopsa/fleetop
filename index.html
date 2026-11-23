@@ -266,6 +266,38 @@
             .truck-card-fixed { width: 11rem; max-width: 100%; }
         }
         .print-only { display: none !important; }
+        .report-print-totals {
+            display: none;
+            margin: 0 0 3mm;
+            border: 0.4pt solid #cbd5e1;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        .report-print-totals table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .report-print-totals th,
+        .report-print-totals td {
+            padding: 1.4mm 2mm;
+            border-bottom: 0.3pt solid #e2e8f0;
+            font-size: 9pt;
+            text-align: right;
+        }
+        .report-print-totals th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+        }
+        .report-print-totals td:last-child,
+        .report-print-totals th:last-child {
+            text-align: left;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 700;
+            width: 42%;
+        }
+        .report-print-totals tr:last-child td { border-bottom: 0; }
         @page { size: auto; margin: 10mm 12mm; }
         body.is-printing {
             background: #fff !important;
@@ -317,18 +349,16 @@
         body.is-printing #receivablesSection .print-summary,
         body.is-printing #commissionReportSection .print-summary,
         body.is-printing #maintenanceReportSection .print-summary,
-        body.is-printing #fuelReportSection .print-summary {
+        body.is-printing #fuelReportSection .print-summary,
+        body.is-printing #reportsSection .print-summary {
             display: none !important;
         }
-        body.is-printing main.print-target tfoot,
-        body.is-printing #truckProfitTableFoot,
-        body.is-printing #financialReportFoot,
-        body.is-printing #receivablesReportFoot,
-        body.is-printing #commissionReportFoot,
-        body.is-printing #commissionPayoutFoot,
-        body.is-printing #maintenanceReportFoot,
-        body.is-printing #fuelReportFoot {
-            display: table-footer-group !important;
+        body.is-printing main.print-target tfoot {
+            display: none !important;
+        }
+        body.is-printing main.print-target .report-print-totals,
+        body.is-printing main.print-target .report-print-totals.print-only {
+            display: block !important;
         }
         body.is-printing main.print-target th,
         body.is-printing main.print-target td {
@@ -414,9 +444,6 @@
         body.is-printing #maintenanceReportSection.print-target .maint-rep-kpis,
         body.is-printing #maintenanceReportSection.print-target .print-summary {
             display: none !important;
-        }
-        body.is-printing #maintenanceReportSection.print-target .maint-report-detail tfoot {
-            display: table-footer-group !important;
         }
         body.is-printing #maintenanceReportSection.print-target .maint-report-detail-card {
             display: block !important;
@@ -2110,7 +2137,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="bg-slate-50 px-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shrink-0 min-w-[11rem] self-stretch">
+                <div class="print-summary bg-slate-50 px-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shrink-0 min-w-[11rem] self-stretch">
                     <div>
                         <span class="block text-[11px] text-slate-500 font-bold" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
                         <span id="repTotalTrips" class="text-2xl font-bold text-slate-900 font-mono leading-none">0</span>
@@ -2148,6 +2175,14 @@
 
                     <div class="mb-4">
                         <h4 id="driverReportHeading" class="font-bold text-slate-900 text-xs mb-3 flex items-center"><i class="fa-solid fa-users text-amber-500 ml-2"></i> <span data-i18n="ui.driverReportHead">تقرير السائقين التفصيلي والعمولات المستحقة</span></h4>
+                        <div id="opsPrintTotals" class="report-print-totals print-only">
+                            <table>
+                                <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                                <tbody>
+                                    <tr><td data-i18n="ui.completedTrips">عدد الرحلات المنجزة</td><td id="opsPrintTrips">0</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div class="overflow-x-auto">
                            <table class="ops-driver-report w-full text-right text-xs">
     <thead class="bg-slate-800 text-slate-200 uppercase">
@@ -2242,6 +2277,17 @@
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
             <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.revenueDetails">تفاصيل الإيرادات</span>
         </h3>
+        <div id="finPrintTotals" class="report-print-totals print-only">
+            <table>
+                <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                <tbody>
+                    <tr><td data-i18n="ui.totalRevenue">إجمالي الإيرادات</td><td id="finPrintTotal">0.00</td></tr>
+                    <tr><td data-i18n="ui.collected">المبالغ المحصلة</td><td id="finPrintCollected">0.00</td></tr>
+                    <tr><td data-i18n="ui.uncollected">المبالغ غير المحصلة</td><td id="finPrintRemaining">0.00</td></tr>
+                    <tr><td data-i18n="ui.completedTrips">عدد الرحلات المنجزة</td><td id="finPrintTrips">0</td></tr>
+                </tbody>
+            </table>
+        </div>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
                 <thead class="bg-slate-100 text-slate-700">
@@ -2257,16 +2303,6 @@
                 <tbody id="financialReportTable" class="divide-y divide-slate-100">
                     <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
-                <tfoot id="financialReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                    <tr>
-                        <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
-                        <td class="p-3.5 font-mono" id="finFootTrips">0</td>
-                        <td class="p-3.5">—</td>
-                        <td class="p-3.5 font-mono" id="finFootAmount">0.00</td>
-                        <td class="p-3.5 font-mono" id="finFootCollected">0.00</td>
-                        <td class="p-3.5 font-mono" id="finFootRemaining">0.00</td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -2381,6 +2417,17 @@
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
             <i class="fa-solid fa-list text-amber-500 ml-2"></i> <span data-i18n="ui.receivablesDetails">تفاصيل متابعة التحصيل</span>
         </h3>
+        <div id="recvPrintTotals" class="report-print-totals print-only">
+            <table>
+                <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                <tbody>
+                    <tr><td data-i18n="ui.totalReceivables">إجمالي المستحقات</td><td id="recvPrintTotal">0.00</td></tr>
+                    <tr><td data-i18n="ui.collected">المبالغ المحصلة</td><td id="recvPrintCollected">0.00</td></tr>
+                    <tr><td data-i18n="ui.remaining">المتبقي</td><td id="recvPrintRemaining">0.00</td></tr>
+                    <tr><td data-i18n="ui.tripCount">عدد الرحلات</td><td id="recvPrintTrips">0</td></tr>
+                </tbody>
+            </table>
+        </div>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
                 <thead class="bg-slate-100 text-slate-700">
@@ -2400,16 +2447,6 @@
                 <tbody id="receivablesReportTable" class="divide-y divide-slate-100">
                     <tr><td colspan="10" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
-                <tfoot id="receivablesReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                    <tr>
-                        <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
-                        <td class="p-3.5 font-mono" id="recvFootTrips" colspan="5">0</td>
-                        <td class="p-3.5 font-mono" id="recvFootAmount">0.00</td>
-                        <td class="p-3.5 font-mono" id="recvFootCollected">0.00</td>
-                        <td class="p-3.5 font-mono" id="recvFootRemaining">0.00</td>
-                        <td class="p-3.5">—</td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -2468,6 +2505,18 @@
         <h3 class="font-bold text-slate-900 text-sm mb-3 border-b pb-2 flex items-center">
             <i class="fa-solid fa-truck text-amber-500 ml-2"></i> <span data-i18n="profit.tableTitle">ربحية كل شاحنة</span>
         </h3>
+        <div id="profitPrintTotals" class="report-print-totals print-only">
+            <table>
+                <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                <tbody>
+                    <tr><td data-i18n="ui.totalRevenue">إجمالي الإيرادات</td><td id="profitPrintRevenue">0.00</td></tr>
+                    <tr><td data-i18n="profit.totalCosts">إجمالي التكاليف المباشرة</td><td id="profitPrintCosts">0.00</td></tr>
+                    <tr><td data-i18n="profit.operating">الربح التشغيلي</td><td id="profitPrintOperating">0.00</td></tr>
+                    <tr><td data-i18n="profit.margin">هامش الربح</td><td id="profitPrintMargin">—</td></tr>
+                    <tr><td data-i18n="ui.completedTrips">عدد الرحلات المنجزة</td><td id="profitPrintTrips">0</td></tr>
+                </tbody>
+            </table>
+        </div>
         <div class="overflow-x-auto flex-grow">
             <table class="w-full text-right text-xs text-slate-700">
                 <thead class="bg-slate-800 text-slate-200">
@@ -2485,18 +2534,6 @@
                 <tbody id="truckProfitTable" class="divide-y divide-slate-100">
                     <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="profit.loading">جاري حساب ربحية الشاحنات...</td></tr>
                 </tbody>
-                <tfoot id="truckProfitTableFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                    <tr>
-                        <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
-                        <td class="p-2.5 font-mono" id="profitFootTrips">0</td>
-                        <td class="p-2.5 font-mono" id="profitFootRevenue">0.00</td>
-                        <td class="p-2.5 font-mono" id="profitFootFuel">0.00</td>
-                        <td class="p-2.5 font-mono" id="profitFootComm">0.00</td>
-                        <td class="p-2.5 font-mono" id="profitFootMaint">0.00</td>
-                        <td class="p-2.5 font-mono" id="profitFootProfit">0.00</td>
-                        <td class="p-2.5 font-mono" id="profitFootMargin">—</td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -2802,6 +2839,15 @@
                     <h3 class="font-bold text-slate-900 text-sm mb-2 border-b pb-2 flex items-center">
                         <i class="fa-solid fa-table-list ml-2 text-amber-500"></i> <span data-i18n="maint.detailReport">تفاصيل الصيانات</span>
                     </h3>
+                    <div id="maintPrintTotals" class="report-print-totals print-only">
+                        <table>
+                            <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                            <tbody>
+                                <tr><td data-i18n="maint.count">عدد الصيانات</td><td id="maintPrintCount">0</td></tr>
+                                <tr><td data-i18n="maint.totalCost">إجمالي التكاليف</td><td id="maintPrintCost">0.00</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="overflow-x-auto flex-grow min-w-0">
                         <table class="maint-report-detail w-full text-center text-xs text-slate-700">
                             <thead class="bg-slate-800 text-slate-200">
@@ -2818,15 +2864,6 @@
                             <tbody id="maintenanceReportTable">
                                 <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
                             </tbody>
-                            <tfoot id="maintenanceReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                                <tr>
-                                    <td class="maint-print-hide p-2.5"></td>
-                                    <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
-                                    <td class="p-2.5 font-mono" id="maintFootCount" colspan="3">0</td>
-                                    <td class="p-2.5 font-mono text-amber-700" id="maintFootCost">0.00</td>
-                                    <td class="p-2.5 no-print">—</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -2939,6 +2976,17 @@
                     <h3 class="font-bold text-slate-900 text-sm mb-2 border-b pb-2 flex items-center">
                         <i class="fa-solid fa-table-list ml-2 text-amber-500"></i> <span data-i18n="fuel.detailReport">تفاصيل التعبئات</span>
                     </h3>
+                    <div id="fuelPrintTotals" class="report-print-totals print-only">
+                        <table>
+                            <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                            <tbody>
+                                <tr><td data-i18n="fuel.fillCount">عدد التعبئات</td><td id="fuelPrintCount">0</td></tr>
+                                <tr><td data-i18n="fuel.totalLiters">إجمالي اللترات</td><td id="fuelPrintLiters">0</td></tr>
+                                <tr><td data-i18n="fuel.totalAmount">إجمالي المبلغ</td><td id="fuelPrintAmount">0.00</td></tr>
+                                <tr><td data-i18n="fuel.avgPer100">متوسط لتر/100كم</td><td id="fuelPrintAvg">—</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="overflow-x-auto flex-grow min-w-0">
                         <table class="w-full text-center text-xs text-slate-700">
                             <thead class="bg-slate-800 text-slate-200">
@@ -2956,16 +3004,6 @@
                             <tbody id="fuelReportTable">
                                 <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="fuel.loading">جاري تحميل سجلات الوقود...</td></tr>
                             </tbody>
-                            <tfoot id="fuelReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                                <tr>
-                                    <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
-                                    <td class="p-2.5 font-mono" id="fuelFootCount" colspan="3">0</td>
-                                    <td class="p-2.5 font-mono" id="fuelFootLiters">0</td>
-                                    <td class="p-2.5 font-mono" id="fuelFootAmount">0.00</td>
-                                    <td class="p-2.5 font-mono" id="fuelFootAvg">—</td>
-                                    <td class="p-2.5">—</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -3151,6 +3189,17 @@
 
         <!-- جدول تفاصيل العمولات -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-grow">
+            <div id="commPrintTotals" class="report-print-totals print-only">
+                <table>
+                    <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
+                    <tbody>
+                        <tr><td data-i18n="ui.totalComms">إجمالي العمولات</td><td id="commPrintEarned">0.00</td></tr>
+                        <tr><td data-i18n="ui.paid">المدفوع</td><td id="commPrintPaid">0.00</td></tr>
+                        <tr><td data-i18n="ui.remaining">المتبقي</td><td id="commPrintRemaining">0.00</td></tr>
+                        <tr><td data-i18n="ui.completedTrips">عدد الرحلات المنجزة</td><td id="commPrintTrips">0</td></tr>
+                    </tbody>
+                </table>
+            </div>
             <div class="overflow-x-auto flex-grow">
                 <table class="w-full text-right text-xs text-slate-700">
                     <thead class="bg-slate-100 text-slate-700">
@@ -3168,13 +3217,6 @@
                     <tbody id="commissionReportTable" class="divide-y divide-slate-100">
                         <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
                     </tbody>
-                    <tfoot id="commissionReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                        <tr>
-                            <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
-                            <td class="p-3.5 font-mono" id="commFootTrips" colspan="6">0</td>
-                            <td class="p-3.5 font-mono" id="commFootEarned">0.00</td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -3198,14 +3240,6 @@
                     <tbody id="commissionPayoutTable" class="divide-y divide-slate-100">
                         <tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد دفعات مسجلة</td></tr>
                     </tbody>
-                    <tfoot id="commissionPayoutFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
-                        <tr>
-                            <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
-                            <td class="p-3.5" colspan="2">—</td>
-                            <td class="p-3.5 font-mono" id="commFootPaid">0.00</td>
-                            <td class="p-3.5" colspan="2">—</td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -7312,33 +7346,19 @@ async function generateCommissionReport() {
         lifetimeRemainingByDriver.forEach((value, name) => lifetimeRemainingByDriver.set(name, roundMoney(value)));
         renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver);
 
-        const paintCommFoot = (show) => {
-            const earnedFoot = document.getElementById('commissionReportFoot');
-            const paidFoot = document.getElementById('commissionPayoutFoot');
-            if (earnedFoot) {
-                earnedFoot.classList.toggle('hidden', !show || !activeTrips.length);
-                if (show && activeTrips.length) {
-                    const tripsFoot = document.getElementById('commFootTrips');
-                    const earnedEl = document.getElementById('commFootEarned');
-                    if (tripsFoot) {
-                        tripsFoot.textContent = currentLang === 'en'
-                            ? `${activeTrips.length} trip(s)`
-                            : `${activeTrips.length} رحلة`;
-                    }
-                    if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
-                }
-            }
-            if (paidFoot) {
-                paidFoot.classList.toggle('hidden', !show || !payouts.length);
-                const paidEl = document.getElementById('commFootPaid');
-                if (show && payouts.length && paidEl) paidEl.innerHTML = formatSAR(paid);
-            }
+        const paintCommPrintTotals = () => {
+            const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+            const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            setHtml('commPrintEarned', formatSAR(earned));
+            setHtml('commPrintPaid', formatSAR(paid));
+            setHtml('commPrintRemaining', formatCommissionNet(net));
+            setText('commPrintTrips', activeTrips.filter(isCompletedTrip).length.toLocaleString('en-US'));
         };
+        paintCommPrintTotals();
 
         if (!tbody) return;
         if (!activeTrips.length) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
-            paintCommFoot(true);
             return;
         }
 
@@ -7397,14 +7417,11 @@ async function generateCommissionReport() {
         } else {
             tbody.innerHTML = activeTrips.map(commissionRow).join('');
         }
-        paintCommFoot(true);
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
         const payoutBody = document.getElementById('commissionPayoutTable');
         if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
-        document.getElementById('commissionReportFoot')?.classList.add('hidden');
-        document.getElementById('commissionPayoutFoot')?.classList.add('hidden');
     }
 }
 
@@ -8079,29 +8096,19 @@ async function generateFinancialReport() {
         if (pendingEl) pendingEl.innerHTML = formatSAR(money.remaining);
         if (tripsEl) tripsEl.innerText = tripRows.length.toLocaleString('en-US');
 
-        const paintFinFoot = (show) => {
-            const foot = document.getElementById('financialReportFoot');
-            if (!foot) return;
-            foot.classList.toggle('hidden', !show);
-            if (!show) return;
-            const tripsFoot = document.getElementById('finFootTrips');
-            const amountFoot = document.getElementById('finFootAmount');
-            const collectedFoot = document.getElementById('finFootCollected');
-            const remainingFoot = document.getElementById('finFootRemaining');
-            if (tripsFoot) {
-                tripsFoot.textContent = currentLang === 'en'
-                    ? `${tripRows.length} trip(s)`
-                    : `${tripRows.length} رحلة`;
-            }
-            if (amountFoot) amountFoot.innerHTML = formatSAR(money.total);
-            if (collectedFoot) collectedFoot.innerHTML = formatSAR(money.collected);
-            if (remainingFoot) remainingFoot.innerHTML = formatSAR(money.remaining);
+        const paintFinPrintTotals = () => {
+            const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+            const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            setHtml('finPrintTotal', formatSAR(money.total));
+            setHtml('finPrintCollected', formatSAR(money.collected));
+            setHtml('finPrintRemaining', formatSAR(money.remaining));
+            setText('finPrintTrips', tripRows.length.toLocaleString('en-US'));
         };
+        paintFinPrintTotals();
 
         if (!tbody) return;
         if (!tripRows.length) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
-            paintFinFoot(false);
             return;
         }
 
@@ -8126,11 +8133,9 @@ async function generateFinancialReport() {
             </tr>
             `;
         }).join('');
-        paintFinFoot(true);
     } catch (err) {
         console.error('Error generating financial report:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل التقرير المالي</td></tr>`;
-        document.getElementById('financialReportFoot')?.classList.add('hidden');
     }
 }
 
@@ -8537,29 +8542,19 @@ async function generateReceivablesReport() {
         if (tripsEl) tripsEl.textContent = tripsInView.length.toLocaleString('en-US');
         paintReceivablesAging(tripsInView);
 
-        const paintRecvFoot = (show) => {
-            const foot = document.getElementById('receivablesReportFoot');
-            if (!foot) return;
-            foot.classList.toggle('hidden', !show);
-            if (!show) return;
-            const tripsFoot = document.getElementById('recvFootTrips');
-            const amountFoot = document.getElementById('recvFootAmount');
-            const collectedFoot = document.getElementById('recvFootCollected');
-            const remainingFoot = document.getElementById('recvFootRemaining');
-            if (tripsFoot) {
-                tripsFoot.textContent = currentLang === 'en'
-                    ? `${tripsInView.length} trip(s)`
-                    : `${tripsInView.length} رحلة`;
-            }
-            if (amountFoot) amountFoot.innerHTML = formatSAR(money.total);
-            if (collectedFoot) collectedFoot.innerHTML = formatSAR(money.collected);
-            if (remainingFoot) remainingFoot.innerHTML = formatSAR(money.remaining);
+        const paintRecvPrintTotals = () => {
+            const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+            const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            setHtml('recvPrintTotal', formatSAR(money.total));
+            setHtml('recvPrintCollected', formatSAR(money.collected));
+            setHtml('recvPrintRemaining', formatSAR(money.remaining));
+            setText('recvPrintTrips', tripsInView.length.toLocaleString('en-US'));
         };
+        paintRecvPrintTotals();
 
         if (!tbody) return;
         if (!rows.length) {
             tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
-            paintRecvFoot(false);
             return;
         }
         tbody.innerHTML = rows.map(({ trip: tr, line }) => {
@@ -8594,13 +8589,11 @@ async function generateReceivablesReport() {
             </tr>
             `;
         }).join('');
-        paintRecvFoot(true);
     } catch (err) {
         console.error('خطأ في تقرير المستحقات:', err);
         const tripsEl = document.getElementById('recvTripCount');
         if (tripsEl) tripsEl.textContent = '0';
         paintReceivablesAging([]);
-        document.getElementById('receivablesReportFoot')?.classList.add('hidden');
         if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
     }
 }
@@ -8820,37 +8813,17 @@ async function generateTruckProfitReport() {
         }
         if (tripsEl) tripsEl.textContent = summary.trips.toLocaleString('en-US');
 
-        const tfoot = document.getElementById('truckProfitTableFoot');
-        const paintFoot = (show) => {
-            if (!tfoot) return;
-            tfoot.classList.toggle('hidden', !show);
-            if (!show) return;
-            const setText = (id, value) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = value;
-            };
-            const setHtml = (id, value) => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = value;
-            };
-            setText('profitFootTrips', summary.trips.toLocaleString('en-US'));
-            setHtml('profitFootRevenue', formatSAR(summary.revenue));
-            setHtml('profitFootFuel', formatSAR(summary.fuel));
-            setHtml('profitFootComm', formatSAR(summary.commission));
-            setHtml('profitFootMaint', formatSAR(summary.maintenance));
-            setHtml('profitFootProfit', formatSAR(summary.profit));
-            setText('profitFootMargin', summary.margin == null ? '—' : `${summary.margin.toFixed(1)}%`);
-            const profitFoot = document.getElementById('profitFootProfit');
-            if (profitFoot) {
-                profitFoot.classList.toggle('text-rose-700', summary.profit < -0.009);
-                profitFoot.classList.toggle('text-emerald-800', summary.profit >= -0.009);
-            }
-        };
+        const setHtml = (id, value) => { const el = document.getElementById(id); if (el) el.innerHTML = value; };
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+        setHtml('profitPrintRevenue', formatSAR(summary.revenue));
+        setHtml('profitPrintCosts', formatSAR(summary.costs));
+        setHtml('profitPrintOperating', formatSAR(summary.profit));
+        setText('profitPrintMargin', summary.margin == null ? '—' : `${summary.margin.toFixed(1)}%`);
+        setText('profitPrintTrips', summary.trips.toLocaleString('en-US'));
 
         if (!tbody) return;
         if (!rows.length) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('profit.empty') || 'لا توجد بيانات ربحية في هذه الفترة')}</td></tr>`;
-            paintFoot(false);
             return;
         }
         tbody.innerHTML = rows.map((row) => {
@@ -8868,14 +8841,11 @@ async function generateTruckProfitReport() {
                 <td class="p-2.5 font-mono text-slate-700">${escapeHtml(marginLabel)}</td>
             </tr>`;
         }).join('');
-        paintFoot(true);
     } catch (err) {
         console.error('خطأ في تقرير ربحية الشاحنات:', err);
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">${escapeHtml(t('profit.loadFailed') || 'تعذر حساب ربحية الشاحنات')}</td></tr>`;
         }
-        const tfoot = document.getElementById('truckProfitTableFoot');
-        if (tfoot) tfoot.classList.add('hidden');
     }
 }
 
@@ -11178,32 +11148,19 @@ function renderFuelReportView() {
     renderFuelCharts(truckList);
 
     const tbody = document.getElementById('fuelReportTable');
-    const paintFuelFoot = (show) => {
-        const foot = document.getElementById('fuelReportFoot');
-        if (!foot) return;
-        foot.classList.toggle('hidden', !show);
-        if (!show) return;
-        const countFoot = document.getElementById('fuelFootCount');
-        const litersFoot = document.getElementById('fuelFootLiters');
-        const amountFoot = document.getElementById('fuelFootAmount');
-        const avgFoot = document.getElementById('fuelFootAvg');
-        if (countFoot) {
-            countFoot.textContent = currentLang === 'en'
-                ? `${filtered.length} fill(s)`
-                : `${filtered.length} تعبئة`;
-        }
-        if (litersFoot) litersFoot.textContent = formatFuelNumber(totalLiters, 2);
-        if (amountFoot) amountFoot.innerHTML = formatSAR(totalAmount);
-        if (avgFoot) {
-            avgFoot.textContent = cleanKm > 0
-                ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1)
-                : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
-        }
-    };
+    {
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+        const setHtml = (id, value) => { const el = document.getElementById(id); if (el) el.innerHTML = value; };
+        setText('fuelPrintCount', String(filtered.length));
+        setText('fuelPrintLiters', formatFuelNumber(totalLiters, 2));
+        setHtml('fuelPrintAmount', formatSAR(totalAmount));
+        setText('fuelPrintAvg', cleanKm > 0
+            ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1)
+            : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1)));
+    }
     if (!tbody) return;
     if (!filtered.length) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
-        paintFuelFoot(false);
         return;
     }
     tbody.innerHTML = filtered.map(row => {
@@ -11230,7 +11187,6 @@ function renderFuelReportView() {
             <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
         </tr>`;
     }).join('');
-    paintFuelFoot(true);
 }
 
 async function loadFuelReport() {
@@ -12030,23 +11986,14 @@ function renderMaintenanceReportView() {
     const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
     if (costEl) costEl.innerHTML = formatSAR(total);
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
-    const paintMaintFoot = (show) => {
-        const foot = document.getElementById('maintenanceReportFoot');
-        if (!foot) return;
-        foot.classList.toggle('hidden', !show);
-        if (!show) return;
-        const countFoot = document.getElementById('maintFootCount');
-        const costFoot = document.getElementById('maintFootCost');
-        if (countFoot) {
-            countFoot.textContent = currentLang === 'en'
-                ? `${rows.length} record(s)`
-                : `${rows.length} صيانة`;
-        }
-        if (costFoot) costFoot.innerHTML = formatSAR(total);
-    };
+    {
+        const countPrint = document.getElementById('maintPrintCount');
+        const costPrint = document.getElementById('maintPrintCost');
+        if (countPrint) countPrint.textContent = rows.length.toLocaleString('en-US');
+        if (costPrint) costPrint.innerHTML = formatSAR(total);
+    }
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
-        paintMaintFoot(false);
         return;
     }
     tbody.innerHTML = rows.map(row => {
@@ -12066,7 +12013,6 @@ function renderMaintenanceReportView() {
                 </td>
             </tr>`;
     }).join('');
-    paintMaintFoot(true);
 }
 
 function renderMaintenanceReport() {
@@ -13917,6 +13863,8 @@ const I18N = {
         'ui.dropped': 'ساقط',
         'ui.droppedComm': 'ساقطة',
         'ui.total': 'الإجمالي',
+        'ui.item': 'البند',
+        'ui.value': 'القيمة',
         'ui.paid': 'مدفوع',
         'ui.remaining': 'متبقي',
         'ui.advanceCredit': 'رصيد مقدم',
@@ -14830,6 +14778,8 @@ const I18N = {
         'ui.dropped': 'Written off',
         'ui.droppedComm': 'Commission written off',
         'ui.total': 'Total',
+        'ui.item': 'Item',
+        'ui.value': 'Value',
         'ui.paid': 'Paid',
         'ui.remaining': 'Remaining',
         'ui.advanceCredit': 'Advance credit',
@@ -16041,6 +15991,8 @@ async function renderAnalyticsDashboard() {
 
         const totalTripsEl = document.getElementById('repTotalTrips');
         if (totalTripsEl) totalTripsEl.innerText = totalTrips;
+        const opsPrintTrips = document.getElementById('opsPrintTrips');
+        if (opsPrintTrips) opsPrintTrips.textContent = totalTrips.toLocaleString('en-US');
 
         const fleetDrivers = (drivers || []).filter(isTripDriver);
         const filteredDrivers = selectedDriver ? fleetDrivers.filter(dr => dr.name === selectedDriver) : fleetDrivers;
