@@ -60,28 +60,28 @@
         .stat-grid-wrap { width: 100%; min-width: 0; }
         .stat-grid {
             display: grid;
-            gap: 0.75rem;
+            gap: 0.4rem;
             width: 100%;
             min-width: 0;
-            grid-template-columns: minmax(0, 22rem);
+            align-items: stretch;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .stat-grid:not(.stats-with-money) {
+            grid-template-columns: minmax(0, 12rem);
         }
         .stat-grid.stats-with-money {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .stat-card-trips { width: 100%; max-width: none; }
-        @media (max-width: 1100px) {
-            .stat-grid.stats-with-money { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .stat-grid > .recv-kpi {
+            min-width: 0;
+            padding: 0.7rem 0.75rem;
+            min-height: 3.6rem;
         }
-        @media (max-width: 640px) {
-            .stat-grid,
-            .stat-grid.stats-with-money { grid-template-columns: minmax(0, 1fr); }
+        .stat-grid > .recv-kpi .recv-kpi-label { font-size: 0.6875rem; }
+        .stat-grid > .recv-kpi .recv-kpi-value { font-size: 0.9375rem; margin-top: 0.3rem; }
+        @media (min-width: 640px) {
+            .stat-grid.stats-with-money { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.45rem; }
         }
-        .stat-card-money, .stat-card-trips { min-width: 0; overflow: hidden; }
-        .stat-card-money h3, .stat-card-trips h3 {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-        }
-        .stat-card-trips .stat-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .driver-identity-cell { vertical-align: middle; text-align: center; }
         .ops-driver-report { table-layout: fixed; width: 100%; }
         .ops-driver-report th, .ops-driver-report td { vertical-align: top; }
@@ -99,6 +99,18 @@
         .ops-driver-report th:nth-child(7), .ops-driver-report td.ops-comm { width: 14%; }
         .analytics-track { height: 0.5rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
         .analytics-fill { height: 100%; border-radius: 999px; }
+        #reportsSection .ops-filter-control {
+            box-sizing: border-box;
+            min-height: 2.75rem;
+            height: 2.75rem;
+            line-height: 1.25;
+        }
+        #reportsSection .ops-trips-card {
+            box-sizing: border-box;
+            min-height: 2.75rem;
+            height: 2.75rem;
+            margin-top: auto;
+        }
         /* لا تضع overflow:hidden على البطاقة نفسها داخل flex — يصفّر min-height وينكمش المحتوى */
         .chart-card {
             min-width: 0;
@@ -131,33 +143,22 @@
                 padding-left: 0.75rem;
                 padding-right: 0.75rem;
             }
-            #chartsSection .analytics-kpi-row .text-lg {
-                font-size: 1.05rem;
-                line-height: 1.3;
-            }
         }
         .analytics-kpi-row {
             display: grid;
-            gap: 0.5rem;
             grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.4rem;
+            min-width: 0;
             align-items: stretch;
         }
-        .analytics-kpi-best {
-            max-width: 100%;
+        .analytics-kpi-row > .recv-kpi {
+            min-width: 0;
         }
-        @media (min-width: 768px) {
-            .analytics-kpi-row {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
+        @media (min-width: 640px) {
+            .analytics-kpi-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         }
         @media (min-width: 1280px) {
-            .analytics-kpi-row {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
-            .analytics-kpi-best {
-                padding-left: 0.65rem;
-                padding-right: 0.65rem;
-            }
+            .analytics-kpi-row { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0.45rem; }
         }
         @media (max-width: 767px) {
             .chart-host--trend {
@@ -216,29 +217,120 @@
             min-width: 0;
         }
         .recv-summary {
-            display: flex;
-            align-items: stretch;
-            gap: 0.75rem;
-            min-width: 0;
-            margin-bottom: 1.5rem;
-        }
-        .recv-summary-money {
-            flex: 1 1 auto;
-            min-width: 0;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.75rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.4rem;
+            min-width: 0;
+            margin-bottom: 0.75rem;
+            align-items: stretch;
         }
-        .recv-summary-money > div,
-        .recv-trip-card { min-width: 0; overflow: hidden; }
-        .recv-trip-card {
-            flex: 0 0 10.5rem;
-            width: 10.5rem;
+        .recv-kpi {
+            min-width: 0;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.55rem;
+            box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
         }
-        @media (max-width: 1024px) {
-            .recv-summary { flex-direction: column; }
-            .recv-summary-money { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
-            .recv-trip-card { width: 100%; flex: 1 1 auto; }
+        .recv-kpi-label {
+            font-size: 0.625rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recv-kpi-value {
+            font-size: 0.8125rem;
+            font-weight: 800;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            line-height: 1.25;
+            margin-top: 0.15rem;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recv-kpi-value.is-name {
+            font-family: inherit;
+            font-size: 0.75rem;
+        }
+        .recv-kpi-meta {
+            font-size: 0.5625rem;
+            color: #94a3b8;
+            margin-top: 0.1rem;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recv-kpi-profit { border-color: #d1fae5; }
+        .recv-kpi-profit .recv-kpi-label { color: #059669; }
+        .recv-kpi-collected { border-color: #d1fae5; }
+        .recv-kpi-collected .recv-kpi-label { color: #059669; }
+        .recv-kpi-remaining { border-color: #fde68a; }
+        .recv-kpi-remaining .recv-kpi-label { color: #b45309; }
+        .recv-kpi-value.text-emerald-600,
+        .recv-kpi-value.text-emerald-800 { color: #047857; }
+        .recv-kpi-value.text-rose-600,
+        .recv-kpi-value.text-rose-700 { color: #be123c; }
+        .recv-kpi-best { border-color: #fde68a; }
+        .recv-kpi-best .recv-kpi-label { color: #b45309; }
+        .recv-kpi-weak { border-color: #fecdd3; }
+        .recv-kpi-weak .recv-kpi-label { color: #be123c; }
+        .recv-kpi-driver { border-color: #dbeafe; }
+        .recv-kpi-driver .recv-kpi-label { color: #1d4ed8; }
+        .recv-kpi-age30 { border-color: #fef3c7; }
+        .recv-kpi-age30 .recv-kpi-label { color: #b45309; }
+        .recv-kpi-age30 .recv-kpi-value { color: #92400e; }
+        .recv-kpi-age60 { border-color: #ffedd5; }
+        .recv-kpi-age60 .recv-kpi-label { color: #c2410c; }
+        .recv-kpi-age60 .recv-kpi-value { color: #9a3412; }
+        .recv-kpi-age90 { border-color: #fecdd3; }
+        .recv-kpi-age90 .recv-kpi-label { color: #be123c; }
+        .recv-kpi-age90 .recv-kpi-value { color: #9f1239; }
+        .recv-kpi-overdue { border-color: #fecdd3; }
+        .recv-kpi-overdue .recv-kpi-label { color: #be123c; }
+        .recv-kpi-overdue .recv-kpi-value { color: #9f1239; }
+        .recv-kpi-trips { border-color: #dbeafe; }
+        .recv-kpi-trips .recv-kpi-label { color: #1d4ed8; }
+        .recv-kpi-trips .recv-kpi-value { color: #1e40af; }
+        .recv-kpi-uncollected { border-color: #fecdd3; }
+        .recv-kpi-uncollected .recv-kpi-label { color: #e11d48; }
+        .recv-kpi-uncollected .recv-kpi-value { color: #be123c; }
+        .recv-kpi-costs { border-color: #fde68a; }
+        .recv-kpi-costs .recv-kpi-label { color: #b45309; }
+        .recv-kpi-costs .recv-kpi-value { color: #92400e; }
+        .recv-kpi-margin { border-color: #dbeafe; }
+        .recv-kpi-margin .recv-kpi-label { color: #1d4ed8; }
+        .recv-kpi-margin .recv-kpi-value { color: #1e40af; }
+        .recv-kpi-comm { border-color: #fde68a; }
+        .recv-kpi-comm .recv-kpi-label { color: #b45309; }
+        .recv-kpi-paid { border-color: #fecdd3; }
+        .recv-kpi-paid .recv-kpi-label { color: #be123c; }
+        .recv-kpi-paid .recv-kpi-value { color: #e11d48; }
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.4rem;
+            min-width: 0;
+            margin-bottom: 0.75rem;
+            align-items: stretch;
+        }
+        .kpi-strip > .recv-kpi { min-width: 0; }
+        @media (min-width: 640px) {
+            .recv-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .kpi-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .kpi-strip-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .kpi-strip-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1280px) {
+            .recv-summary { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0.45rem; }
+            .kpi-strip { gap: 0.45rem; }
         }
         .dash-side-card {
             height: 16rem;
@@ -1041,7 +1133,6 @@
         }
         @media (min-width: 1600px) {
             #appSidebar { width: 17.5rem; }
-            .stat-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
         }
         @media (min-width: 1280px) and (max-width: 1599px) {
             #appSidebar { width: 16rem; }
@@ -1742,46 +1833,22 @@
     <main id="dashboardSection" class="pt-2 sm:pt-3 md:pt-4 px-3 sm:px-6 md:px-8 pb-3 sm:pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-5 sm:space-y-6 min-w-0">
         <div class="stat-grid-wrap">
         <div id="dashboardStatGrid" class="stat-grid">
-        <!-- البطاقات المالية (تظهر للأدمن والمحاسب فقط، وتختفي عن المستخدم العادي) -->
-            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</span>
-                    <h3 id="dashTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-                </div>
-                <div class="w-10 h-10 shrink-0 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-lg font-bold">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
+            <div class="recv-kpi finance-stat hidden">
+                <div class="recv-kpi-label" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+                <div id="dashTotalRevenue" class="recv-kpi-value">0.00</div>
             </div>
-            
-            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.collected">المبالغ المحصلة</span>
-                    <h3 id="dashCollectedAmount" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-                </div>
-                <div class="w-10 h-10 shrink-0 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-lg font-bold">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+            <div class="recv-kpi recv-kpi-collected finance-stat hidden">
+                <div class="recv-kpi-label" data-i18n="ui.collected">المبالغ المحصلة</div>
+                <div id="dashCollectedAmount" class="recv-kpi-value text-emerald-600">0.00</div>
             </div>
-            
-            <div class="stat-card-money finance-stat hidden bg-white px-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                    <span class="block text-[11px] font-bold text-slate-500" data-i18n="ui.uncollected">المبالغ غير المحصلة</span>
-                    <h3 id="dashRemainingAmount" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
-                </div>
-                <div class="w-10 h-10 shrink-0 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 text-lg font-bold">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </div>
+            <div class="recv-kpi recv-kpi-uncollected finance-stat hidden">
+                <div class="recv-kpi-label" data-i18n="ui.uncollected">المبالغ غير المحصلة</div>
+                <div id="dashRemainingAmount" class="recv-kpi-value text-rose-600">0.00</div>
             </div>
-
-        <div class="stat-card-trips bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-2">
-            <div class="min-w-0">
-                <span class="stat-label block text-[11px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
-                <h3 id="dashTotalTrips" class="text-2xl font-bold text-blue-600 font-mono mt-1">0</h3>
+            <div class="recv-kpi recv-kpi-trips">
+                <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+                <div id="dashTotalTrips" class="recv-kpi-value">0</div>
             </div>
-            <div class="w-9 h-9 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-base font-bold">
-                <i class="fa-solid fa-route"></i>
-            </div>
-        </div>
         </div>
         </div>
         <div class="dash-fleet-row gap-4 md:gap-6 min-w-0 shrink-0">
@@ -1929,7 +1996,7 @@
 </main>
 <main id="chartsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
     <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
                 <input type="date" id="analyticsStartDate" onchange="onAnalyticsDatesChanged()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -1940,57 +2007,61 @@
             </div>
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="analytics.period">الفترة</label>
-                <select id="analyticsPeriodPreset" onchange="setAnalyticsDateRange(this.value)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
-                    <option value="all" data-i18n="analytics.allPeriod">كل الفترة</option>
-                    <option value="this" data-i18n="ui.thisMonth">الشهر الحالي</option>
-                    <option value="last" data-i18n="analytics.lastMonth">الشهر السابق</option>
-                    <option value="custom" data-i18n="analytics.customPeriod">فترة مخصصة</option>
-                </select>
-            </div>
-            <div class="flex gap-2">
-                <button type="button" onclick="resetAnalyticsFilters()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
-                </button>
+                <div class="flex gap-2 items-center">
+                    <select id="analyticsPeriodPreset" onchange="setAnalyticsDateRange(this.value)" class="min-w-0 flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                        <option value="this" data-i18n="ui.thisMonth">الشهر الحالي</option>
+                        <option value="last" data-i18n="analytics.lastMonth">الشهر السابق</option>
+                        <option value="quarter" data-i18n="analytics.thisQuarter">الربع الحالي</option>
+                        <option value="lastQuarter" data-i18n="analytics.lastQuarter">الربع السابق</option>
+                        <option value="year" data-i18n="analytics.thisYear">السنة الحالية</option>
+                        <option value="lastYear" data-i18n="analytics.lastYear">السنة السابقة</option>
+                        <option value="all" data-i18n="analytics.allPeriod">كل الفترة</option>
+                        <option value="custom" data-i18n="analytics.customPeriod">فترة مخصصة</option>
+                    </select>
+                    <button type="button" onclick="resetAnalyticsFilters()" class="shrink-0 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> <span data-i18n="ui.reset">إعادة الضبط</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="analytics-kpi-row gap-2">
-        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-slate-200 analytics-money min-w-0">
-            <div class="text-[10px] font-bold text-slate-500 truncate" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
-            <div id="analyticsTotalRevenue" class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
+    <div class="analytics-kpi-row">
+        <div class="recv-kpi analytics-money">
+            <div class="recv-kpi-label" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+            <div id="analyticsTotalRevenue" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-emerald-100 analytics-money min-w-0">
-            <div class="text-[10px] font-bold text-emerald-700 truncate" data-i18n="analytics.fleetProfit">ربح تشغيلي للأسطول</div>
-            <div id="analyticsFleetProfit" class="text-lg sm:text-xl font-black text-emerald-800 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
-            <div id="analyticsFleetMargin" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        <div class="recv-kpi recv-kpi-profit analytics-money">
+            <div class="recv-kpi-label" data-i18n="analytics.fleetProfit">ربح تشغيلي للأسطول</div>
+            <div id="analyticsFleetProfit" class="recv-kpi-value">0.00</div>
+            <div id="analyticsFleetMargin" class="recv-kpi-meta"></div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-slate-200 analytics-money min-w-0">
-            <div class="text-[10px] font-bold text-slate-500 truncate" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
-            <div id="analyticsTotalCommission" class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
+        <div class="recv-kpi analytics-money">
+            <div class="recv-kpi-label" data-i18n="ui.totalCommAmount">إجمالي مبلغ العمولات</div>
+            <div id="analyticsTotalCommission" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-slate-200 min-w-0">
-            <div class="text-[10px] font-bold text-slate-500 truncate" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
-            <div id="analyticsTotalTrips" class="text-lg sm:text-xl font-black text-slate-900 font-mono mt-0.5">0</div>
+        <div class="recv-kpi recv-kpi-best">
+            <div class="recv-kpi-label" data-i18n="analytics.bestTruck">أفضل شاحنة ربحاً</div>
+            <div id="analyticsBestTruck" class="recv-kpi-value is-name">—</div>
+            <div id="analyticsBestTruckMeta" class="recv-kpi-meta"></div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-amber-100 min-w-0">
-            <div class="text-[10px] font-bold text-amber-700 truncate" data-i18n="analytics.bestTruck">أفضل شاحنة ربحاً</div>
-            <div id="analyticsBestTruck" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
-            <div id="analyticsBestTruckMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        <div class="recv-kpi recv-kpi-weak">
+            <div class="recv-kpi-label" data-i18n="analytics.weakTruck">أضعف شاحنة ربحاً</div>
+            <div id="analyticsWeakTruck" class="recv-kpi-value is-name">—</div>
+            <div id="analyticsWeakTruckMeta" class="recv-kpi-meta"></div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-rose-100 analytics-money min-w-0">
-            <div class="text-[10px] font-bold text-rose-700 truncate" data-i18n="analytics.weakTruck">أضعف شاحنة ربحاً</div>
-            <div id="analyticsWeakTruck" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
-            <div id="analyticsWeakTruckMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        <div class="recv-kpi recv-kpi-driver">
+            <div class="recv-kpi-label" data-i18n="analytics.bestDriver">أفضل سائق رحلات</div>
+            <div id="analyticsBestDriver" class="recv-kpi-value is-name">—</div>
+            <div id="analyticsBestDriverMeta" class="recv-kpi-meta"></div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-best bg-white px-3 py-2.5 rounded-2xl border border-blue-100 min-w-0">
-            <div class="text-[10px] font-bold text-blue-700 truncate" data-i18n="analytics.bestDriver">أفضل سائق رحلات</div>
-            <div id="analyticsBestDriver" class="font-black text-slate-900 text-sm truncate mt-0.5">—</div>
-            <div id="analyticsBestDriverMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        <div class="recv-kpi recv-kpi-overdue analytics-money">
+            <div class="recv-kpi-label" data-i18n="analytics.overdueRemain">متبقي متأخر (+30 يوم)</div>
+            <div id="analyticsOverdueRemain" class="recv-kpi-value">0.00</div>
+            <div id="analyticsOverdueMeta" class="recv-kpi-meta"></div>
         </div>
-        <div class="analytics-kpi-card analytics-kpi-metric bg-white px-3 py-2.5 rounded-2xl border border-rose-100 analytics-money min-w-0">
-            <div class="text-[10px] font-bold text-rose-700 truncate" data-i18n="analytics.overdueRemain">متبقي متأخر (+30 يوم)</div>
-            <div id="analyticsOverdueRemain" class="text-lg sm:text-xl font-black text-rose-800 font-mono mt-0.5 truncate"><span class="money" dir="ltr"><svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg>0.00</span></div>
-            <div id="analyticsOverdueMeta" class="text-[10px] text-slate-500 mt-0.5 truncate leading-snug"></div>
+        <div class="recv-kpi recv-kpi-trips">
+            <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+            <div id="analyticsTotalTrips" class="recv-kpi-value">0</div>
         </div>
     </div>
     <div class="chart-card bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-200 shrink-0">
@@ -2111,35 +2182,33 @@
 <main id="reportsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div id="printableReport" class="flex flex-col flex-grow">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-4">
-            <div class="flex flex-col xl:flex-row xl:items-stretch gap-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 no-print">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
-                        <input type="date" id="reportStartDate" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
-                        <input type="date" id="reportEndDate" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
-                        <select id="reportTruckFilter" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
-                            <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
-                        <select id="reportDriverFilter" onchange="generateReport()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
-                            <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
-                        </select>
-                    </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3 items-stretch">
+                <div class="no-print flex flex-col">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.fromDate">من تاريخ</label>
+                    <input type="date" id="reportStartDate" onchange="generateReport()" class="ops-filter-control w-full h-11 px-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                 </div>
-                <div class="print-summary bg-slate-50 px-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shrink-0 min-w-[11rem] self-stretch">
-                    <div>
-                        <span class="block text-[11px] text-slate-500 font-bold" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
-                        <span id="repTotalTrips" class="text-2xl font-bold text-slate-900 font-mono leading-none">0</span>
+                <div class="no-print flex flex-col">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.toDate">إلى تاريخ</label>
+                    <input type="date" id="reportEndDate" onchange="generateReport()" class="ops-filter-control w-full h-11 px-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                </div>
+                <div class="no-print flex flex-col">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.truck">الشاحنة</label>
+                    <select id="reportTruckFilter" onchange="generateReport()" class="ops-filter-control w-full h-11 px-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
+                        <option value="" data-i18n="ui.allTrucks">جميع الشاحنات</option>
+                    </select>
+                </div>
+                <div class="no-print flex flex-col">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.driver">السائق</label>
+                    <select id="reportDriverFilter" onchange="generateReport()" class="ops-filter-control w-full h-11 px-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-bold">
+                        <option value="" data-i18n="ui.allDrivers">جميع السائقين</option>
+                    </select>
+                </div>
+                <div class="print-summary ops-trips-card bg-slate-50 px-4 rounded-xl border border-slate-200 flex items-center justify-between gap-3 min-w-0">
+                    <div class="min-w-0">
+                        <span class="block text-[11px] text-slate-500 font-bold leading-tight" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
+                        <span id="repTotalTrips" class="text-xl font-bold text-slate-900 font-mono leading-none">0</span>
                     </div>
-                    <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-amber-500 text-lg border border-slate-200">
+                    <div class="w-9 h-9 shrink-0 bg-white rounded-xl flex items-center justify-center text-amber-500 border border-slate-200">
                         <i class="fa-solid fa-route"></i>
                     </div>
                 </div>
@@ -2247,27 +2316,22 @@
             </button>
         </div>
     </div>
-    <div class="print-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
-            <div id="finTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+    <div class="print-summary kpi-strip">
+        <div class="recv-kpi">
+            <div class="recv-kpi-label" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+            <div id="finTotalRevenue" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
-            <div class="text-xs text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
-            <div id="finCollectedAmount" class="text-2xl font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        <div class="recv-kpi recv-kpi-collected">
+            <div class="recv-kpi-label" data-i18n="ui.collected">المبالغ المحصلة</div>
+            <div id="finCollectedAmount" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
-            <div class="text-xs text-rose-600 font-bold mb-1" data-i18n="ui.uncollected">المبالغ غير المحصلة</div>
-            <div id="finPendingAmount" class="text-2xl font-bold text-rose-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
+        <div class="recv-kpi recv-kpi-uncollected">
+            <div class="recv-kpi-label" data-i18n="ui.uncollected">المبالغ غير المحصلة</div>
+            <div id="finPendingAmount" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-blue-100 bg-blue-50/20 shadow-sm flex items-center justify-between">
-            <div>
-                <div class="text-xs text-blue-600 font-bold mb-1" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
-                <div id="finTotalTrips" class="text-2xl font-bold text-blue-700 font-mono">0</div>
-            </div>
-            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-xl">
-                <i class="fa-solid fa-route"></i>
-            </div>
+        <div class="recv-kpi recv-kpi-trips">
+            <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+            <div id="finTotalTrips" class="recv-kpi-value">0</div>
         </div>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
@@ -2364,50 +2428,41 @@
         </div>
     </div>
     <div class="print-summary recv-summary">
-        <div class="recv-summary-money">
-            <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
-                <div class="text-[11px] text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
-                <div id="recvTotalDue" class="text-lg font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
-            </div>
-            <div class="bg-white px-3 py-3 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
-                <div class="text-[11px] text-emerald-600 font-bold mb-1" data-i18n="ui.collected">المبالغ المحصلة</div>
-                <div id="recvCollected" class="text-lg font-bold text-emerald-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
-            </div>
-            <div class="bg-white px-3 py-3 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
-                <div class="text-[11px] text-amber-700 font-bold mb-1" data-i18n="ui.remaining">المتبقي</div>
-                <div id="recvRemaining" class="text-lg font-bold text-amber-700 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
-            </div>
+        <div class="recv-kpi">
+            <div class="recv-kpi-label" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
+            <div id="recvTotalDue" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="recv-trip-card bg-white px-3 py-3 rounded-2xl border border-blue-100 bg-blue-50/30 shadow-sm flex items-center justify-between gap-2">
-            <div class="min-w-0">
-                <div class="text-[11px] text-blue-700 font-bold mb-1" data-i18n="ui.tripCount">عدد الرحلات</div>
-                <div id="recvTripCount" class="text-2xl font-bold text-blue-800 font-mono leading-none">0</div>
-            </div>
-            <div class="w-9 h-9 shrink-0 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                <i class="fa-solid fa-route"></i>
-            </div>
+        <div class="recv-kpi recv-kpi-collected">
+            <div class="recv-kpi-label" data-i18n="ui.collected">المبالغ المحصلة</div>
+            <div id="recvCollected" class="recv-kpi-value">0.00</div>
         </div>
-    </div>
-    <div class="print-summary grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-        <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-[10px] font-bold text-slate-500" data-i18n="recv.age0">متبقي 0–30 يوم</div>
-            <div id="recvAge0" class="text-base font-black text-slate-900 font-mono mt-1">0.00</div>
-            <div id="recvAge0Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        <div class="recv-kpi recv-kpi-remaining">
+            <div class="recv-kpi-label" data-i18n="ui.remaining">المتبقي</div>
+            <div id="recvRemaining" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white px-3 py-3 rounded-2xl border border-amber-100 shadow-sm">
-            <div class="text-[10px] font-bold text-amber-700" data-i18n="recv.age30">متبقي 31–60 يوم</div>
-            <div id="recvAge30" class="text-base font-black text-amber-800 font-mono mt-1">0.00</div>
-            <div id="recvAge30Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        <div class="recv-kpi">
+            <div class="recv-kpi-label" data-i18n="recv.age0">متبقي 0–30 يوم</div>
+            <div id="recvAge0" class="recv-kpi-value">0.00</div>
+            <div id="recvAge0Count" class="recv-kpi-meta">0</div>
         </div>
-        <div class="bg-white px-3 py-3 rounded-2xl border border-orange-100 shadow-sm">
-            <div class="text-[10px] font-bold text-orange-700" data-i18n="recv.age60">متبقي 61–90 يوم</div>
-            <div id="recvAge60" class="text-base font-black text-orange-800 font-mono mt-1">0.00</div>
-            <div id="recvAge60Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        <div class="recv-kpi recv-kpi-age30">
+            <div class="recv-kpi-label" data-i18n="recv.age30">متبقي 31–60 يوم</div>
+            <div id="recvAge30" class="recv-kpi-value">0.00</div>
+            <div id="recvAge30Count" class="recv-kpi-meta">0</div>
         </div>
-        <div class="bg-white px-3 py-3 rounded-2xl border border-rose-100 shadow-sm">
-            <div class="text-[10px] font-bold text-rose-700" data-i18n="recv.age90">متبقي +90 يوم</div>
-            <div id="recvAge90" class="text-base font-black text-rose-800 font-mono mt-1">0.00</div>
-            <div id="recvAge90Count" class="text-[10px] text-slate-400 mt-0.5">0</div>
+        <div class="recv-kpi recv-kpi-age60">
+            <div class="recv-kpi-label" data-i18n="recv.age60">متبقي 61–90 يوم</div>
+            <div id="recvAge60" class="recv-kpi-value">0.00</div>
+            <div id="recvAge60Count" class="recv-kpi-meta">0</div>
+        </div>
+        <div class="recv-kpi recv-kpi-age90">
+            <div class="recv-kpi-label" data-i18n="recv.age90">متبقي +90 يوم</div>
+            <div id="recvAge90" class="recv-kpi-value">0.00</div>
+            <div id="recvAge90Count" class="recv-kpi-meta">0</div>
+        </div>
+        <div class="recv-kpi recv-kpi-trips">
+            <div class="recv-kpi-label" data-i18n="ui.tripCount">عدد الرحلات</div>
+            <div id="recvTripCount" class="recv-kpi-value">0</div>
         </div>
     </div>
     <div class="recv-table-card bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
@@ -2476,26 +2531,26 @@
             </button>
         </div>
     </div>
-    <div class="print-summary grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4 no-print">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
-            <div id="profitTotalRevenue" class="text-lg font-black text-slate-900 font-mono mt-1">0.00</div>
+    <div class="print-summary kpi-strip kpi-strip-5 no-print">
+        <div class="recv-kpi">
+            <div class="recv-kpi-label" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
+            <div id="profitTotalRevenue" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm">
-            <div class="text-[10px] font-bold text-amber-700" data-i18n="profit.totalCosts">إجمالي التكاليف المباشرة</div>
-            <div id="profitTotalCosts" class="text-lg font-black text-amber-800 font-mono mt-1">0.00</div>
+        <div class="recv-kpi recv-kpi-costs">
+            <div class="recv-kpi-label" data-i18n="profit.totalCosts">إجمالي التكاليف المباشرة</div>
+            <div id="profitTotalCosts" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm">
-            <div class="text-[10px] font-bold text-emerald-700" data-i18n="profit.operating">الربح التشغيلي</div>
-            <div id="profitOperating" class="text-lg font-black text-emerald-800 font-mono mt-1">0.00</div>
+        <div class="recv-kpi recv-kpi-profit">
+            <div class="recv-kpi-label" data-i18n="profit.operating">الربح التشغيلي</div>
+            <div id="profitOperating" class="recv-kpi-value">0.00</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-blue-100 shadow-sm">
-            <div class="text-[10px] font-bold text-blue-700" data-i18n="profit.margin">هامش الربح</div>
-            <div id="profitMargin" class="text-lg font-black text-blue-800 font-mono mt-1">—</div>
+        <div class="recv-kpi recv-kpi-margin">
+            <div class="recv-kpi-label" data-i18n="profit.margin">هامش الربح</div>
+            <div id="profitMargin" class="recv-kpi-value">—</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
-            <div id="profitTripCount" class="text-lg font-black text-slate-900 font-mono mt-1">0</div>
+        <div class="recv-kpi recv-kpi-trips">
+            <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+            <div id="profitTripCount" class="recv-kpi-value">0</div>
         </div>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-grow">
@@ -3165,22 +3220,22 @@
             </div>
         </div>
 
-        <div class="print-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalComms">إجمالي العمولات</span>
-                <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
+        <div class="print-summary kpi-strip">
+            <div class="recv-kpi recv-kpi-comm">
+                <div class="recv-kpi-label" data-i18n="ui.totalComms">إجمالي العمولات</div>
+                <div id="commTotalAmountDisplay" class="recv-kpi-value">0.00</div>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-rose-700" data-i18n="ui.paid">المدفوع</span>
-                <h3 id="commPaidDisplay" class="text-2xl font-bold text-rose-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
+            <div class="recv-kpi recv-kpi-paid">
+                <div class="recv-kpi-label" data-i18n="ui.paid">المدفوع</div>
+                <div id="commPaidDisplay" class="recv-kpi-value">0.00</div>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-emerald-700" data-i18n="ui.remaining">المتبقي</span>
-                <h3 id="commRemainingDisplay" class="text-2xl font-bold text-emerald-600 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
+            <div class="recv-kpi recv-kpi-collected">
+                <div class="recv-kpi-label" data-i18n="ui.remaining">المتبقي</div>
+                <div id="commRemainingDisplay" class="recv-kpi-value">0.00</div>
             </div>
-            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
-                <span class="block text-[11px] font-bold text-blue-700" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</span>
-                <h3 id="commTotalTripsDisplay" class="text-2xl font-bold text-blue-700 font-mono mt-1">0</h3>
+            <div class="recv-kpi recv-kpi-trips">
+                <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
+                <div id="commTotalTripsDisplay" class="recv-kpi-value">0</div>
             </div>
         </div>
 
@@ -13284,6 +13339,10 @@ const I18N = {
         'analytics.period': 'الفترة',
         'analytics.allPeriod': 'كل الفترة',
         'analytics.lastMonth': 'الشهر السابق',
+        'analytics.thisQuarter': 'الربع الحالي',
+        'analytics.lastQuarter': 'الربع السابق',
+        'analytics.thisYear': 'السنة الحالية',
+        'analytics.lastYear': 'السنة السابقة',
         'analytics.customPeriod': 'فترة مخصصة',
         'analytics.bestTruck': 'أفضل شاحنة ربحاً',
         'analytics.bestDriver': 'أفضل سائق رحلات',
@@ -14201,6 +14260,10 @@ const I18N = {
         'analytics.period': 'Period',
         'analytics.allPeriod': 'All time',
         'analytics.lastMonth': 'Last month',
+        'analytics.thisQuarter': 'Current quarter',
+        'analytics.lastQuarter': 'Previous quarter',
+        'analytics.thisYear': 'Current year',
+        'analytics.lastYear': 'Previous year',
         'analytics.customPeriod': 'Custom period',
         'analytics.bestTruck': 'Top truck by profit',
         'analytics.bestDriver': 'Top driver by trips',
@@ -15447,14 +15510,48 @@ function analyticsMonthBounds(offset = 0) {
     return { start: formatLocalDateInput(start), end: formatLocalDateInput(end) };
 }
 
+function analyticsQuarterBounds(offset = 0) {
+    const now = new Date();
+    let year = now.getFullYear();
+    let quarter = Math.floor(now.getMonth() / 3) + offset;
+    while (quarter < 0) {
+        quarter += 4;
+        year -= 1;
+    }
+    while (quarter > 3) {
+        quarter -= 4;
+        year += 1;
+    }
+    const startMonth = quarter * 3;
+    const start = new Date(year, startMonth, 1);
+    const isCurrent = offset === 0 && year === now.getFullYear() && quarter === Math.floor(now.getMonth() / 3);
+    const end = isCurrent ? new Date() : new Date(year, startMonth + 3, 0);
+    return { start: formatLocalDateInput(start), end: formatLocalDateInput(end) };
+}
+
+function analyticsYearBounds(offset = 0) {
+    const now = new Date();
+    const year = now.getFullYear() + offset;
+    const start = new Date(year, 0, 1);
+    const end = offset === 0 ? new Date() : new Date(year, 11, 31);
+    return { start: formatLocalDateInput(start), end: formatLocalDateInput(end) };
+}
+
 function currentAnalyticsPreset() {
     const start = document.getElementById('analyticsStartDate')?.value || '';
     const end = document.getElementById('analyticsEndDate')?.value || '';
     if (!start && !end) return 'all';
-    const thisMonth = analyticsMonthBounds(0);
-    if (start === thisMonth.start && end === thisMonth.end) return 'this';
-    const lastMonth = analyticsMonthBounds(-1);
-    if (start === lastMonth.start && end === lastMonth.end) return 'last';
+    const presets = [
+        ['this', analyticsMonthBounds(0)],
+        ['last', analyticsMonthBounds(-1)],
+        ['quarter', analyticsQuarterBounds(0)],
+        ['lastQuarter', analyticsQuarterBounds(-1)],
+        ['year', analyticsYearBounds(0)],
+        ['lastYear', analyticsYearBounds(-1)]
+    ];
+    for (const [mode, range] of presets) {
+        if (start === range.start && end === range.end) return mode;
+    }
     return 'custom';
 }
 
@@ -15472,12 +15569,16 @@ function setAnalyticsDateRange(mode) {
     const startEl = document.getElementById('analyticsStartDate');
     const endEl = document.getElementById('analyticsEndDate');
     setAnalyticsPeriodSelect(mode);
-    if (mode === 'this') {
-        const range = analyticsMonthBounds(0);
-        if (startEl) startEl.value = range.start;
-        if (endEl) endEl.value = range.end;
-    } else if (mode === 'last') {
-        const range = analyticsMonthBounds(-1);
+    const ranges = {
+        this: () => analyticsMonthBounds(0),
+        last: () => analyticsMonthBounds(-1),
+        quarter: () => analyticsQuarterBounds(0),
+        lastQuarter: () => analyticsQuarterBounds(-1),
+        year: () => analyticsYearBounds(0),
+        lastYear: () => analyticsYearBounds(-1)
+    };
+    if (ranges[mode]) {
+        const range = ranges[mode]();
         if (startEl) startEl.value = range.start;
         if (endEl) endEl.value = range.end;
     } else if (mode === 'all') {
