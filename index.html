@@ -311,10 +311,23 @@
             width: 100% !important;
             table-layout: fixed;
         }
-        body.is-printing #truckProfitSection .no-print {
+        body.is-printing .print-summary,
+        body.is-printing #truckProfitSection .no-print,
+        body.is-printing #financialOverviewSection .print-summary,
+        body.is-printing #receivablesSection .print-summary,
+        body.is-printing #commissionReportSection .print-summary,
+        body.is-printing #maintenanceReportSection .print-summary,
+        body.is-printing #fuelReportSection .print-summary {
             display: none !important;
         }
-        body.is-printing #truckProfitTableFoot {
+        body.is-printing main.print-target tfoot,
+        body.is-printing #truckProfitTableFoot,
+        body.is-printing #financialReportFoot,
+        body.is-printing #receivablesReportFoot,
+        body.is-printing #commissionReportFoot,
+        body.is-printing #commissionPayoutFoot,
+        body.is-printing #maintenanceReportFoot,
+        body.is-printing #fuelReportFoot {
             display: table-footer-group !important;
         }
         body.is-printing main.print-target th,
@@ -324,14 +337,6 @@
             word-break: break-word;
             padding: 1.6mm 1.4mm !important;
             font-size: 9.5pt !important;
-        }
-        body.is-printing #financialOverviewSection > .grid {
-            display: grid !important;
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-            gap: 3mm !important;
-        }
-        body.is-printing #financialOverviewSection .text-2xl {
-            font-size: 13pt !important;
         }
         body.is-printing #receivablesSection,
         body.is-printing #receivablesSection > .recv-summary,
@@ -372,72 +377,11 @@
             font-size: 8.5pt !important;
             line-height: 1.25 !important;
         }
-        body.is-printing #receivablesSection > .recv-summary {
-            display: flex !important;
-            align-items: stretch !important;
-            margin-bottom: 2.5mm !important;
-            gap: 1.5mm !important;
-        }
-        body.is-printing #receivablesSection .recv-summary-money {
-            display: grid !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 1.5mm !important;
-        }
-        body.is-printing #receivablesSection .recv-summary-money > div,
-        body.is-printing #receivablesSection .recv-trip-card {
-            padding: 1.5mm 2mm !important;
-            border-radius: 1mm !important;
-            box-shadow: none !important;
-        }
-        body.is-printing #receivablesSection .recv-summary-money > div > div:first-child,
-        body.is-printing #receivablesSection .recv-trip-card .min-w-0 > div:first-child {
-            font-size: 7pt !important;
-            margin-bottom: 0.5mm !important;
-            line-height: 1.2 !important;
-        }
-        body.is-printing #receivablesSection #recvTotalDue,
-        body.is-printing #receivablesSection #recvCollected,
-        body.is-printing #receivablesSection #recvRemaining,
-        body.is-printing #receivablesSection #recvTripCount {
-            font-size: 9pt !important;
-            line-height: 1.2 !important;
-            margin: 0 !important;
-        }
-        body.is-printing #receivablesSection .recv-trip-card {
-            flex: 0 0 28mm !important;
-            width: 28mm !important;
-        }
-        body.is-printing #receivablesSection .recv-trip-card .w-9 {
-            display: none !important;
-        }
         body.is-printing #receivablesSection > .recv-table-card { padding: 0 !important; }
         body.is-printing #receivablesSection > .recv-table-card h3 {
             margin-bottom: 1mm !important;
             padding-bottom: 1mm !important;
             font-size: 9pt !important;
-        }
-        body.is-printing #commissionReportSection > div.grid.gap-4 {
-            display: grid !important;
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-            gap: 1.5mm !important;
-            margin: 0 0 2.5mm !important;
-        }
-        body.is-printing #commissionReportSection > div.grid.gap-4 > div {
-            padding: 1.5mm 2mm !important;
-            border-radius: 1mm !important;
-            box-shadow: none !important;
-        }
-        body.is-printing #commissionReportSection > div.grid.gap-4 > div > span {
-            font-size: 7pt !important;
-            line-height: 1.2 !important;
-        }
-        body.is-printing #commissionReportSection #commTotalAmountDisplay,
-        body.is-printing #commissionReportSection #commPaidDisplay,
-        body.is-printing #commissionReportSection #commRemainingDisplay,
-        body.is-printing #commissionReportSection #commTotalTripsDisplay {
-            font-size: 9pt !important;
-            line-height: 1.2 !important;
-            margin-top: 0.5mm !important;
         }
         body.is-printing #commissionReportSection > .bg-white.p-6,
         body.is-printing #commissionReportSection > div.bg-white.rounded-2xl {
@@ -467,19 +411,13 @@
             display: block !important;
             gap: 2.5mm !important;
         }
-        body.is-printing #maintenanceReportSection.print-target .maint-rep-kpis {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 2mm !important;
-            margin-bottom: 2mm !important;
-            justify-content: flex-start !important;
+        body.is-printing #maintenanceReportSection.print-target .maint-rep-kpis,
+        body.is-printing #maintenanceReportSection.print-target .print-summary {
+            display: none !important;
         }
-        body.is-printing #maintenanceReportSection.print-target .maint-kpi {
-            padding: 1mm 1.8mm !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
+        body.is-printing #maintenanceReportSection.print-target .maint-report-detail tfoot {
+            display: table-footer-group !important;
         }
-        body.is-printing #maintenanceReportSection.print-target .maint-kpi-value { font-size: 9pt !important; }
         body.is-printing #maintenanceReportSection.print-target .maint-report-detail-card {
             display: block !important;
             flex: none !important;
@@ -2277,7 +2215,7 @@
             </button>
         </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="print-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-xs text-slate-500 font-bold mb-1" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="finTotalRevenue" class="text-2xl font-bold text-slate-900 font-mono">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></div>
@@ -2319,6 +2257,16 @@
                 <tbody id="financialReportTable" class="divide-y divide-slate-100">
                     <tr><td colspan="6" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
+                <tfoot id="financialReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                    <tr>
+                        <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
+                        <td class="p-3.5 font-mono" id="finFootTrips">0</td>
+                        <td class="p-3.5">—</td>
+                        <td class="p-3.5 font-mono" id="finFootAmount">0.00</td>
+                        <td class="p-3.5 font-mono" id="finFootCollected">0.00</td>
+                        <td class="p-3.5 font-mono" id="finFootRemaining">0.00</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -2382,7 +2330,7 @@
             </div>
         </div>
     </div>
-    <div class="recv-summary">
+    <div class="print-summary recv-summary">
         <div class="recv-summary-money">
             <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="text-[11px] text-slate-500 font-bold mb-1" data-i18n="ui.totalReceivables">إجمالي المستحقات</div>
@@ -2407,7 +2355,7 @@
             </div>
         </div>
     </div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
+    <div class="print-summary grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
         <div class="bg-white px-3 py-3 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-[10px] font-bold text-slate-500" data-i18n="recv.age0">متبقي 0–30 يوم</div>
             <div id="recvAge0" class="text-base font-black text-slate-900 font-mono mt-1">0.00</div>
@@ -2452,6 +2400,16 @@
                 <tbody id="receivablesReportTable" class="divide-y divide-slate-100">
                     <tr><td colspan="10" class="text-center p-8 text-slate-400">جاري تحميل البيانات...</td></tr>
                 </tbody>
+                <tfoot id="receivablesReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                    <tr>
+                        <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
+                        <td class="p-3.5 font-mono" id="recvFootTrips" colspan="5">0</td>
+                        <td class="p-3.5 font-mono" id="recvFootAmount">0.00</td>
+                        <td class="p-3.5 font-mono" id="recvFootCollected">0.00</td>
+                        <td class="p-3.5 font-mono" id="recvFootRemaining">0.00</td>
+                        <td class="p-3.5">—</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -2484,7 +2442,7 @@
             </button>
         </div>
     </div>
-    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4 no-print">
+    <div class="print-summary grid grid-cols-2 xl:grid-cols-5 gap-3 mb-4 no-print">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
             <div class="text-[10px] font-bold text-slate-500" data-i18n="ui.totalRevenue">إجمالي الإيرادات</div>
             <div id="profitTotalRevenue" class="text-lg font-black text-slate-900 font-mono mt-1">0.00</div>
@@ -2795,7 +2753,7 @@
                         <div class="no-print min-w-0">
                             <h2 class="text-base font-bold text-slate-900" data-i18n="page.maintenanceReport">تقرير حركة الصيانة</h2>
                         </div>
-                        <div class="maint-rep-kpis shrink-0">
+                        <div class="print-summary maint-rep-kpis shrink-0">
                             <div class="maint-kpi maint-kpi-cost">
                                 <span class="maint-kpi-label" data-i18n="maint.totalCost">إجمالي التكاليف</span>
                                 <span id="maintTotalCost" class="maint-kpi-value">0.00</span>
@@ -2860,6 +2818,15 @@
                             <tbody id="maintenanceReportTable">
                                 <tr><td colspan="7" class="text-center p-8 text-slate-400" data-i18n="maint.loading">جاري تحميل الصيانات...</td></tr>
                             </tbody>
+                            <tfoot id="maintenanceReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                                <tr>
+                                    <td class="maint-print-hide p-2.5"></td>
+                                    <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
+                                    <td class="p-2.5 font-mono" id="maintFootCount" colspan="3">0</td>
+                                    <td class="p-2.5 font-mono text-amber-700" id="maintFootCost">0.00</td>
+                                    <td class="p-2.5 no-print">—</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -2899,12 +2866,12 @@
             </main>
 
             <main id="fuelReportSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-4 min-w-0">
-                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 no-print">
                     <div class="mb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
-                        <div class="no-print min-w-0">
+                        <div class="min-w-0">
                             <h2 class="text-base font-bold text-slate-900" data-i18n="page.fuelReport">تقرير استهلاك الوقود</h2>
                         </div>
-                        <div class="flex flex-wrap gap-2 shrink-0">
+                        <div class="print-summary flex flex-wrap gap-2 shrink-0">
                             <div class="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 text-center min-w-[6.5rem]">
                                 <div class="text-[10px] font-bold text-emerald-700" data-i18n="fuel.totalLiters">إجمالي اللترات</div>
                                 <div id="fuelRepTotalLiters" class="text-sm font-black text-emerald-900 font-mono mt-0.5">0</div>
@@ -2989,6 +2956,16 @@
                             <tbody id="fuelReportTable">
                                 <tr><td colspan="8" class="text-center p-8 text-slate-400" data-i18n="fuel.loading">جاري تحميل سجلات الوقود...</td></tr>
                             </tbody>
+                            <tfoot id="fuelReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                                <tr>
+                                    <td class="p-2.5" data-i18n="ui.total">الإجمالي</td>
+                                    <td class="p-2.5 font-mono" id="fuelFootCount" colspan="3">0</td>
+                                    <td class="p-2.5 font-mono" id="fuelFootLiters">0</td>
+                                    <td class="p-2.5 font-mono" id="fuelFootAmount">0.00</td>
+                                    <td class="p-2.5 font-mono" id="fuelFootAvg">—</td>
+                                    <td class="p-2.5">—</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -3153,7 +3130,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="print-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
                 <span class="block text-[11px] font-bold text-amber-700" data-i18n="ui.totalComms">إجمالي العمولات</span>
                 <h3 id="commTotalAmountDisplay" class="text-2xl font-bold text-slate-900 font-mono tracking-tight mt-1">0.00 <svg class="riyal-symbol" aria-hidden="true"><use href="#riyal-icon"></use></svg></h3>
@@ -3189,8 +3166,15 @@
                         </tr>
                     </thead>
                     <tbody id="commissionReportTable" class="divide-y divide-slate-100">
-                        <tr><td colspan="7" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
+                        <tr><td colspan="8" class="text-center p-8 text-slate-400">جاري تحميل بيانات العمولات...</td></tr>
                     </tbody>
+                    <tfoot id="commissionReportFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                        <tr>
+                            <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
+                            <td class="p-3.5 font-mono" id="commFootTrips" colspan="6">0</td>
+                            <td class="p-3.5 font-mono" id="commFootEarned">0.00</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -3214,6 +3198,14 @@
                     <tbody id="commissionPayoutTable" class="divide-y divide-slate-100">
                         <tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد دفعات مسجلة</td></tr>
                     </tbody>
+                    <tfoot id="commissionPayoutFoot" class="hidden border-t-2 border-slate-300 bg-slate-50 font-bold">
+                        <tr>
+                            <td class="p-3.5" data-i18n="ui.total">الإجمالي</td>
+                            <td class="p-3.5" colspan="2">—</td>
+                            <td class="p-3.5 font-mono" id="commFootPaid">0.00</td>
+                            <td class="p-3.5" colspan="2">—</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
@@ -7320,9 +7312,33 @@ async function generateCommissionReport() {
         lifetimeRemainingByDriver.forEach((value, name) => lifetimeRemainingByDriver.set(name, roundMoney(value)));
         renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver);
 
+        const paintCommFoot = (show) => {
+            const earnedFoot = document.getElementById('commissionReportFoot');
+            const paidFoot = document.getElementById('commissionPayoutFoot');
+            if (earnedFoot) {
+                earnedFoot.classList.toggle('hidden', !show || !activeTrips.length);
+                if (show && activeTrips.length) {
+                    const tripsFoot = document.getElementById('commFootTrips');
+                    const earnedEl = document.getElementById('commFootEarned');
+                    if (tripsFoot) {
+                        tripsFoot.textContent = currentLang === 'en'
+                            ? `${activeTrips.length} trip(s)`
+                            : `${activeTrips.length} رحلة`;
+                    }
+                    if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
+                }
+            }
+            if (paidFoot) {
+                paidFoot.classList.toggle('hidden', !show || !payouts.length);
+                const paidEl = document.getElementById('commFootPaid');
+                if (show && payouts.length && paidEl) paidEl.innerHTML = formatSAR(paid);
+            }
+        };
+
         if (!tbody) return;
         if (!activeTrips.length) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد رحلات مطابقة للفلتر المحدد</td></tr>`;
+            paintCommFoot(true);
             return;
         }
 
@@ -7360,7 +7376,7 @@ async function generateCommissionReport() {
                 const subtotal = list.reduce((sum, tr) => sum + commissionAmount(tr), 0);
                 return `
                     <tr class="bg-slate-900 text-white">
-                        <td colspan="7" class="px-3.5 py-2.5">
+                        <td colspan="8" class="px-3.5 py-2.5">
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="text-[10px] font-bold text-amber-300">${label}</span>
                                 <span class="font-black">${key}</span>
@@ -7381,11 +7397,14 @@ async function generateCommissionReport() {
         } else {
             tbody.innerHTML = activeTrips.map(commissionRow).join('');
         }
+        paintCommFoot(true);
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-rose-500">تعذر تحميل تقرير العمولات</td></tr>`;
         const payoutBody = document.getElementById('commissionPayoutTable');
         if (payoutBody) payoutBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل سجل الصرف</td></tr>`;
+        document.getElementById('commissionReportFoot')?.classList.add('hidden');
+        document.getElementById('commissionPayoutFoot')?.classList.add('hidden');
     }
 }
 
@@ -8060,9 +8079,29 @@ async function generateFinancialReport() {
         if (pendingEl) pendingEl.innerHTML = formatSAR(money.remaining);
         if (tripsEl) tripsEl.innerText = tripRows.length.toLocaleString('en-US');
 
+        const paintFinFoot = (show) => {
+            const foot = document.getElementById('financialReportFoot');
+            if (!foot) return;
+            foot.classList.toggle('hidden', !show);
+            if (!show) return;
+            const tripsFoot = document.getElementById('finFootTrips');
+            const amountFoot = document.getElementById('finFootAmount');
+            const collectedFoot = document.getElementById('finFootCollected');
+            const remainingFoot = document.getElementById('finFootRemaining');
+            if (tripsFoot) {
+                tripsFoot.textContent = currentLang === 'en'
+                    ? `${tripRows.length} trip(s)`
+                    : `${tripRows.length} رحلة`;
+            }
+            if (amountFoot) amountFoot.innerHTML = formatSAR(money.total);
+            if (collectedFoot) collectedFoot.innerHTML = formatSAR(money.collected);
+            if (remainingFoot) remainingFoot.innerHTML = formatSAR(money.remaining);
+        };
+
         if (!tbody) return;
         if (!tripRows.length) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">لا توجد بيانات مطابقة للفلتر المحدد</td></tr>`;
+            paintFinFoot(false);
             return;
         }
 
@@ -8087,9 +8126,11 @@ async function generateFinancialReport() {
             </tr>
             `;
         }).join('');
+        paintFinFoot(true);
     } catch (err) {
         console.error('Error generating financial report:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-rose-500">تعذر تحميل التقرير المالي</td></tr>`;
+        document.getElementById('financialReportFoot')?.classList.add('hidden');
     }
 }
 
@@ -8496,9 +8537,29 @@ async function generateReceivablesReport() {
         if (tripsEl) tripsEl.textContent = tripsInView.length.toLocaleString('en-US');
         paintReceivablesAging(tripsInView);
 
+        const paintRecvFoot = (show) => {
+            const foot = document.getElementById('receivablesReportFoot');
+            if (!foot) return;
+            foot.classList.toggle('hidden', !show);
+            if (!show) return;
+            const tripsFoot = document.getElementById('recvFootTrips');
+            const amountFoot = document.getElementById('recvFootAmount');
+            const collectedFoot = document.getElementById('recvFootCollected');
+            const remainingFoot = document.getElementById('recvFootRemaining');
+            if (tripsFoot) {
+                tripsFoot.textContent = currentLang === 'en'
+                    ? `${tripsInView.length} trip(s)`
+                    : `${tripsInView.length} رحلة`;
+            }
+            if (amountFoot) amountFoot.innerHTML = formatSAR(money.total);
+            if (collectedFoot) collectedFoot.innerHTML = formatSAR(money.collected);
+            if (remainingFoot) remainingFoot.innerHTML = formatSAR(money.remaining);
+        };
+
         if (!tbody) return;
         if (!rows.length) {
             tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-slate-400">${t('ui.noReceivables') || 'لا توجد بيانات مطابقة للفلتر المحدد'}</td></tr>`;
+            paintRecvFoot(false);
             return;
         }
         tbody.innerHTML = rows.map(({ trip: tr, line }) => {
@@ -8533,11 +8594,13 @@ async function generateReceivablesReport() {
             </tr>
             `;
         }).join('');
+        paintRecvFoot(true);
     } catch (err) {
         console.error('خطأ في تقرير المستحقات:', err);
         const tripsEl = document.getElementById('recvTripCount');
         if (tripsEl) tripsEl.textContent = '0';
         paintReceivablesAging([]);
+        document.getElementById('receivablesReportFoot')?.classList.add('hidden');
         if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-rose-500">تعذر تحميل تقرير المستحقات</td></tr>`;
     }
 }
@@ -11089,24 +11152,22 @@ function renderFuelReportView() {
         }
     });
     // متوسط كلي بنفس قاعدة الرسم
-    {
-        let cleanKm = 0;
-        let cleanLiters = 0;
-        filtered.forEach(r => {
-            if (!fuelIssueBlocksConsumption(r._odoIssue) && r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
-                cleanKm += r._distance;
-                cleanLiters += fuelNum(r.liters);
-            }
-        });
-        if (avgEl) {
-            avgEl.textContent = cleanKm > 0 ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1) : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
-            if (dropCount > 0 && cleanKm > 0) {
-                avgEl.title = currentLang === 'en'
-                    ? 'Average excludes odometer-drop intervals only'
-                    : 'المتوسط يستبعد فترات تناقص العداد فقط';
-            } else {
-                avgEl.title = '';
-            }
+    let cleanKm = 0;
+    let cleanLiters = 0;
+    filtered.forEach(r => {
+        if (!fuelIssueBlocksConsumption(r._odoIssue) && r._distance != null && r._distance > 0 && fuelNum(r.liters) > 0) {
+            cleanKm += r._distance;
+            cleanLiters += fuelNum(r.liters);
+        }
+    });
+    if (avgEl) {
+        avgEl.textContent = cleanKm > 0 ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1) : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
+        if (dropCount > 0 && cleanKm > 0) {
+            avgEl.title = currentLang === 'en'
+                ? 'Average excludes odometer-drop intervals only'
+                : 'المتوسط يستبعد فترات تناقص العداد فقط';
+        } else {
+            avgEl.title = '';
         }
     }
     const truckList = [...byTruck.values()].map(t => ({
@@ -11117,9 +11178,32 @@ function renderFuelReportView() {
     renderFuelCharts(truckList);
 
     const tbody = document.getElementById('fuelReportTable');
+    const paintFuelFoot = (show) => {
+        const foot = document.getElementById('fuelReportFoot');
+        if (!foot) return;
+        foot.classList.toggle('hidden', !show);
+        if (!show) return;
+        const countFoot = document.getElementById('fuelFootCount');
+        const litersFoot = document.getElementById('fuelFootLiters');
+        const amountFoot = document.getElementById('fuelFootAmount');
+        const avgFoot = document.getElementById('fuelFootAvg');
+        if (countFoot) {
+            countFoot.textContent = currentLang === 'en'
+                ? `${filtered.length} fill(s)`
+                : `${filtered.length} تعبئة`;
+        }
+        if (litersFoot) litersFoot.textContent = formatFuelNumber(totalLiters, 2);
+        if (amountFoot) amountFoot.innerHTML = formatSAR(totalAmount);
+        if (avgFoot) {
+            avgFoot.textContent = cleanKm > 0
+                ? formatFuelNumber((cleanLiters / cleanKm) * 100, 1)
+                : (avgPer100 == null ? '—' : formatFuelNumber(avgPer100, 1));
+        }
+    };
     if (!tbody) return;
     if (!filtered.length) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
+        paintFuelFoot(false);
         return;
     }
     tbody.innerHTML = filtered.map(row => {
@@ -11146,6 +11230,7 @@ function renderFuelReportView() {
             <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
         </tr>`;
     }).join('');
+    paintFuelFoot(true);
 }
 
 async function loadFuelReport() {
@@ -11945,8 +12030,23 @@ function renderMaintenanceReportView() {
     const total = rows.reduce((sum, row) => sum + (parseFloat(row.cost) || 0), 0);
     if (costEl) costEl.innerHTML = formatSAR(total);
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
+    const paintMaintFoot = (show) => {
+        const foot = document.getElementById('maintenanceReportFoot');
+        if (!foot) return;
+        foot.classList.toggle('hidden', !show);
+        if (!show) return;
+        const countFoot = document.getElementById('maintFootCount');
+        const costFoot = document.getElementById('maintFootCost');
+        if (countFoot) {
+            countFoot.textContent = currentLang === 'en'
+                ? `${rows.length} record(s)`
+                : `${rows.length} صيانة`;
+        }
+        if (costFoot) costFoot.innerHTML = formatSAR(total);
+    };
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
+        paintMaintFoot(false);
         return;
     }
     tbody.innerHTML = rows.map(row => {
@@ -11966,6 +12066,7 @@ function renderMaintenanceReportView() {
                 </td>
             </tr>`;
     }).join('');
+    paintMaintFoot(true);
 }
 
 function renderMaintenanceReport() {
