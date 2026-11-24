@@ -5215,8 +5215,8 @@ function roleDefaultPermissions(role) {
     base.charts.view = true;
     if (r === 'accountant' || r === 'محاسب') {
         Object.assign(base.facility, { view: true, create: true, edit: true, delete: false });
-        base.vehicles.view = true;
-        base.staff.view = true;
+        Object.assign(base.vehicles, { view: true, create: false, edit: true, delete: false });
+        Object.assign(base.staff, { view: true, create: false, edit: true, delete: false });
         Object.assign(base.trips, { view: true, create: true, edit: true, delete: false, print: true });
         Object.assign(base.bayan, { view: true, create: true, edit: true });
         base.maintenance.view = true;
@@ -5238,15 +5238,35 @@ function roleDefaultPermissions(role) {
     return base;
 }
 
+function ensureAccountantDocumentEdit(perms, user = currentLoggedInUser) {
+    if (!perms || !isAccountantUser(user)) return perms;
+    if (perms.staff) {
+        perms.staff.view = true;
+        perms.staff.edit = true;
+    }
+    if (perms.vehicles) {
+        perms.vehicles.view = true;
+        perms.vehicles.edit = true;
+    }
+    if (perms.facility) {
+        perms.facility.view = true;
+        perms.facility.edit = true;
+    }
+    return perms;
+}
+
 function resolveUserPermissions(user = currentLoggedInUser) {
     if (!user) return buildFullPermissions(false);
     if (isSuperAdminUser(user) || isSupportMode(user) || isAdminUser(user)) {
         return buildFullPermissions(true);
     }
+    let perms;
     if (user.permissions == null || user.permissions === '') {
-        return roleDefaultPermissions(user.role);
+        perms = roleDefaultPermissions(user.role);
+    } else {
+        perms = parsePermissions(user.permissions) || roleDefaultPermissions(user.role);
     }
-    return parsePermissions(user.permissions) || roleDefaultPermissions(user.role);
+    return ensureAccountantDocumentEdit(perms, user);
 }
 
 function hasPerm(module, action, user = currentLoggedInUser) {
@@ -5425,6 +5445,7 @@ function showPermissionsForUser(usr) {
     } else {
         permissionsDraft = clonePermissions(parsePermissions(usr.permissions));
     }
+    permissionsDraft = ensureAccountantDocumentEdit(permissionsDraft, usr);
     renderPermissionsMatrixBody(isAdminTarget);
 }
 
@@ -5538,7 +5559,7 @@ function resetPermissionsDraftToRole() {
         renderPermissionsMatrixBody(true);
         return;
     }
-    permissionsDraft = clonePermissions(roleDefaultPermissions(usr.role));
+    permissionsDraft = ensureAccountantDocumentEdit(clonePermissions(roleDefaultPermissions(usr.role)), usr);
     renderPermissionsMatrixBody(false);
 }
 
@@ -9720,8 +9741,12 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
 }
         let loadAllDataInFlight = null;
 
-        async function loadAllData() {
-    if (loadAllDataInFlight) return loadAllDataInFlight;
+        async function loadAllData(options = {}) {
+    const force = !!(options && options.force);
+    if (loadAllDataInFlight) {
+        if (!force) return loadAllDataInFlight;
+        try { await loadAllDataInFlight; } catch (_) { /* continue with a fresh refresh */ }
+    }
 
     const refreshBtn = document.getElementById('refreshDataBtn');
     const refreshIcon = document.getElementById('refreshDataIcon');
@@ -12762,17 +12787,90 @@ function renderExpiryAlerts(targetId, items, emptyText) {
 async function writeIgnoringUnknownColumns(writeFn, payload) {
     const data = { ...payload };
     for (let i = 0; i < 14; i++) {
-        const { error } = await writeFn(data);
-        if (!error) return { error: null };
-        const msg = String(error.message || '');
+        const result = await writeFn(data);
+        if (!result?.error) return { data: result?.data ?? null, error: null, written: { ...data } };
+        const msg = String(result.error.message || '');
         const col = (msg.match(/Could not find the '([^']+)' column/i) || msg.match(/column "([^"]+)"/i) || msg.match(/column \w+\.(\w+)/i) || [])[1];
         if (col && Object.prototype.hasOwnProperty.call(data, col)) {
             delete data[col];
             continue;
         }
-        return { error };
+        return { data: null, error: result.error, written: null };
     }
-    return { error: { message: 'تعذر الحفظ' } };
+    return { data: null, error: { message: 'تعذر الحفظ' }, written: null };
+}
+
+function payloadForWrite(payload, isUpdate) {
+    if (!payload || typeof payload !== 'object') return payload;
+    if (!isUpdate) return payload;
+    const out = { ...payload };
+    delete out.company_id;
+    return out;
+}
+
+function writeAffectedRows(result) {
+    if (!result || result.error) return 0;
+    if (Array.isArray(result.data)) return result.data.length;
+    if (result.data && typeof result.data === 'object') return 1;
+    return 0;
+}
+
+function normalizeCompareValue(value) {
+    if (value == null || value === '') return '';
+    const text = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+    return text;
+}
+
+async function confirmEntityUpdate(table, id, expectedFields) {
+    if (!id) return { ok: true, row: null };
+    const numericId = Number(id);
+    const idFilter = Number.isFinite(numericId) && String(numericId) === String(id).trim() ? numericId : id;
+    const { data, error } = await client.from(table).select('*').eq('id', idFilter).maybeSingle();
+    if (error) return { ok: false, message: error.message, row: null };
+    if (!data) {
+        return {
+            ok: false,
+            message: currentLang === 'en'
+                ? 'Record was not found after save.'
+                : 'تعذر التحقق من السجل بعد الحفظ.',
+            row: null
+        };
+    }
+    const mismatched = Object.keys(expectedFields || {}).find((key) => {
+        return normalizeCompareValue(data[key]) !== normalizeCompareValue(expectedFields[key]);
+    });
+    if (mismatched) {
+        return {
+            ok: false,
+            message: currentLang === 'en'
+                ? 'Update did not persist. Check edit permission or sign in again.'
+                : 'لم يتم حفظ التحديث في قاعدة البيانات. تحقق من صلاحية التعديل أو أعد تسجيل الدخول.',
+            row: data,
+            field: mismatched
+        };
+    }
+    return { ok: true, row: data };
+}
+
+function entityWriteId(id) {
+    const numericId = Number(id);
+    if (Number.isFinite(numericId) && String(numericId) === String(id).trim()) return numericId;
+    return id;
+}
+
+function isMissingRpcError(error) {
+    const msg = String(error?.message || error || '');
+    return /Could not find the function|function .* does not exist|42883|schema cache/i.test(msg);
+}
+
+async function saveViaFleetRpc(fnName, id, payload) {
+    const { data, error } = await client.rpc(fnName, {
+        p_id: id == null || id === '' ? null : entityWriteId(id),
+        p_payload: payload || {}
+    });
+    if (error) return { data: null, error, missing: isMissingRpcError(error) };
+    return { data, error: null, missing: false };
 }
 
 function dateField(id) {
@@ -12883,29 +12981,53 @@ async function saveFacilityDocument(e) {
         alert(currentLang === 'en' ? 'Accountants can update existing licenses only.' : 'صلاحية المحاسب تقتصر على تعديل التراخيص الحالية فقط.');
         return;
     }
-    const payload = withCompany({
+    const payload = payloadForWrite(withCompany({
         title: document.getElementById('facilityDocTitle').value.trim(),
         doc_type: document.getElementById('facilityDocType').value,
         doc_number: emptyToNull(document.getElementById('facilityDocNumber').value),
         issue_date: dateField('facilityDocIssue'),
         expiry_date: dateField('facilityDocExpiry'),
         notes: emptyToNull(document.getElementById('facilityDocNotes').value)
-    });
+    }), !!id);
     if (!payload.doc_type) {
         alert(t('ui.chooseDocType'));
         return;
     }
-    const write = (data) => id
-        ? client.from('facility_documents').update(data).eq('id', id)
-        : client.from('facility_documents').insert([data]);
-    const { error } = await write(payload);
-    if (error) {
-        alert('تعذر حفظ وثيقة المنشأة. نفّذ facility-expiry.sql إن لم يُنفَّذ بعد. ' + error.message);
+    const writeId = id ? entityWriteId(id) : null;
+    const rpc = await saveViaFleetRpc('fleetop_save_facility_document', writeId, payload);
+    if (!rpc.missing && rpc.error) {
+        alert('تعذر حفظ وثيقة المنشأة: ' + rpc.error.message);
         return;
+    }
+    if (rpc.missing) {
+        const write = (data) => writeId
+            ? client.from('facility_documents').update(data).eq('id', writeId)
+            : client.from('facility_documents').insert([withCompany(data)]);
+        const result = await write(payload);
+        if (result.error) {
+            alert('تعذر حفظ وثيقة المنشأة. نفّذ facility-expiry.sql وfleetop-fleet-save-rpc.sql ثم أعد المحاولة. ' + result.error.message);
+            return;
+        }
+        if (writeId) {
+            const verified = await confirmEntityUpdate('facility_documents', writeId, {
+                title: payload.title,
+                doc_type: payload.doc_type,
+                expiry_date: payload.expiry_date,
+                issue_date: payload.issue_date
+            });
+            if (!verified.ok) {
+                alert(
+                    (verified.message || 'تعذر الحفظ') +
+                    '\n\nنفّذ ملف fleetop-fleet-save-rpc.sql من Supabase SQL Editor ثم أعد المحاولة.'
+                );
+                return;
+            }
+        }
     }
     resetFacilityDocForm();
     await loadFacilityDocuments();
-    if (typeof loadDashboardData === 'function') loadDashboardData();
+    if (typeof loadAllData === 'function') await loadAllData({ force: true });
+    else if (typeof loadDashboardData === 'function') await loadDashboardData();
 }
 
 function editFacilityDocument(id) {
@@ -17831,7 +17953,7 @@ async function cancelTrip(tripNo) {
             const kind = kindRaw === 'أخرى' ? 'أخرى' : 'شاحنة';
             currentVehicleKind = kind;
             const other = kind === 'أخرى';
-            const payload = withCompany({
+            const payload = payloadForWrite(withCompany({
                 plate,
                 model,
                 status: other && status === 'في رحلة' ? 'مستخدمة إدارياً' : status,
@@ -17841,18 +17963,49 @@ async function cancelTrip(tripNo) {
                 insurance_expiry: dateField('truckInsuranceExpiry'),
                 operation_card_no: other ? null : emptyToNull(document.getElementById('truckOperationCardNo')?.value),
                 operation_card_expiry: other ? null : dateField('truckOperationExpiry')
-            });
-            const write = async (data) => id
-                ? client.from('trucks').update(data).eq('id', id)
-                : client.from('trucks').insert([data]);
-            let { error } = await writeIgnoringUnknownColumns(write, payload);
-            if (!error) {
-                logActivity('truck.save', 'مركبة', document.getElementById('truckPlate')?.value || id, id ? 'تعديل' : 'إضافة');
-                alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
-                resetTruckForm();
-                loadAllData();
+            }), !!id);
+            const writeId = id ? entityWriteId(id) : null;
+            let savedOk = false;
+            const rpc = await saveViaFleetRpc('fleetop_save_truck', writeId, payload);
+            if (!rpc.missing && rpc.error) {
+                alert('تعذر الحفظ: ' + rpc.error.message);
+                return;
             }
-            else alert('تعذر الحفظ: ' + error.message);
+            if (!rpc.missing && !rpc.error) {
+                savedOk = true;
+            } else {
+                const write = async (data) => writeId
+                    ? client.from('trucks').update(data).eq('id', writeId)
+                    : client.from('trucks').insert([withCompany(data)]);
+                const result = await writeIgnoringUnknownColumns(write, payload);
+                if (result.error) {
+                    alert('تعذر الحفظ: ' + result.error.message);
+                    return;
+                }
+                if (writeId) {
+                    const written = result.written || payload;
+                    const checks = {};
+                    ['plate', 'model', 'status', 'istimara_expiry', 'inspection_expiry', 'insurance_expiry', 'operation_card_expiry']
+                        .forEach((key) => {
+                            if (Object.prototype.hasOwnProperty.call(written, key)) checks[key] = written[key];
+                        });
+                    const verified = await confirmEntityUpdate('trucks', writeId, checks);
+                    if (!verified.ok) {
+                        console.warn('truck save verify failed', verified.field, verified);
+                        alert(
+                            (verified.message || 'تعذر الحفظ') +
+                            '\n\nنفّذ ملف fleetop-fleet-save-rpc.sql من Supabase SQL Editor ثم أعد المحاولة.'
+                        );
+                        return;
+                    }
+                }
+                savedOk = true;
+            }
+            if (!savedOk) return;
+            logActivity('truck.save', 'مركبة', document.getElementById('truckPlate')?.value || id, id ? 'تعديل' : 'إضافة');
+            alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
+            resetTruckForm();
+            await loadAllData({ force: true });
         }
 
    function editTruck(id) {
@@ -18034,7 +18187,7 @@ async function cancelTrip(tripNo) {
             }
             const tripDriver = isTruckDriverJob(jobTitle);
             currentStaffKind = tripDriver ? 'سائق' : 'موظف';
-            const payload = withCompany({
+            const payload = payloadForWrite(withCompany({
                 name,
                 phone,
                 status: (!tripDriver && status === 'في رحلة') ? 'متوفر' : status,
@@ -18050,18 +18203,49 @@ async function cancelTrip(tripNo) {
                 driver_card_expiry: dateField('staffDriverCardExpiry'),
                 health_insurance_no: emptyToNull(document.getElementById('staffHealthNo')?.value),
                 health_insurance_expiry: dateField('staffHealthExpiry')
-            });
-            const write = async (data) => id
-                ? client.from('drivers').update(data).eq('id', id)
-                : client.from('drivers').insert([data]);
-            let { error } = await writeIgnoringUnknownColumns(write, payload);
-            if (!error) {
-                logActivity('staff.save', 'موظف', document.getElementById('driverName')?.value || id, id ? 'تعديل' : 'إضافة');
-                alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
-                resetDriverForm();
-                loadAllData();
+            }), !!id);
+            const writeId = id ? entityWriteId(id) : null;
+            let savedOk = false;
+            const rpc = await saveViaFleetRpc('fleetop_save_driver', writeId, payload);
+            if (!rpc.missing && rpc.error) {
+                alert('تعذر الحفظ: ' + rpc.error.message);
+                return;
             }
-            else alert('تعذر الحفظ: ' + error.message);
+            if (!rpc.missing && !rpc.error) {
+                savedOk = true;
+            } else {
+                const write = async (data) => writeId
+                    ? client.from('drivers').update(data).eq('id', writeId)
+                    : client.from('drivers').insert([withCompany(data)]);
+                const result = await writeIgnoringUnknownColumns(write, payload);
+                if (result.error) {
+                    alert('تعذر الحفظ: ' + result.error.message);
+                    return;
+                }
+                if (writeId) {
+                    const written = result.written || payload;
+                    const checks = {};
+                    ['name', 'phone', 'status', 'iqama_expiry', 'passport_expiry', 'license_expiry', 'driver_card_expiry', 'health_insurance_expiry']
+                        .forEach((key) => {
+                            if (Object.prototype.hasOwnProperty.call(written, key)) checks[key] = written[key];
+                        });
+                    const verified = await confirmEntityUpdate('drivers', writeId, checks);
+                    if (!verified.ok) {
+                        console.warn('staff save verify failed', verified.field, verified);
+                        alert(
+                            (verified.message || 'تعذر الحفظ') +
+                            '\n\nنفّذ ملف fleetop-fleet-save-rpc.sql من Supabase SQL Editor ثم أعد المحاولة.'
+                        );
+                        return;
+                    }
+                }
+                savedOk = true;
+            }
+            if (!savedOk) return;
+            logActivity('staff.save', 'موظف', document.getElementById('driverName')?.value || id, id ? 'تعديل' : 'إضافة');
+            alert(id ? 'تم التحديث بنجاح!' : 'تمت الإضافة بنجاح!');
+            resetDriverForm();
+            await loadAllData({ force: true });
         }
 
         function editDriver(id) {
