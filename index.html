@@ -10798,6 +10798,47 @@ const FUEL_SPIKE_ABS_CAP = 30000;
 /** استهلاك خارج النطاق المعقول لشاحنة ثقيلة (لتر/100كم) */
 const FUEL_PER100_MIN = 12;
 const FUEL_PER100_MAX = 75;
+/** فرق بسيط يُتجاهل حتى لا تومض الأسهم مع الضوضاء */
+const FUEL_PER100_TREND_EPS = 0.5;
+
+function buildFuelPer100TrendMap(rows) {
+    const trendById = new Map();
+    const lastPer100 = new Map();
+    const ordered = [...(rows || [])].sort((a, b) => {
+        const da = dateOnly(a.fill_date).localeCompare(dateOnly(b.fill_date));
+        if (da) return da;
+        return (Number(a.id) || 0) - (Number(b.id) || 0);
+    });
+    ordered.forEach((row) => {
+        if (row._per100 == null || row._baseline) return;
+        if (fuelIssueBlocksConsumption(row._odoIssue)) return;
+        const plate = String(row.truck_plate || '').trim() || '—';
+        const prev = lastPer100.get(plate);
+        if (prev != null) {
+            const diff = row._per100 - prev;
+            if (diff > FUEL_PER100_TREND_EPS) trendById.set(row.id, { dir: 'up', diff });
+            else if (diff < -FUEL_PER100_TREND_EPS) trendById.set(row.id, { dir: 'down', diff });
+            else trendById.set(row.id, { dir: 'flat', diff });
+        }
+        lastPer100.set(plate, row._per100);
+    });
+    return trendById;
+}
+
+function fuelPer100TrendHtml(trend) {
+    if (!trend || trend.dir === 'flat') return '';
+    const worse = trend.dir === 'up';
+    const icon = worse ? 'fa-caret-up' : 'fa-caret-down';
+    const tone = worse ? 'text-rose-600' : 'text-emerald-600';
+    const tip = currentLang === 'en'
+        ? (worse
+            ? `Consumption up ${formatFuelNumber(Math.abs(trend.diff), 1)} L/100km vs previous fill`
+            : `Consumption down ${formatFuelNumber(Math.abs(trend.diff), 1)} L/100km vs previous fill`)
+        : (worse
+            ? `ارتفاع الاستهلاك ${formatFuelNumber(Math.abs(trend.diff), 1)} لتر/100كم عن التعبئة السابقة`
+            : `انخفاض الاستهلاك ${formatFuelNumber(Math.abs(trend.diff), 1)} لتر/100كم عن التعبئة السابقة`);
+    return `<span class="fuel-per100-trend inline-flex items-center ${tone}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}"><i class="fa-solid ${icon} text-[12px] leading-none"></i></span>`;
+}
 
 function fuelDaysBetween(prevDate, fillDate) {
     const a = dateOnly(prevDate);
@@ -11052,6 +11093,7 @@ function renderFuelManage() {
     }
     const canEdit = hasPerm('fuel', 'edit');
     const canDelete = hasPerm('fuel', 'delete');
+    const per100Trends = buildFuelPer100TrendMap(enriched);
     tbody.innerHTML = enriched.map(row => {
         const issue = row._odoIssue;
         const rowTone = issue === 'drop'
@@ -11061,6 +11103,10 @@ function renderFuelManage() {
         const odoCell = issue
             ? `<span class="font-mono ${issue === 'drop' ? 'text-rose-700' : 'text-amber-800'}" title="${escapeHtml(issueTip)}">${escapeHtml(formatFuelNumber(row.odometer, 1))} <i class="fa-solid fa-triangle-exclamation text-[10px]"></i></span>`
             : `<span class="font-mono">${escapeHtml(formatFuelNumber(row.odometer, 1))}</span>`;
+        const trend = per100Trends.get(row.id);
+        const consumptionCell = row._per100 == null
+            ? escapeHtml(fuelConsumptionLabel(row))
+            : `<span class="inline-flex items-center gap-1 font-mono">${escapeHtml(formatFuelNumber(row._per100, 1))} <span class="text-slate-500">لتر/100كم</span>${fuelPer100TrendHtml(trend)}${row._distance != null ? `<span class="text-slate-400">· ${escapeHtml(formatFuelNumber(row._distance, 0))} كم</span>` : ''}</span>`;
         return `
         <tr class="${rowTone} transition">
             <td class="p-3 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
@@ -11069,7 +11115,7 @@ function renderFuelManage() {
             <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-3 font-mono">${formatSAR(row.amount)}</td>
             <td class="p-3 text-slate-600">${escapeHtml(row.station || '—')}</td>
-            <td class="p-3 text-[11px] text-slate-600">${escapeHtml(fuelConsumptionLabel(row))}${issueTip ? `<div class="text-[10px] text-rose-600 mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
+            <td class="p-3 text-[11px] text-slate-600">${consumptionCell}${issueTip ? `<div class="text-[10px] text-rose-600 mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
             <td class="p-3 no-print text-center space-x-1 space-x-reverse">
                 ${(canEdit || canDelete) ? `
                     ${canEdit ? `<button type="button" onclick="openFuelModal(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="${escapeHtml(t('ui.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
@@ -11240,6 +11286,7 @@ function renderFuelReportView() {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('fuel.empty'))}</td></tr>`;
         return;
     }
+    const per100Trends = buildFuelPer100TrendMap(filtered);
     tbody.innerHTML = filtered.map(row => {
         const issue = row._odoIssue;
         const issueTip = fuelOdoIssueLabel(row);
@@ -11252,6 +11299,10 @@ function renderFuelReportView() {
         const issueTone = issue === 'drop'
             ? 'text-rose-700 font-black'
             : (issue ? 'text-amber-800 font-black' : '');
+        const trend = per100Trends.get(row.id);
+        const per100Cell = row._per100 == null
+            ? '—'
+            : `<span class="inline-flex items-center justify-center gap-1">${escapeHtml(formatFuelNumber(row._per100, 1))}${fuelPer100TrendHtml(trend)}</span>`;
         return `
         <tr class="${row._baseline ? 'bg-slate-50' : rowTone} transition" title="${escapeHtml(issueTip)}">
             <td class="p-2.5 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
@@ -11260,7 +11311,7 @@ function renderFuelReportView() {
             <td class="p-2.5 font-mono">${escapeHtml(distLabel)}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-2.5 font-mono">${formatSAR(row.amount)}</td>
-            <td class="p-2.5 font-mono">${row._per100 == null ? '—' : escapeHtml(formatFuelNumber(row._per100, 1))}${issueTip ? `<div class="text-[10px] ${issue === 'drop' ? 'text-rose-600' : 'text-amber-700'} font-bold mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
+            <td class="p-2.5 font-mono">${per100Cell}${issueTip ? `<div class="text-[10px] ${issue === 'drop' ? 'text-rose-600' : 'text-amber-700'} font-bold mt-0.5">${escapeHtml(issueTip)}</div>` : ''}</td>
             <td class="p-2.5">${escapeHtml(row.station || '—')}</td>
         </tr>`;
     }).join('');
