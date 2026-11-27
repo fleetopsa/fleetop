@@ -3004,6 +3004,11 @@
                             <input type="text" id="truckPlate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" data-i18n-placeholder="f.platePh" placeholder="ادخل رقم اللوحة">
                         </div>
                         <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="f.plateEn">اللوحة بالإنجليزية (اختياري)</label>
+                            <input type="text" id="truckPlateEn" dir="ltr" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="e.g. ABJ 1234">
+                            <p class="text-[10px] text-slate-400 mt-1" data-i18n="f.plateEnHint">إن تُركت فارغة تُحوَّل حروف اللوحة تلقائياً عند اختيار الإنجليزية.</p>
+                        </div>
+                        <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.model">الموديل / النوع</label>
                             <input type="text" id="truckModel" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="msg.vehicleModelPlaceholder" placeholder="ادخل موديل المركبة ونوعها">
                         </div>
@@ -3406,6 +3411,10 @@
                         <div>
                             <label id="driverNameLabel" class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.employeeName">اسم الموظف</label>
                             <input type="text" id="driverName" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500" data-i18n-placeholder="f.employeeNamePh" placeholder="ادخل اسم الموظف">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="f.nameEn">الاسم بالإنجليزية (اختياري)</label>
+                            <input type="text" id="driverNameEn" dir="ltr" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono" placeholder="Name in English">
                         </div>
                         <div id="staffJobWrap">
                             <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="ui.job">الوظيفة</label>
@@ -3944,6 +3953,7 @@
                                         <option value="client" data-i18n="nt.kind.client">عميل</option>
                                         <option value="person" data-i18n="nt.kind.person">سائق / موظف</option>
                                         <option value="city" data-i18n="nt.kind.city">مدينة</option>
+                                        <option value="plate" data-i18n="nt.kind.plate">لوحة مركبة</option>
                                     </select>
                                 </div>
                                 <div class="md:col-span-4">
@@ -3955,7 +3965,10 @@
                                     <input type="text" id="nameTransEn" dir="ltr" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
                                 </div>
                                 <div class="md:col-span-2">
-                                    <button type="button" onclick="saveNameTranslationFromForm()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs" data-i18n="nt.add">إضافة ترجمة</button>
+                                    <div class="flex gap-1.5">
+                                        <button type="button" id="nameTransSaveBtn" onclick="saveNameTranslationFromForm()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-2.5 rounded-xl text-xs">إضافة ترجمة</button>
+                                        <button type="button" id="nameTransCancelBtn" onclick="cancelNameTranslationEdit()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-xs" data-i18n="nt.cancel">إلغاء</button>
+                                    </div>
                                 </div>
                             </div>
                             <div>
@@ -8038,7 +8051,7 @@ async function generateCommissionReport() {
                     <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('client', tr.client_name) || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(cityLabel(tr.from_city) || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(tripDestinationText(tr))}</td>
-                    <td class="p-3.5 text-slate-700 font-mono">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
+                    <td class="p-3.5 text-slate-700 font-mono">${escapeHtml(plateLabel(tr.truck_plate || tr.truck || '---'))}</td>
                     <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('person', tr.driver_name) || t('ui.unspecified'))}</td>
                     <td class="p-3.5 font-black text-emerald-600 font-mono">${formatSAR(commission)}</td>
                 </tr>
@@ -8196,7 +8209,8 @@ const CITY_EN = {
 let cityEnIndex = null;
 
 // ---------- ترجمة الأسماء (جدول مركزي name_translations) ----------
-const NAME_KINDS = ['client', 'person', 'city'];
+const NAME_KINDS = ['client', 'person', 'city', 'plate'];
+let editingNameTransId = null;
 let nameTranslations = new Map();      // kind::مفتاح عربي مُطبَّع -> الصف
 let nameTranslationsList = [];
 let nameTranslationsAvailable = true;
@@ -8211,6 +8225,32 @@ function localizedName(kind, value) {
     if (!raw.trim() || currentLang !== 'en') return raw;
     const hit = nameTranslations.get(nameTranslationKey(kind, raw));
     return hit ? hit.en_name : raw;
+}
+
+// حروف اللوحات السعودية → المقابل اللاتيني المعتمد
+const PLATE_LETTERS_EN = {
+    'ا': 'A', 'أ': 'A', 'إ': 'A', 'آ': 'A', 'ب': 'B', 'ح': 'J', 'د': 'D', 'ر': 'R', 'س': 'S', 'ص': 'X',
+    'ط': 'T', 'ع': 'E', 'ق': 'G', 'ك': 'K', 'ل': 'L', 'م': 'Z', 'ن': 'N', 'ه': 'H', 'ة': 'H', 'و': 'U', 'ى': 'V', 'ي': 'V'
+};
+
+/** اللوحة بالإنجليزية: ترجمة محفوظة إن وُجدت، وإلا تحويل تلقائي للحروف والأرقام */
+function plateLabel(value) {
+    const raw = String(value ?? '');
+    if (!raw.trim() || currentLang !== 'en') return raw;
+    const hit = nameTranslations.get(nameTranslationKey('plate', raw));
+    if (hit) return hit.en_name;
+    return raw
+        .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
+        .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))
+        .replace(/[\u0621-\u064A\u0671-\u06D3]/g, ch => PLATE_LETTERS_EN[ch] || ch);
+}
+
+/** اسم عنصر في تقارير الانتهاء حسب فئته (لوحة / شخص) */
+function expiryNameLabel(category, name) {
+    const cat = String(category || '').trim();
+    if (cat === 'شاحنة' || cat === 'مركبة') return plateLabel(name);
+    if (cat === 'سائق' || cat === 'موظف') return localizedName('person', name);
+    return name;
 }
 
 async function loadNameTranslations() {
@@ -8233,21 +8273,60 @@ async function loadNameTranslations() {
     }
 }
 
-async function saveNameTranslation(kind, arValue, enValue) {
+async function saveNameTranslation(kind, arValue, enValue, editId) {
     const ar = String(arValue || '').trim();
     const en = String(enValue || '').trim();
     if (!NAME_KINDS.includes(kind) || !ar || !en) {
         throw new Error(t('nt.needBoth'));
     }
-    const before = nameTranslations.get(nameTranslationKey(kind, ar));
-    const payload = withCompany({ kind, ar_name: ar, en_name: en, updated_at: new Date().toISOString() });
-    const { error } = await client.from('name_translations').upsert([payload], { onConflict: 'company_id,kind,ar_name' });
+    const editing = editId != null ? nameTranslationsList.find(r => Number(r.id) === Number(editId)) : null;
+    const before = editing || nameTranslations.get(nameTranslationKey(kind, ar));
+    let error;
+    if (editing) {
+        ({ error } = await client.from('name_translations')
+            .update({ kind, ar_name: ar, en_name: en, updated_at: new Date().toISOString() })
+            .eq('id', editing.id));
+    } else {
+        const payload = withCompany({ kind, ar_name: ar, en_name: en, updated_at: new Date().toISOString() });
+        ({ error } = await client.from('name_translations').upsert([payload], { onConflict: 'company_id,kind,ar_name' }));
+    }
     if (error) {
-        if (!nameTranslationsAvailable || /name_translations|schema cache|relation/i.test(error.message || '')) throw new Error(t('nt.missingTable'));
-        throw new Error(error.message || t('nt.saveFailed'));
+        const msg = String(error.message || '');
+        if (/name_translations_kind_check|violates check constraint/i.test(msg)) throw new Error(t('nt.needSqlUpdate'));
+        if (error.code === '23505' || /duplicate key/i.test(msg)) throw new Error(t('nt.dup'));
+        if (!nameTranslationsAvailable || /name_translations|schema cache|relation/i.test(msg)) throw new Error(t('nt.missingTable'));
+        throw new Error(msg || t('nt.saveFailed'));
     }
     logActivity('nametrans.save', 'ترجمة', ar, formatActivityDiffLine(t('nt.kind.' + kind), before?.en_name || '—', en));
     await loadNameTranslations();
+}
+
+/** مزامنة الاسم الإنجليزي من نموذج موظف/مركبة مع الجدول المركزي (فارغ = حذف الترجمة) */
+async function syncEntityTranslation(kind, arValue, enValue) {
+    const ar = String(arValue || '').trim();
+    const en = String(enValue || '').trim();
+    if (!ar) return;
+    try {
+        const existing = nameTranslations.get(nameTranslationKey(kind, ar));
+        if (!en) {
+            if (existing) {
+                const { error } = await client.from('name_translations').delete().eq('id', existing.id);
+                if (error) throw error;
+                logActivity('nametrans.delete', 'ترجمة', ar, formatActivityDiffLine(t('nt.kind.' + kind), existing.en_name, '—'));
+                await loadNameTranslations();
+            }
+            return;
+        }
+        if (existing && existing.en_name === en) return;
+        await saveNameTranslation(kind, ar, en);
+    } catch (err) {
+        alert(t('nt.syncFailed') + ' ' + (err?.message || ''));
+    }
+}
+
+function entityEnglishName(kind, arValue) {
+    const hit = nameTranslations.get(nameTranslationKey(kind, arValue));
+    return hit ? hit.en_name : '';
 }
 
 async function deleteNameTranslation(id) {
@@ -8257,6 +8336,7 @@ async function deleteNameTranslation(id) {
     const { error } = await client.from('name_translations').delete().eq('id', row.id);
     if (error) { alert(error.message || t('nt.saveFailed')); return; }
     logActivity('nametrans.delete', 'ترجمة', row.ar_name, formatActivityDiffLine(t('nt.kind.' + row.kind), row.en_name, '—'));
+    if (Number(editingNameTransId) === Number(row.id)) cancelNameTranslationEdit();
     await loadNameTranslations();
     renderNameTranslationsCard();
     loadAllData({ force: true });
@@ -8267,10 +8347,10 @@ async function saveNameTranslationFromForm() {
         await saveNameTranslation(
             document.getElementById('nameTransKind')?.value || '',
             document.getElementById('nameTransAr')?.value,
-            document.getElementById('nameTransEn')?.value
+            document.getElementById('nameTransEn')?.value,
+            editingNameTransId
         );
-        document.getElementById('nameTransAr').value = '';
-        document.getElementById('nameTransEn').value = '';
+        cancelNameTranslationEdit();
         renderNameTranslationsCard();
         loadAllData({ force: true });
     } catch (err) {
@@ -8294,6 +8374,7 @@ function collectUntranslatedNames() {
         add('city', tr.from_city);
         add('city', tr.to_city);
     });
+    Object.values(allDriversById || {}).forEach(dr => add('person', dr?.name));
     return [...found.values()].sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name, 'ar')).slice(0, 60);
 }
 
@@ -8321,10 +8402,40 @@ function renderNameTranslationsCard() {
             <td class="p-2.5 text-slate-600">${escapeHtml(t('nt.kind.' + row.kind))}</td>
             <td class="p-2.5 font-bold text-slate-900">${escapeHtml(row.ar_name)}</td>
             <td class="p-2.5 font-mono text-slate-800" dir="ltr">${escapeHtml(row.en_name)}</td>
-            <td class="p-2.5 text-left">${canEdit ? `<button type="button" onclick="deleteNameTranslation(${Number(row.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="${escapeHtml(t('nt.delete'))}"><i class="fa-solid fa-trash-can"></i></button>` : ''}</td>
+            <td class="p-2.5 text-left whitespace-nowrap">${canEdit ? `<button type="button" onclick="editNameTranslation(${Number(row.id)})" class="text-amber-600 hover:text-amber-800 font-bold ml-3" title="${escapeHtml(t('nt.edit'))}"><i class="fa-solid fa-pen-to-square"></i></button><button type="button" onclick="deleteNameTranslation(${Number(row.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="${escapeHtml(t('nt.delete'))}"><i class="fa-solid fa-trash-can"></i></button>` : ''}</td>
         </tr>`).join('');
     const form = document.getElementById('nameTransForm');
     if (form) form.classList.toggle('hidden', !canEdit);
+    setNameTransEditUi(editingNameTransId != null);
+}
+
+function setNameTransEditUi(editing) {
+    const btn = document.getElementById('nameTransSaveBtn');
+    if (btn) btn.textContent = editing ? t('nt.saveEdit') : t('nt.add');
+    document.getElementById('nameTransCancelBtn')?.classList.toggle('hidden', !editing);
+    document.getElementById('nameTransForm')?.classList.toggle('ring-2', !!editing);
+    document.getElementById('nameTransForm')?.classList.toggle('ring-amber-300', !!editing);
+}
+
+function editNameTranslation(id) {
+    const row = nameTranslationsList.find(r => Number(r.id) === Number(id));
+    if (!row) return;
+    editingNameTransId = row.id;
+    document.getElementById('nameTransKind').value = row.kind;
+    document.getElementById('nameTransAr').value = row.ar_name;
+    document.getElementById('nameTransEn').value = row.en_name;
+    setNameTransEditUi(true);
+    document.getElementById('nameTransForm')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('nameTransEn')?.focus();
+}
+
+function cancelNameTranslationEdit() {
+    editingNameTransId = null;
+    const ar = document.getElementById('nameTransAr');
+    const en = document.getElementById('nameTransEn');
+    if (ar) ar.value = '';
+    if (en) en.value = '';
+    setNameTransEditUi(false);
 }
 
 function fillNameTranslationFromMissing(kind, name) {
@@ -8893,7 +9004,7 @@ async function openCommissionAndRevenueReport() {
         for (let [truckPlate, stats] of Object.entries(truckStats)) {
             truckTableHTML += `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 font-mono text-xs">
-                    <td class="p-3 font-bold text-slate-800 font-sans">${truckPlate}</td>
+                    <td class="p-3 font-bold text-slate-800 font-sans">${escapeHtml(plateLabel(truckPlate))}</td>
                     <td class="p-3 text-slate-600 font-sans">${stats.model}</td>
                     <td class="p-3 text-center font-bold text-blue-600">${stats.tripsCount}</td>
                     <td class="p-3 font-bold text-emerald-600">${formatSAR(stats.totalRevenue)}</td>
@@ -9590,7 +9701,7 @@ async function generateReceivablesReport() {
                 <td class="p-3.5 text-slate-600 font-mono align-top">${openingRow ? escapeHtml(startDate) : collectDate}</td>
                 <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(localizedName('client', tr.client_name) || '---')}</td>
                 <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripFromToText(tr))}</td>
-                <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
+                <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(plateLabel(tr.truck_plate || tr.truck || '---'))}</td>
                 <td class="p-3.5 text-slate-900 align-top">${escapeHtml(localizedName('person', tr.driver_name) || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
                 <td class="p-3.5 text-slate-700 align-top">${method}</td>
@@ -9846,7 +9957,7 @@ async function generateClientStatement() {
             const money = tripMoneyParts(trip);
             const tripDate = tripCompletionDate(trip) || dateOnly(trip.departure_date) || '';
             const seq = tripNoValue(trip);
-            const party = `<div class="font-mono">${escapeHtml(trip.truck_plate || trip.truck || '—')}</div><div class="text-[10px] text-slate-500">${escapeHtml(trip.driver_name || '—')}</div>`;
+            const party = `<div class="font-mono">${escapeHtml(plateLabel(trip.truck_plate || trip.truck || '—'))}</div><div class="text-[10px] text-slate-500">${escapeHtml(localizedName('person', trip.driver_name) || '—')}</div>`;
             entries.push({
                 date: tripDate, order: 0, seq, kind: 'trip', ref: trip.trip_no || trip.id,
                 party, details: escapeHtml(tripFromToText(trip)), debit: money.total, credit: 0
@@ -9938,7 +10049,7 @@ async function generateDriverStatement() {
                     date: tripCompletionDate(trip) || dateOnly(trip.departure_date) || '', order: 1, seq,
                     kind: 'commission', ref: trip.trip_no || trip.id,
                     party: escapeHtml(localizedName('client', trip.client_name) || '—'),
-                    details: `${escapeHtml(tripFromToText(trip))} <span class="font-mono text-slate-400">· ${escapeHtml(trip.truck_plate || trip.truck || '—')}</span>`,
+                    details: `${escapeHtml(tripFromToText(trip))} <span class="font-mono text-slate-400">· ${escapeHtml(plateLabel(trip.truck_plate || trip.truck || '—'))}</span>`,
                     debit: amount, credit: 0
                 });
             }
@@ -10365,7 +10476,7 @@ function renderTruckProfitExtras(analysis, selectedTruck) {
             .sort((a, b) => b.total - a.total);
         setHtml('profitMatrixBody', plates.map(({ plate, pm, total }) => `
             <tr class="hover:bg-slate-50">
-                <td class="p-2 font-black font-mono text-slate-900">${escapeHtml(plate)}</td>
+                <td class="p-2 font-black font-mono text-slate-900">${escapeHtml(plateLabel(plate))}</td>
                 ${months.map((m) => {
                     const v = pm.get(m);
                     return v == null ? '<td class="p-2 text-slate-300">—</td>' : `<td class="p-2 font-mono ${tone(v)}" dir="ltr">${Math.round(v).toLocaleString('en-US')}</td>`;
@@ -10431,7 +10542,7 @@ function renderTruckProfitExtras(analysis, selectedTruck) {
         const utilTone = x.util == null ? 'text-slate-400' : (x.util >= 70 ? 'text-emerald-700' : (x.util >= 40 ? 'text-amber-700' : 'text-rose-700'));
         return `
         <tr class="hover:bg-slate-50">
-            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(x.plate)}</td>
+            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(plateLabel(x.plate))}</td>
             <td class="p-2.5 font-mono">${x.totalDays.toLocaleString('en-US')}</td>
             <td class="p-2.5 font-mono">${x.busyDays.toLocaleString('en-US')}</td>
             <td class="p-2.5 font-mono">${x.idleDays.toLocaleString('en-US')}</td>
@@ -10445,7 +10556,7 @@ function renderTruckProfitExtras(analysis, selectedTruck) {
         const delayRate = d.measured ? (d.delayedTrips / d.measured) * 100 : null;
         return `
         <tr class="hover:bg-slate-50">
-            <td class="p-2.5 font-bold text-slate-900">${escapeHtml(d.driver)}</td>
+            <td class="p-2.5 font-bold text-slate-900">${escapeHtml(localizedName('person', d.driver))}</td>
             <td class="p-2.5 font-mono">${d.measured.toLocaleString('en-US')}</td>
             <td class="p-2.5 font-mono">${(d.actualDays / d.measured).toFixed(1)}</td>
             <td class="p-2.5 font-mono">${(d.expectedDays / d.measured).toFixed(1)}</td>
@@ -10500,7 +10611,7 @@ function renderFuelEfficiencyRanking(truckList, filtered) {
     truckBody.innerHTML = trucks.length ? trucks.map((x, i) => `
         <tr class="hover:bg-slate-50">
             <td class="p-2.5">${rankBadge(i, trucks.length)}</td>
-            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(x.name)}</td>
+            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(plateLabel(x.name))}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(x.km, 0))}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(x.litersForKm, 1))}</td>
             <td class="p-2.5 font-mono font-black">${escapeHtml(formatFuelNumber(x.per100, 1))}</td>
@@ -10623,7 +10734,7 @@ function renderMaintenanceInsights(rows) {
     ['maintCostPerKm', 'maintPrintCpk'].forEach((id) => { const el = document.getElementById(id); if (el) el.textContent = cpkText; });
     cpkBody.innerHTML = list.length ? list.map((x) => `
         <tr class="hover:bg-slate-50">
-            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(x.plate)}</td>
+            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(plateLabel(x.plate))}</td>
             <td class="p-2.5 font-mono">${x.count.toLocaleString('en-US')}</td>
             <td class="p-2.5 font-mono font-bold text-amber-700">${formatSAR(roundMoney(x.cost))}</td>
             <td class="p-2.5 font-mono">${x.km > 0 ? escapeHtml(formatFuelNumber(x.km, 0)) : '—'}</td>
@@ -10714,7 +10825,7 @@ function renderMaintenanceInsights(rows) {
     };
     pmBody.innerHTML = pmRows.length ? pmRows.map(r => `
         <tr class="hover:bg-slate-50 align-top">
-            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(r.plate)}</td>
+            <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(plateLabel(r.plate))}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(r.currentOdo, 0))}<div class="text-[10px] text-slate-400">${escapeHtml(r.odoDate)}</div></td>
             ${r.cells.map(c => `<td class="p-2.5">${cellHtml(c)}</td>`).join('')}
         </tr>`).join('') : `<tr><td colspan="${2 + intervals.length}" class="text-center p-5 text-slate-400">${escapeHtml(t('maint.pmNoOdo'))}</td></tr>`;
@@ -10880,7 +10991,7 @@ async function generateTruckProfitReport() {
             const marginLabel = row.margin == null ? '—' : `${row.margin.toFixed(1)}%`;
             return `
             <tr class="hover:bg-slate-50 transition">
-                <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(row.plate)}</td>
+                <td class="p-2.5 font-black font-mono text-slate-900">${escapeHtml(plateLabel(row.plate))}</td>
                 <td class="p-2.5 font-mono text-slate-700">${row.trips.toLocaleString('en-US')}</td>
                 <td class="p-2.5 font-mono font-bold text-slate-900">${formatSAR(row.revenue)}</td>
                 <td class="p-2.5 font-mono text-slate-700">${formatSAR(row.fuel)}</td>
@@ -11937,7 +12048,7 @@ async function initReportFilters() {
                                 <div class="text-[11px] text-slate-500">${tripRouteText(tr)}</div>
                             </td>
                             <td class="p-3.5">
-                                <div class="font-bold text-slate-800">${t('ui.plateLabel')}: ${escapeHtml(tr.truck_plate)}</div>
+                                <div class="font-bold text-slate-800">${t('ui.plateLabel')}: ${escapeHtml(plateLabel(tr.truck_plate))}</div>
                                 <div class="text-[11px] text-slate-600">${t('ui.driverLabel')}: ${escapeHtml(localizedName('person', tr.driver_name))}</div>
                             </td>
                             <td class="p-3.5 font-mono font-bold text-slate-900">${formatSAR(tr.total_amount)}</td>
@@ -12903,7 +13014,7 @@ function maintenanceTypeLabel(type) {
 
 function maintenanceVehicleLabel(kind, plate) {
     const kindLabel = String(kind || '').trim() === 'أخرى' ? t('maint.otherVehicle') : tv('شاحنة');
-    return `${kindLabel} · ${plate || '—'}`;
+    return `${kindLabel} · ${plateLabel(plate) || '—'}`;
 }
 
 function fillMaintenanceTypeSelect(select, includeAll) {
@@ -13549,7 +13660,7 @@ function fillFuelTruckSelect(selectId, includeAll) {
     const options = fuelTrucks.map(row => {
         const plate = String(row.plate || '').trim();
         const model = String(row.model || '').trim();
-        const label = model ? `${plate} · ${model}` : plate;
+        const label = model ? `${plateLabel(plate)} · ${model}` : plateLabel(plate);
         return `<option value="${escapeHtml(plate)}">${escapeHtml(label)}</option>`;
     }).join('');
     const first = includeAll
@@ -13648,7 +13759,7 @@ function renderFuelManage() {
         return `
         <tr class="${rowTone} transition">
             <td class="p-3 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
-            <td class="p-3 font-black font-mono text-slate-900">${escapeHtml(row.truck_plate || '—')}</td>
+            <td class="p-3 font-black font-mono text-slate-900">${escapeHtml(plateLabel(row.truck_plate || '—'))}</td>
             <td class="p-3">${odoCell}</td>
             <td class="p-3 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
             <td class="p-3 font-mono">${formatSAR(row.amount)}</td>
@@ -13846,7 +13957,7 @@ function renderFuelReportView() {
         return `
         <tr class="${row._baseline ? 'bg-slate-50' : rowTone} transition" title="${escapeHtml(issueTip)}">
             <td class="p-2.5 font-mono">${escapeHtml(dateInputValue(row.fill_date) || '—')}</td>
-            <td class="p-2.5 font-black font-mono">${escapeHtml(row.truck_plate || '—')}</td>
+            <td class="p-2.5 font-black font-mono">${escapeHtml(plateLabel(row.truck_plate || '—'))}</td>
             <td class="p-2.5 font-mono ${issueTone}">${escapeHtml(formatFuelNumber(row.odometer, 1))}${issue ? ' ⚠' : ''}${row._baseline ? ` <span class="text-[10px] text-slate-500">${escapeHtml(currentLang === 'en' ? 'base' : 'تأسيس')}</span>` : ''}</td>
             <td class="p-2.5 font-mono">${escapeHtml(distLabel)}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(row.liters, 2))}</td>
@@ -14561,7 +14672,7 @@ async function fillMaintenanceVehicleOptions(keepPlate) {
     select.innerHTML = `<option value="">${escapeHtml(t('maint.chooseVehicle'))}</option>` + rows.map(row => {
         const plate = String(row.plate || '').trim();
         const model = String(row.model || '').trim();
-        return `<option value="${escapeHtml(plate)}">${escapeHtml(model ? `${plate} · ${model}` : plate)}</option>`;
+        return `<option value="${escapeHtml(plate)}">${escapeHtml(model ? `${plateLabel(plate)} · ${model}` : plateLabel(plate))}</option>`;
     }).join('');
     if (current && [...select.options].some(option => option.value === current)) select.value = current;
 }
@@ -14658,7 +14769,7 @@ function renderMaintenanceManage() {
             <tr class="hover:bg-slate-50 align-top">
                 <td class="maint-col-tight p-3 font-mono text-slate-500">${escapeHtml(maintenanceEnteredAt(row))}</td>
                 <td class="maint-col-tight p-3 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
-                <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(row.vehicle_plate || '—')}</td>
+                <td class="maint-col-tight p-3 font-bold text-slate-800">${escapeHtml(plateLabel(row.vehicle_plate || '—'))}</td>
                 <td class="maint-col-tight p-3">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
                 <td class="p-3 text-center text-slate-600 maint-details-cell">${maintDetailsHtml(row)}</td>
                 <td class="maint-col-tight p-3 font-bold text-amber-700">${formatSAR(row.cost)}</td>
@@ -14705,7 +14816,7 @@ function renderMaintenanceReportView() {
             <tr class="hover:bg-slate-50 align-top">
                 <td class="maint-print-hide p-2.5 font-mono text-slate-500">${escapeHtml(maintenanceEnteredAt(row))}</td>
                 <td class="p-2.5 font-mono font-bold text-slate-900">${escapeHtml(row.service_date || '—')}</td>
-                <td class="p-2.5 font-bold text-slate-800">${escapeHtml(row.vehicle_plate || '—')}</td>
+                <td class="p-2.5 font-bold text-slate-800">${escapeHtml(plateLabel(row.vehicle_plate || '—'))}</td>
                 <td class="p-2.5">${escapeHtml(maintenanceTypeLabel(row.maintenance_type))}</td>
                 <td class="p-2.5 text-center text-slate-600 maint-details-cell">${maintDetailsHtml(row)}</td>
                 <td class="p-2.5 font-bold text-amber-700">${formatSAR(row.cost)}</td>
@@ -15341,7 +15452,7 @@ function renderExpiryProfileCard(profile) {
         <article class="expiry-profile-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-start justify-between gap-2" style="background:#f8fafc">
                 <div class="min-w-0">
-                    <h4 class="text-sm font-black text-slate-900">${escapeHtml(profile.title)}</h4>
+                    <h4 class="text-sm font-black text-slate-900">${escapeHtml(expiryNameLabel(profile.category, profile.title))}</h4>
                     ${profile.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(profile.subtitle)}</p>` : ''}
                     ${metaHtml ? `<div class="mt-1.5 flex flex-wrap items-center gap-y-1">${metaHtml}</div>` : ''}
                 </div>
@@ -15435,7 +15546,7 @@ function renderExpiryAlerts(targetId, items, emptyText) {
         const style = expiryAlertStyle(item.days);
         return `<button type="button" onclick="switchTab('${item.tab}')" class="w-full text-right border ${style.tone} rounded-xl px-3 py-2 flex items-center gap-2">
             <span class="flex-1 min-w-0">
-                <span class="font-bold">${escapeHtml(tv(item.category))} — ${escapeHtml(item.name)}</span>
+                <span class="font-bold">${escapeHtml(tv(item.category))} — ${escapeHtml(expiryNameLabel(item.category, item.name))}</span>
                 <span class="block text-[11px] mt-0.5">${escapeHtml(tv(item.label))} (${escapeHtml(item.date)}) — ${style.when}</span>
             </span>
             <span class="${style.badge} px-2 py-0.5 rounded-full text-[10px] font-black shrink-0">${style.tag}</span>
@@ -16173,6 +16284,16 @@ const I18N = {
         'nt.kind.client': 'عميل',
         'nt.kind.person': 'سائق / موظف',
         'nt.kind.city': 'مدينة',
+        'nt.kind.plate': 'لوحة مركبة',
+        'nt.edit': 'تعديل',
+        'nt.saveEdit': 'حفظ التعديل',
+        'nt.cancel': 'إلغاء',
+        'nt.dup': 'توجد ترجمة بنفس الاسم والنوع مسبقاً',
+        'nt.needSqlUpdate': 'نفّذ ملف fleetop-name-translations.sql مرة أخرى في Supabase SQL Editor لتفعيل ترجمة اللوحات.',
+        'nt.syncFailed': 'تم الحفظ لكن تعذّر حفظ الترجمة الإنجليزية:',
+        'f.nameEn': 'الاسم بالإنجليزية (اختياري)',
+        'f.plateEn': 'اللوحة بالإنجليزية (اختياري)',
+        'f.plateEnHint': 'إن تُركت فارغة تُحوَّل حروف اللوحة تلقائياً عند اختيار الإنجليزية.',
         'nt.ar': 'الاسم بالعربية',
         'nt.en': 'الاسم بالإنجليزية',
         'nt.add': 'إضافة ترجمة',
@@ -17444,6 +17565,16 @@ const I18N = {
         'nt.kind.client': 'Client',
         'nt.kind.person': 'Driver / employee',
         'nt.kind.city': 'City',
+        'nt.kind.plate': 'Vehicle plate',
+        'nt.edit': 'Edit',
+        'nt.saveEdit': 'Save changes',
+        'nt.cancel': 'Cancel',
+        'nt.dup': 'A translation with the same name and type already exists',
+        'nt.needSqlUpdate': 'Run fleetop-name-translations.sql again in the Supabase SQL Editor to enable plate translations.',
+        'nt.syncFailed': 'Saved, but the English translation could not be saved:',
+        'f.nameEn': 'Name in English (optional)',
+        'f.plateEn': 'Plate in English (optional)',
+        'f.plateEnHint': 'If left empty, Arabic plate letters are converted automatically in English mode.',
         'nt.ar': 'Arabic name',
         'nt.en': 'English name',
         'nt.add': 'Add translation',
@@ -19790,9 +19921,9 @@ async function renderAnalyticsDashboard() {
             : '';
         return `${tripsLabel}${moneyBits}`;
     };
-    if (bestTruckEl) bestTruckEl.textContent = bestTruck ? bestTruck.plate : '—';
+    if (bestTruckEl) bestTruckEl.textContent = bestTruck ? plateLabel(bestTruck.plate) : '—';
     if (bestTruckMeta) bestTruckMeta.innerHTML = profitTruckMeta(bestTruck);
-    if (weakTruckEl) weakTruckEl.textContent = weakTruck ? weakTruck.plate : '—';
+    if (weakTruckEl) weakTruckEl.textContent = weakTruck ? plateLabel(weakTruck.plate) : '—';
     if (weakTruckMeta) weakTruckMeta.innerHTML = profitTruckMeta(weakTruck);
 
     destroyAnalyticsCharts();
@@ -19867,8 +19998,8 @@ async function renderAnalyticsDashboard() {
                 <div>${escapeHtml(dt.trip_no || '---')}</div>
                 <div class="text-[10px] font-bold text-slate-500 mt-0.5">${escapeHtml(dateOnly(dt.departure_date) || '---')}</div>
             </td>
-            <td class="p-2 ops-plate font-bold text-slate-800 font-mono">${escapeHtml(dt.truck_plate || '---')}</td>
-            <td class="p-2 ops-client font-bold text-slate-900">${escapeHtml(dt.client_name || '---')}</td>
+            <td class="p-2 ops-plate font-bold text-slate-800 font-mono">${escapeHtml(plateLabel(dt.truck_plate || '---'))}</td>
+            <td class="p-2 ops-client font-bold text-slate-900">${escapeHtml(localizedName('client', dt.client_name) || '---')}</td>
             <td class="p-2 ops-route text-slate-600">${escapeHtml(tripRouteText(dt))}</td>
             <td class="p-2 ops-comm font-bold text-emerald-700 font-mono">${formatSAR(commissionAmount(dt))}</td>
         `;
@@ -19934,7 +20065,7 @@ async function renderAnalyticsDashboard() {
                 } else {
                     driverTable.innerHTML = plates.map((plate, index) => renderOpsGroupRows(`
                         <div class="text-[10px] font-bold text-slate-400">${t('ui.truck')}</div>
-                        <div class="font-black text-slate-900 font-mono text-sm mt-0.5">${escapeHtml(plate)}</div>
+                        <div class="font-black text-slate-900 font-mono text-sm mt-0.5">${escapeHtml(plateLabel(plate))}</div>
                     `, groups.get(plate), index)).join('');
                 }
             } else {
@@ -20047,11 +20178,11 @@ async function renderAnalyticsDashboard() {
 
             if (truckSelect) {
                 truckSelect.innerHTML = `<option value="">${t('ui.chooseTruck')}...</option>` +
-                    readyTrucks.map(truck => `<option value="${escapeHtml(truck.plate)}">${t('ui.plateLabel')}: ${escapeHtml(truck.plate)} (${escapeHtml(truck.model || '—')})</option>`).join('');
+                    readyTrucks.map(truck => `<option value="${escapeHtml(truck.plate)}">${t('ui.plateLabel')}: ${escapeHtml(plateLabel(truck.plate))} (${escapeHtml(truck.model || '—')})</option>`).join('');
             }
             if (driverSelect) {
                 driverSelect.innerHTML = `<option value="">${t('ui.chooseDriver')}...</option>` +
-                    availableDrivers.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}${d.phone ? ` (${escapeHtml(d.phone)})` : ''}</option>`).join('');
+                    availableDrivers.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(localizedName('person', d.name))}${d.phone ? ` (${escapeHtml(d.phone)})` : ''}</option>`).join('');
             }
         }
         /** سنة ترقيم الرحلة: الأكبر بين سنة تاريخ المغادرة والسنة المالية المختارة (وإلا السنة الحالية) */
@@ -20223,7 +20354,7 @@ async function openBayanModal(tripNo) {
     document.getElementById('bayanDocId').value = existing?.id || '';
     const meta = document.getElementById('bayanTripMeta');
     if (meta) {
-        meta.textContent = `${t('th.tripNo')}: ${trip.trip_no || '—'} · ${trip.client_name || '—'} · ${tripRouteText(trip)} · ${trip.truck_plate || trip.truck || '—'} / ${trip.driver_name || '—'}`;
+        meta.textContent = `${t('th.tripNo')}: ${trip.trip_no || '—'} · ${localizedName('client', trip.client_name) || '—'} · ${tripRouteText(trip)} · ${plateLabel(trip.truck_plate || trip.truck || '—')} / ${localizedName('person', trip.driver_name) || '—'}`;
     }
     document.getElementById('bayanSenderName').value = existing?.sender_name || trip.client_name || '';
     document.getElementById('bayanSenderId').value = existing?.sender_id || '';
@@ -20612,7 +20743,7 @@ function renderTripsTable(trips) {
                         <div class="text-[10px] text-slate-400 font-mono">${tr.departure_date} (${tv(tr.trip_type || 'ذهاب')})</div>
                     </td>
                     <td class="p-3.5 align-middle">
-                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${escapeHtml(tr.truck_plate)}</div>
+                        <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${escapeHtml(plateLabel(tr.truck_plate))}</div>
                         <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${escapeHtml(localizedName('person', tr.driver_name))}</div>
                     </td>
                     <td class="p-3.5 font-mono text-[11px]">
@@ -21185,7 +21316,7 @@ async function fillEditFleetOptions(trip) {
     truckSelect.innerHTML = plates.map(plate => {
         const row = (trucks || []).find(t => String(t.plate || '').trim() === plate);
         const status = row?.status ? ` (${tv(row.status)})` : '';
-        return `<option value="${escapeHtml(plate)}">${escapeHtml(plate + status)}</option>`;
+        return `<option value="${escapeHtml(plate)}">${escapeHtml(plateLabel(plate) + status)}</option>`;
     }).join('');
     driverSelect.innerHTML = names.map(name => {
         const row = (drivers || []).find(d => String(d.name || '').trim() === name);
@@ -21549,7 +21680,7 @@ async function saveEditTrip(e) {
 
                         return `
                             <tr class="hover:bg-slate-50 transition ${rowDim}">
-                                <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(tr.plate)}</td>
+                                <td class="p-3.5 font-black text-slate-900 font-mono">${escapeHtml(plateLabel(tr.plate))}</td>
                                 <td class="p-3.5 font-bold text-amber-700">${escapeHtml(kindLabel)}</td>
                                 <td class="p-3.5 text-slate-600">${escapeHtml(tr.model || '---')}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus))}</span></td>
@@ -21699,6 +21830,7 @@ async function cancelTrip(tripNo) {
                 savedOk = true;
             }
             if (!savedOk) return;
+            await syncEntityTranslation('plate', plate, document.getElementById('truckPlateEn')?.value);
             logActivity(
                 'truck.save',
                 'مركبة',
@@ -21733,6 +21865,8 @@ async function cancelTrip(tripNo) {
     if (modelInput) {
         modelInput.value = tr.model || '';
     }
+    const plateEnInput = document.getElementById('truckPlateEn');
+    if (plateEnInput) plateEnInput.value = entityEnglishName('plate', tr.plate);
     if (statusInput) {
         const normalized = normalizeVehicleStatusValue(tr.status, isCargoTruck(tr));
         if ([...statusInput.options].some(o => o.value === normalized)) statusInput.value = normalized;
@@ -21865,7 +21999,7 @@ async function cancelTrip(tripNo) {
 
                         return `
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="p-3.5 font-black text-slate-900">${escapeHtml(dr.name)}</td>
+                                <td class="p-3.5 font-black text-slate-900">${escapeHtml(localizedName('person', dr.name))}</td>
                                 <td class="p-3.5 font-bold text-amber-700">${escapeHtml(tv(jobLabel))}</td>
                                 <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(dr.phone)}</td>
                                 <td class="p-3.5"><span class="${badgeColor} px-2.5 py-1 rounded-full text-[10px] font-bold">${escapeHtml(tv(shownStatus))}</span></td>
@@ -21986,6 +22120,7 @@ async function cancelTrip(tripNo) {
                 savedOk = true;
             }
             if (!savedOk) return;
+            await syncEntityTranslation('person', name, document.getElementById('driverNameEn')?.value);
             logActivity(
                 'staff.save',
                 'موظف',
@@ -22006,6 +22141,8 @@ async function cancelTrip(tripNo) {
             if (!dr) return;
             document.getElementById('driverId').value = dr.id;
             document.getElementById('driverName').value = dr.name || '';
+            const nameEnInput = document.getElementById('driverNameEn');
+            if (nameEnInput) nameEnInput.value = entityEnglishName('person', dr.name);
             document.getElementById('driverPhone').value = dr.phone || '';
             document.getElementById('driverStatus').value = normalizeStaffStatusValue(dr.status);
             const job = String(dr.job_title || '').trim() || (isTripDriver(dr) ? 'سائق شاحنة' : '');
