@@ -820,6 +820,17 @@
         .report-back-btn { background: linear-gradient(135deg, #0f766e, #0e7490); color: #fff; border: 0; box-shadow: 0 2px 8px rgba(14,116,144,.28); }
         .report-back-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
         .report-back-btn:active { transform: translateY(0); }
+        .lang-dd { position: relative; }
+        .lang-dd-trigger { height: 36px; display: inline-flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 12px; border: 1px solid rgba(148,163,184,.45); background: rgba(248,250,252,.7); color: #475569; font-size: 12px; font-weight: 800; cursor: pointer; transition: background .15s, border-color .15s; }
+        .lang-dd-trigger:hover { background: #fff; border-color: rgba(196,163,90,.7); }
+        .lang-dd-trigger .lang-flag, .lang-dd-item .lang-flag { width: 24px; height: 17px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(0,0,0,.08); flex-shrink: 0; }
+        .lang-dd-trigger .fa-chevron-down { font-size: 9px; opacity: .6; transition: transform .15s; }
+        .lang-dd.open .lang-dd-trigger .fa-chevron-down { transform: rotate(180deg); }
+        .lang-dd-menu { display: none; position: absolute; top: calc(100% + 6px); inset-inline-end: 0; min-width: 150px; padding: 4px; border-radius: 12px; border: 1px solid rgba(148,163,184,.45); background: #fff; box-shadow: 0 10px 25px rgba(15,23,42,.12); z-index: 60; }
+        .lang-dd.open .lang-dd-menu { display: block; }
+        .lang-dd-item { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; color: #334155; background: transparent; border: 0; cursor: pointer; text-align: start; }
+        .lang-dd-item:hover { background: #f1f5f9; }
+        .lang-dd-item.active { background: rgba(196,163,90,.14); color: #8a6d2b; }
         .report-back-btn:not(.hidden) { display: inline-flex; }
         .hub-grid { display: grid; gap: 1.1rem; align-items: start; grid-template-columns: minmax(0, 1fr); }
         @media (min-width: 768px) { .hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1771,19 +1782,10 @@
                         <i class="fa-solid fa-file-contract text-base"></i> <span data-i18n="nav.subscriptions">اشتراكات الشركات</span>
                     </button>
                     <div id="systemMenu" class="hidden">
-                        <button type="button" onclick="toggleSystemMenu()" id="tabSystemGroupBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
+                        <button type="button" onclick="switchTab('systemHub')" id="tabSystemGroupBtn" data-nav="systemHub" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition">
                             <i class="fa-solid fa-gear text-base"></i>
                             <span class="flex-1 text-start" data-i18n="nav.settings">إعدادات النظام</span>
-                            <i id="systemMenuChevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
                         </button>
-                        <div id="systemSubMenu" class="hidden ms-4 mt-1 space-y-1 border-s-2 pe-3 pt-1" style="border-color:rgba(196,163,90,0.35)">
-                            <button onclick="switchTab('settings')" id="tabSettingsBtn" data-nav="settings" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-building-flag ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.companySettings">البيانات الأساسية للمنشأة</span>
-                            </button>
-                            <button onclick="switchTab('activityLog')" id="tabActivityLogBtn" data-nav="activityLog" class="w-full text-start text-xs py-1.5 px-2 rounded-lg transition flex items-center">
-                                <i class="fa-solid fa-clipboard-list ml-1.5" style="color:#c4a35a"></i> <span data-i18n="nav.activityLog">سجل النشاط</span>
-                            </button>
-                        </div>
                     </div>
                 </nav>
             </div>
@@ -1812,6 +1814,26 @@
                         <p id="pageSubtitle" class="hidden text-[11px] text-slate-500 truncate"></p>
                     </div>
                 </div>
+                <div id="fiscalYearWrap" class="hidden no-print items-center gap-1.5 shrink-0">
+                    <span id="fiscalYearLabel" class="text-[11px] font-bold text-slate-500 hidden sm:inline">السنة</span>
+                    <select id="fiscalYearSelect" onchange="onFiscalYearChange(this.value)" class="h-9 px-2 rounded-xl text-xs font-bold bg-slate-50 border border-slate-200 text-slate-800 outline-none focus:border-amber-500"></select>
+                    <span id="fiscalYearLockBadge" class="hidden text-[10px] font-black px-2 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200"></span>
+                </div>
+                <div id="langSwitch" class="lang-dd no-print shrink-0 hidden" role="group" aria-label="Language">
+                    <button type="button" id="langDdTrigger" class="lang-dd-trigger" onclick="toggleLangMenu(event)" aria-haspopup="listbox" aria-expanded="false">
+                        <img id="langDdFlag" class="lang-flag" src="https://flagcdn.com/w80/sa.png" alt="" onerror="this.style.display='none'">
+                        <span id="langDdLabel">العربية</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="lang-dd-menu" role="listbox">
+                        <button type="button" data-lang-btn="ar" data-flag="https://flagcdn.com/w80/sa.png" data-label="العربية" class="lang-dd-item" onclick="pickLang('ar')">
+                            <img class="lang-flag" src="https://flagcdn.com/w80/sa.png" alt="" onerror="this.style.display='none'"><span>العربية</span>
+                        </button>
+                        <button type="button" data-lang-btn="en" data-flag="https://flagcdn.com/w80/us.png" data-label="English" class="lang-dd-item" onclick="pickLang('en')">
+                            <img class="lang-flag" src="https://flagcdn.com/w80/us.png" alt="" onerror="this.style.display='none'"><span>English</span>
+                        </button>
+                    </div>
+                </div>
                 <button type="button" id="reportBackBtn" onclick="switchTab('reportsHub')" class="report-back-btn hidden no-print h-9 shrink-0 items-center gap-2 px-4 rounded-xl text-xs font-black transition">
                     <i class="fa-solid fa-arrow-left"></i> <span data-i18n="hub.back">التقارير</span>
                 </button>
@@ -1832,6 +1854,7 @@
             <div class="recv-kpi recv-kpi-uncollected finance-stat hidden">
                 <div class="recv-kpi-label" data-i18n="ui.uncollected">المبالغ غير المحصلة</div>
                 <div id="dashRemainingAmount" class="recv-kpi-value text-rose-600">0.00</div>
+                <div id="dashRemainingOpeningHint" class="hidden text-[10px] font-bold text-blue-700 mt-1"></div>
             </div>
             <div class="recv-kpi recv-kpi-trips">
                 <div class="recv-kpi-label" data-i18n="ui.completedTrips">عدد الرحلات المنجزة</div>
@@ -2142,7 +2165,6 @@
                 <i class="fa-solid fa-list-check text-amber-500 ml-2"></i> <span data-i18n="ui.tripLog">سجل الرحلات</span>
             </h3>
             <div class="flex items-center gap-2 shrink-0">
-                <div id="resetCounterContainerTrips" class="hidden"></div>
                 <button onclick="openAddTripModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus"></i> <span data-i18n="ui.addTrip">إضافة رحلة جديدة</span>
                 </button>
@@ -2494,6 +2516,10 @@
 
 <main id="reportsHubSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
     <div id="reportsHubGrid" class="hub-grid"></div>
+</main>
+
+<main id="systemHubSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
+    <div id="systemHubGrid" class="hub-grid"></div>
 </main>
 
 <main id="truckProfitSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto min-w-0">
@@ -3516,7 +3542,7 @@
             </div>
             <div class="flex flex-wrap justify-end gap-2 no-print">
                 <button type="button" onclick="openPayoutModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="ui.payCommission">سداد عمولة</span>
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="ui.payCommission">صرف عمولة</span>
                 </button>
                 <button type="button" onclick="printCurrentReport()" class="font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5" style="background:#0b2a4a;color:#c4a35a">
                     <i class="fa-solid fa-print"></i> <span data-i18n="ui.printReport">طباعة التقرير</span>
@@ -3528,6 +3554,10 @@
         </div>
 
         <div class="print-summary kpi-strip">
+            <div id="commOpeningCard" class="recv-kpi recv-kpi-trips hidden">
+                <div class="recv-kpi-label" data-i18n="fy.opening">رصيد افتتاحي</div>
+                <div id="commOpeningDisplay" class="recv-kpi-value">0.00</div>
+            </div>
             <div class="recv-kpi recv-kpi-comm">
                 <div class="recv-kpi-label" data-i18n="ui.totalComms">إجمالي العمولات</div>
                 <div id="commTotalAmountDisplay" class="recv-kpi-value">0.00</div>
@@ -3552,6 +3582,7 @@
                 <table>
                     <thead><tr><th data-i18n="ui.item">البند</th><th data-i18n="ui.value">القيمة</th></tr></thead>
                     <tbody>
+                        <tr id="commPrintOpeningRow" class="hidden"><td data-i18n="fy.opening">رصيد افتتاحي</td><td id="commPrintOpening">0.00</td></tr>
                         <tr><td data-i18n="ui.totalComms">إجمالي العمولات</td><td id="commPrintEarned">0.00</td></tr>
                         <tr><td data-i18n="ui.paid">المدفوع</td><td id="commPrintPaid">0.00</td></tr>
                         <tr><td data-i18n="ui.remaining">المتبقي</td><td id="commPrintRemaining">0.00</td></tr>
@@ -3694,6 +3725,9 @@
                     </div>
                 </div>
             </main>
+            <main id="fiscalYearsSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
+                <div id="fiscalYearsRoot" class="space-y-3"></div>
+            </main>
             <main id="activityLogSection" class="hidden px-3 sm:px-6 md:px-8 pt-3 pb-6 md:pb-8 flex flex-col flex-grow overflow-y-auto space-y-3 min-w-0">
                 <div class="bg-white px-3 sm:px-4 py-3 rounded-2xl shadow-sm border border-slate-200 no-print min-w-0">
                     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-end gap-2 mb-3">
@@ -3781,16 +3815,16 @@
                 </div>
             </main>
             <main id="settingsSection" class="hidden p-3 sm:p-6 md:p-8 flex flex-col flex-grow overflow-y-auto min-w-0">
-                <div class="w-full grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-                    <div class="xl:col-span-6 min-w-0">
+                <div class="w-full max-w-4xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+                    <div id="settingsMainCol" class="xl:col-span-12 min-w-0">
                         <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
+                            <h3 data-sv="company" class="font-bold text-slate-900 text-sm mb-1 flex items-center border-b border-slate-100 pb-3">
                                 <i class="fa-solid fa-building text-amber-500 ml-2"></i>
                                 <span data-i18n="settings.title">البيانات الأساسية للمنشأة</span>
                             </h3>
-                            <p class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
+                            <p data-sv="company" class="text-[11px] text-slate-500 mt-3 mb-5" data-i18n="settings.hint">شعار فليتوب ثابت للمنصة. أدخل اسم شركتك وشعارها ليظهر في التقارير والسجلات.</p>
                             <form onsubmit="saveCompanySettings(event)" class="space-y-3.5">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div data-sv="company" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="settings.nameAr">اسم الشركة بالعربية</label>
                                         <input type="text" id="companyNameAr" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
@@ -3839,7 +3873,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                <div data-sv="company" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                                     <div>
                                         <p class="text-xs font-black text-slate-800" data-i18n="settings.commissionTitle">إعدادات العمولة</p>
                                         <p class="text-[11px] text-slate-500 mt-1" data-i18n="settings.commissionHint">اختر إن كانت عمولة السائق اختيارية أو إجبارية لهذه الشركة.</p>
@@ -3853,7 +3887,7 @@
                                         <span data-i18n="settings.commissionRequired">إجباري</span>
                                     </label>
                                 </div>
-                                <div id="bayanSettingsCard" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                <div id="bayanSettingsCard" data-sv="bayan" class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                                     <div>
                                         <p class="text-xs font-black text-slate-800" data-i18n="bayan.settingsTitle">إصدار وثائق النقل من منصة بيان</p>
                                         <p class="text-[11px] text-slate-500 mt-1" data-i18n="bayan.settingsHint">خدمة قيمة مضافة للشركات المشتركة ويفعّلها أدمن الشركة داخلياً.</p>
@@ -3894,7 +3928,57 @@
                         </div>
                     </div>
 
-                    <div class="xl:col-span-6 min-w-0 space-y-4">
+                    <div id="settingsNamesCol" class="hidden xl:col-span-12 min-w-0">
+                        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                            <div class="border-b border-slate-100 pb-3">
+                                <h3 class="font-bold text-slate-900 text-sm flex items-center">
+                                    <i class="fa-solid fa-language text-amber-500 ml-2"></i>
+                                    <span data-i18n="sys.t.names">ترجمة الأسماء</span>
+                                </h3>
+                                <p class="text-[11px] text-slate-500 mt-1" data-i18n="nt.hint">تُعرض الأسماء بالإنجليزية عند اختيار الإنجليزية. الاسم الذي لا توجد له ترجمة يبقى كما هو.</p>
+                            </div>
+                            <div id="nameTransForm" class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                                <div class="md:col-span-3">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="nt.kind">النوع</label>
+                                    <select id="nameTransKind" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                        <option value="client" data-i18n="nt.kind.client">عميل</option>
+                                        <option value="person" data-i18n="nt.kind.person">سائق / موظف</option>
+                                        <option value="city" data-i18n="nt.kind.city">مدينة</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-4">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="nt.ar">الاسم بالعربية</label>
+                                    <input type="text" id="nameTransAr" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="nt.en">الاسم بالإنجليزية</label>
+                                    <input type="text" id="nameTransEn" dir="ltr" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <button type="button" onclick="saveNameTranslationFromForm()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-xs" data-i18n="nt.add">إضافة ترجمة</button>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-700 mb-2" data-i18n="nt.missing">أسماء بدون ترجمة (اضغط لتعبئتها)</p>
+                                <div id="nameTransMissing" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <p class="text-[11px] font-bold text-slate-700 mb-2" data-i18n="nt.table">الترجمات المحفوظة</p>
+                                <table class="w-full text-right text-xs text-slate-700">
+                                    <thead class="bg-slate-100 text-slate-700">
+                                        <tr>
+                                            <th class="p-2.5 rounded-r-xl" data-i18n="nt.kind">النوع</th>
+                                            <th class="p-2.5" data-i18n="nt.ar">الاسم بالعربية</th>
+                                            <th class="p-2.5" data-i18n="nt.en">الاسم بالإنجليزية</th>
+                                            <th class="p-2.5 rounded-l-xl"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nameTransTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="settingsSubCol" class="hidden xl:col-span-12 min-w-0 space-y-4">
                         <div id="companySubscriptionCard" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                             <div class="mb-3">
                                 <h3 class="font-bold text-slate-900 text-sm flex items-center">
@@ -4325,7 +4409,8 @@
 
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.completionDate">تاريخ إنهاء الرحلة</label>
-                <input type="date" id="modalCompletionDate" required class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                <input type="date" id="modalCompletionDate" required oninput="updateCompleteDelayWarning()" onchange="updateCompleteDelayWarning()" class="w-full p-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs outline-none focus:border-amber-500 font-mono">
+                <div id="modalDelayWarning" class="hidden mt-2 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-5"></div>
             </div>
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1" data-i18n="th.collectDate">تاريخ التحصيل </label>
@@ -4555,7 +4640,7 @@
     <div id="payoutModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-200 text-slate-900">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 id="payoutModalTitle" class="font-bold text-sm flex items-center"><i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> سداد عمولة</h3>
+                <h3 id="payoutModalTitle" class="font-bold text-sm flex items-center"><i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> صرف عمولة</h3>
                 <button type="button" onclick="closePayoutModal()" class="text-slate-400 hover:text-slate-700 text-base font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-500 mb-4" data-i18n="f.payoutHint">يُخصم المبلغ من متبقي السائق ويظهر في سجل المدفوعات. إذا زاد عن المستحق يُحفظ الفرق رصيداً ويُخصم من العمولة التالية.</p>
@@ -5023,6 +5108,122 @@
             }
             return `${formatActivityDiffHeader()}\n${cleaned.join('\n')}`;
         }
+
+        // ---- activity log: full before/after helpers for every kind of record ----
+        function activityFieldText(value, kind) {
+            if (typeof kind === 'function') {
+                const out = kind(value);
+                return out == null ? '' : String(out).trim();
+            }
+            if (value == null || value === '') return '';
+            if (kind === 'money') return String(roundMoney(value));
+            if (kind === 'date') return dateInputValue(value) || '';
+            return String(value).trim();
+        }
+
+        function buildFieldsDiff(before, after, defs, extraLines) {
+            const en = currentLang === 'en';
+            const lines = [...(extraLines || [])];
+            defs.forEach(([key, labelAr, labelEn, kind]) => {
+                if (after && !(key in after)) return;
+                const b = activityFieldText(before?.[key], kind);
+                const a = activityFieldText(after?.[key], kind);
+                if (b === a) return;
+                lines.push(formatActivityDiffLine(en ? labelEn : labelAr, b || '—', a || '—'));
+            });
+            return buildActivityDiffLines(lines);
+        }
+
+        // mode: 'create' => (— => value), 'delete' => (value => —)
+        function buildFieldsSnapshot(row, defs, mode) {
+            const en = currentLang === 'en';
+            const lines = [];
+            defs.forEach(([key, labelAr, labelEn, kind]) => {
+                const v = activityFieldText(row?.[key], kind);
+                if (!v) return;
+                const label = en ? labelEn : labelAr;
+                lines.push(mode === 'delete' ? formatActivityDiffLine(label, v, '—') : formatActivityDiffLine(label, '—', v));
+            });
+            return buildActivityDiffLines(lines);
+        }
+
+        const ACTIVITY_DEFS = {
+            payout: [
+                ['driver_name', 'السائق', 'Driver'],
+                ['driver_commission', 'المبلغ', 'Amount', 'money'],
+                ['departure_date', 'تاريخ الصرف', 'Payout date', 'date'],
+                ['payment_method', 'ملاحظة', 'Note']
+            ],
+            truck: [
+                ['plate', 'اللوحة', 'Plate'],
+                ['model', 'الموديل', 'Model'],
+                ['status', 'الحالة', 'Status'],
+                ['vehicle_kind', 'نوع المركبة', 'Vehicle kind'],
+                ['istimara_expiry', 'انتهاء الاستمارة', 'Registration expiry', 'date'],
+                ['inspection_expiry', 'انتهاء الفحص الدوري', 'Inspection expiry', 'date'],
+                ['insurance_expiry', 'انتهاء التأمين', 'Insurance expiry', 'date'],
+                ['operation_card_no', 'رقم كرت التشغيل', 'Operation card no.'],
+                ['operation_card_expiry', 'انتهاء كرت التشغيل', 'Operation card expiry', 'date']
+            ],
+            staff: [
+                ['name', 'الاسم', 'Name'],
+                ['phone', 'الجوال', 'Phone'],
+                ['status', 'الحالة', 'Status'],
+                ['staff_kind', 'النوع', 'Kind'],
+                ['job_title', 'الوظيفة', 'Job title'],
+                ['iqama_no', 'رقم الإقامة', 'Iqama no.'],
+                ['iqama_expiry', 'انتهاء الإقامة', 'Iqama expiry', 'date'],
+                ['passport_no', 'رقم الجواز', 'Passport no.'],
+                ['passport_expiry', 'انتهاء الجواز', 'Passport expiry', 'date'],
+                ['license_no', 'رقم الرخصة', 'License no.'],
+                ['license_expiry', 'انتهاء الرخصة', 'License expiry', 'date'],
+                ['driver_card_no', 'رقم بطاقة السائق', 'Driver card no.'],
+                ['driver_card_expiry', 'انتهاء بطاقة السائق', 'Driver card expiry', 'date'],
+                ['health_insurance_no', 'رقم التأمين الصحي', 'Health insurance no.'],
+                ['health_insurance_expiry', 'انتهاء التأمين الصحي', 'Health insurance expiry', 'date']
+            ],
+            user: [
+                ['username', 'اسم المستخدم', 'Username'],
+                ['employee_name', 'اسم الموظف', 'Employee name'],
+                ['role', 'الدور', 'Role', (v) => (v ? (t('role.' + v) || v) : '')],
+                ['status', 'الحالة', 'Status']
+            ],
+            settings: [
+                ['company_name_ar', 'اسم المنشأة (عربي)', 'Company name (AR)'],
+                ['company_name_en', 'اسم المنشأة (إنجليزي)', 'Company name (EN)'],
+                ['slogan_ar', 'الشعار النصي (عربي)', 'Slogan (AR)'],
+                ['slogan_en', 'الشعار النصي (إنجليزي)', 'Slogan (EN)'],
+                ['phone', 'الجوال', 'Phone'],
+                ['email', 'البريد', 'Email'],
+                ['city', 'المدينة', 'City'],
+                ['cr_number', 'السجل التجاري', 'CR number'],
+                ['vat_number', 'الرقم الضريبي', 'VAT number'],
+                ['address', 'العنوان', 'Address'],
+                ['commission_mode', 'عمولة السائق', 'Driver commission', (v) => (String(v || 'optional') === 'required' ? (currentLang === 'en' ? 'Required' : 'إجباري') : (currentLang === 'en' ? 'Optional' : 'اختياري'))],
+                ['bayan_enabled', 'تفعيل بيان', 'Bayan enabled', (v) => (v ? (currentLang === 'en' ? 'On' : 'مفعل') : (currentLang === 'en' ? 'Off' : 'معطل'))],
+                ['bayan_mode', 'وضع بيان', 'Bayan mode'],
+                ['bayan_notes', 'ملاحظات بيان', 'Bayan notes'],
+                ['bayan_org_number', 'رقم المنشأة في بيان', 'Bayan org number']
+            ],
+            fuel: [
+                ['fill_date', 'تاريخ التعبئة', 'Fill date', 'date'],
+                ['truck_plate', 'الشاحنة', 'Truck'],
+                ['odometer', 'قراءة العداد', 'Odometer'],
+                ['liters', 'اللترات', 'Liters'],
+                ['amount', 'المبلغ', 'Amount', 'money'],
+                ['station', 'المحطة', 'Station'],
+                ['driver_name', 'السائق', 'Driver'],
+                ['notes', 'الملاحظات', 'Notes']
+            ],
+            maintenance: [
+                ['service_date', 'تاريخ الصيانة', 'Service date', 'date'],
+                ['vehicle_plate', 'المركبة', 'Vehicle'],
+                ['maintenance_type', 'نوع الصيانة', 'Type'],
+                ['cost', 'التكلفة', 'Cost', 'money'],
+                ['odometer', 'قراءة العداد', 'Odometer'],
+                ['details', 'التفاصيل', 'Details']
+            ]
+        };
 
         function splitActivityChange(details) {
             const text = String(details || '').trim();
@@ -5667,13 +5868,16 @@ function applyRoleBasedNav(user = currentLoggedInUser) {
     const tabUsersBtn = document.getElementById('tabUsersBtn');
     if (tabUsersBtn) tabUsersBtn.classList.toggle('hidden', !hasPerm('users', 'view', user));
     const systemMenu = document.getElementById('systemMenu');
-    const showSystem = hasPerm('settings', 'view', user) || hasPerm('activity_log', 'view', user);
+    const fiscalAdmin = isAdminUser(user) && !isPlatformHomeUser(user);
+    const showSystem = canOpenSystemHub(user);
     if (systemMenu) systemMenu.classList.toggle('hidden', !showSystem);
     const settingsBtn = document.getElementById('tabSettingsBtn');
     if (settingsBtn) settingsBtn.classList.toggle('hidden', !hasPerm('settings', 'view', user));
     syncFuelManageAccess(user);
     const activityBtn = document.getElementById('tabActivityLogBtn');
     if (activityBtn) activityBtn.classList.toggle('hidden', !hasPerm('activity_log', 'view', user));
+    const fiscalBtn = document.getElementById('tabFiscalYearsBtn');
+    if (fiscalBtn) fiscalBtn.classList.toggle('hidden', !fiscalAdmin);
     syncMaintenanceManageAccess(user);
     syncFleetFormAccess(user);
 }
@@ -5918,7 +6122,19 @@ async function savePermissionsDraft() {
             currentLoggedInUser.permissions = payload;
             applyRoleBasedNav(currentLoggedInUser);
         }
-        logActivity('permissions.save', 'صلاحيات', usr.username || id, usr.employee_name || '');
+        {
+            const prevPerms = normalizePermissions(usr.permissions);
+            const permLines = [];
+            PERM_MODULES.forEach((mod) => {
+                mod.actions.forEach((act) => {
+                    const b = !!prevPerms[mod.id]?.[act];
+                    const a = !!payload[mod.id]?.[act];
+                    if (b === a) return;
+                    permLines.push(formatActivityDiffLine(`${permModuleLabel(mod.id)} · ${permActionLabel(act)}`, b ? (currentLang === 'en' ? 'Yes' : 'نعم') : (currentLang === 'en' ? 'No' : 'لا'), a ? (currentLang === 'en' ? 'Yes' : 'نعم') : (currentLang === 'en' ? 'No' : 'لا')));
+                });
+            });
+            logActivity('permissions.save', 'صلاحيات', usr.username || id, buildActivityDiffLines(permLines));
+        }
         alert(currentLang === 'en' ? 'Permissions saved.' : 'تم حفظ الصلاحيات بنجاح.');
     } catch (err) {
         console.error(err);
@@ -7589,6 +7805,7 @@ async function openCommissionReportTab() {
     }
     currentNavTab = 'commissionReportSection';
     resetFiltersForScreen('commissionReportSection');
+    applyFiscalYearToScreen('commissionReportSection');
     showAppSection('commissionReportSection');
 
     await populateCommissionFilters();
@@ -7618,7 +7835,17 @@ async function populateCommissionFilters() {
 let commissionTripsByNo = new Map();
 
 function isAdvanceCreditNote(note) {
-    return /^(رصيد مقدم|Advance credit)\b/i.test(String(note || '').trim());
+    // ملاحظة: \b لا تعمل مع الحروف العربية، لذلك نستخدم lookahead صريحاً
+    return /^(رصيد مقدم|Advance credit)(?=\s|$|[0-9:·])/i.test(String(note || '').trim());
+}
+
+/** يحذف أجزاء «رصيد مقدم …» من الملاحظة (تُضاف تلقائياً عند الحفظ) كي لا تتكرر عند التعديل */
+function stripAdvanceCreditNote(note) {
+    return String(note || '')
+        .split(/\s*[·•]\s*/)
+        .map(part => part.trim())
+        .filter(part => part && !isAdvanceCreditNote(part))
+        .join(' · ');
 }
 
 function payoutNoteForDisplay(note, creditCleared) {
@@ -7688,7 +7915,7 @@ function renderCommissionPayoutLog(payouts, lifetimeRemainingByDriver) {
         <tr class="hover:bg-slate-50 transition">
             <td class="p-3.5 font-mono text-slate-600">${escapeHtml(dateOnly(payout.departure_date) || '---')}</td>
             <td class="p-3.5 font-mono font-bold text-amber-600">${escapeHtml(payout.trip_no || '—')}</td>
-            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(name)}</td>
+            <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('person', name))}</td>
             <td class="p-3.5 font-mono font-black text-rose-600">${formatSAR(commissionAmount(payout))}</td>
             <td class="p-3.5 text-slate-600">${formatPayoutNoteHtml(payout.payment_method, creditCleared)}</td>
             <td class="p-3.5 text-center no-print space-x-2 space-x-reverse">
@@ -7728,11 +7955,20 @@ async function generateCommissionReport() {
         });
         const earned = activeTrips.reduce((sum, trip) => sum + commissionAmount(trip), 0);
         const paid = payouts.reduce((sum, trip) => sum + commissionAmount(trip), 0);
+        const openingMap = (startDate && !selectedTruck) ? commissionOpeningByDriver(trips || [], startDate) : new Map();
+        const openingTotal = roundMoney([...openingMap.values()].reduce((sum, v) => sum + v, 0));
         const earnedEl = document.getElementById('commTotalAmountDisplay');
         const paidEl = document.getElementById('commPaidDisplay');
         const remainingEl = document.getElementById('commRemainingDisplay');
         const tripsEl = document.getElementById('commTotalTripsDisplay');
-        const net = roundMoney(earned - paid);
+        const net = roundMoney(openingTotal + earned - paid);
+        const openingCard = document.getElementById('commOpeningCard');
+        if (openingCard) openingCard.classList.toggle('hidden', !openingMap.size);
+        const openingEl = document.getElementById('commOpeningDisplay');
+        if (openingEl) {
+            openingEl.innerHTML = formatCommissionNet(openingTotal);
+            openingEl.classList.toggle('text-rose-600', openingTotal < -0.009);
+        }
         if (earnedEl) earnedEl.innerHTML = formatSAR(earned);
         if (paidEl) paidEl.innerHTML = formatSAR(paid);
         if (remainingEl) {
@@ -7766,6 +8002,9 @@ async function generateCommissionReport() {
         const paintCommPrintTotals = () => {
             const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
             const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            const openingRow = document.getElementById('commPrintOpeningRow');
+            if (openingRow) openingRow.classList.toggle('hidden', !openingMap.size);
+            setHtml('commPrintOpening', formatCommissionNet(openingTotal));
             setHtml('commPrintEarned', formatSAR(earned));
             setHtml('commPrintPaid', formatSAR(paid));
             setHtml('commPrintRemaining', formatCommissionNet(net));
@@ -7774,8 +8013,17 @@ async function generateCommissionReport() {
         paintCommPrintTotals();
 
         if (!tbody) return;
+        const advanceWord = currentLang === 'en' ? 'Advance credit' : 'رصيد مقدم';
+        const openingHtml = [...openingMap.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ar')).map(([name, amount]) => `
+                <tr class="bg-blue-50/60 border-r-4 border-blue-400">
+                    <td class="p-3.5 font-black text-blue-700">${escapeHtml(t('fy.opening'))}</td>
+                    <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(startDate)}</td>
+                    <td colspan="4" class="p-3.5 text-slate-400">—</td>
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('person', name))}</td>
+                    <td class="p-3.5 font-black font-mono ${amount < 0 ? 'text-rose-600' : 'text-blue-700'}">${formatCommissionNet(amount)}${amount < 0 ? ` <span class="text-[10px] font-bold">${escapeHtml(advanceWord)}</span>` : ''}</td>
+                </tr>`).join('');
         if (!activeTrips.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('msg.noTripsMatch'))}</td></tr>`;
+            tbody.innerHTML = openingHtml || `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('msg.noTripsMatch'))}</td></tr>`;
             return;
         }
 
@@ -7787,11 +8035,11 @@ async function generateCommissionReport() {
                 <tr class="hover:bg-slate-50 transition border-r-4 border-amber-400">
                     <td class="p-3.5"><a href="#" class="trip-detail-link" onclick='openTripDetails(${JSON.stringify(String(tr.trip_no || ''))}); return false;'>${escapeHtml(tripNo)}</a></td>
                     <td class="p-3.5 text-slate-600 font-mono">${escapeHtml(tripCompletionDate(tr) || '---')}</td>
-                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(tr.client_name || '---')}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('client', tr.client_name) || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(cityLabel(tr.from_city) || '---')}</td>
                     <td class="p-3.5 text-slate-700">${escapeHtml(tripDestinationText(tr))}</td>
                     <td class="p-3.5 text-slate-700 font-mono">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
-                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(tr.driver_name || t('ui.unspecified'))}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${escapeHtml(localizedName('person', tr.driver_name) || t('ui.unspecified'))}</td>
                     <td class="p-3.5 font-black text-emerald-600 font-mono">${formatSAR(commission)}</td>
                 </tr>
             `;
@@ -7828,11 +8076,11 @@ async function generateCommissionReport() {
         };
 
         if (selectedDriver && !selectedTruck) {
-            tbody.innerHTML = groupCommission(activeTrips, tr => tr.truck_plate || tr.truck, t('ui.truck'));
+            tbody.innerHTML = openingHtml + groupCommission(activeTrips, tr => tr.truck_plate || tr.truck, t('ui.truck'));
         } else if (selectedTruck && !selectedDriver) {
-            tbody.innerHTML = groupCommission(activeTrips, tr => tr.driver_name, t('ui.driver'));
+            tbody.innerHTML = openingHtml + groupCommission(activeTrips, tr => tr.driver_name, t('ui.driver'));
         } else {
-            tbody.innerHTML = activeTrips.map(commissionRow).join('');
+            tbody.innerHTML = openingHtml + activeTrips.map(commissionRow).join('');
         }
     } catch (err) {
         console.error('خطأ في جلب العمولات:', err);
@@ -7947,6 +8195,146 @@ const CITY_EN = {
 };
 let cityEnIndex = null;
 
+// ---------- ترجمة الأسماء (جدول مركزي name_translations) ----------
+const NAME_KINDS = ['client', 'person', 'city'];
+let nameTranslations = new Map();      // kind::مفتاح عربي مُطبَّع -> الصف
+let nameTranslationsList = [];
+let nameTranslationsAvailable = true;
+
+function nameTranslationKey(kind, value) {
+    return `${kind}::${normalizeArabicKey(String(value ?? '').trim())}`;
+}
+
+/** الاسم بالإنجليزية إن وُجدت ترجمته، وإلا يبقى كما هو */
+function localizedName(kind, value) {
+    const raw = String(value ?? '');
+    if (!raw.trim() || currentLang !== 'en') return raw;
+    const hit = nameTranslations.get(nameTranslationKey(kind, raw));
+    return hit ? hit.en_name : raw;
+}
+
+async function loadNameTranslations() {
+    nameTranslations = new Map();
+    nameTranslationsList = [];
+    if (!currentLoggedInUser || isPlatformHomeUser()) return;
+    try {
+        let query = client.from('name_translations').select('*').order('kind').order('ar_name');
+        const cid = currentCompanyId();
+        if (cid != null) query = query.eq('company_id', cid);
+        const { data, error } = await query;
+        if (error) throw error;
+        nameTranslationsList = data || [];
+        nameTranslationsList.forEach(row => nameTranslations.set(nameTranslationKey(row.kind, row.ar_name), row));
+        nameTranslationsAvailable = true;
+    } catch (err) {
+        const text = String(err?.message || '') + ' ' + String(err?.code || '');
+        nameTranslationsAvailable = !/name_translations|schema cache|relation|does not exist|42P01|PGRST205/i.test(text);
+        console.warn('name_translations:', err?.message || err);
+    }
+}
+
+async function saveNameTranslation(kind, arValue, enValue) {
+    const ar = String(arValue || '').trim();
+    const en = String(enValue || '').trim();
+    if (!NAME_KINDS.includes(kind) || !ar || !en) {
+        throw new Error(t('nt.needBoth'));
+    }
+    const before = nameTranslations.get(nameTranslationKey(kind, ar));
+    const payload = withCompany({ kind, ar_name: ar, en_name: en, updated_at: new Date().toISOString() });
+    const { error } = await client.from('name_translations').upsert([payload], { onConflict: 'company_id,kind,ar_name' });
+    if (error) {
+        if (!nameTranslationsAvailable || /name_translations|schema cache|relation/i.test(error.message || '')) throw new Error(t('nt.missingTable'));
+        throw new Error(error.message || t('nt.saveFailed'));
+    }
+    logActivity('nametrans.save', 'ترجمة', ar, formatActivityDiffLine(t('nt.kind.' + kind), before?.en_name || '—', en));
+    await loadNameTranslations();
+}
+
+async function deleteNameTranslation(id) {
+    const row = nameTranslationsList.find(r => Number(r.id) === Number(id));
+    if (!row) return;
+    if (!(await appConfirm(currentLang === 'en' ? `Delete the translation of "${row.ar_name}"?` : `حذف ترجمة «${row.ar_name}»؟`))) return;
+    const { error } = await client.from('name_translations').delete().eq('id', row.id);
+    if (error) { alert(error.message || t('nt.saveFailed')); return; }
+    logActivity('nametrans.delete', 'ترجمة', row.ar_name, formatActivityDiffLine(t('nt.kind.' + row.kind), row.en_name, '—'));
+    await loadNameTranslations();
+    renderNameTranslationsCard();
+    loadAllData({ force: true });
+}
+
+async function saveNameTranslationFromForm() {
+    try {
+        await saveNameTranslation(
+            document.getElementById('nameTransKind')?.value || '',
+            document.getElementById('nameTransAr')?.value,
+            document.getElementById('nameTransEn')?.value
+        );
+        document.getElementById('nameTransAr').value = '';
+        document.getElementById('nameTransEn').value = '';
+        renderNameTranslationsCard();
+        loadAllData({ force: true });
+    } catch (err) {
+        alert(err.message || t('nt.saveFailed'));
+    }
+}
+
+/** أسماء وردت في الرحلات بالعربية ولا توجد لها ترجمة */
+function collectUntranslatedNames() {
+    const found = new Map();
+    const add = (kind, value) => {
+        const raw = String(value || '').trim();
+        if (!raw || raw === '-' || raw === '—') return;
+        if (nameTranslations.has(nameTranslationKey(kind, raw))) return;
+        const key = `${kind}::${raw}`;
+        found.set(key, { kind, name: raw });
+    };
+    (allTripsCache || []).forEach(tr => {
+        add('client', tr.client_name);
+        add('person', tr.driver_name);
+        add('city', tr.from_city);
+        add('city', tr.to_city);
+    });
+    return [...found.values()].sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name, 'ar')).slice(0, 60);
+}
+
+function renderNameTranslationsCard() {
+    const body = document.getElementById('nameTransTable');
+    const missingHost = document.getElementById('nameTransMissing');
+    const canEdit = hasPerm('settings', 'edit');
+    if (missingHost) {
+        const missing = collectUntranslatedNames();
+        missingHost.innerHTML = missing.length
+            ? missing.map(item => `<button type="button" onclick="fillNameTranslationFromMissing(${jsAttrArg(item.kind)}, ${jsAttrArg(item.name)})" class="bg-slate-100 hover:bg-amber-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg text-[11px]">${escapeHtml(item.name)} <span class="text-slate-400">· ${escapeHtml(t('nt.kind.' + item.kind))}</span></button>`).join('')
+            : `<span class="text-[11px] text-emerald-700 font-bold">${escapeHtml(t('nt.none'))}</span>`;
+    }
+    if (!body) return;
+    if (!nameTranslationsAvailable) {
+        body.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-rose-600">${escapeHtml(t('nt.missingTable'))}</td></tr>`;
+        return;
+    }
+    if (!nameTranslationsList.length) {
+        body.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-slate-400">${escapeHtml(t('nt.empty'))}</td></tr>`;
+        return;
+    }
+    body.innerHTML = nameTranslationsList.map(row => `
+        <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="p-2.5 text-slate-600">${escapeHtml(t('nt.kind.' + row.kind))}</td>
+            <td class="p-2.5 font-bold text-slate-900">${escapeHtml(row.ar_name)}</td>
+            <td class="p-2.5 font-mono text-slate-800" dir="ltr">${escapeHtml(row.en_name)}</td>
+            <td class="p-2.5 text-left">${canEdit ? `<button type="button" onclick="deleteNameTranslation(${Number(row.id)})" class="text-rose-500 hover:text-rose-700 font-bold" title="${escapeHtml(t('nt.delete'))}"><i class="fa-solid fa-trash-can"></i></button>` : ''}</td>
+        </tr>`).join('');
+    const form = document.getElementById('nameTransForm');
+    if (form) form.classList.toggle('hidden', !canEdit);
+}
+
+function fillNameTranslationFromMissing(kind, name) {
+    const kindEl = document.getElementById('nameTransKind');
+    if (kindEl) kindEl.value = kind;
+    const ar = document.getElementById('nameTransAr');
+    if (ar) ar.value = name;
+    document.getElementById('nameTransEn')?.focus();
+}
+
 function normalizeArabicKey(value) {
     return String(value || '')
         .replace(/[\u064B-\u065F\u0670]/g, '')
@@ -7960,6 +8348,8 @@ function normalizeArabicKey(value) {
 function cityLabel(value) {
     const raw = String(value ?? '').trim();
     if (!raw || currentLang !== 'en') return raw;
+    const custom = nameTranslations.get(nameTranslationKey('city', raw));
+    if (custom) return custom.en_name;
     if (!cityEnIndex) {
         cityEnIndex = new Map(Object.entries(CITY_EN).map(([ar, en]) => [normalizeArabicKey(ar), en]));
     }
@@ -8095,8 +8485,8 @@ function setPayoutModalMode(edit) {
     const submit = document.getElementById('payoutSubmitBtn');
     const ar = currentLang !== 'en';
     if (title) title.innerHTML = edit
-        ? `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${ar ? 'تعديل سداد عمولة' : 'Edit commission payout'}`
-        : `<i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> ${ar ? 'سداد عمولة' : 'Pay commission'}`;
+        ? `<i class="fa-solid fa-pen-to-square text-amber-500 ml-2"></i> ${ar ? 'تعديل صرف عمولة' : 'Edit commission payout'}`
+        : `<i class="fa-solid fa-money-bill-wave text-amber-500 ml-2"></i> ${ar ? 'صرف عمولة' : 'Commission payout'}`;
     if (submit) submit.textContent = edit ? (ar ? 'حفظ التعديل' : 'Save changes') : (ar ? 'تسجيل الدفعة' : 'Record payout');
 }
 
@@ -8143,7 +8533,7 @@ async function openEditPayoutModal(id) {
     }
     if (amountInput) amountInput.value = commissionAmount(data);
     if (payoutDate) payoutDate.value = dateOnly(data.departure_date) || todayDateInput();
-    if (noteInput) noteInput.value = data.payment_method || '';
+    if (noteInput) noteInput.value = stripAdvanceCreditNote(data.payment_method);
     setPayoutModalMode(true);
     showPayoutError('');
     bindPayoutBalanceHint();
@@ -8236,7 +8626,7 @@ async function saveCommissionPayout(e) {
     const driverName = document.getElementById('payoutDriver')?.value || '';
     const amount = roundMoney(parseFloat(document.getElementById('payoutAmount')?.value));
     const payoutDate = document.getElementById('payoutDate')?.value || '';
-    let note = document.getElementById('payoutNote')?.value.trim() || '';
+    let note = stripAdvanceCreditNote(document.getElementById('payoutNote')?.value.trim() || '');
     showPayoutError('');
 
     if (!driverName || !(amount > 0) || !payoutDate) {
@@ -8244,6 +8634,13 @@ async function saveCommissionPayout(e) {
         return;
     }
 
+    {
+        const lockMsg = fiscalLockMessage(payoutDate, editingPayout?.departure_date);
+        if (lockMsg) {
+            showPayoutError(lockMsg);
+            return;
+        }
+    }
     payoutSaveBusy = true;
     const submitBtn = document.getElementById('payoutSubmitBtn');
     if (submitBtn) submitBtn.disabled = true;
@@ -8263,9 +8660,14 @@ async function saveCommissionPayout(e) {
             );
             if (!ok) return;
             const advanceNote = (currentLang === 'en' ? 'Advance credit ' : 'رصيد مقدم ') + formatMoney(extra);
-            note = note && !isAdvanceCreditNote(note) ? `${note} · ${advanceNote}` : advanceNote;
+            note = note ? `${note} · ${advanceNote}` : advanceNote;
         }
 
+        let payoutBefore = payoutId ? editingPayout : null;
+        if (payoutId && !payoutBefore) {
+            const prev = await client.from('trips').select('*').eq('id', payoutId).eq('status', 'صرف عمولة').maybeSingle();
+            payoutBefore = prev.data || null;
+        }
         if (payoutId) {
             const { error } = await client.from('trips').update({
                 driver_name: driverName,
@@ -8297,7 +8699,15 @@ async function saveCommissionPayout(e) {
             if (error) throw error;
         }
         closePayoutModal();
-        logActivity(payoutId ? 'payout.edit' : 'payout.create', 'عمولة', driverName, `${formatMoney(amount)} · ${payoutDate}${note ? ' · ' + note : ''}`);
+        const payoutAfter = { driver_name: driverName, driver_commission: amount, departure_date: payoutDate, payment_method: note || null };
+        logActivity(
+            payoutId ? 'payout.edit' : 'payout.create',
+            'عمولة',
+            driverName,
+            payoutId && payoutBefore
+                ? buildFieldsDiff(payoutBefore, payoutAfter, ACTIVITY_DEFS.payout)
+                : buildFieldsSnapshot(payoutAfter, ACTIVITY_DEFS.payout, 'create')
+        );
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
     } catch (err) {
         console.error(err);
@@ -8350,12 +8760,20 @@ async function deleteCommissionPayout(id) {
     if (!ok) return;
     payoutDeleteBusy = true;
     try {
+        const { data: payoutRow } = await client.from('trips').select('*').eq('id', payoutId).eq('status', 'صرف عمولة').maybeSingle();
+        {
+            const lockMsg = fiscalLockMessage(payoutRow?.departure_date);
+            if (lockMsg) {
+                alert(lockMsg);
+                return;
+            }
+        }
         const { data, error } = await client.from('trips').delete().eq('id', payoutId).eq('status', 'صرف عمولة').select('id');
         if (error) throw error;
         if (!data || !data.length) {
             alert(currentLang === 'en' ? 'This payout was already deleted.' : 'هذه الدفعة محذوفة مسبقاً.');
         } else {
-            logActivity('payout.delete', 'عمولة', payoutId, '');
+            logActivity('payout.delete', 'عمولة', payoutRow?.driver_name || payoutId, payoutRow ? buildFieldsSnapshot(payoutRow, ACTIVITY_DEFS.payout, 'delete') : '');
         }
         try { await generateCommissionReport(); } catch (err) { console.error(err); }
     } catch (err) {
@@ -8495,6 +8913,36 @@ async function openCommissionAndRevenueReport() {
         console.error("حدث خطأ في تقرير العمولات:", err);
     }
 }
+/** عدد أيام تجاوز تاريخ الإنهاء لتاريخ الوصول المتوقع (0 إن لم يتجاوز أو لم يُحدَّد الوصول المتوقع) */
+function tripArrivalDelayDays(expectedDate, completionDate) {
+    const exp = dateOnly(expectedDate);
+    const done = dateOnly(completionDate);
+    if (!exp || !done || done <= exp) return 0;
+    const a = Date.UTC(+exp.slice(0, 4), +exp.slice(5, 7) - 1, +exp.slice(8, 10));
+    const b = Date.UTC(+done.slice(0, 4), +done.slice(5, 7) - 1, +done.slice(8, 10));
+    return Math.max(0, Math.round((b - a) / 86400000));
+}
+
+function tripDelayMessage(expectedDate, delayDays) {
+    if (!(delayDays > 0)) return '';
+    const exp = dateOnly(expectedDate);
+    if (currentLang === 'en') {
+        return `Notice: this trip took longer than usual and exceeded the expected arrival date (${exp}) by ${delayDays} day${delayDays === 1 ? '' : 's'}.`;
+    }
+    const days = delayDays === 1 ? 'يوم واحد' : (delayDays === 2 ? 'يومين' : (delayDays <= 10 ? `${delayDays} أيام` : `${delayDays} يوماً`));
+    return `تنبيه: الرحلة أخذت وقتاً أكثر من المعتاد وتجاوزت الوقت المحدد للوصول (${exp}) بمقدار ${days}.`;
+}
+
+function updateCompleteDelayWarning() {
+    const box = document.getElementById('modalDelayWarning');
+    if (!box) return;
+    const input = document.getElementById('modalCompletionDate');
+    const expected = document.getElementById('modalTripId')?.dataset.expectedArrival || '';
+    const msg = (input && !input.readOnly) ? tripDelayMessage(expected, tripArrivalDelayDays(expected, input.value)) : '';
+    box.textContent = msg;
+    box.classList.toggle('hidden', !msg);
+}
+
         // 1. دالة فتح النافذة (تستدعى من زر الجدول)
 function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmount, remainingAmount, driverCommission) {
     const modalTripId = document.getElementById('modalTripId');
@@ -8539,6 +8987,8 @@ function openCompleteModal(tripNo, truckPlate, driverName, totalAmount, paidAmou
         modalCompletionDate.required = !alreadyClosed;
         modalCompletionDate.classList.toggle('bg-slate-100', Boolean(alreadyClosed));
     }
+    if (modalTripId) modalTripId.dataset.expectedArrival = trip ? (dateOnly(trip.expected_arrival_date) || '') : '';
+    updateCompleteDelayWarning();
     const lines = trip ? paymentLineItems(trip) : [];
     if (priorBox) {
         if (lines.length) {
@@ -8669,7 +9119,7 @@ async function generateFinancialReport() {
             <tr class="hover:bg-slate-50 transition">
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
                 <td class="p-3.5 text-slate-600 font-mono align-top">${escapeHtml(tr.departure_date || '---')}</td>
-                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
+                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(localizedName('client', tr.client_name) || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
                 <td class="p-3.5 text-slate-700 align-top">${method}</td>
                 <td class="p-3.5 text-slate-600 font-mono align-top">${collectDate}</td>
@@ -9059,22 +9509,37 @@ async function generateReceivablesReport() {
         let tripsFiltered = (trips || []).filter(isCompletedTrip);
         if (selectedClient) tripsFiltered = tripsFiltered.filter(trip => String(trip.client_name || '').trim() === selectedClient);
         if (selectedStatus) tripsFiltered = tripsFiltered.filter(trip => tripPayStatusCode(trip) === selectedStatus);
-        let rows = expandTripsByPaymentLines(tripsFiltered, {
-            method: selectedMethod,
-            startDate,
-            endDate,
-            periodByCollection: true
-        });
-        rows = sortPaymentRowsByCollectionDesc(rows);
-
-        const tripsInView = [...new Map(rows.map(row => [row.trip.id || row.trip.trip_no, row.trip])).values()];
-        const money = selectedMethod
-            ? {
-                total: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
-                collected: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
-                remaining: 0
-            }
-            : summarizeTripMoney(tripsInView);
+        const periodMode = !selectedMethod && (!!startDate || !!endDate);
+        let rows;
+        let tripsInView;
+        let money;
+        if (periodMode) {
+            const copies = receivablePeriodCopies(tripsFiltered, startDate, endDate);
+            rows = [];
+            copies.forEach(copy => {
+                if (copy._periodOpening) rows.push({ trip: copy, line: null });
+                copy._periodLines.forEach(line => rows.push({ trip: copy, line }));
+                if (!copy._periodOpening && !copy._periodLines.length) rows.push({ trip: copy, line: null });
+            });
+            rows = sortPaymentRowsByCollectionDesc(rows);
+            tripsInView = copies;
+            money = summarizeTripMoney(copies);
+        } else {
+            rows = sortPaymentRowsByCollectionDesc(expandTripsByPaymentLines(tripsFiltered, {
+                method: selectedMethod,
+                startDate,
+                endDate,
+                periodByCollection: true
+            }));
+            tripsInView = [...new Map(rows.map(row => [row.trip.id || row.trip.trip_no, row.trip])).values()];
+            money = selectedMethod
+                ? {
+                    total: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                    collected: rows.reduce((sum, row) => sum + roundMoney(row.line?.paid_amount || 0), 0),
+                    remaining: 0
+                }
+                : summarizeTripMoney(tripsInView);
+        }
         const totalEl = document.getElementById('recvTotalDue');
         const collectedEl = document.getElementById('recvCollected');
         const remainingEl = document.getElementById('recvRemaining');
@@ -9083,7 +9548,8 @@ async function generateReceivablesReport() {
         if (remainingEl) remainingEl.innerHTML = formatSAR(money.remaining);
         const tripsEl = document.getElementById('recvTripCount');
         if (tripsEl) tripsEl.textContent = tripsInView.length.toLocaleString('en-US');
-        paintReceivablesAging(tripsInView);
+        const agingAsOf = receivablesAgingAsOf(periodMode ? endDate : '');
+        paintReceivablesAging(tripsInView, agingAsOf);
 
         const paintRecvPrintTotals = () => {
             const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
@@ -9101,6 +9567,7 @@ async function generateReceivablesReport() {
             return;
         }
         tbody.innerHTML = rows.map(({ trip: tr, line }) => {
+            const openingRow = !!tr._periodOpening && !line;
             const collectDate = line
                 ? escapeHtml(dateOnly(line.collection_date) || '—')
                 : '—';
@@ -9110,7 +9577,7 @@ async function generateReceivablesReport() {
             const amount = line
                 ? formatSAR(line.paid_amount || 0)
                 : formatSAR(tripMoneyParts(tr).total);
-            const overdueDays = tripOverdueDays(tr);
+            const overdueDays = tripOverdueDays(tr, agingAsOf);
             const overdueLabel = tripMoneyParts(tr).remaining > 0.009 && overdueDays != null
                 ? String(overdueDays)
                 : '—';
@@ -9120,15 +9587,15 @@ async function generateReceivablesReport() {
             return `
             <tr class="hover:bg-slate-50 transition">
                 <td class="p-3.5 font-black text-amber-600 font-mono align-top">${escapeHtml(tr.trip_no || tr.id || '---')}</td>
-                <td class="p-3.5 text-slate-600 font-mono align-top">${collectDate}</td>
-                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(tr.client_name || '---')}</td>
+                <td class="p-3.5 text-slate-600 font-mono align-top">${openingRow ? escapeHtml(startDate) : collectDate}</td>
+                <td class="p-3.5 font-bold text-slate-900 align-top">${escapeHtml(localizedName('client', tr.client_name) || '---')}</td>
                 <td class="p-3.5 text-slate-700 align-top">${escapeHtml(tripFromToText(tr))}</td>
                 <td class="p-3.5 text-slate-700 font-mono align-top">${escapeHtml(tr.truck_plate || tr.truck || '---')}</td>
-                <td class="p-3.5 text-slate-900 align-top">${escapeHtml(tr.driver_name || '---')}</td>
+                <td class="p-3.5 text-slate-900 align-top">${escapeHtml(localizedName('person', tr.driver_name) || '---')}</td>
                 <td class="p-3.5 font-bold text-slate-900 font-mono align-top">${amount}</td>
                 <td class="p-3.5 text-slate-700 align-top">${method}</td>
                 <td class="p-3.5 font-mono align-top ${overdueTone}">${escapeHtml(overdueLabel)}</td>
-                <td class="p-3.5 align-top">${receivablesPayBadge(tr)}</td>
+                <td class="p-3.5 align-top">${openingRow ? openingCarryBadgeHtml(tr) : receivablesPayBadge(tr)}</td>
             </tr>
             `;
         }).join('');
@@ -9145,13 +9612,19 @@ function tripAnchorDateForAging(trip) {
     return tripCompletionDate(trip) || dateOnly(trip?.departure_date) || dateOnly(trip?.collection_date) || '';
 }
 
-function tripOverdueDays(trip) {
+/** تاريخ احتساب الأعمار: نهاية الفترة إن كانت انتهت، وإلا اليوم (فلا تتحرك أعمار سنة مقفلة مع الزمن) */
+function receivablesAgingAsOf(endDate) {
+    const today = todayDateInput();
+    return endDate && endDate < today ? endDate : today;
+}
+
+function tripOverdueDays(trip, asOf = todayDateInput()) {
     const remaining = tripMoneyParts(trip).remaining;
     if (remaining <= 0.009) return null;
     const anchor = tripAnchorDateForAging(trip);
     if (!anchor) return null;
     const start = new Date(`${anchor}T00:00:00`);
-    const end = new Date(`${todayDateInput()}T00:00:00`);
+    const end = new Date(`${asOf || todayDateInput()}T00:00:00`);
     if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) return null;
     return Math.max(0, Math.round((end - start) / 86400000));
 }
@@ -9164,7 +9637,7 @@ function receivablesAgingBucket(days) {
     return '90';
 }
 
-function summarizeReceivablesAging(trips) {
+function summarizeReceivablesAging(trips, asOf) {
     const buckets = {
         '0': { amount: 0, count: 0 },
         '30': { amount: 0, count: 0 },
@@ -9174,7 +9647,7 @@ function summarizeReceivablesAging(trips) {
     (trips || []).forEach((trip) => {
         const remaining = tripMoneyParts(trip).remaining;
         if (remaining <= 0.009) return;
-        const days = tripOverdueDays(trip);
+        const days = tripOverdueDays(trip, asOf);
         const key = receivablesAgingBucket(days);
         if (!key || !buckets[key]) return;
         buckets[key].amount += remaining;
@@ -9183,8 +9656,8 @@ function summarizeReceivablesAging(trips) {
     return buckets;
 }
 
-function paintReceivablesAging(trips) {
-    const buckets = summarizeReceivablesAging(trips);
+function paintReceivablesAging(trips, asOf) {
+    const buckets = summarizeReceivablesAging(trips, asOf);
     const map = [
         ['recvAge0', 'recvAge0Count', '0'],
         ['recvAge30', 'recvAge30Count', '30'],
@@ -9464,7 +9937,7 @@ async function generateDriverStatement() {
                 entries.push({
                     date: tripCompletionDate(trip) || dateOnly(trip.departure_date) || '', order: 1, seq,
                     kind: 'commission', ref: trip.trip_no || trip.id,
-                    party: escapeHtml(trip.client_name || '—'),
+                    party: escapeHtml(localizedName('client', trip.client_name) || '—'),
                     details: `${escapeHtml(tripFromToText(trip))} <span class="font-mono text-slate-400">· ${escapeHtml(trip.truck_plate || trip.truck || '—')}</span>`,
                     debit: amount, credit: 0
                 });
@@ -10063,7 +10536,7 @@ function renderFuelEfficiencyRanking(truckList, filtered) {
     driverBody.innerHTML = drivers.length ? drivers.map((d, i) => `
         <tr class="hover:bg-slate-50">
             <td class="p-2.5">${rankBadge(i, drivers.length)}</td>
-            <td class="p-2.5 font-bold text-slate-900">${escapeHtml(d.name)}</td>
+            <td class="p-2.5 font-bold text-slate-900">${escapeHtml(localizedName('person', d.name))}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(d.km, 0))}</td>
             <td class="p-2.5 font-mono">${escapeHtml(formatFuelNumber(d.liters, 1))}</td>
             <td class="p-2.5 font-mono font-black">${escapeHtml(formatFuelNumber(d.per100, 1))}</td>
@@ -10571,12 +11044,6 @@ function remainingCommissionsByDriver(trips) {
         .sort((a, b) => a[0].localeCompare(b[0], 'ar'));
 }
 
-function openingBalanceDate() {
-    const now = new Date();
-    if (now.getMonth() >= 9) return `${now.getFullYear() + 1}-01-01`;
-    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-}
-
 function tripReceivableRemaining(trip) {
     const total = parseFloat(trip?.total_amount || 0) || 0;
     let paid = parseFloat(trip?.paid_amount || 0) || 0;
@@ -10594,46 +11061,19 @@ function isOpenReceivableTrip(trip) {
     return isCompletedTrip(trip) && tripReceivableRemaining(trip) > 0.009;
 }
 
-function yearResetKeepKeys(trips) {
-    const keys = new Set();
-    (trips || []).forEach(trip => {
-        if (!isBillableTrip(trip) && !isActiveOperationalTrip(trip)) return;
-        if (isActiveOperationalTrip(trip) || isOpenReceivableTrip(trip)) {
-            tripNumberKeys(trip.trip_no).forEach(key => keys.add(key));
-        }
-    });
-    return keys;
-}
-
-function shouldKeepAfterYearReset(trip, keepKeys) {
-    if (isOpeningBalance(trip) || isCommissionPayout(trip)) return true;
-    if (isSettlementRecord(trip)) {
-        return tripNumberKeys(trip.client_name).some(key => keepKeys.has(key));
-    }
-    if (isCancelledTrip(trip)) return false;
-    if (isActiveOperationalTrip(trip) || isOpenReceivableTrip(trip)) return true;
-    return false;
-}
-
-async function deleteTripRowsByIds(ids) {
-    for (let i = 0; i < ids.length; i += 80) {
-        const chunk = ids.slice(i, i + 80);
-        const { error } = await client.from('trips').delete().in('id', chunk);
-        if (error) throw error;
-    }
-}
-
 function tripNumberKeys(tripNo) {
     const raw = String(tripNo || '').trim();
     const keys = [raw];
     const parsed = parseTripSerial(raw);
     if (parsed && Number.isFinite(parsed.serial)) {
-        keys.push(String(parsed.serial));
-        keys.push('TRIP-' + parsed.serial);
-        keys.push('TRP-' + parsed.serial);
         if (parsed.year) {
+            // رحلات السنوات الجديدة: مفاتيح خاصة بالسنة فقط، حتى لا تتداخل مع رحلة بنفس التسلسل في سنة أخرى
             keys.push('TRP-' + parsed.year + '-' + parsed.serial);
             keys.push('TRIP-' + parsed.year + '-' + parsed.serial);
+        } else {
+            keys.push(String(parsed.serial));
+            keys.push('TRIP-' + parsed.serial);
+            keys.push('TRP-' + parsed.serial);
         }
     }
     return [...new Set(keys.filter(Boolean))];
@@ -10659,6 +11099,9 @@ async function deleteSettlementRow(list, row) {
 }
 
 async function reconcileDuplicateSettlements(rows) {
+    // لا يحذف هذا الإجراء أي دفعة تلقائياً: كل سجل "دفعة سداد" يمثل مبلغاً مُحصّلاً فعلياً،
+    // ودفعتان بنفس المبلغ والطريقة والتاريخ قد تكونان دفعتين حقيقيتين.
+    // دوره فقط: مواءمة مدفوع الرحلة مع مجموع دفعاتها (دون تجاوز قيمة الرحلة).
     const list = (rows || []).slice();
     const grouped = new Map();
     list.filter(isSettlementRecord).forEach(row => {
@@ -10678,33 +11121,15 @@ async function reconcileDuplicateSettlements(rows) {
             });
         });
         if (!payments.length && roundMoney(trip.paid_amount) <= roundMoney(trip.total_amount)) continue;
-        payments.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
 
-        const fingerprints = new Map();
-        const extras = [];
-        payments.forEach(row => {
-            const mark = settlementFingerprint(row);
-            if (fingerprints.has(mark)) extras.push(row);
-            else fingerprints.set(mark, row);
-        });
-        for (const row of extras) await deleteSettlementRow(list, row);
-
-        const kept = payments.filter(row => !extras.some(extra => extra.id === row.id));
-        kept.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
         const total = roundMoney(trip.total_amount);
-        let sum = roundMoney(kept.reduce((acc, row) => acc + (Number(row.paid_amount) || 0), 0));
-        for (const row of kept) {
-            if (sum <= total + 0.009) break;
-            if (await deleteSettlementRow(list, row)) {
-                sum = roundMoney(sum - (Number(row.paid_amount) || 0));
-            }
-        }
-
+        const sum = roundMoney(payments.reduce((acc, row) => acc + (Number(row.paid_amount) || 0), 0));
         const paid = roundMoney(Math.max(0, Math.min(total, sum || roundMoney(trip.paid_amount || 0))));
         const remaining = roundMoney(total - paid);
         const payment_status = paid <= 0 ? 'غير مسدد' : (remaining <= 0 ? 'مسدد بالكامل' : 'سداد جزئي');
         if (roundMoney(trip.paid_amount) !== paid || roundMoney(trip.remaining_amount) !== remaining) {
-            await client.from('trips').update({ paid_amount: paid, remaining_amount: remaining, payment_status }).eq('trip_no', trip.trip_no);
+            const { error } = await client.from('trips').update({ paid_amount: paid, remaining_amount: remaining, payment_status }).eq('trip_no', trip.trip_no);
+            if (error) console.error('تعذر مواءمة مدفوع الرحلة:', error);
             trip.paid_amount = paid;
             trip.remaining_amount = remaining;
             trip.payment_status = payment_status;
@@ -11122,6 +11547,10 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
             alert(t('msg.tripFetchError'));
             return;
         }
+        if (isTripLockedForSettle(currentTrip)) {
+            alert(fiscalLockMessage(tripLockDate(currentTrip)));
+            return;
+        }
 
         const currentPaid = roundMoney(currentTrip.paid_amount || 0);
         const totalAmount = roundMoney(currentTrip.total_amount || 0);
@@ -11139,6 +11568,9 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         const completionDateVal = document.getElementById('modalCompletionDate')?.value || todayDateInput();
 
         const endingActiveTrip = String(currentTrip.status || '').trim() === 'جارية';
+        const delayDays = endingActiveTrip ? tripArrivalDelayDays(currentTrip.expected_arrival_date, completionDateVal) : 0;
+        const delayNote = tripDelayMessage(currentTrip.expected_arrival_date, delayDays);
+        const withDelay = (msg) => delayNote ? `${msg}\n\n${delayNote}` : msg;
         let settlementNo = null;
         if (additionalPayment > 0) {
             const settlement = await recordSettlementPayment(currentTrip.trip_no, additionalPayment, paymentMethodVal ? paymentMethodVal.trim() : '', collectionDateVal ? collectionDateVal.trim() : '');
@@ -11195,12 +11627,19 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         if (endingActiveTrip) noteFreedFleetFromTrip(currentTrip, tripId);
 
         closeCompleteModal();
-        logActivity(
-            endingActiveTrip ? 'trip.complete' : 'trip.settle',
-            'رحلة',
-            tripId,
-            `سداد ${formatMoney(additionalPayment)} · متبقي ${formatMoney(newRemainingAmount)} · إنهاء ${completionDateVal || '—'}`
-        );
+        {
+            const en = currentLang === 'en';
+            const extra = [];
+            if (endingActiveTrip) extra.push(formatActivityDiffLine(en ? 'Status' : 'الحالة', currentTrip.status || '—', updateData.status || 'مكتملة'));
+            if (delayDays > 0) extra.push(formatActivityDiffLine(en ? 'Delay vs expected arrival (days)' : 'التأخير عن الوصول المتوقع (يوم)', '—', String(delayDays)));
+            if (additionalPayment > 0) extra.push(formatActivityDiffLine(en ? 'Payment received' : 'دفعة سداد', '—', formatMoney(additionalPayment)));
+            logActivity(
+                endingActiveTrip ? 'trip.complete' : 'trip.settle',
+                'رحلة',
+                tripId,
+                buildTripEditDiff(currentTrip, { ...currentTrip, ...updateData }, extra)
+            );
+        }
         if (endingActiveTrip) {
             const { truckBusy, driverBusy } = await releaseFleetIfIdle(currentTrip, tripId);
             if (truckBusy || driverBusy) {
@@ -11209,11 +11648,11 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
                 const driverKey = normalizeFleetKey(currentTrip.driver_name || currentTrip.driver);
                 if (truckBusy && plateKey) recentlyFreedFleet.plates.delete(plateKey);
                 if (driverBusy && driverKey) recentlyFreedFleet.drivers.delete(driverKey);
-                alert(t('msg.tripFinishedBusy'));
+                alert(withDelay(t('msg.tripFinishedBusy')));
             } else if (additionalPayment > 0) {
-                alert(t('msg.tripFinishedPaidFreed'));
+                alert(withDelay(t('msg.tripFinishedPaidFreed')));
             } else {
-                alert(t('msg.tripFinishedUnpaidFreed'));
+                alert(withDelay(t('msg.tripFinishedUnpaidFreed')));
             }
         } else if (additionalPayment > 0) {
             alert(t('msg.paymentRecorded'));
@@ -11277,7 +11716,6 @@ async function releaseFleetIfIdle(trip, exceptTripNo) {
         if (typeof isAdminUser === 'function' && isAdminUser() && typeof loadUsers === 'function') core.push(loadUsers());
         const results = await Promise.allSettled(core);
         results.forEach(result => { if (result.status === 'rejected') console.error(result.reason); });
-        if (typeof renderAdminControls === 'function') renderAdminControls();
 
         Promise.allSettled([
             typeof initReportFilters === 'function' ? initReportFilters() : null,
@@ -11373,7 +11811,8 @@ async function initReportFilters() {
         async function loadDashboardData() {
             const seq = ++dashboardLoadSeq;
             const dashTripCols = 'trip_no,status,client_name,truck_plate,driver_name,total_amount,paid_amount,remaining_amount,from_city,to_city,trip_type';
-            const tripsReq = fetchAllRows(client.from('trips').select(dashTripCols));
+            const fyRange = fiscalViewRange();
+            const tripsReq = fetchAllRows(client.from('trips').select(fyRange ? '*' : dashTripCols));
             const trucksReq = client.from('trucks').select('*');
             const driversReq = client.from('drivers').select('*');
             const docsReq = client.from('facility_documents').select('*');
@@ -11398,10 +11837,19 @@ async function initReportFilters() {
                 if (!driversRes.error) dashboardExpiryCache.drivers = drivers;
                 if (dashboardExpiryCache.loaded) paintDashboardExpiryAlerts();
 
-                const money = summarizeTripMoney((trips || []).filter(isCompletedTrip));
+                const completedAll = (trips || []).filter(isCompletedTrip);
+                let completedView = completedAll;
+                let carriedRemaining = 0;
+                if (fyRange) {
+                    completedView = completedAll.filter(tr => tripInDateRange(tripFiscalDate(tr), fyRange.start, fyRange.end));
+                    carriedRemaining = roundMoney(completedAll
+                        .filter(tr => isCarriedOpeningTrip(tr, fyRange))
+                        .reduce((sum, tr) => sum + tripReceivableRemaining(tr), 0));
+                }
+                const money = summarizeTripMoney(completedView);
                 const totalRev = money.total;
                 const collected = money.collected;
-                const remaining = money.remaining;
+                const remaining = roundMoney(money.remaining + carriedRemaining);
 
                 const activeTable = document.getElementById('dashActiveTripsTable');
                 let activeTripsList = [];
@@ -11427,7 +11875,12 @@ async function initReportFilters() {
                 setHtml('dashTotalRevenue', formatSAR(totalRev));
                 setHtml('dashCollectedAmount', formatSAR(collected));
                 setHtml('dashRemainingAmount', formatSAR(remaining));
-                setText('dashTotalTrips', trips ? trips.filter(isCompletedTrip).length : 0);
+                setText('dashTotalTrips', completedView.length);
+                const openHint = document.getElementById('dashRemainingOpeningHint');
+                if (openHint) {
+                    openHint.classList.toggle('hidden', carriedRemaining <= 0.009);
+                    openHint.innerHTML = carriedRemaining > 0.009 ? `${escapeHtml(t('fy.opening'))}: ${formatSAR(carriedRemaining)}` : '';
+                }
 
                 const assignments = activeAssignmentSets(trips || []);
                 void alignFleetWithActiveTrips(trucks || [], drivers || [], trips || []);
@@ -11480,12 +11933,12 @@ async function initReportFilters() {
                         <tr class="hover:bg-slate-50 transition">
                             <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || '—'}</td>
                             <td class="p-3.5">
-                                <div class="font-bold text-slate-900">${escapeHtml(tr.client_name)}</div>
+                                <div class="font-bold text-slate-900">${escapeHtml(localizedName('client', tr.client_name))}</div>
                                 <div class="text-[11px] text-slate-500">${tripRouteText(tr)}</div>
                             </td>
                             <td class="p-3.5">
                                 <div class="font-bold text-slate-800">${t('ui.plateLabel')}: ${escapeHtml(tr.truck_plate)}</div>
-                                <div class="text-[11px] text-slate-600">${t('ui.driverLabel')}: ${escapeHtml(tr.driver_name)}</div>
+                                <div class="text-[11px] text-slate-600">${t('ui.driverLabel')}: ${escapeHtml(localizedName('person', tr.driver_name))}</div>
                             </td>
                             <td class="p-3.5 font-mono font-bold text-slate-900">${formatSAR(tr.total_amount)}</td>
                             <td class="p-3.5"><span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${tv('جارية')}</span></td>
@@ -11501,140 +11954,726 @@ async function initReportFilters() {
             }
         }
 
-        // دالة عرض زر التصفير للمدير فقط
-function renderAdminControls() {
-    const container = document.getElementById('resetCounterContainerTrips');
-    if (!container) return;
+// ===================== السنوات المالية: فتح سنة جديدة / إقفال / مقارنة =====================
+// لا يُحذف أي شيء: السنة = فترة عرض (من 1/1 إلى 31/12) + قفل اختياري للسنوات القديمة.
+let fiscalYears = [];
+let fiscalYearsAvailable = true;
+let selectedFiscalYear = 'all';
+let fiscalScreenBusy = false;
 
-    if (isAdminUser()) {
-        container.classList.remove('hidden');
-        container.innerHTML = `
-            <button onclick="resetTripCounter()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap" title="${t('ui.resetCounter')}">
-                <i class="fa-solid fa-rotate-right"></i> ${t('ui.resetCounter')}
-            </button>
-        `;
+function fyL(ar, en) { return currentLang === 'en' ? en : ar; }
+
+function fiscalStorageKey() {
+    return 'fleetop_fiscal_year_' + (currentCompanyId() ?? 'x');
+}
+
+function fiscalYearOfDate(value) {
+    const y = parseInt(String(value || '').slice(0, 4), 10);
+    return Number.isFinite(y) ? y : null;
+}
+
+function isFiscalYearClosed(year) {
+    return fiscalYears.some(f => Number(f.year) === Number(year) && f.status === 'closed');
+}
+
+/** رسالة منع إن كان أي تاريخ ضمن سنة مقفلة، وإلا نص فارغ */
+function fiscalLockMessage(...dates) {
+    for (const d of dates) {
+        const y = fiscalYearOfDate(d);
+        if (y != null && isFiscalYearClosed(y)) {
+            return fyL(
+                `السنة المالية ${y} مقفلة، ولا يمكن إضافة سجلاتها أو تعديلها أو حذفها.`,
+                `Fiscal year ${y} is closed. Its records cannot be added, edited or deleted.`
+            );
+        }
+    }
+    return '';
+}
+
+function tripLockDate(trip) {
+    return tripCompletionDate(trip) || dateOnly(trip?.departure_date);
+}
+
+/** الرحلة الجارية لا تُقفل أبداً؛ غيرها يُقفل بتاريخ إنهائها (أو مغادرتها) */
+function isTripLockedForEdit(trip) {
+    if (!trip || isActiveOperationalTrip(trip)) return false;
+    return !!fiscalLockMessage(tripLockDate(trip));
+}
+
+/** التحصيل مسموح على الرحلات المكتملة غير المسددة حتى لو كانت في سنة مقفلة */
+function isTripLockedForSettle(trip) {
+    if (!isTripLockedForEdit(trip)) return false;
+    return !isOpenReceivableTrip(trip);
+}
+
+async function loadFiscalYears() {
+    fiscalYears = [];
+    if (!currentLoggedInUser || isPlatformHomeUser()) {
+        renderFiscalYearSelector();
+        return;
+    }
+    try {
+        let query = client.from('fiscal_years').select('*').order('year', { ascending: false });
+        const cid = currentCompanyId();
+        if (cid != null) query = query.eq('company_id', cid);
+        const { data, error } = await query;
+        if (error) throw error;
+        fiscalYearsAvailable = true;
+        fiscalYears = (data || []).map(row => ({ ...row, year: Number(row.year) })).filter(row => Number.isFinite(row.year));
+    } catch (err) {
+        const text = String(err?.message || '') + ' ' + String(err?.code || '');
+        fiscalYearsAvailable = !/fiscal_years|schema cache|relation|does not exist|42P01|PGRST205/i.test(text);
+        console.warn('fiscal_years:', err?.message || err);
+    }
+    restoreSelectedFiscalYear();
+    renderFiscalYearSelector();
+}
+
+function restoreSelectedFiscalYear() {
+    const years = fiscalYears.map(f => f.year);
+    if (!years.length) {
+        selectedFiscalYear = 'all';
+        return;
+    }
+    let saved = '';
+    try { saved = localStorage.getItem(fiscalStorageKey()) || ''; } catch (e) { saved = ''; }
+    if (saved === 'all') {
+        selectedFiscalYear = 'all';
+    } else if (years.includes(Number(saved))) {
+        selectedFiscalYear = Number(saved);
     } else {
-        container.classList.add('hidden');
-        container.innerHTML = '';
+        const cur = new Date().getFullYear();
+        selectedFiscalYear = years.includes(cur) ? cur : Math.max(...years);
     }
 }
 
-function previewYearEndOpening(trips) {
-    const keepKeys = yearResetKeepKeys(trips);
-    const kept = [];
-    const removed = [];
+function renderFiscalYearSelector() {
+    const wrap = document.getElementById('fiscalYearWrap');
+    const sel = document.getElementById('fiscalYearSelect');
+    if (!wrap || !sel) return;
+    const show = !!currentLoggedInUser && !isPlatformHomeUser() && fiscalYears.length > 0;
+    wrap.classList.toggle('hidden', !show);
+    wrap.classList.toggle('flex', show);
+    if (!show) return;
+    const label = document.getElementById('fiscalYearLabel');
+    if (label) label.textContent = fyL('السنة', 'Year');
+    const years = [...fiscalYears].sort((a, b) => b.year - a.year);
+    sel.innerHTML = `<option value="all">${escapeHtml(fyL('كل السنوات', 'All years'))}</option>` + years.map(f =>
+        `<option value="${f.year}">${f.year}${f.status === 'closed' ? ' · ' + escapeHtml(fyL('مقفلة', 'closed')) : ''}</option>`
+    ).join('');
+    sel.value = String(selectedFiscalYear);
+    const badge = document.getElementById('fiscalYearLockBadge');
+    if (badge) {
+        const closed = selectedFiscalYear !== 'all' && isFiscalYearClosed(selectedFiscalYear);
+        badge.classList.toggle('hidden', !closed);
+        badge.innerHTML = closed ? `<i class="fa-solid fa-lock"></i> ${escapeHtml(fyL('للاطلاع فقط', 'Read only'))}` : '';
+    }
+}
+
+function onFiscalYearChange(value) {
+    selectedFiscalYear = value === 'all' ? 'all' : Number(value);
+    try { localStorage.setItem(fiscalStorageKey(), String(selectedFiscalYear)); } catch (e) {}
+    renderFiscalYearSelector();
+    const tab = currentNavTab || 'dashboard';
+    if (tab === 'fiscalYears') {
+        renderFiscalYearsScreen();
+        return;
+    }
+    switchTab(tab);
+}
+
+// الشاشات التي تُضبط فترتها تلقائياً على السنة المختارة
+// (التحصيل والعمولات تُرحَّل أرصدتهما غير المسددة كأرصدة افتتاحية)
+const FISCAL_SCREEN_DATES = {
+    reports: ['reportStartDate', 'reportEndDate'],
+    reportsSection: ['reportStartDate', 'reportEndDate'],
+    financialOverviewSection: ['finStartDate', 'finEndDate'],
+    financialDetailsSection: ['finStartDate', 'finEndDate'],
+    truckProfitSection: ['profitStartDate', 'profitEndDate'],
+    clientStatementSection: ['csStartDate', 'csEndDate'],
+    driverStatementSection: ['dsStartDate', 'dsEndDate'],
+    maintenanceReport: ['maintRepStartDate', 'maintRepEndDate'],
+    maintenanceReportSection: ['maintRepStartDate', 'maintRepEndDate'],
+    fuelReport: ['fuelRepStartDate', 'fuelRepEndDate'],
+    fuelReportSection: ['fuelRepStartDate', 'fuelRepEndDate'],
+    charts: ['analyticsStartDate', 'analyticsEndDate'],
+    chartsSection: ['analyticsStartDate', 'analyticsEndDate'],
+    receivablesSection: ['recvStartDate', 'recvEndDate'],
+    commissionReportSection: ['commStartDate', 'commEndDate'],
+    commissionPayoutSection: ['commStartDate', 'commEndDate']
+};
+
+function applyFiscalYearToScreen(tabId) {
+    if (selectedFiscalYear === 'all') return;
+    const pair = FISCAL_SCREEN_DATES[String(tabId || '')];
+    if (!pair) return;
+    setFilterValue(pair[0], `${selectedFiscalYear}-01-01`);
+    setFilterValue(pair[1], `${selectedFiscalYear}-12-31`);
+    if (tabId === 'charts' || tabId === 'chartsSection') setFilterValue('analyticsPeriodPreset', 'custom');
+}
+
+// ---------- عرض السنة المختارة مع الأرصدة الافتتاحية ----------
+function fiscalViewRange() {
+    if (selectedFiscalYear === 'all' || !fiscalYears.length) return null;
+    const y = Number(selectedFiscalYear);
+    if (!Number.isFinite(y)) return null;
+    return { year: y, start: `${y}-01-01`, end: `${y}-12-31` };
+}
+
+function fiscalDateInView(value) {
+    const r = fiscalViewRange();
+    return !r || tripInDateRange(value, r.start, r.end);
+}
+
+function fiscalFilterRowsByDate(rows, field) {
+    return (rows || []).filter(row => fiscalDateInView(row?.[field]));
+}
+
+function tripFiscalDate(trip) {
+    return tripLockDate(trip) || '';
+}
+
+/** رحلة منتهية قبل بداية السنة وما زال عليها مبلغ غير محصل (رصيد افتتاحي مُرحَّل) */
+function isCarriedOpeningTrip(trip, range = fiscalViewRange()) {
+    if (!range || !isCompletedTrip(trip)) return false;
+    const d = tripFiscalDate(trip);
+    return !!d && d < range.start && tripReceivableRemaining(trip) > 0.009;
+}
+
+/** رحلات السنة المختارة + الجارية + غير المحصّل المُرحَّل من السنوات السابقة */
+function fiscalTripsForView(trips) {
+    const r = fiscalViewRange();
+    if (!r) return trips || [];
+    const out = [];
+    (trips || []).forEach(tr => {
+        if (isActiveOperationalTrip(tr)) {
+            const y = fiscalYearOfDate(tr.departure_date);
+            if (y == null || y <= r.year) out.push(tr);
+            return;
+        }
+        if (tripInDateRange(tripFiscalDate(tr), r.start, r.end)) {
+            out.push(tr);
+            return;
+        }
+        if (isCarriedOpeningTrip(tr, r)) out.push({ ...tr, _carriedOpening: true });
+    });
+    return out;
+}
+
+/** شارة الرصيد الافتتاحي: تتحول إلى «مسدد خلال الفترة» عند إغلاقه بالكامل */
+function openingCarryBadgeHtml(copy) {
+    const collected = roundMoney(copy.paid_amount || 0) > 0;
+    if (collected && tripReceivableRemaining(copy) <= 0.009) {
+        return `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(t('fy.openingClosed'))}</span>`;
+    }
+    if (collected) {
+        return `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(t('fy.openingPartial'))}</span>`;
+    }
+    return fiscalOpeningBadgeHtml();
+}
+
+function fiscalOpeningBadgeHtml() {
+    return `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${escapeHtml(t('fy.opening'))}</span>`;
+}
+
+/**
+ * تقرير التحصيل لفترة (السنة المختارة أو فترة محددة):
+ * - الرصيد الافتتاحي = المتبقي في نهاية الفترة السابقة (لا المتبقي الحالي).
+ * - المستحق في الفترة = رحلات أُنهيت داخل الفترة + الرصيد الافتتاحي.
+ * - التحصيل = الدفعات المسجلة داخل الفترة فقط.
+ * فيظهر الرصيد نفسه في تقرير السنة السابقة كرصيد ختامي، وفي السنة الجديدة كرصيد افتتاحي.
+ */
+function receivablePeriodCopies(trips, startDate, endDate) {
+    const out = [];
     (trips || []).forEach(trip => {
-        if (shouldKeepAfterYearReset(trip, keepKeys)) kept.push(trip);
-        else removed.push(trip);
-    });
-    const openingByDriver = new Map();
-    removed.forEach(trip => {
         if (!isCompletedTrip(trip)) return;
-        const name = String(trip.driver_name || '').trim();
-        const amount = roundMoney(commissionAmount(trip));
-        if (!name || amount <= 0.009) return;
-        openingByDriver.set(name, roundMoney((openingByDriver.get(name) || 0) + amount));
+        const completion = tripCompletionDate(trip) || '';
+        if (!completion) return;
+        if (endDate && completion > endDate) return;
+        const total = roundMoney(trip.total_amount || trip.revenue || 0);
+        let before = 0;
+        let inPeriod = 0;
+        const inPeriodLines = [];
+        paymentLineItems(trip).forEach(line => {
+            const amount = roundMoney(line.paid_amount || 0);
+            const day = dateOnly(line.collection_date) || completion;
+            if (startDate && day < startDate) { before += amount; return; }
+            if (endDate && day > endDate) return;
+            inPeriod += amount;
+            inPeriodLines.push(line);
+        });
+        const openingCarry = !!startDate && completion < startDate;
+        const endRemaining = roundMoney(Math.max(0, total - before - inPeriod));
+        const copyTotal = openingCarry ? roundMoney(total - before) : total;
+        if (openingCarry && (copyTotal <= 0.009 || (endRemaining <= 0.009 && inPeriod <= 0.009))) return;
+        out.push({
+            ...trip,
+            total_amount: copyTotal,
+            paid_amount: roundMoney(copyTotal - endRemaining),
+            remaining_amount: endRemaining,
+            _periodOpening: openingCarry,
+            _periodLines: inPeriodLines
+        });
     });
+    return out;
+}
+
+/** رصيد العمولة الافتتاحي لكل سائق = المستحق قبل بداية الفترة − المصروف قبلها */
+function commissionOpeningByDriver(trips, startDate) {
+    const map = new Map();
+    if (!startDate) return map;
+    (trips || []).forEach(trip => {
+        const name = String(trip?.driver_name || '').trim();
+        if (!name) return;
+        let delta = 0;
+        if (isCommissionPayout(trip)) {
+            const d = dateOnly(trip.departure_date) || dateOnly(trip.collection_date);
+            if (d && d < startDate) delta = -commissionAmount(trip);
+        } else if (isCommissionEarnedTrip(trip)) {
+            const d = tripCompletionDate(trip);
+            if (d && d < startDate) delta = commissionAmount(trip);
+        }
+        if (delta) map.set(name, (map.get(name) || 0) + delta);
+    });
+    [...map.keys()].forEach(name => {
+        const v = roundMoney(map.get(name));
+        if (Math.abs(v) < 0.009) map.delete(name);
+        else map.set(name, v);
+    });
+    return map;
+}
+
+async function setFiscalYearStatus(year, status) {
+    const { error } = await client.rpc('fleetop_set_fiscal_year', { p_year: Number(year), p_status: status });
+    if (error) {
+        const missing = /fleetop_set_fiscal_year|Could not find the function|42883/i.test(error.message || '');
+        throw new Error(missing
+            ? fyL('نفّذ ملف fleetop-fiscal-years.sql في Supabase SQL Editor أولاً.', 'Run fleetop-fiscal-years.sql in the Supabase SQL Editor first.')
+            : (error.message || String(error)));
+    }
+}
+
+// ---------- أرصدة العدادات الافتتاحية ----------
+function fiscalOdometerMarker(year) {
+    return `رصيد افتتاحي — عام ${year}`;
+}
+
+/** آخر قراءة عداد لكل شاحنة قبل تاريخ بداية السنة (بدون صفوف الرصيد الافتتاحي لنفس السنة) */
+function latestFuelReadingsBefore(fuelRows, year) {
+    const jan1 = `${year}-01-01`;
+    const marker = fiscalOdometerMarker(year);
+    const byPlate = new Map();
+    (fuelRows || []).forEach((row) => {
+        const plate = String(row.truck_plate || '').trim();
+        if (!plate || !(fuelNum(row.odometer) > 0)) return;
+        const day = dateOnly(row.fill_date);
+        if (!day || day >= jan1) return;
+        if (String(row.notes || '').includes(marker)) return;
+        const prev = byPlate.get(plate);
+        const newer = !prev
+            || day > dateOnly(prev.fill_date)
+            || (day === dateOnly(prev.fill_date) && Number(row.id || 0) > Number(prev.id || 0));
+        if (newer) byPlate.set(plate, row);
+    });
+    return byPlate;
+}
+
+async function syncFiscalOdometers(year) {
+    const companyId = requireFuelCompanyId();
+    if (companyId == null) throw new Error(fyL('تعذر تحديد الشركة.', 'Company context is missing.'));
+    const { data, error } = await fetchAllRows(scopeFuelQuery(client.from('fuel_logs').select('*')));
+    if (error) throw error;
+    const rows = data || [];
+    const jan1 = `${year}-01-01`;
+    const marker = fiscalOdometerMarker(year);
+    const existing = rows.filter(r => dateOnly(r.fill_date) === jan1 && String(r.notes || '').includes(marker));
+    let created = 0;
+    let updated = 0;
+    for (const [plate, last] of latestFuelReadingsBefore(rows, year)) {
+        const odometer = fuelNum(last.odometer);
+        const ex = existing.find(r => String(r.truck_plate || '').trim() === plate);
+        if (ex) {
+            if (fuelNum(ex.odometer) !== odometer) {
+                const res = await scopeFuelQuery(client.from('fuel_logs').update({ odometer, updated_at: new Date().toISOString() })).eq('id', ex.id);
+                if (res.error) throw res.error;
+                updated += 1;
+            }
+            continue;
+        }
+        const payload = withCompany({
+            company_id: companyId,
+            truck_plate: plate,
+            fill_date: jan1,
+            odometer,
+            liters: 0,
+            amount: 0,
+            station: null,
+            notes: marker,
+            is_baseline: true
+        });
+        payload.company_id = companyId;
+        const write = async (d) => client.from('fuel_logs').insert([{ ...d, company_id: companyId }]);
+        const res = await writeIgnoringUnknownColumns(write, payload);
+        if (res.error) throw res.error;
+        created += 1;
+    }
+    return { created, updated };
+}
+
+// ---------- معاينة ما ينتقل إلى السنة الجديدة ----------
+async function computeYearOpeningPreview(year) {
+    const [tripsRes, fuelRes] = await Promise.all([
+        fetchAllRows(client.from('trips').select('*')),
+        fetchAllRows(scopeFuelQuery(client.from('fuel_logs').select('*')))
+    ]);
+    if (tripsRes.error) throw tripsRes.error;
+    const trips = tripsRes.data || [];
+    const clientDebt = new Map();
+    trips.filter(isOpenReceivableTrip).forEach((trip) => {
+        const name = String(trip.client_name || '').trim() || '—';
+        clientDebt.set(name, roundMoney((clientDebt.get(name) || 0) + tripReceivableRemaining(trip)));
+    });
+    const drivers = remainingCommissionsByDriver(trips);
     return {
-        keepKeys,
-        kept,
-        removed,
-        openingRows: [...openingByDriver.entries()]
-            .map(([name, amount]) => [name, roundMoney(amount)])
-            .filter(([, amount]) => amount > 0.009)
-            .sort((a, b) => a[0].localeCompare(b[0], 'ar')),
-        activeCount: kept.filter(isActiveOperationalTrip).length,
-        unpaidCount: kept.filter(isOpenReceivableTrip).length,
-        payoutCount: kept.filter(isCommissionPayout).length
+        clientCount: clientDebt.size,
+        clientTotal: roundMoney([...clientDebt.values()].reduce((s, v) => s + v, 0)),
+        driverCount: drivers.length,
+        driverTotal: roundMoney(drivers.reduce((s, [, v]) => s + v, 0)),
+        activeTrips: trips.filter(isActiveOperationalTrip).length,
+        truckCount: latestFuelReadingsBefore(fuelRes.error ? [] : (fuelRes.data || []), year).size
     };
 }
 
-async function resetTripCounter() {
+// ---------- إجراءات المدير ----------
+function fiscalActionGuard() {
     if (!isAdminUser()) {
-        alert(currentLang === 'en'
-            ? 'Resetting trips is available to administrators only.'
-            : 'عذراً، تصفير الرحلات متاح لصلاحيات المدير فقط.');
-        return;
+        alert(fyL('هذه العملية للمدير فقط.', 'Administrators only.'));
+        return false;
     }
-    const ar = currentLang !== 'en';
+    if (fiscalScreenBusy) return false;
+    return true;
+}
+
+function fiscalStatusLabel(status) {
+    return status === 'closed' ? fyL('مقفلة', 'Closed') : fyL('مفتوحة', 'Open');
+}
+
+async function activateFiscalYears() {
+    if (!fiscalActionGuard()) return;
+    fiscalScreenBusy = true;
     try {
-        const { data: currentTrips, error: loadError } = await fetchAllRows(client.from('trips').select('*'));
-        if (loadError) throw loadError;
-        const trips = currentTrips || [];
-        const preview = previewYearEndOpening(trips);
-        const openingLines = preview.openingRows.length
-            ? preview.openingRows.map(([name, amount]) => `• ${name}: ${formatMoney(amount)}`).join('\n')
-            : (ar ? '• لا يوجد رصيد عمولة مرحّل من الرحلات المغلقة' : '• No commission opening balance from closed trips');
+        const cur = new Date().getFullYear();
+        let minYear = cur;
+        const probes = [
+            client.from('trips').select('departure_date').not('departure_date', 'is', null).order('departure_date', { ascending: true }).limit(1),
+            scopeFuelQuery(client.from('fuel_logs').select('fill_date')).order('fill_date', { ascending: true }).limit(1),
+            client.from('vehicle_maintenance').select('service_date').order('service_date', { ascending: true }).limit(1)
+        ];
+        const results = await Promise.all(probes.map(p => p.then(r => r, () => ({ data: [] }))));
+        results.forEach((res) => {
+            const row = (res.data || [])[0];
+            const y = fiscalYearOfDate(row?.departure_date || row?.fill_date || row?.service_date);
+            if (y != null && y > 2000 && y < minYear) minYear = y;
+        });
         const ok = await appConfirm(
-            ar
-                ? `تصفير نهاية العام للانتقال إلى 2027:\n\nيبقى:\n• الرحلات الجارية: ${preview.activeCount} (تُنهى وتحصَّل في العام الجديد)\n• المكتملة غير المسددة: ${preview.unpaidCount} (تحصيل العميل في 2027)\n• سجل صرف العمولات: ${preview.payoutCount} دفعة (تبقى لمطابقة الرصيد)\n\nيُحذف:\n• المكتملة المسددة بالكامل والملغاة\n\nرصيد افتتاحي للعمولات من الرحلات المغلقة:\n${openingLines}\n\nعمولة الرحلات المتبقية تبقى على الرحلة نفسها.\nالرحلات الجديدة تُرقَّم TRP-27-....\nهل تريد المتابعة؟`
-                : `Year-end reset for 2027:\n\nKeep:\n• Active trips: ${preview.activeCount}\n• Completed unpaid trips: ${preview.unpaidCount}\n• Commission payouts: ${preview.payoutCount}\n\nDelete fully paid and cancelled trips.\n\nOpening commission from closed trips:\n${openingLines}\n\nContinue?`,
-            { okLabel: ar ? 'تصفير وإغلاق العام' : 'Close year', cancelLabel: ar ? 'إلغاء' : 'Cancel' }
+            fyL(
+                `تفعيل السنوات المالية من ${minYear} إلى ${cur}.\n\nستُنشأ السنوات كلها مفتوحة، ولن يُحذف أو يُنقل أي شيء من بياناتك.\nستظهر قائمة اختيار السنة في أعلى الشاشة، وتعمل التقارير بفترة السنة المختارة تلقائياً.\n\nهل تريد المتابعة؟`,
+                `Activate fiscal years from ${minYear} to ${cur}.\n\nAll years are created open. Nothing is deleted or moved.\nA year selector appears in the header and reports default to the selected year.\n\nContinue?`
+            ),
+            { okLabel: fyL('تفعيل', 'Activate'), cancelLabel: fyL('إلغاء', 'Cancel') }
         );
         if (!ok) return;
-
-        const { kept, removed, openingRows } = preview;
-        const removeIds = removed.map(trip => trip.id).filter(id => id != null);
-        if (removeIds.length) await deleteTripRowsByIds(removeIds);
-
-        let carried = 0;
-        if (openingRows.length) {
-            const openDate = openingBalanceDate();
-            const year = openDate.slice(0, 4);
-            const existingOpen = kept.filter(isOpeningBalance).length;
-            const rows = openingRows.map(([name, amount], index) => withCompany({
-                trip_no: `OPEN-${year}-${existingOpen + index + 1}`,
-                client_name: ar ? 'رصيد افتتاحي' : 'Opening balance',
-                from_city: '-',
-                to_city: '-',
-                trip_type: 'رصيد افتتاحي',
-                departure_date: openDate,
-                truck_plate: '-',
-                driver_name: name,
-                driver_commission: amount,
-                total_amount: 0,
-                paid_amount: 0,
-                remaining_amount: 0,
-                status: 'رصيد افتتاحي',
-                payment_status: 'مرحّل',
-                payment_method: ar ? 'عمولة مرحلة من رحلات العام السابق' : 'Carried commission from previous-year trips'
-            }));
-            const { error: insertError } = await client.from('trips').insert(rows);
-            if (insertError) {
-                alert((ar
-                    ? 'حُذفت الرحلات المغلقة، لكن تعذر حفظ رصيد العمولة الافتتاحي. سجّل هذه المبالغ:\n'
-                    : 'Closed trips were deleted, but opening commissions could not be saved. Record these amounts:\n')
-                    + openingRows.map(([name, amount]) => `${name}: ${formatMoney(amount)}`).join('\n')
-                    + '\n' + insertError.message);
-            } else {
-                carried = openingRows.length;
-            }
-        }
-
-        const busyPlates = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.truck_plate || '').trim()).filter(Boolean));
-        const busyDrivers = new Set(kept.filter(isActiveOperationalTrip).map(trip => String(trip.driver_name || '').trim()).filter(Boolean));
-        const { data: onTripTrucks } = await client.from('trucks').select('id, plate, status, vehicle_kind').eq('status', 'في رحلة');
-        const freeOnTrip = (onTripTrucks || []).filter(tr => !isInactiveFleetVehicle(tr) && !busyPlates.has(String(tr.plate || '').trim()));
-        const freeCargoIds = freeOnTrip.filter(isCargoTruck).map(tr => tr.id);
-        const freeAdminIds = freeOnTrip.filter(tr => !isCargoTruck(tr)).map(tr => tr.id);
-        if (freeCargoIds.length) await client.from('trucks').update({ status: 'جاهزة للتحميل' }).in('id', freeCargoIds);
-        if (freeAdminIds.length) await client.from('trucks').update({ status: 'مستخدمة إدارياً' }).in('id', freeAdminIds);
-        const { data: onTripDrivers } = await client.from('drivers').select('id, name, status').eq('status', 'في رحلة');
-        const freeDriverIds = (onTripDrivers || []).filter(dr => !busyDrivers.has(String(dr.name || '').trim())).map(dr => dr.id);
-        if (freeDriverIds.length) await client.from('drivers').update({ status: 'متوفر' }).in('id', freeDriverIds);
-
-        const activeCount = kept.filter(isActiveOperationalTrip).length;
-        const unpaidCount = kept.filter(isOpenReceivableTrip).length;
-        logActivity('year.reset', 'نظام', '', `جارية ${activeCount} · غير مسددة ${unpaidCount} · أرصدة افتتاحية ${carried}`);
-        alert(ar
-            ? `تم إغلاق العام.\nرحلات جارية متبقية: ${activeCount}\nرحلات غير مسددة متبقية: ${unpaidCount}\nعمولات مرحلة كرصيد افتتاحي: ${carried} سائق\nالرحلات الجديدة تأخذ رقم السنة، مثل TRP-27-1001 في عام 2027.`
-            : `Year closed.\nActive trips kept: ${activeCount}\nUnpaid completed trips kept: ${unpaidCount}\nOpening commission balances: ${carried} drivers\nNew trips use a year code, e.g. TRP-27-1001 in 2027.`);
-        if (typeof loadAllData === 'function') loadAllData();
+        for (let y = minYear; y <= cur; y += 1) await setFiscalYearStatus(y, 'open');
+        logActivity('fiscalyear.open', 'سنة مالية', `${minYear} - ${cur}`, buildActivityDiffLines([
+            formatActivityDiffLine(fyL('السنوات المالية', 'Fiscal years'), '—', fyL('مفعّلة', 'Activated'))
+        ]));
+        await loadFiscalYears();
+        renderFiscalYearsScreen();
+        refreshFiscalStats();
     } catch (err) {
         console.error(err);
-        alert((currentLang === 'en' ? 'Could not reset the trip counter: ' : 'حدث خطأ أثناء تصفير العداد: ') + (err.message || err));
+        alert(err.message || String(err));
+    } finally {
+        fiscalScreenBusy = false;
     }
 }
+
+function fiscalNextYear() {
+    if (!fiscalYears.length) return null;
+    const maxYear = Math.max(...fiscalYears.map(f => f.year));
+    return maxYear + 1 <= new Date().getFullYear() + 1 ? maxYear + 1 : null;
+}
+
+async function openNextFiscalYear() {
+    if (!fiscalActionGuard()) return;
+    const year = fiscalNextYear();
+    if (!year) return;
+    fiscalScreenBusy = true;
+    try {
+        const p = await computeYearOpeningPreview(year);
+        const money = (v) => formatMoney(v);
+        const ok = await appConfirm(
+            fyL(
+                `فتح السنة المالية ${year}\n\nتنتقل تلقائياً إلى السنة الجديدة (وتظهر في الكشوف كرصيد أول المدة):\n• مديونيات العملاء: ${p.clientCount} عميل — ${money(p.clientTotal)}\n• عمولات السائقين المستحقة: ${p.driverCount} سائق — ${money(p.driverTotal)}\n• الرحلات الجارية: ${p.activeTrips} رحلة (تُنهى وتُحصَّل في السنة الجديدة)\n\nوتُسجَّل قراءات عدادات الوقود كرصيد افتتاحي بتاريخ ${year}-01-01: ${p.truckCount} شاحنة.\n\nالمنشأة والموظفون والمركبات والوثائق مشتركة بين السنوات ولا تحتاج إلى نقل.\nالصيانة والوقود تبدأ السنة الجديدة من الصفر في العرض، وسجلات ${year - 1} تبقى كاملة للاطلاع والمقارنة.\n\nهل تريد المتابعة؟`,
+                `Open fiscal year ${year}\n\nCarried over automatically (shown as opening balance in statements):\n• Client receivables: ${p.clientCount} clients — ${money(p.clientTotal)}\n• Driver commissions due: ${p.driverCount} drivers — ${money(p.driverTotal)}\n• Active trips: ${p.activeTrips}\n\nFuel odometer readings are recorded as opening balances on ${year}-01-01: ${p.truckCount} trucks.\n\nFacility, staff, vehicles and documents are shared across years.\nMaintenance and fuel start the new year empty in views; ${year - 1} stays intact for review and comparison.\n\nContinue?`
+            ),
+            { okLabel: fyL(`فتح ${year}`, `Open ${year}`), cancelLabel: fyL('إلغاء', 'Cancel') }
+        );
+        if (!ok) return;
+        await setFiscalYearStatus(year, 'open');
+        let odo = { created: 0, updated: 0 };
+        try {
+            odo = await syncFiscalOdometers(year);
+        } catch (err) {
+            console.error(err);
+            alert(fyL('فُتحت السنة، لكن تعذر تسجيل أرصدة العدادات الافتتاحية. استخدم زر «تحديث العدادات الافتتاحية» لاحقاً.\n', 'The year was opened but opening odometers could not be saved. Use “Refresh opening odometers” later.\n') + (err.message || ''));
+        }
+        logActivity('fiscalyear.open', 'سنة مالية', year, buildActivityDiffLines([
+            formatActivityDiffLine(fyL('الحالة', 'Status'), '—', fiscalStatusLabel('open')),
+            formatActivityDiffLine(fyL('عدادات افتتاحية', 'Opening odometers'), '—', `${odo.created}`)
+        ]));
+        await loadFiscalYears();
+        renderFiscalYearsScreen();
+        refreshFiscalStats();
+        alert(fyL(`تم فتح السنة ${year}.`, `Fiscal year ${year} is open.`));
+    } catch (err) {
+        console.error(err);
+        alert(err.message || String(err));
+    } finally {
+        fiscalScreenBusy = false;
+    }
+}
+
+async function closeFiscalYearAction(year) {
+    if (!fiscalActionGuard()) return;
+    const hasLater = fiscalYears.some(f => f.year > year);
+    if (!hasLater) {
+        alert(fyL('افتح السنة التالية أولاً ثم أقفل هذه السنة.', 'Open the next year first, then close this one.'));
+        return;
+    }
+    fiscalScreenBusy = true;
+    try {
+        const ok = await appConfirm(
+            fyL(
+                `إقفال السنة ${year}\n\nتصبح سجلات ${year} للاطلاع فقط: لا إضافة ولا تعديل ولا حذف للرحلات والوقود والصيانة ودفعات العمولات.\nيبقى مسموحاً: إنهاء الرحلات الجارية، وتحصيل الرحلات المكتملة غير المسددة.\nيمكنك إعادة فتح السنة لاحقاً عند الحاجة.\n\nهل تريد الإقفال؟`,
+                `Close fiscal year ${year}\n\nRecords of ${year} become read-only (trips, fuel, maintenance, commission payouts).\nStill allowed: finishing active trips and collecting unpaid completed trips.\nYou can reopen the year later.\n\nClose it?`
+            ),
+            { okLabel: fyL('إقفال', 'Close'), cancelLabel: fyL('إلغاء', 'Cancel') }
+        );
+        if (!ok) return;
+        await setFiscalYearStatus(year, 'closed');
+        logActivity('fiscalyear.close', 'سنة مالية', year, buildActivityDiffLines([
+            formatActivityDiffLine(fyL('الحالة', 'Status'), fiscalStatusLabel('open'), fiscalStatusLabel('closed'))
+        ]));
+        await loadFiscalYears();
+        renderFiscalYearsScreen();
+    } catch (err) {
+        console.error(err);
+        alert(err.message || String(err));
+    } finally {
+        fiscalScreenBusy = false;
+    }
+}
+
+async function reopenFiscalYearAction(year) {
+    if (!fiscalActionGuard()) return;
+    fiscalScreenBusy = true;
+    try {
+        const ok = await appConfirm(
+            fyL(`إعادة فتح السنة ${year} للتعديل؟`, `Reopen fiscal year ${year} for editing?`),
+            { okLabel: fyL('إعادة فتح', 'Reopen'), cancelLabel: fyL('إلغاء', 'Cancel') }
+        );
+        if (!ok) return;
+        await setFiscalYearStatus(year, 'open');
+        logActivity('fiscalyear.reopen', 'سنة مالية', year, buildActivityDiffLines([
+            formatActivityDiffLine(fyL('الحالة', 'Status'), fiscalStatusLabel('closed'), fiscalStatusLabel('open'))
+        ]));
+        await loadFiscalYears();
+        renderFiscalYearsScreen();
+    } catch (err) {
+        console.error(err);
+        alert(err.message || String(err));
+    } finally {
+        fiscalScreenBusy = false;
+    }
+}
+
+async function syncFiscalOdometersAction(year) {
+    if (!fiscalActionGuard()) return;
+    fiscalScreenBusy = true;
+    try {
+        const res = await syncFiscalOdometers(year);
+        logActivity('fiscalyear.sync', 'سنة مالية', year, buildActivityDiffLines([
+            formatActivityDiffLine(fyL('عدادات افتتاحية', 'Opening odometers'), '—', fyL(`جديد ${res.created} · محدّث ${res.updated}`, `new ${res.created} · updated ${res.updated}`))
+        ]));
+        alert(fyL(`تم تحديث العدادات الافتتاحية: جديد ${res.created} · محدّث ${res.updated}.`, `Opening odometers refreshed: new ${res.created}, updated ${res.updated}.`));
+    } catch (err) {
+        console.error(err);
+        alert(err.message || String(err));
+    } finally {
+        fiscalScreenBusy = false;
+    }
+}
+
+// ---------- الشاشة ----------
+async function loadFiscalYearsScreen() {
+    if (!isAdminUser()) {
+        alert(fyL('هذه الشاشة للمدير فقط.', 'Administrators only.'));
+        switchTab('dashboard');
+        return;
+    }
+    await loadFiscalYears();
+    renderFiscalYearsScreen();
+    if (fiscalYears.length) refreshFiscalStats();
+}
+
+function renderFiscalYearsScreen() {
+    const root = document.getElementById('fiscalYearsRoot');
+    if (!root) return;
+    if (!fiscalYearsAvailable) {
+        root.innerHTML = `<div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-5 text-sm font-bold">${escapeHtml(fyL('ميزة السنوات المالية تحتاج تجهيز قاعدة البيانات مرة واحدة: نفّذ ملف fleetop-fiscal-years.sql في Supabase SQL Editor ثم أعد فتح هذه الشاشة.', 'Fiscal years need a one-time database setup: run fleetop-fiscal-years.sql in the Supabase SQL Editor, then reopen this screen.'))}</div>`;
+        return;
+    }
+    const years = [...fiscalYears].sort((a, b) => b.year - a.year);
+    const maxYear = years.length ? years[0].year : null;
+    const nextYear = fiscalNextYear();
+    let mainAction;
+    if (!years.length) {
+        mainAction = `<button type="button" onclick="activateFiscalYears()" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-5 py-3 rounded-xl text-xs transition flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i> ${escapeHtml(fyL('تفعيل السنوات المالية', 'Activate fiscal years'))}</button>`;
+    } else if (nextYear) {
+        mainAction = `<button type="button" onclick="openNextFiscalYear()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-3 rounded-xl text-xs transition flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i> ${escapeHtml(fyL(`فتح سنة ${nextYear}`, `Open year ${nextYear}`))}</button>`;
+    } else {
+        mainAction = `<span class="text-xs font-bold text-slate-500">${escapeHtml(fyL(`السنة التالية (${maxYear}) مفتوحة بالفعل`, `The next year (${maxYear}) is already open`))}</span>`;
+    }
+    const rows = years.map((f) => {
+        const closed = f.status === 'closed';
+        const isLatest = f.year === maxYear;
+        const buttons = [];
+        if (!closed && !isLatest) {
+            buttons.push(`<button type="button" onclick="closeFiscalYearAction(${f.year})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100">${escapeHtml(fyL('إقفال', 'Close'))}</button>`);
+        }
+        if (closed) {
+            buttons.push(`<button type="button" onclick="reopenFiscalYearAction(${f.year})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200">${escapeHtml(fyL('إعادة فتح', 'Reopen'))}</button>`);
+        }
+        if (!closed && years.length > 1 && f.year > years[years.length - 1].year) {
+            buttons.push(`<button type="button" onclick="syncFiscalOdometersAction(${f.year})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">${escapeHtml(fyL('تحديث العدادات الافتتاحية', 'Refresh opening odometers'))}</button>`);
+        }
+        const badge = closed
+            ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-lock"></i> ${escapeHtml(fiscalStatusLabel('closed'))}</span>`
+            : `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">${escapeHtml(fiscalStatusLabel('open'))}</span>`;
+        return `<tr class="hover:bg-slate-50">
+            <td class="p-3 font-black text-slate-900 font-mono text-sm">${f.year}</td>
+            <td class="p-3">${badge}</td>
+            <td class="p-3 font-mono text-slate-600">${escapeHtml(dateOnly(f.opened_at) || '—')}${f.opened_by ? ` · ${escapeHtml(f.opened_by)}` : ''}</td>
+            <td class="p-3 font-mono text-slate-600">${closed ? escapeHtml(dateOnly(f.closed_at) || '—') + (f.closed_by ? ` · ${escapeHtml(f.closed_by)}` : '') : '—'}</td>
+            <td class="p-3"><div class="flex flex-wrap items-center justify-center gap-1.5">${buttons.join('') || '<span class="text-slate-300">—</span>'}</div></td>
+        </tr>`;
+    }).join('');
+    root.innerHTML = `
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="min-w-0">
+                <h3 class="font-black text-sm text-slate-900">${escapeHtml(fyL('السنوات المالية', 'Fiscal years'))}</h3>
+                <p class="text-[11px] text-slate-500 mt-1 leading-6">${escapeHtml(fyL('لا يُحذف أي شيء عند فتح سنة جديدة: الأرصدة تنتقل تلقائياً، والسنوات السابقة تبقى كاملة للاطلاع والمقارنة. إقفال السنة يجعل سجلاتها للقراءة فقط.', 'Nothing is deleted when a year is opened: balances carry over automatically and previous years stay complete for review and comparison. Closing a year makes its records read-only.'))}</p>
+            </div>
+            <div class="shrink-0">${mainAction}</div>
+        </div>
+        ${years.length ? `
+        <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+            <table class="w-full text-right text-xs text-slate-700">
+                <thead class="bg-slate-100 text-slate-700"><tr>
+                    <th class="p-3 rounded-r-xl">${escapeHtml(fyL('السنة', 'Year'))}</th>
+                    <th class="p-3">${escapeHtml(fyL('الحالة', 'Status'))}</th>
+                    <th class="p-3">${escapeHtml(fyL('تاريخ الفتح', 'Opened'))}</th>
+                    <th class="p-3">${escapeHtml(fyL('تاريخ الإقفال', 'Closed'))}</th>
+                    <th class="p-3 text-center rounded-l-xl">${escapeHtml(fyL('إجراءات', 'Actions'))}</th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-100">${rows}</tbody>
+            </table>
+        </div>
+        <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 min-w-0">
+            <h3 class="font-black text-sm text-slate-900 mb-3">${escapeHtml(fyL('مقارنة السنوات', 'Year comparison'))}</h3>
+            <div id="fiscalCompareWrap" class="overflow-x-auto"></div>
+        </div>` : ''}`;
+}
+
+async function refreshFiscalStats() {
+    const wrap = document.getElementById('fiscalCompareWrap');
+    if (!wrap) return;
+    wrap.innerHTML = `<p class="text-xs text-slate-400 p-3">${escapeHtml(fyL('جاري الحساب...', 'Calculating...'))}</p>`;
+    try {
+        const [tripsRes, fuelRes, maintRes] = await Promise.all([
+            fetchAllRows(client.from('trips').select('*')),
+            fetchAllRows(scopeFuelQuery(client.from('fuel_logs').select('*'))),
+            fetchAllRows(client.from('vehicle_maintenance').select('*'))
+        ]);
+        if (tripsRes.error) throw tripsRes.error;
+        const stats = new Map();
+        const bucket = (y) => {
+            if (y == null) return null;
+            if (!stats.has(y)) stats.set(y, { year: y, trips: 0, revenue: 0, commission: 0, fuel: 0, maintenance: 0 });
+            return stats.get(y);
+        };
+        (tripsRes.data || []).filter(isCompletedTrip).forEach((trip) => {
+            const b = bucket(fiscalYearOfDate(tripCompletionDate(trip)));
+            if (!b) return;
+            b.trips += 1;
+            b.revenue += roundMoney(trip.total_amount || 0);
+            b.commission += roundMoney(commissionAmount(trip));
+        });
+        (fuelRes.error ? [] : (fuelRes.data || [])).forEach((row) => {
+            if (isFuelBaselineRow(row)) return;
+            const b = bucket(fiscalYearOfDate(row.fill_date));
+            if (b) b.fuel += roundMoney(row.amount || 0);
+        });
+        (maintRes.error ? [] : (maintRes.data || [])).forEach((row) => {
+            const b = bucket(fiscalYearOfDate(row.service_date));
+            if (b) b.maintenance += roundMoney(row.cost || 0);
+        });
+        const asc = [...stats.values()].sort((a, b) => a.year - b.year).map((s) => ({
+            ...s,
+            net: roundMoney(s.revenue - s.commission - s.fuel - s.maintenance)
+        }));
+        if (!asc.length) {
+            wrap.innerHTML = `<p class="text-xs text-slate-400 p-3">${escapeHtml(fyL('لا توجد بيانات بعد.', 'No data yet.'))}</p>`;
+            return;
+        }
+        const delta = (cur, prev) => {
+            if (prev == null || !prev) return '';
+            const pct = ((cur - prev) / Math.abs(prev)) * 100;
+            const up = pct >= 0;
+            return ` <span class="text-[10px] font-black ${up ? 'text-emerald-600' : 'text-rose-600'}" dir="ltr">${up ? '▲' : '▼'} ${Math.abs(pct).toFixed(0)}%</span>`;
+        };
+        const body = [...asc].reverse().map((s) => {
+            const prev = asc.find(x => x.year === s.year - 1) || null;
+            return `<tr class="hover:bg-slate-50">
+                <td class="p-3 font-black font-mono text-slate-900">${s.year}${isFiscalYearClosed(s.year) ? ' <i class="fa-solid fa-lock text-[10px] text-rose-500"></i>' : ''}</td>
+                <td class="p-3 font-mono">${s.trips.toLocaleString('en-US')}${delta(s.trips, prev?.trips)}</td>
+                <td class="p-3 font-mono">${formatSAR(roundMoney(s.revenue))}${delta(s.revenue, prev?.revenue)}</td>
+                <td class="p-3 font-mono">${formatSAR(roundMoney(s.commission))}</td>
+                <td class="p-3 font-mono">${formatSAR(roundMoney(s.fuel))}</td>
+                <td class="p-3 font-mono">${formatSAR(roundMoney(s.maintenance))}</td>
+                <td class="p-3 font-mono font-black ${s.net < 0 ? 'text-rose-700' : 'text-emerald-700'}">${formatSAR(s.net)}${delta(s.net, prev?.net)}</td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table class="w-full text-right text-xs text-slate-700">
+            <thead class="bg-slate-100 text-slate-700"><tr>
+                <th class="p-3 rounded-r-xl">${escapeHtml(fyL('السنة', 'Year'))}</th>
+                <th class="p-3">${escapeHtml(fyL('رحلات مكتملة', 'Completed trips'))}</th>
+                <th class="p-3">${escapeHtml(fyL('الإيرادات', 'Revenue'))}</th>
+                <th class="p-3">${escapeHtml(fyL('العمولات', 'Commissions'))}</th>
+                <th class="p-3">${escapeHtml(fyL('الوقود', 'Fuel'))}</th>
+                <th class="p-3">${escapeHtml(fyL('الصيانة', 'Maintenance'))}</th>
+                <th class="p-3 rounded-l-xl">${escapeHtml(fyL('الصافي', 'Net'))}</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-100">${body}</tbody>
+        </table>
+        <p class="text-[10px] text-slate-400 mt-2">${escapeHtml(fyL('الرحلات تُحسب بتاريخ إنهائها. الصافي = الإيرادات − العمولات − الوقود − الصيانة.', 'Trips are counted by completion date. Net = revenue − commissions − fuel − maintenance.'))}</p>`;
+    } catch (err) {
+        console.error(err);
+        wrap.innerHTML = `<p class="text-xs text-rose-600 p-3">${escapeHtml(err.message || String(err))}</p>`;
+    }
+}
+
        // دالة شاملة لتبديل الأقسام وتفعيل الشاشات الجانبية والمالية
 function isDesktopSidebarLayout() {
     return window.matchMedia('(min-width: 1280px)').matches;
@@ -11717,8 +12756,7 @@ function toggleFacilityMenu(forceOpen) {
 
 function collapseSidebarSubmenus() {
     [
-        ['facilitySubMenu', 'facilityMenuChevron'],
-        ['systemSubMenu', 'systemMenuChevron']
+        ['facilitySubMenu', 'facilityMenuChevron']
     ].forEach(([subId, chevronId]) => toggleSidebarSubmenu(subId, chevronId, false));
 }
 
@@ -11726,8 +12764,6 @@ function openCurrentSidebarPath() {
     const tabId = currentNavTab || '';
     if (tabId === 'trucks' || tabId === 'otherVehicles' || tabId === 'drivers' || tabId === 'employees' || tabId === 'facility') {
         toggleFacilityMenu(true);
-    } else if (tabId === 'settings' || tabId === 'activityLog' || tabId === 'activityLogSection') {
-        toggleSystemMenu(true);
     }
 }
 
@@ -12582,7 +13618,7 @@ function closeFuelModal() {
 function renderFuelManage() {
     const tbody = document.getElementById('fuelManageTable');
     const countEl = document.getElementById('fuelManageCount');
-    const enriched = enrichFuelRows(fuelCache).sort((a, b) => {
+    const enriched = enrichFuelRows(fuelCache).filter(row => fiscalDateInView(row.fill_date)).sort((a, b) => {
         const da = String(b.fill_date || '').localeCompare(String(a.fill_date || ''));
         if (da) return da;
         return Number(b.id || 0) - Number(a.id || 0);
@@ -12905,6 +13941,13 @@ async function saveFuelLog(event) {
         showFuelError(t('fuel.required'));
         return;
     }
+    {
+        const lockMsg = fiscalLockMessage(fillDate, beforeFuelRow?.fill_date);
+        if (lockMsg) {
+            showFuelError(lockMsg);
+            return;
+        }
+    }
     const companyId = requireFuelCompanyId();
     if (companyId == null) {
         showFuelError(currentLang === 'en' ? 'Company context is missing.' : 'تعذر تحديد الشركة الحالية.');
@@ -13024,13 +14067,20 @@ async function deleteFuelLog(id) {
         return;
     }
     const row = findFuelRow(id);
+    {
+        const lockMsg = fiscalLockMessage(row?.fill_date);
+        if (lockMsg) {
+            alert(lockMsg);
+            return;
+        }
+    }
     if (!confirm(currentLang === 'en' ? 'Delete this fuel record?' : 'هل تريد حذف سجل التعبئة؟')) return;
     const { error } = await scopeFuelQuery(client.from('fuel_logs').delete()).eq('id', id);
     if (error) {
         alert((currentLang === 'en' ? 'Could not delete: ' : 'تعذر الحذف: ') + (error.message || ''));
         return;
     }
-    logActivity('fuel.delete', 'وقود', row?.truck_plate || id, dateInputValue(row?.fill_date) || '');
+    logActivity('fuel.delete', 'وقود', row?.truck_plate || id, row ? buildFieldsSnapshot(row, ACTIVITY_DEFS.fuel, 'delete') : '');
     await refreshOpenFuelScreens();
 }
 
@@ -13464,6 +14514,13 @@ async function saveMaintenanceAttachments() {
     const rowId = Number(document.getElementById('maintAttachRowId')?.value || 0);
     const row = findMaintenanceRow(rowId);
     if (!rowId || !row) return;
+    {
+        const lockMsg = fiscalLockMessage(row.service_date);
+        if (lockMsg) {
+            showMaintenanceAttachError(lockMsg);
+            return;
+        }
+    }
     if (!attachPendingFiles.length) {
         closeMaintenanceAttachModal();
         return;
@@ -13589,7 +14646,7 @@ function renderMaintenanceManage() {
     const canEdit = hasPerm('maintenance', 'edit');
     const canDelete = hasPerm('maintenance', 'delete');
     syncMaintenanceManageAccess();
-    const rows = maintenanceCache || [];
+    const rows = fiscalFilterRowsByDate(maintenanceCache || [], 'service_date');
     if (countEl) countEl.textContent = rows.length.toLocaleString('en-US');
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">${escapeHtml(t('maint.empty'))}</td></tr>`;
@@ -13804,6 +14861,13 @@ async function saveMaintenance(event) {
         showMaintenanceError(t('maint.required'));
         return;
     }
+    {
+        const lockMsg = fiscalLockMessage(serviceDate, editId ? findMaintenanceRow(editId)?.service_date : '');
+        if (lockMsg) {
+            showMaintenanceError(lockMsg);
+            return;
+        }
+    }
     if (type === 'أخرى') {
         if (!customType) {
             showMaintenanceError(t('maint.typeOtherRequired'));
@@ -13887,6 +14951,13 @@ async function saveMaintenance(event) {
 
 async function deleteMaintenance(id) {
     if (!hasPerm('maintenance', 'delete')) return;
+    {
+        const lockMsg = fiscalLockMessage(findMaintenanceRow(id)?.service_date);
+        if (lockMsg) {
+            alert(lockMsg);
+            return;
+        }
+    }
     const ok = await appConfirm(t('maint.deleteConfirm'), {
         okLabel: t('ui.delete'),
         cancelLabel: t('ui.cancel')
@@ -13899,7 +14970,7 @@ async function deleteMaintenance(id) {
         return;
     }
     for (const file of parseMaintenanceAttachments(row)) await deleteMaintenanceInvoiceFile(file.path);
-    logActivity('maintenance.delete', 'صيانة', row?.vehicle_plate || '', row?.maintenance_type || '');
+    logActivity('maintenance.delete', 'صيانة', row?.vehicle_plate || '', row ? buildFieldsSnapshot(row, ACTIVITY_DEFS.maintenance, 'delete') : '');
     await refreshOpenMaintenanceScreens();
 }
 
@@ -15088,6 +16159,45 @@ const I18N = {
         'page.receivables': 'تقرير متابعة التحصيل',
         'page.receivablesSub': 'المستحقات والمحصل والمتبقي حسب العميل وطريقة السداد',
         'page.truckProfit': 'تقرير ربحية الشاحنات',
+        'fy.opening': 'رصيد افتتاحي',
+        'fy.openingClosed': 'رصيد افتتاحي — مسدد خلال الفترة',
+        'fy.openingPartial': 'رصيد افتتاحي — سداد جزئي خلال الفترة',
+        'nav.fiscalYears': 'السنوات المالية',
+        'page.systemHub': 'إعدادات النظام',
+        'page.systemHubSub': 'اختر القسم الذي تريد فتحه',
+        'sys.d.company': 'اسم المنشأة وبياناتها الرسمية وإعدادات العمولة',
+        'sys.t.names': 'ترجمة الأسماء',
+        'sys.d.names': 'أسماء العملاء والسائقين والمدن بالإنجليزية',
+        'nt.hint': 'تُعرض الأسماء بالإنجليزية عند اختيار الإنجليزية. الاسم الذي لا توجد له ترجمة يبقى كما هو.',
+        'nt.kind': 'النوع',
+        'nt.kind.client': 'عميل',
+        'nt.kind.person': 'سائق / موظف',
+        'nt.kind.city': 'مدينة',
+        'nt.ar': 'الاسم بالعربية',
+        'nt.en': 'الاسم بالإنجليزية',
+        'nt.add': 'إضافة ترجمة',
+        'nt.missing': 'أسماء بدون ترجمة (اضغط لتعبئتها)',
+        'nt.none': 'كل الأسماء في الرحلات مترجمة',
+        'nt.table': 'الترجمات المحفوظة',
+        'nt.empty': 'لا توجد ترجمات بعد',
+        'nt.delete': 'حذف',
+        'nt.needBoth': 'أدخل الاسم بالعربية والإنجليزية',
+        'nt.saveFailed': 'تعذر حفظ الترجمة',
+        'nt.missingTable': 'نفّذ ملف fleetop-name-translations.sql في Supabase SQL Editor أولاً.',
+        'log.nametrans.save': 'حفظ ترجمة اسم',
+        'log.nametrans.delete': 'حذف ترجمة اسم',
+        'sys.t.subscription': 'الاشتراك',
+        'sys.t.bayan': 'الربط مع منصة بيان',
+        'sys.d.subscription': 'حالة الاشتراك وتاريخ الانتهاء وطلب التجديد',
+        'sys.d.bayan': 'تفعيل إصدار وثائق النقل وبيانات الربط مع منصة بيان',
+        'sys.d.fiscal': 'فتح السنوات وإقفالها ومقارنة أداء السنوات',
+        'sys.d.activity': 'سجل العمليات قبل التعديل وبعده لكل مستخدم',
+        'page.fiscalYears': 'السنوات المالية',
+        'page.fiscalYearsSub': 'فتح سنة جديدة وإقفال السنوات السابقة ومقارنتها',
+        'log.fiscalyear.open': 'فتح سنة مالية',
+        'log.fiscalyear.close': 'إقفال سنة مالية',
+        'log.fiscalyear.reopen': 'إعادة فتح سنة مالية',
+        'log.fiscalyear.sync': 'تحديث العدادات الافتتاحية',
         'hub.back': 'التقارير',
         'page.reportsHub': 'التقارير',
         'page.reportsHubSub': 'اختر التقرير الذي تريد فتحه',
@@ -15940,7 +17050,6 @@ const I18N = {
         'ui.plateLabel': 'لوحة',
         'ui.driverLabel': 'السائق',
         'ui.checkingExpiryEmpty': 'لا توجد وثائق منتهية أو قاربت على الانتهاء خلال 30 يوماً.',
-        'ui.resetCounter': 'تصفير عداد الرحلات',
         'v.رصيد افتتاحي': 'رصيد افتتاحي',
         'ui.chooseDriver': 'اختر السائق',
         'ui.chooseTruck': 'اختر الشاحنة',
@@ -15965,7 +17074,7 @@ const I18N = {
         'th.number': 'الرقم',
         'th.expiry': 'الانتهاء',
         'th.route': 'خط السير',
-        'ui.payCommission': 'سداد عمولة',
+        'ui.payCommission': 'صرف عمولة',
         'ui.print': 'طباعة',
         'ui.tripsByTruck': 'رحلات السائق حسب الشاحنة',
         'ui.noMatchingCommissions': 'لا توجد عمولات مطابقة للفلتر',
@@ -16321,6 +17430,45 @@ const I18N = {
         'page.receivables': 'Collection follow-up',
         'page.receivablesSub': 'Due, collected and remaining amounts by client and payment method',
         'page.truckProfit': 'Truck profitability',
+        'fy.opening': 'Opening balance',
+        'fy.openingClosed': 'Opening balance — settled in period',
+        'fy.openingPartial': 'Opening balance — partly settled in period',
+        'nav.fiscalYears': 'Fiscal years',
+        'page.systemHub': 'System settings',
+        'page.systemHubSub': 'Choose the section you want to open',
+        'sys.d.company': 'Facility name, official details and commission settings',
+        'sys.t.names': 'Name translations',
+        'sys.d.names': 'English names for clients, drivers and cities',
+        'nt.hint': 'Names show in English when English is selected. A name without a translation stays as it is.',
+        'nt.kind': 'Type',
+        'nt.kind.client': 'Client',
+        'nt.kind.person': 'Driver / employee',
+        'nt.kind.city': 'City',
+        'nt.ar': 'Arabic name',
+        'nt.en': 'English name',
+        'nt.add': 'Add translation',
+        'nt.missing': 'Names without translation (click to fill)',
+        'nt.none': 'All names in trips are translated',
+        'nt.table': 'Saved translations',
+        'nt.empty': 'No translations yet',
+        'nt.delete': 'Delete',
+        'nt.needBoth': 'Enter both the Arabic and English names',
+        'nt.saveFailed': 'Could not save the translation',
+        'nt.missingTable': 'Run fleetop-name-translations.sql in the Supabase SQL Editor first.',
+        'log.nametrans.save': 'Save name translation',
+        'log.nametrans.delete': 'Delete name translation',
+        'sys.t.subscription': 'Subscription',
+        'sys.t.bayan': 'Bayan platform integration',
+        'sys.d.subscription': 'Subscription status, expiry date and renewal requests',
+        'sys.d.bayan': 'Enable transport documents and manage Bayan integration details',
+        'sys.d.fiscal': 'Open and close years and compare yearly performance',
+        'sys.d.activity': 'Operation log showing before and after for each user',
+        'page.fiscalYears': 'Fiscal years',
+        'page.fiscalYearsSub': 'Open a new year, close previous years and compare them',
+        'log.fiscalyear.open': 'Open fiscal year',
+        'log.fiscalyear.close': 'Close fiscal year',
+        'log.fiscalyear.reopen': 'Reopen fiscal year',
+        'log.fiscalyear.sync': 'Refresh opening odometers',
         'hub.back': 'Reports',
         'page.reportsHub': 'Reports',
         'page.reportsHubSub': 'Choose the report you want to open',
@@ -16723,7 +17871,7 @@ const I18N = {
         'log.trip.complete': 'Complete trip',
         'log.trip.settle': 'Collect balance',
         'log.trip.cancel': 'Cancel trip',
-        'log.payout.create': 'Pay commission',
+        'log.payout.create': 'Commission payout',
         'log.payout.edit': 'Edit commission payout',
         'log.payout.delete': 'Delete commission payout',
         'log.year.reset': 'Year-end reset',
@@ -17068,7 +18216,6 @@ const I18N = {
         'ui.plateLabel': 'Plate',
         'ui.driverLabel': 'Driver',
         'ui.checkingExpiryEmpty': 'No documents expired or due within 30 days.',
-        'ui.resetCounter': 'Reset trip counter',
         'v.رصيد افتتاحي': 'Opening balance',
         'v.جارية': 'Active',
         'v.مكتملة': 'Completed',
@@ -17196,7 +18343,7 @@ const I18N = {
         'th.number': 'Number',
         'th.expiry': 'Expiry',
         'th.route': 'Route',
-        'ui.payCommission': 'Pay commission',
+        'ui.payCommission': 'Commission payout',
         'ui.print': 'Print',
         'ui.tripsByTruck': 'Driver trips by truck',
         'ui.noMatchingCommissions': 'No commissions match the filter',
@@ -17270,6 +18417,8 @@ const I18N = {
 };
 
 const PAGE_HEADER_KEYS = {
+    systemHub: ['page.systemHub', 'page.systemHubSub'],
+    systemHubSection: ['page.systemHub', 'page.systemHubSub'],
     dashboard: ['page.dashboard'],
     dashboardSection: ['page.dashboard'],
     analytics: ['page.analytics'],
@@ -17311,6 +18460,8 @@ const PAGE_HEADER_KEYS = {
     activityLogSection: ['page.activityLog'],
     permissions: ['page.permissions'],
     permissionsSection: ['page.permissions'],
+    fiscalYears: ['page.fiscalYears', 'page.fiscalYearsSub'],
+    fiscalYearsSection: ['page.fiscalYears', 'page.fiscalYearsSub'],
     settings: ['page.settings']
 };
 
@@ -17362,12 +18513,52 @@ function applyI18n() {
     if (typeof refreshSupportWhatsappLinks === 'function') refreshSupportWhatsappLinks();
 }
 
+function syncLangSwitch() {
+    let activeBtn = null;
+    document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+        const active = btn.dataset.langBtn === currentLang;
+        btn.classList.toggle('active', active);
+        if (active) activeBtn = btn;
+    });
+    if (activeBtn) {
+        const flag = document.getElementById('langDdFlag');
+        const label = document.getElementById('langDdLabel');
+        if (flag) { flag.style.display = ''; flag.src = activeBtn.dataset.flag; }
+        if (label) label.textContent = activeBtn.dataset.label;
+    }
+}
+
+function toggleLangMenu(ev) {
+    if (ev) ev.stopPropagation();
+    const dd = document.getElementById('langSwitch');
+    if (!dd) return;
+    const open = !dd.classList.contains('open');
+    dd.classList.toggle('open', open);
+    document.getElementById('langDdTrigger')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function closeLangMenu() {
+    document.getElementById('langSwitch')?.classList.remove('open');
+    document.getElementById('langDdTrigger')?.setAttribute('aria-expanded', 'false');
+}
+
+function pickLang(lang) {
+    closeLangMenu();
+    if (lang !== currentLang) setAppLang(lang);
+}
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('#langSwitch')) closeLangMenu();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLangMenu(); });
+
 function setAppLang(lang) {
     currentLang = lang === 'en' ? 'en' : 'ar';
     localStorage.setItem('fleetop_lang', currentLang);
     document.documentElement.lang = currentLang === 'ar' ? 'ar' : 'en';
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
     applyI18n();
+    syncLangSwitch();
     if (typeof paintDashboardExpiryAlerts === 'function') paintDashboardExpiryAlerts();
     setPageHeader(currentNavTab);
     applyCompanyBranding();
@@ -17380,7 +18571,6 @@ function setAppLang(lang) {
                 platformBadge.textContent = `${currentLoggedInUser.employee_name || currentLoggedInUser.username || ''} · ${t('platform.role')}`;
             }
         }
-        if (typeof renderAdminControls === 'function') renderAdminControls();
         if (typeof applyVehicleScreenLabels === 'function') applyVehicleScreenLabels();
         if (typeof applyStaffScreenLabels === 'function') applyStaffScreenLabels();
         if (typeof filterAndRenderTrips === 'function' && Array.isArray(allTripsCache)) filterAndRenderTrips();
@@ -17399,6 +18589,11 @@ function setAppLang(lang) {
             populateDriverStatementFilters().then(() => generateDriverStatement());
         }
         if (!document.getElementById('reportsHubSection')?.classList.contains('hidden')) renderReportsHub();
+        renderFiscalYearSelector();
+        if (!document.getElementById('fiscalYearsSection')?.classList.contains('hidden')) {
+            renderFiscalYearsScreen();
+            if (fiscalYears.length) refreshFiscalStats();
+        }
         syncReportBackButton(currentNavTab);
         if (typeof renderFuelReportView === 'function' && !document.getElementById('fuelReportSection')?.classList.contains('hidden')) {
             renderFuelReportView();
@@ -17410,6 +18605,11 @@ function setAppLang(lang) {
             if (typeof renderMaintenanceReportView === 'function') renderMaintenanceReportView();
         }
         if (typeof syncSidebarToggleBtn === 'function') syncSidebarToggleBtn();
+        const visible = (id) => !document.getElementById(id)?.classList.contains('hidden');
+        if (visible('dashboardSection') && typeof loadDashboardData === 'function') loadDashboardData();
+        if (visible('commissionReportSection') && typeof generateCommissionReport === 'function') generateCommissionReport();
+        if (visible('systemHubSection') && typeof renderSystemHub === 'function') renderSystemHub();
+        if (visible('settingsSection') && typeof applySettingsView === 'function') applySettingsView();
     }
 }
 
@@ -17543,6 +18743,7 @@ function fillCompanySettingsForm() {
 
 async function saveCompanySettings(e) {
     e.preventDefault();
+    const settingsBefore = { ...(companySettings || {}) };
     const payload = withCompany({
         company_name_ar: emptyToNull(document.getElementById('companyNameAr')?.value),
         company_name_en: emptyToNull(document.getElementById('companyNameEn')?.value),
@@ -17583,7 +18784,7 @@ async function saveCompanySettings(e) {
     }
     localStorage.setItem(companySettingsStorageKey(), JSON.stringify(payload));
     await loadCompanySettings();
-    logActivity('settings.save', 'إعدادات', '', payload.company_name_ar || payload.company_name_en || '');
+    logActivity('settings.save', 'إعدادات', payload.company_name_ar || payload.company_name_en || '', buildFieldsDiff(settingsBefore, payload, ACTIVITY_DEFS.settings));
     alert(t('settings.saved'));
 }
 
@@ -17626,6 +18827,79 @@ function canOpenReportsHub(user = currentLoggedInUser) {
     return ['reports_general', 'reports_ops', 'reports_maint', 'reports_fuel', 'reports_finance'].some(id => hasPerm(id, 'view', user));
 }
 
+// عروض شاشة الإعدادات: البيانات الأساسية / الاشتراك / الربط مع بيان
+let settingsView = 'company';
+const SETTINGS_VIEWS = ['company', 'subscription', 'bayan', 'names'];
+
+function openSettingsView(view) {
+    settingsView = SETTINGS_VIEWS.includes(view) ? view : 'company';
+    switchTab('settings');
+}
+
+function applySettingsView(view = settingsView) {
+    const v = SETTINGS_VIEWS.includes(view) ? view : 'company';
+    document.querySelectorAll('#settingsSection [data-sv]').forEach(el => el.classList.toggle('hidden', el.dataset.sv !== v));
+    document.getElementById('settingsMainCol')?.classList.toggle('hidden', v === 'subscription' || v === 'names');
+    document.getElementById('settingsSubCol')?.classList.toggle('hidden', v !== 'subscription');
+    document.getElementById('settingsNamesCol')?.classList.toggle('hidden', v !== 'names');
+    if (v === 'names') renderNameTranslationsCard();
+    const titles = {
+        company: ['nav.companySettings', 'settings.hint'],
+        subscription: ['sys.t.subscription', 'sub.companyHint'],
+        bayan: ['sys.t.bayan', 'bayan.settingsHint'],
+        names: ['sys.t.names', 'nt.hint']
+    };
+    const [titleKey, subKey] = titles[v];
+    setPageHeader(t(titleKey), t(subKey));
+}
+
+function canOpenSystemHub(user) {
+    const fiscalAdmin = isAdminUser(user) && !isPlatformHomeUser(user);
+    return hasPerm('settings', 'view', user) || hasPerm('activity_log', 'view', user) || fiscalAdmin;
+}
+
+/** بطاقات إعدادات النظام: تُعرض حسب الصلاحية (مثل تقارير الهب) */
+function renderSystemHub() {
+    const host = document.getElementById('systemHubGrid');
+    if (!host) return;
+    const arrow = currentLang === 'en' ? 'fa-chevron-right' : 'fa-chevron-left';
+    const fiscalAdmin = isAdminUser() && !isPlatformHomeUser();
+    settingsView = 'company';
+    const items = [
+        { show: hasPerm('settings', 'view'), action: "openSettingsView('company')", tone: 'amber', icon: 'fa-building-flag', titleKey: 'nav.companySettings', descKey: 'sys.d.company' },
+        { show: hasPerm('settings', 'view'), action: "openSettingsView('subscription')", tone: 'emerald', icon: 'fa-file-contract', titleKey: 'sys.t.subscription', descKey: 'sys.d.subscription' },
+        { show: hasPerm('settings', 'view'), action: "openSettingsView('bayan')", tone: 'sky', icon: 'fa-file-shield', titleKey: 'sys.t.bayan', descKey: 'sys.d.bayan' },
+        { show: hasPerm('settings', 'view'), action: "openSettingsView('names')", tone: 'rose', icon: 'fa-language', titleKey: 'sys.t.names', descKey: 'sys.d.names' },
+        { show: fiscalAdmin, tab: 'fiscalYears', tone: 'teal', icon: 'fa-calendar-check', titleKey: 'nav.fiscalYears', descKey: 'sys.d.fiscal' },
+        { show: hasPerm('activity_log', 'view'), tab: 'activityLog', tone: 'indigo', icon: 'fa-clipboard-list', titleKey: 'nav.activityLog', descKey: 'sys.d.activity' }
+    ].filter(item => item.show);
+    if (!items.length) {
+        host.innerHTML = `<div class="col-span-full text-center text-slate-400 text-sm py-16">${escapeHtml(t('hub.empty'))}</div>`;
+        return;
+    }
+    host.innerHTML = `
+        <section class="hub-cat hub-cat-system">
+            <div class="hub-cat-head">
+                <div class="hub-cat-icon"><i class="fa-solid fa-gear"></i></div>
+                <div class="min-w-0 relative z-10">
+                    <div class="hub-cat-title">${escapeHtml(t('nav.settings'))}</div>
+                    <div class="hub-cat-sub">${escapeHtml(t('page.systemHubSub'))}</div>
+                </div>
+            </div>
+            <div class="hub-cat-body">
+                ${items.map(item => `
+                <button type="button" class="hub-tile hub-tone-${item.tone}" onclick="${escapeHtml(item.action || `switchTab('${item.tab}')`)}">
+                    <span class="hub-tile-icon"><i class="fa-solid ${item.icon}"></i></span>
+                    <span class="min-w-0">
+                        <span class="hub-tile-title block">${escapeHtml(t(item.titleKey))}</span>
+                        <span class="hub-tile-desc block">${escapeHtml(t(item.descKey))}</span>
+                    </span>
+                    <i class="fa-solid ${arrow} hub-tile-arrow"></i>
+                </button>`).join('')}
+            </div>
+        </section>`;
+}
+
 function renderReportsHub() {
     const host = document.getElementById('reportsHubGrid');
     if (!host) return;
@@ -17665,6 +18939,9 @@ function syncReportBackButton(tabId) {
     const btn = document.getElementById('reportBackBtn');
     if (!btn) return;
     btn.classList.toggle('hidden', !REPORT_TAB_IDS.has(tabId || currentNavTab));
+    const navId = tabId || currentNavTab;
+    document.getElementById('langSwitch')?.classList.toggle('hidden', !(navId === 'dashboard' || navId === 'dashboardSection'));
+    if (typeof syncLangSwitch === 'function') syncLangSwitch();
     const icon = btn.querySelector('i');
     if (icon) icon.className = `fa-solid ${currentLang === 'en' ? 'fa-arrow-right' : 'fa-arrow-left'}`;
 }
@@ -17684,12 +18961,19 @@ function setActiveNav(tabId) {
     const staffBtn = document.getElementById('tabStaffBtn');
     if (staffBtn) staffBtn.classList.toggle('nav-active', tabId === 'drivers' || tabId === 'employees');
     const systemBtn = document.getElementById('tabSystemGroupBtn');
-    if (systemBtn) systemBtn.classList.toggle('nav-open', tabId === 'settings' || tabId === 'activityLog');
+    if (systemBtn) {
+        systemBtn.classList.toggle('nav-open', tabId === 'systemHub' || tabId === 'systemHubSection' || tabId === 'settings' || tabId === 'activityLog' || tabId === 'fiscalYears');
+        systemBtn.classList.toggle('nav-active', tabId === 'systemHub' || tabId === 'systemHubSection');
+    }
 }
 
 function switchTab(tabId) {
     if (tabId === 'facility' && !hasPerm('facility', 'view')) {
         alert(currentLang === 'en' ? 'You do not have access to this section.' : 'ليست لديك صلاحية عرض هذا القسم.');
+        return;
+    }
+    if ((tabId === 'systemHub' || tabId === 'systemHubSection') && !canOpenSystemHub()) {
+        alert(currentLang === 'en' ? 'System settings are not available for your role.' : 'إعدادات النظام غير متاحة لصلاحيتك.');
         return;
     }
     if ((tabId === 'reportsHub' || tabId === 'reportsHubSection') && !canOpenReportsHub()) {
@@ -17736,6 +19020,10 @@ function switchTab(tabId) {
         alert(currentLang === 'en' ? 'Not allowed.' : 'غير مصرح.');
         return;
     }
+    if ((tabId === 'fiscalYears' || tabId === 'fiscalYearsSection') && !isAdminUser()) {
+        alert(currentLang === 'en' ? 'Administrators only.' : 'هذه الشاشة للمدير فقط.');
+        return;
+    }
     if (['financialOverviewSection', 'receivablesSection', 'truckProfitSection', 'financialDetailsSection', 'commissionReportSection', 'commissionPayoutSection', 'clientStatementSection', 'driverStatementSection'].includes(tabId) && !hasPerm('reports_finance', 'view')) {
         alert(currentLang === 'en' ? 'Financial reports are not available for your role.' : 'التقارير المالية غير متاحة لصلاحيتك.');
         return;
@@ -17743,6 +19031,7 @@ function switchTab(tabId) {
 
     currentNavTab = tabId;
     resetFiltersForScreen(tabId);
+    applyFiscalYearToScreen(tabId);
     setActiveNav(tabId);
     setPageHeader(tabId);
     closeMobileNav();
@@ -17790,6 +19079,7 @@ function switchTab(tabId) {
         }
         fillCompanySettingsForm();
         if (typeof loadCompanySubscriptionCard === 'function') loadCompanySubscriptionCard();
+        applySettingsView();
         return;
     }
 
@@ -17909,7 +19199,6 @@ function switchTab(tabId) {
         target.classList.remove('hidden');
         target.scrollTop = 0;
         if (tabId === 'trips' || tabId === 'tripsSection') {
-            if (typeof renderAdminControls === 'function') renderAdminControls();
             if (typeof filterAndRenderTrips === 'function') filterAndRenderTrips();
         }
         if (tabId === 'users' || tabId === 'usersSection') {
@@ -17917,6 +19206,9 @@ function switchTab(tabId) {
         }
         if (tabId === 'reportsHub' || tabId === 'reportsHubSection') {
             renderReportsHub();
+        }
+        if (tabId === 'systemHub' || tabId === 'systemHubSection') {
+            renderSystemHub();
         }
         if (tabId === 'reports' || tabId === 'reportsSection') {
             if (typeof generateReport === 'function') generateReport();
@@ -17934,6 +19226,10 @@ function switchTab(tabId) {
         if (tabId === 'activityLog' || tabId === 'activityLogSection') {
             toggleSystemMenu(true);
             if (typeof loadActivityLog === 'function') loadActivityLog();
+        }
+        if (tabId === 'fiscalYears' || tabId === 'fiscalYearsSection') {
+            toggleSystemMenu(true);
+            if (typeof loadFiscalYearsScreen === 'function') loadFiscalYearsScreen();
         }
     } else {
         console.warn("القسم غير موجود، سيتم عرض الشاشة الافتراضية:", tabId);
@@ -18758,11 +20054,20 @@ async function renderAnalyticsDashboard() {
                     availableDrivers.map(d => `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}${d.phone ? ` (${escapeHtml(d.phone)})` : ''}</option>`).join('');
             }
         }
-        async function generateTripNo() {
+        /** سنة ترقيم الرحلة: الأكبر بين سنة تاريخ المغادرة والسنة المالية المختارة (وإلا السنة الحالية) */
+        function tripNumberingDate(departureDate) {
+            const depYear = fiscalYearOfDate(departureDate);
+            const selYear = (selectedFiscalYear === 'all' || !fiscalYears.length) ? 0 : (Number(selectedFiscalYear) || 0);
+            const year = Math.max(depYear || 0, selYear) || new Date().getFullYear();
+            return new Date(year, 0, 1);
+        }
+
+        async function generateTripNo(departureDate) {
+            const numberingDate = tripNumberingDate(departureDate);
             const { data: trips } = await fetchAllRows(client.from('trips').select('trip_no'));
             const parsedRows = (trips || []).map(row => parseTripSerial(row.trip_no)).filter(parsed => parsed && Number.isFinite(parsed.serial));
-            if (usesYearCodedTripNo()) {
-                const year = tripYearCode();
+            if (usesYearCodedTripNo(numberingDate)) {
+                const year = tripYearCode(numberingDate);
                 const nums = parsedRows.filter(parsed => parsed.year === year).map(parsed => parsed.serial);
                 const nextNum = (nums.length ? Math.max(...nums) : 1000) + 1;
                 return formatTripNo(year, nextNum);
@@ -19182,7 +20487,7 @@ function filterAndRenderTrips() {
     const paymentFilter = document.getElementById('filterPaymentStatus')?.value || 'all';
     const clientFilter = String(document.getElementById('filterClientName')?.value || '').trim().toLowerCase();
 
-    let filtered = allTripsCache.filter(tr => {
+    let filtered = fiscalTripsForView(allTripsCache).filter(tr => {
         const trStatus = (tr.status || '').trim();
         const normalizedStatus = trStatus === 'منتهية' ? 'مكتملة' : trStatus;
         const matchStatus = (statusFilter === 'all') || (normalizedStatus === statusFilter.trim());
@@ -19244,6 +20549,8 @@ function renderTripsTable(trips) {
                 paymentBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">${tv('غير مسدد')}</span>`;
             }
 
+            if (tr._carriedOpening) paymentBadge += ` ${fiscalOpeningBadgeHtml()}`;
+
             if (tr.status === 'جارية') {
                 statusBadge = `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full text-[10px] font-bold">${tv('جارية')}</span>`;
             } else if (isCompletedTrip(tr)) {
@@ -19300,13 +20607,13 @@ function renderTripsTable(trips) {
                 <tr class="hover:bg-slate-50 transition">
                     <td class="p-3.5 font-bold text-amber-600 font-mono">${tr.trip_no || '—'}</td>
                     <td class="p-3.5">
-                        <div class="font-bold text-slate-900">${escapeHtml(tr.client_name)}</div>
+                        <div class="font-bold text-slate-900">${escapeHtml(localizedName('client', tr.client_name))}</div>
                         <div class="text-[11px] text-slate-500"><i class="fa-solid fa-location-dot ml-1 text-amber-500"></i> ${tripRouteText(tr)}</div>
                         <div class="text-[10px] text-slate-400 font-mono">${tr.departure_date} (${tv(tr.trip_type || 'ذهاب')})</div>
                     </td>
                     <td class="p-3.5 align-middle">
                         <div class="font-bold text-slate-800"><i class="fa-solid fa-truck ml-1 text-amber-500"></i> ${escapeHtml(tr.truck_plate)}</div>
-                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${escapeHtml(tr.driver_name)}</div>
+                        <div class="text-[11px] text-slate-600"><i class="fa-solid fa-user ml-1 text-amber-500"></i> ${escapeHtml(localizedName('person', tr.driver_name))}</div>
                     </td>
                     <td class="p-3.5 font-mono text-[11px]">
                         ${isCancelledTrip(tr) ? `
@@ -19684,12 +20991,19 @@ function closeAddTripModal() {
 
         async function saveTrip(e) {
     if (e) e.preventDefault();
-    const trip_no = await generateTripNo();
     const client_name = document.getElementById('clientName').value.trim();
     const from_city = document.getElementById('fromCity').value.trim();
     const to_city = document.getElementById('toCity').value.trim();
     const trip_type = document.querySelector('input[name="tripType"]:checked').value;
     const departure_date = document.getElementById('departureDate').value;
+    {
+        const lockMsg = fiscalLockMessage(departure_date);
+        if (lockMsg) {
+            alert(lockMsg);
+            return;
+        }
+    }
+    const trip_no = await generateTripNo(departure_date);
     const expected_arrival_date = document.getElementById('expectedArrivalDate')?.value || null;
     if (expected_arrival_date && expected_arrival_date < departure_date) {
         alert(t('msg.expectedBeforeDeparture'));
@@ -19909,7 +21223,7 @@ function tripEditValuesEqual(key, beforeVal, afterVal) {
     return String(beforeVal ?? '').trim() === String(afterVal ?? '').trim();
 }
 
-function buildTripEditDiff(before, after) {
+function buildTripEditDiff(before, after, extraLines) {
     const labels = {
         client_name: currentLang === 'en' ? 'Client' : 'العميل',
         from_city: currentLang === 'en' ? 'From' : 'من',
@@ -19939,7 +21253,7 @@ function buildTripEditDiff(before, after) {
         const to = tripEditDisplayValue(key, after[key]);
         lines.push(formatActivityDiffLine(labels[key], from, to));
     });
-    return buildActivityDiffLines(lines);
+    return buildActivityDiffLines([...(extraLines || []), ...lines]);
 }
 
 function buildFuelEditDiff(before, after) {
@@ -20055,11 +21369,22 @@ async function saveEditTrip(e) {
         alert(t('msg.tripUnidentified'));
         return;
     }
+    if (isTripLockedForEdit(trip)) {
+        alert(fiscalLockMessage(tripLockDate(trip)));
+        return;
+    }
     const client_name = document.getElementById('editClientName').value.trim();
     const from_city = document.getElementById('editFromCity').value.trim();
     const to_city = document.getElementById('editToCity').value.trim();
     const trip_type = document.querySelector('input[name="editTripType"]:checked')?.value || 'ذهاب';
     const departure_date = document.getElementById('editDepartureDate').value;
+    if (dateOnly(departure_date) !== dateOnly(trip.departure_date)) {
+        const lockMsg = fiscalLockMessage(departure_date);
+        if (lockMsg) {
+            alert(lockMsg);
+            return;
+        }
+    }
     const expected_arrival_date = document.getElementById('editExpectedArrivalDate')?.value || null;
     if (expected_arrival_date && expected_arrival_date < departure_date) {
         alert(t('msg.expectedBeforeDeparture'));
@@ -20261,6 +21586,10 @@ async function cancelTrip(tripNo) {
         alert(t('msg.tripDataNotFound'));
         return;
     }
+    if (isTripLockedForEdit(tripData)) {
+        alert(fiscalLockMessage(tripLockDate(tripData)));
+        return;
+    }
 
     // إلغاء الرحلة وإسقاط مبلغها وعمولتها من الحسابات والإيرادات
     const { error: cancelErr } = await client.from('trips').update({
@@ -20278,7 +21607,16 @@ async function cancelTrip(tripNo) {
 
     await releaseFleetIfIdle(tripData, tripNo);
 
-    logActivity('trip.cancel', 'رحلة', tripNo, `${tripData.client_name || ''} · ${tripData.truck_plate || ''} · ${tripData.driver_name || ''}`);
+    logActivity(
+        'trip.cancel',
+        'رحلة',
+        tripNo,
+        buildTripEditDiff(
+            tripData,
+            { ...tripData, total_amount: 0, paid_amount: 0, remaining_amount: 0, driver_commission: 0 },
+            [formatActivityDiffLine(currentLang === 'en' ? 'Status' : 'الحالة', tripData.status || '—', 'ملغاة')]
+        )
+    );
     alert(t('msg.tripCancelled'));
     if (typeof loadAllData === 'function') loadAllData();
 }       
@@ -20322,6 +21660,9 @@ async function cancelTrip(tripNo) {
             }), !!id);
             const writeId = id ? entityWriteId(id) : null;
             let savedOk = false;
+            const truckBefore = (id && allTrucksById[id])
+                ? { ...allTrucksById[id], status: normalizeVehicleStatusValue(allTrucksById[id].status, isCargoTruck(allTrucksById[id])), vehicle_kind: isCargoTruck(allTrucksById[id]) ? 'شاحنة' : 'أخرى' }
+                : null;
             const rpc = await saveViaFleetRpc('fleetop_save_truck', writeId, payload);
             if (!rpc.missing && rpc.error) {
                 alert(t('msg.saveFailedColon') + rpc.error.message);
@@ -20358,7 +21699,12 @@ async function cancelTrip(tripNo) {
                 savedOk = true;
             }
             if (!savedOk) return;
-            logActivity('truck.save', 'مركبة', document.getElementById('truckPlate')?.value || id, id ? 'تعديل' : 'إضافة');
+            logActivity(
+                'truck.save',
+                'مركبة',
+                document.getElementById('truckPlate')?.value || id,
+                truckBefore ? buildFieldsDiff(truckBefore, payload, ACTIVITY_DEFS.truck) : buildFieldsSnapshot(payload, ACTIVITY_DEFS.truck, 'create')
+            );
             alert(id ? t('msg.updated') : t('msg.added'));
             resetTruckForm();
             await loadAllData({ force: true });
@@ -20440,7 +21786,7 @@ async function cancelTrip(tripNo) {
                     alert(t('msg.deleteFailedColon') + (error?.message || t('msg.deleteNotApplied')));
                     return;
                 }
-                logActivity('truck.delete', 'مركبة', tr?.plate || id, '');
+                logActivity('truck.delete', 'مركبة', tr?.plate || id, tr ? buildFieldsSnapshot(tr, ACTIVITY_DEFS.truck, 'delete') : '');
                 await loadAllData({ force: true });
             }
         }
@@ -20597,6 +21943,13 @@ async function cancelTrip(tripNo) {
             }), !!id);
             const writeId = id ? entityWriteId(id) : null;
             let savedOk = false;
+            const staffBefore = (id && allDriversById[id])
+                ? (() => {
+                    const dr0 = allDriversById[id];
+                    const job0 = String(dr0.job_title || '').trim() || (isTripDriver(dr0) ? 'سائق شاحنة' : '');
+                    return { ...dr0, status: normalizeStaffStatusValue(dr0.status), staff_kind: isTripDriver(dr0) ? 'سائق' : 'موظف', job_title: job0 === 'سائق' ? 'سائق شاحنة' : job0 };
+                })()
+                : null;
             const rpc = await saveViaFleetRpc('fleetop_save_driver', writeId, payload);
             if (!rpc.missing && rpc.error) {
                 alert(t('msg.saveFailedColon') + rpc.error.message);
@@ -20633,7 +21986,12 @@ async function cancelTrip(tripNo) {
                 savedOk = true;
             }
             if (!savedOk) return;
-            logActivity('staff.save', 'موظف', document.getElementById('driverName')?.value || id, id ? 'تعديل' : 'إضافة');
+            logActivity(
+                'staff.save',
+                'موظف',
+                document.getElementById('driverName')?.value || id,
+                staffBefore ? buildFieldsDiff(staffBefore, payload, ACTIVITY_DEFS.staff) : buildFieldsSnapshot(payload, ACTIVITY_DEFS.staff, 'create')
+            );
             alert(id ? t('msg.updated') : t('msg.added'));
             resetDriverForm();
             await loadAllData({ force: true });
@@ -20701,7 +22059,7 @@ async function cancelTrip(tripNo) {
                     alert(t('msg.deleteFailedColon') + (error?.message || t('msg.deleteNotApplied')));
                     return;
                 }
-                logActivity('staff.delete', 'موظف', dr?.name || id, '');
+                logActivity('staff.delete', 'موظف', dr?.name || id, dr ? buildFieldsSnapshot(dr, ACTIVITY_DEFS.staff, 'delete') : '');
                 await loadAllData({ force: true });
             }
         }
@@ -20817,6 +22175,7 @@ async function loadUsers(options = {}) {
                 return;
             }
 
+            const userBefore = id ? appUsersById[id] : null;
             const { error } = await client.rpc('admin_save_user', {
                 p_id: id ? Number(id) : null,
                 p_username: username,
@@ -20829,7 +22188,18 @@ async function loadUsers(options = {}) {
                 alert(error.message || t('msg.userSaveFailed'));
                 return;
             }
-            logActivity('user.save', 'مستخدم', username, `${employee_name} · ${role} · ${status}${id ? ' · تعديل' : ' · إضافة'}${password ? ' · كلمة مرور' : ''}`);
+            {
+                const userAfter = { username, employee_name, role, status };
+                const pwLine = password ? [formatActivityDiffLine(currentLang === 'en' ? 'Password' : 'كلمة المرور', '••••', currentLang === 'en' ? 'Changed' : 'تم تغييرها')] : [];
+                logActivity(
+                    'user.save',
+                    'مستخدم',
+                    username,
+                    userBefore
+                        ? buildFieldsDiff(userBefore, userAfter, ACTIVITY_DEFS.user, pwLine)
+                        : buildFieldsSnapshot(userAfter, ACTIVITY_DEFS.user, 'create')
+                );
+            }
             alert(id ? (password ? t('msg.userUpdatedPw') : t('msg.userUpdated')) : t('msg.userAdded'));
             resetUserForm();
             loadUsers();
@@ -20868,12 +22238,13 @@ async function loadUsers(options = {}) {
 
         async function deleteUser(id) {
             if (!confirm(t('msg.confirmDeleteUser'))) return;
+            const deletedUser = appUsersById[id] || null;
             const { error } = await client.rpc('admin_delete_user', { p_id: Number(id) });
             if (error) {
                 alert(error.message || t('msg.userDeleteFailed'));
                 return;
             }
-            logActivity('user.delete', 'مستخدم', id, '');
+            logActivity('user.delete', 'مستخدم', deletedUser?.username || id, deletedUser ? buildFieldsSnapshot(deletedUser, ACTIVITY_DEFS.user, 'delete') : '');
             loadUsers();
         }
 
@@ -21098,7 +22469,11 @@ async function loadUsers(options = {}) {
                 stopUserPresence();
                 stopIdleWatch();
             }
-            if (typeof loadAllData === 'function') loadAllData();
+            const startLoadingData = () => { if (typeof loadAllData === 'function') loadAllData(); };
+            Promise.all([
+                typeof loadFiscalYears === 'function' ? loadFiscalYears() : null,
+                typeof loadNameTranslations === 'function' ? loadNameTranslations() : null
+            ]).then(startLoadingData, startLoadingData);
         }
 
         async function restoreSession() {
